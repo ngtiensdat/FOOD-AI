@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Bún bò Huế đặc biệt",
+    "price": 60000,
+    "description": "Bún bò Huế là món ăn đặc trưng của miền Trung, được chế biến từ những nguyên liệu tươi ngon như thịt bò, chả Huế, giò heo, huyết... Nước dùng được ninh từ xương bò và gia vị đặc trưng, tạo nên hương vị đậm đà, thơm ngon. Món ăn này thường được ăn kèm với rau sống, rau thơm, giá đỗ, bắp chuối bào... giúp tăng thêm hương vị và dinh dưỡng.",
+    "image": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAFqRPoSNfVtwMJsRGfr1vsDD5QRx1hJfjMdUjs1PAZHZlxdIg0X8D8j1HSh-XRlARE8TuR28RpyJULuXPOJCAKpObjuJXhj-JnNBl_NULX0Jy9W3jBHoS1b0IbjikKZXPuLG1sr=w215-h280-p-k-no",
+    "restaurantName": "Huế Ngon Cs1 - Bún bò Huế",
+    "address": "V3 A05 An Hưng, Tố Hữu, Hà Đông",
+    "mapUrl": "https://maps.app.goo.gl/UPjXD94nHftBiZuU9",
+    "lat": 20.9724576,
+    "lng": 105.755963,
+    "tags": [
+      "Món nước",
+      "Bình dân",
+      "Truyền thống",
+      "Bún bò Huế",
+      "Bún"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": false
+  },
+  {
+    "name": "Bún Chả Hương Liên ",
+    "price": 55000,
+    "description": "Nếu đã trót mê bún chả Hà Nội, thì không thể bỏ qua địa chỉ huyền thoại này!  Bún Chả Hương Liên nổi tiếng đến mức còn có cả Combo Obama - món ăn đã từng được cựu Tổng thống Mỹ Barack Obama thưởng thức. Hương vị bún chả ở đây hài hòa, đậm đà, từ thịt nướng thơm lừng, chả viên mềm mại đến nước chấm chua ngọt vừa miệng. Đặc biệt, món nem hải sản ở đây cũng được đánh giá rất cao.",
+    "image": "https://res.cloudinary.com/dy16ujpkq/image/upload/v1777964448/2_qokald.jpg",
+    "restaurantName": "Bún Chả Hương Liên",
+    "address": "24 Lê Văn Hữu, P. Phan Chu Trinh, Q. Hai Bà Trưng, ​​Hà Nội, Việt Nam",
+    "mapUrl": "https://maps.app.goo.gl/MsNZePw4VeSWoUTw5",
+    "lat": 21.0181373,
+    "lng": 105.8538926,
+    "tags": [
+      "Món nước",
+      "Bình dân",
+      "Truyền thống"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": false
+  },
+  {
+    "name": "Jetaime Nguyễn Trường Tộ",
+    "price": 250000,
+    "description": "Ẩn mình trên con phố Nguyễn Trường Tộ, Phở Tiến được nhiều người Hà Nội yêu thích nhờ hương vị truyền thống giữ trọn nét tinh tế. Ngoài phở bò quen thuộc, món phở gà ở đây đặc biệt nổi bật với phần thịt mềm, thơm ngọt tự nhiên, kết hợp cùng nước dùng trong vắt, thanh nhẹ mà vẫn đủ độ đậm đà.",
+    "image": "https://res.cloudinary.com/dy16ujpkq/image/upload/v1777964448/3_tnx8zs.jpg",
+    "restaurantName": "Jetaime Nguyễn Trường Tộ",
+    "address": "50 Nguyễn Trường Tộ, Phường Trúc Bạch, Quận Ba Đình, Hà Nội, Việt Nam",
+    "mapUrl": "https://maps.app.goo.gl/njudcw7r3NBx1VCH6",
+    "lat": 21.0440585,
+    "lng": 105.8419373,
+    "tags": [
+      "Cà phê",
+      "Cao cấp",
+      "Chụp ảnh"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": false
+  },
+  {
+    "name": "Chín nạm",
+    "price": 35000,
+    "description": "Nhà hàng lâu đời ở Văn Khê. Ban sáng có phở bò ngon đông khách. Tối có bán lẩu bò các loại , ăn phần nào tính tiền phần đó",
+    "image": "https://res.cloudinary.com/dy16ujpkq/image/upload/v1777972347/4_mtoulg.jpg",
+    "restaurantName": "Phở Bò Hào Sảng",
+    "address": "BT1-01, KĐT Văn Khê, Hà Đông",
+    "mapUrl": "https://maps.app.goo.gl/hY2nxh9384BNugR47",
+    "lat": 20.9732937,
+    "lng": 105.7622678,
+    "tags": [
+      "Món nước",
+      "Bình dân",
+      "Phở",
+      "Phở bò",
+      "Chín nạm"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": false
+  }
+]

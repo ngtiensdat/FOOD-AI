@@ -1,0 +1,273 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+// ================== USERS ==================
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String?
+  email          String   @unique
+  password       String
+  role           String   // CUSTOMER, RESTAURANT, ADMIN
+  status         String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  isEmailVerified Boolean  @default(false) @map("is_email_verified")
+  verificationToken String?  @map("verification_token")
+  legalDocuments String?  @map("legal_documents")
+  resetToken     String?  @map("reset_token")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  profile        UserProfile?
+  restaurants    Restaurant[]
+  reviews        Review[]
+  favorites      Favorite[]
+  histories      History[]
+  conversations  Conversation[]
+  reports        Report[]
+  approvedPosts  Post[]         @relation("AdminApprovedPosts")
+
+  @@map("users")
+}
+
+// ================== USER PROFILE (AI) ==================
+model UserProfile {
+  userId          Int      @id @map("user_id")
+  fullName        String?  @map("full_name")
+  phone           String?
+  avatar          String?
+  preferencesText String?  @map("preferences_text")
+  
+  // AI Vector Embedding
+  embedding       Unsupported("vector(1536)")?
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
+}
+
+// ================== RESTAURANT ==================
+model Restaurant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  address     String
+  latitude    Float
+  longitude   Float
+  description String?
+  ownerId     Int      @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  owner       User     @relation(fields: [ownerId], references: [id])
+  profile     RestaurantProfile?
+  foods       Food[]
+  posts       Post[]
+  histories   History[]
+
+  @@map("restaurants")
+}
+
+// ================== RESTAURANT PROFILE ==================
+model RestaurantProfile {
+  restaurantId Int      @id @map("restaurant_id")
+  coverImage   String?  @map("cover_image")
+  bio          String?
+  openingHours String?  @map("opening_hours")
+  contactEmail String?  @map("contact_email")
+  contactPhone String?  @map("contact_phone")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@map("restaurant_profiles")
+}
+
+// ================== FOOD ==================
+model Food {
+  id             Int      @id @default(autoincrement())
+  name           String
+  price          Float
+  image          String?
+  description    String?
+  
+  // Thông tin bổ sung cho món của Admin (Hệ thống)
+  restaurantName String?  @map("restaurant_name")
+  address        String?
+  mapUrl         String?  @map("map_url")
+  tags           String[] @default([])
+  
+  // AI Vector Embedding
+  embedding      Unsupported("vector(1536)")?
+  
+  status         String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  isActive       Boolean  @default(true) @map("is_active")
+  
+  // Gợi ý và Đề xuất
+  isAdminRecommended Boolean @default(false) @map("is_admin_recommended")
+  isFeaturedToday    Boolean @default(false) @map("is_featured_today")
+  isFeaturedWeekly   Boolean @default(false) @map("is_featured_weekly")
+  
+  lat            Float?   // Vĩ độ
+  lng            Float?   // Kinh độ
+  
+  // Liên kết: Món ăn của Admin thì restaurantId là null
+  restaurantId   Int?      @map("restaurant_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  restaurant     Restaurant? @relation(fields: [restaurantId], references: [id])
+  categories     Category[]  @relation("FoodToCategory")
+  posts          Post[]      @relation("PostToFood")
+  reviews        Review[]
+  favorites      Favorite[]
+  histories      History[]
+
+  @@map("foods")
+}
+
+// ================== CATEGORY ==================
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  foods Food[] @relation("FoodToCategory")
+
+  @@map("categories")
+}
+
+// ================== POSTS ==================
+model Post {
+  id           Int      @id @default(autoincrement())
+  restaurantId Int      @map("restaurant_id")
+  title        String
+  content      String?
+  image        String?
+  postType     String   // FOOD, RESTAURANT
+  status       String   // PENDING, APPROVED, REJECTED
+  approvedBy   Int?     @map("approved_by")
+  approvedAt   DateTime? @map("approved_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  admin        User?      @relation("AdminApprovedPosts", fields: [approvedBy], references: [id])
+  foods        Food[]     @relation("PostToFood")
+
+  @@map("posts")
+}
+
+// ================== USER INTERACTIONS ==================
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  foodId    Int      @map("food_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id])
+  food      Food     @relation(fields: [foodId], references: [id])
+
+  @@unique([userId, foodId])
+  @@map("reviews")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  foodId    Int      @map("food_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id])
+  food      Food     @relation(fields: [foodId], references: [id])
+
+  @@unique([userId, foodId])
+  @@map("favorites")
+}
+
+model History {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int?     @map("restaurant_id")
+  foodId       Int?     @map("food_id")
+  visitedAt    DateTime @default(now()) @map("visited_at")
+
+  user         User        @relation(fields: [userId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  food         Food?       @relation(fields: [foodId], references: [id])
+
+  @@map("histories")
+}
+
+// ================== AI CHAT ==================
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  startedAt DateTime @default(now()) @map("started_at")
+
+  user      User      @relation(fields: [userId], references: [id])
+  messages  Message[]
+  context   ConversationContext?
+
+  @@map("conversations")
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId Int      @map("conversation_id")
+  role           String   // USER, AI
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@map("messages")
+}
+
+// ================== AI CONTEXT ==================
+model ConversationContext {
+  id                   Int      @id @default(autoincrement())
+  conversationId       Int      @unique @map("conversation_id")
+  extractedPreferences String?  @map("extracted_preferences")
+  
+  // AI Vector Embedding
+  embedding            Unsupported("vector(1536)")?
+  
+  locationLat          Float?   @map("location_lat")
+  locationLng          Float?   @map("location_lng")
+  timeContext          String?  @map("time_context")
+  budget               Float?
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  conversation         Conversation @relation(fields: [conversationId], references: [id])
+
+  @@map("conversation_context")
+}
+
+// ================== OPTIONAL AI LOG ==================
+model EmbeddingLog {
+  id         Int      @id @default(autoincrement())
+  entityType String   @map("entity_type")
+  entityId   Int      @map("entity_id")
+  embedding  Unsupported("vector(1536)")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("embeddings_log")
+}
+
+// ================== ADMIN ==================
+model Report {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  targetType String   @map("target_type")
+  targetId   Int      @map("target_id")
+  content    String
+  status     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("reports")
+}

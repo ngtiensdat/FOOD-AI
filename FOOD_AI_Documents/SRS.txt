@@ -1,0 +1,213 @@
+	TÀI LIỆU DỰ ÁN WEB GỢI Ý MÓN ĂN BẰNG AI THÔNG MINH – FOOD AI
+I. Giới thiệu (Introduction)
+1. Mục đích (Purpose)
+Tài liệu này được xây dựng nhằm mô tả chi tiết các yêu cầu của hệ thống Food AI – một nền tảng web hỗ trợ người dùng tìm kiếm và gợi ý món ăn thông minh dựa trên công nghệ trí tuệ nhân tạo.
+Mục tiêu của tài liệu là:
+•	Cung cấp cái nhìn tổng quan về hệ thống.
+•	Làm cơ sở để phân tích, thiết kế, phát triển và kiểm thử hệ thống. 
+•	Đảm bảo các chức năng của hệ thống được xác định rõ ràng, đầy đủ và nhất quán. 
+Tài liệu này đóng vai trò như một nguồn tham chiếu chính trong suốt quá trình phát triển dự án.
+2. Phạm vi hệ thống (Scope)
+Hệ thống Food AI là một ứng dụng web cho phép người dùng tìm kiếm và nhận gợi ý món ăn thông qua việc nhập văn bản tự nhiên. Hệ thống sử dụng công nghệ AI (vector embedding và xử lý ngôn ngữ tự nhiên) để hiểu nhu cầu của người dùng và đưa ra các đề xuất phù hợp.
+Phạm vi của hệ thống bao gồm:
+•	Đối với khách hàng: 
+o	Nhập yêu cầu bằng ngôn ngữ tự nhiên (ví dụ: “ăn gì cay cay gần đây”). 
+o	Tương tác với AI dưới dạng hội thoại. 
+o	Nhận gợi ý món ăn phù hợp dựa trên sở thích và ngữ cảnh. 
+o	Xem thông tin món ăn, nhà hàng và bài đăng. 
+•	Đối với nhà hàng (thương gia): 
+o	Quản lý thông tin nhà hàng. 
+o	Đăng tải món ăn và bài viết quảng bá. 
+o	Theo dõi trạng thái của tài khoản. 
+•	Đối với quản trị viên (admin): 
+o	Kiểm duyệt món ăn và bài đăng. 
+o	Quản lý và xử lý báo cáo. 
+o	Quản lý thương gia và người dùng
+Hệ thống không bao gồm chức năng thanh toán hoặc giao hàng trong phạm vi hiện tại.
+3. Mục tiêu hệ thống (Objectives)
+Hệ thống được xây dựng nhằm đạt được các mục tiêu sau:
+•	Cải thiện trải nghiệm người dùng:
+Cho phép người dùng tìm kiếm món ăn một cách tự nhiên thông qua hội thoại với AI thay vì sử dụng các bộ lọc truyền thống. 
+•	Cá nhân hóa đề xuất:
+Sử dụng công nghệ vector embedding để phân tích sở thích và hành vi của người dùng, từ đó đưa ra các gợi ý phù hợp. 
+•	Hỗ trợ ra quyết định nhanh chóng:
+Giúp người dùng dễ dàng lựa chọn món ăn dựa trên các yếu tố như vị trí, thời gian, sở thích và ngân sách. 
+•	Tạo nền tảng quảng bá cho nhà hàng:
+Cho phép các nhà hàng đăng tải nội dung và tiếp cận khách hàng thông qua hệ thống. 
+•	Ứng dụng công nghệ AI vào thực tế:
+Xây dựng một hệ thống gợi ý thông minh kết hợp giữa xử lý ngôn ngữ tự nhiên và tìm kiếm ngữ nghĩa (semantic search). 
+
+II. Mô tả tổng quan về dự án (Overall Description)
+1. Kiến trúc hệ thống (System Architecture)
+1.1. Tổng quan kiến trúc
+Hệ thống Food AI được thiết kế theo mô hình kiến trúc phân tầng (Layered Architecture), kết hợp giữa Web Application và AI Service, nhằm đảm bảo tính mở rộng, linh hoạt và hiệu năng cao.
+Kiến trúc hệ thống bao gồm 4 thành phần chính:
+•	Frontend (Client Layer) 
+•	Backend (Application Layer) 
+•	AI Service Layer 
+•	Database (Data Layer) 
+1.2. Frontend (Client Layer)
+•	Công nghệ sử dụng: NextJS 
+•	Vai trò: 
+o	Cung cấp giao diện người dùng 
+o	Thu thập dữ liệu đầu vào từ người dùng (văn bản, vị trí, hành vi) 
+o	Hiển thị kết quả gợi ý món ăn, bài đăng và thông tin nhà hàng 
+o	Tích hợp giao diện chat với AI 
+Frontend giao tiếp với Backend thông qua RESTful API.
+1.3. Backend (Application Layer)
+•	Công nghệ sử dụng: NestJS 
+•	Vai trò: 
+o	Xử lý logic nghiệp vụ của hệ thống 
+o	Cung cấp API cho frontend 
+o	Quản lý xác thực và phân quyền người dùng 
+o	Điều phối các dịch vụ AI (embedding, chat, recommendation) 
+o	Xử lý dữ liệu từ người dùng và tương tác với database 
+Backend được tổ chức theo mô hình module hóa (modular architecture), giúp dễ bảo trì và mở rộng.
+1.4. AI Service Layer
+Hệ thống tích hợp AI thông qua API của OpenAI, bao gồm hai chức năng chính:
+1.4.1. Vector Embedding
+•	Chuyển đổi dữ liệu văn bản thành vector số 
+•	Áp dụng cho: 
+o	Mô tả món ăn (foods.description) 
+o	Sở thích người dùng (user_profiles.preferences_text) 
+o	Nội dung hội thoại 
+•	Mục đích: 
+o	So sánh độ tương đồng giữa người dùng và món ăn 
+o	Hỗ trợ tìm kiếm ngữ nghĩa (semantic search) 
+1.4.2. Conversational AI (Chat AI)
+•	Cho phép người dùng nhập dữ liệu dưới dạng ngôn ngữ tự nhiên 
+•	AI có khả năng: 
+o	Phân tích ý định (intent detection) 
+o	Trích xuất thông tin (món ăn, khẩu vị, vị trí, thời gian, ngân sách) 
+o	Sửa lỗi chính tả và chuẩn hóa văn bản 
+o	Hỏi lại người dùng khi thông tin chưa đầy đủ 
+o	Duy trì ngữ cảnh hội thoại 
+1.5. Database (Data Layer)
+•	Công nghệ sử dụng: PostgreSQL kết hợp extension pgvector 
+•	Vai trò: 
+o	Lưu trữ dữ liệu hệ thống: 
+	Người dùng 
+	Nhà hàng 
+	Món ăn 
+	Bài đăng 
+	Lịch sử tương tác 
+o	Lưu trữ vector embedding: 
+	foods.embedding 
+	user_profiles.embedding 
+	conversation_context.embedding 
+1.5.1. Vector Search
+Hệ thống sử dụng pgvector để thực hiện tìm kiếm tương đồng giữa các vector:
+•	Áp dụng: 
+o	Gợi ý món ăn 
+o	Tìm kiếm theo ngữ nghĩa 
+•	Cách hoạt động: 
+o	Tạo embedding từ input người dùng 
+o	So sánh với embedding của dữ liệu trong database 
+o	Sắp xếp theo độ tương đồng và trả về kết quả phù hợp nhất 
+1.6. Luồng xử lý chính của hệ thống
+1.6.1. Luồng gợi ý món ăn bằng AI
+1.	Người dùng nhập yêu cầu dưới dạng văn bản 
+2.	Backend gửi dữ liệu đến AI Service 
+3.	AI: 
+o	Chuẩn hóa nội dung (sửa lỗi chính tả nếu có) 
+o	Trích xuất thông tin quan trọng 
+o	Cập nhật context hội thoại 
+4.	Khi đủ thông tin: 
+o	Tạo vector embedding từ input 
+o	Thực hiện truy vấn vector trên database 
+5.	Trả về danh sách món ăn phù hợp 
+1.6.2. Luồng hội thoại AI
+1.	Người dùng gửi tin nhắn 
+2.	Tin nhắn được lưu vào hệ thống 
+3.	AI phân tích nội dung và context trước đó 
+4.	Nếu thiếu thông tin: 
+o	AI phản hồi bằng câu hỏi bổ sung 
+5.	Nếu đủ thông tin: 
+o	AI thực hiện gợi ý món ăn 
+1.6.3. Luồng đăng bài và kiểm duyệt
+1.	Nhà hàng tạo bài đăng 
+2.	Trạng thái bài: PENDING 
+3.	Admin kiểm duyệt: 
+o	APPROVED → hiển thị 
+o	REJECTED → từ chối 
+4.	Người dùng chỉ thấy bài đã được duyệt 
+1.7. Đặc điểm kiến trúc
+Hệ thống được thiết kế với các đặc điểm sau:
+•	Tách biệt rõ ràng giữa các tầng (Frontend – Backend – AI – Database) 
+•	Khả năng mở rộng cao (có thể nâng cấp AI hoặc scale hệ thống) 
+•	Tối ưu hiệu năng thông qua vector search 
+•	Hỗ trợ xử lý ngôn ngữ tự nhiên thông qua AI
+2. Các yếu tố tác động đến hệ thống (System Constraints & Influences)
+2.1. Yêu cầu về kỹ thuật
+•	Hệ thống yêu cầu: 
+o	Kết nối Internet ổn định 
+o	Trình duyệt hiện đại (Chrome, Edge, Firefox) 
+•	Backend cần hỗ trợ: 
+o	RESTful API 
+o	Xử lý bất đồng bộ (async) 
+2.2. Phụ thuộc vào công nghệ AI
+•	Hệ thống có thể sử dụng: 
+o	API bên thứ ba (ví dụ: OpenAI) 
+o	Hoặc mô hình nội bộ 
+Điều này ảnh hưởng đến:
+•	Độ chính xác của gợi ý 
+•	Tốc độ phản hồi 
+•	Chi phí vận hành 
+2.3. Hiệu năng hệ thống
+•	Vector search có thể tốn tài nguyên nếu dữ liệu lớn 
+•	Cần tối ưu: 
+o	Index vector (pgvector index) 
+o	Query top-K 
+2.4. Yếu tố dữ liệu
+•	Chất lượng dữ liệu đầu vào ảnh hưởng trực tiếp đến AI: 
+o	Mô tả món ăn phải rõ ràng 
+o	Sở thích người dùng phải đầy đủ 
+2.5. Yếu tố người dùng
+•	Người dùng có thể: 
+o	Nhập sai chính tả 
+o	Nhập thiếu thông tin 
+o	Sử dụng ngôn ngữ tự nhiên không chuẩn 
+Hệ thống cần:
+•	Xử lý lỗi 
+•	Hỏi lại 
+•	Duy trì hội thoại 
+2.6. Bảo mật và quyền riêng tư
+•	Dữ liệu người dùng cần được bảo vệ: 
+o	Mã hóa mật khẩu 
+o	Phân quyền rõ ràng (Admin, User, Restaurant) 
+2.7. Khả năng mở rộng
+Hệ thống được thiết kế để có thể mở rộng trong tương lai:
+•	Thêm thuật toán AI nâng cao 
+•	Tích hợp chatbot nâng cao 
+•	Phân tích hành vi người dùng 
+•	Triển khai microservices
+II. Yêu cầu chức năng (Functional Requirements)
+1. Chức năng không xác thực (Unauthenticated Users)
+•	Xem danh sách món ăn / nhà hàng 
+•	Xem bài đăng từ nhà hàng 
+•	Xem mục "Món ăn đề xuất" trên trang chủ (các món ăn được Admin đề xuất/đẩy lên top dựa trên vị trí hoặc thông tin cá nhân của người dùng để họ dễ dàng lựa chọn).
+•	Tìm kiếm cơ bản 
+2. Chức năng dành cho Admin
+•	Quản lý người dùng 
+•	Duyệt bài đăng (posts) 
+•	Quản lý món ăn (Foods Management) - Chia làm 2 danh sách rõ ràng:
+    o	Danh sách 1: Món ăn hệ thống (Món ăn mặc định do Admin khởi tạo). Admin có toàn quyền Thêm, Sửa, Xóa (CRUD).
+    o	Danh sách 2: Món ăn của thương gia (Món ăn do nhà hàng tự đăng tải). Admin có quyền: Duyệt bài (Approve), Từ chối (Reject), Xóa (Delete), hoặc Đẩy lên top / Đề xuất (Featured).
+•	Xác nhận các món ăn/quán ăn được Admin đề xuất (isAdminRecommended) để AI ưu tiên gợi ý cho người dùng.
+•	Xử lý báo cáo (reports) 
+3. Chức năng dành cho Khách hàng (Customer)
+•	Đăng ký / đăng nhập 
+•	Chat với AI để gợi ý món ăn (RAG: AI chỉ gợi ý các món ăn có trên trang web dựa trên cơ sở dữ liệu và các đề xuất của Admin, không gợi ý dữ liệu ngẫu nhiên).
+•	Nhận đề xuất món ăn cá nhân hóa 
+•	Lưu món yêu thích (favorites) 
+•	Đánh giá món ăn (reviews) 
+•	Xem lịch sử (histories) 
+4. Chức năng dành cho Thương gia / Nhà hàng (Merchant / Restaurant Owner)
+•	Quản lý thông tin nhà hàng 
+•	Quản lý menu (foods) 
+•	Tạo và đăng bài viết (posts) 
+•	Theo dõi trạng thái duyệt bài 
+•	Cập nhật trạng thái món ăn
+
+
+

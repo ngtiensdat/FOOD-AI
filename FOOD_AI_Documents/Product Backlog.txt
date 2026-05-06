@@ -1,0 +1,163 @@
+1. Nhóm Epic: Login/Register
+
+User Story 1: Là một người dùng khách, tôi muốn đăng ký tài khoản để có thể sử dụng hệ thống.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 2: Là một người dùng khách, tôi muốn đăng nhập để truy cập vào tài khoản cá nhân.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 3: Là một người dùng khách, tôi muốn đăng xuất để bảo vệ an toàn cho tài khoản.
+
+
+Độ ưu tiên: Trung bình.
+
+
+User Story 4: Là một người dùng khách, tôi muốn đặt lại mật khẩu để khôi phục tài khoản khi lỡ quên.
+
+
+Độ ưu tiên: Trung bình.
+
+2. Nhóm Epic: Home
+
+User Story 5: Là một người dùng khách, tôi muốn xem danh sách các món ăn nổi bật để biết được xu hướng ăn uống và các món đang trending.
+
+
+Độ ưu tiên: Cao.
+
+3. Nhóm Epic: AI gợi ý món ăn/quán ăn
+
+User Story 6: Là một người dùng khách, tôi muốn hệ thống gợi ý các quán ăn gần nhất để tham khảo xem nên ăn gì và ở đâu.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 7: Là một người dùng khách, tôi muốn nhập tâm trạng, ngân sách và sở thích cá nhân để AI có thể gợi ý món ăn phù hợp nhất.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 8: Là một người dùng khách, tôi muốn làm mới danh sách gợi ý để có thêm nhiều lựa chọn khác.
+
+
+Độ ưu tiên: Trung bình.
+
+4. Nhóm Epic: Tìm kiếm món/quán
+
+User Story 9: Là một người dùng khách, tôi muốn tìm kiếm món ăn hoặc quán ăn theo tên để tìm thấy các địa điểm quanh vị trí hiện tại.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 10: Là một người dùng khách, tôi muốn lọc món ăn theo vị trí quán hoặc giá thành để chủ động hơn trong việc lựa chọn.
+
+
+Độ ưu tiên: Thấp.
+
+
+User Story 11: Là một người dùng khách, tôi muốn xem thông tin chi tiết của món ăn để hiểu rõ hơn về món đó.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 12: Là một người dùng khách, tôi muốn xem trang đăng tải món của quán để nắm bắt toàn bộ thực đơn.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 13: Là một người dùng khách, tôi muốn xem bản đồ (map) để tự định vị các quán ăn theo địa chỉ cụ thể.
+
+
+Độ ưu tiên: Trung bình.
+
+5. Nhóm Epic: Tính năng người dùng
+
+User Story 14: Là một người dùng khách, tôi muốn lưu lại các món ăn yêu thích để tiện cho việc ăn lại sau này.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 15: Là một người dùng khách, tôi muốn xem lại danh sách món yêu thích để có thể lựa chọn nhanh chóng.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 16: Là một người dùng khách, tôi muốn xem lại lịch sử quán ăn để theo dõi những nơi mình đã từng đến.
+
+
+Độ ưu tiên: Trung bình.
+
+
+User Story 17: Là một người dùng khách, tôi muốn đánh giá món ăn và đóng góp ý kiến để chia sẻ trải nghiệm cá nhân.
+
+
+Độ ưu tiên: Trung bình.
+
+6. Nhóm Epic: Dashboard (Dành cho quán ăn)
+
+User Story 18: Là phía quán ăn, tôi muốn đăng hình ảnh và thông tin món ăn để giới thiệu sản phẩm đến khách hàng.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 19: Là phía quán ăn, tôi muốn giới thiệu thông tin quán và quản lý thực đơn để khách hàng biết về vị trí, lịch sử và không gian.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 20: Là phía quán ăn, tôi muốn quản lý các món ăn đã đăng tải (bao gồm trạng thái món) để nắm rõ những món nào đang hiển thị.
+
+
+Độ ưu tiên: Trung bình.
+
+
+User Story 21: Là phía quán ăn, tôi muốn xem thống kê để biết được có bao nhiêu người dùng đã tìm thấy quán thông qua gợi ý của AI.
+
+
+Độ ưu tiên: Cao.
+
+7. Nhóm Epic: Hệ thống & Trải nghiệm
+
+User Story 22: Là người dùng (bao gồm khách và quán), tôi muốn hệ thống tải nhanh và có tính đáp ứng (responsive) để có trải nghiệm tốt nhất.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 23: Là người dùng, tôi muốn giao diện web đẹp mắt để cảm thấy thích thú khi sử dụng.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 24: Là người dùng, tôi muốn có tính năng báo lỗi khi gặp vấn đề về kỹ thuật trên trang web.
+
+
+Độ ưu tiên: Thấp.
+
+8. Nhóm Epic: Quản lý (Admin)
+
+User Story 25: Là quản trị viên (Admin), tôi muốn gỡ các bình luận đánh giá sai sự thật để bảo vệ uy tín cho các quán ăn.
+
+
+Độ ưu tiên: Cao.
+
+
+User Story 26: Là quản trị viên (Admin), tôi muốn duyệt các bài đăng của quán ăn để đảm bảo chất lượng nội dung và an toàn cho khách hàng.
+
+
+Độ ưu tiên: Cao.

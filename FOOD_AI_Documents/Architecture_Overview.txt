@@ -1,0 +1,71 @@
+================================================================================
+PROJECT: FOOD AI - HỆ THỐNG GỢI Ý MÓN ĂN THÔNG MINH BẰNG AI
+================================================================================
+
+I. TỔNG QUAN CÔNG NGHỆ (TECH STACK)
+--------------------------------------------------------------------------------
+1. FRONTEND:
+   - Framework: Next.js 14+ (App Router).
+   - Ngôn ngữ: TypeScript.
+   - Styling: Tailwind CSS (Utility-first CSS).
+   - Animation: Framer Motion (Hiệu ứng mượt mà).
+   - Icons: Lucide React.
+   - Quản lý State: React Hooks (useState, useEffect).
+
+2. BACKEND:
+   - Framework: NestJS (Cấu trúc Module-based mạnh mẽ).
+   - ORM: Prisma (Quản lý Database).
+   - Database: PostgreSQL (Kết hợp với pgvector để xử lý tìm kiếm AI).
+   - AI Engine: OpenAI API (Gợi ý món ăn và xử lý ngôn ngữ tự nhiên).
+   - Auth: JWT (JSON Web Token) & Bcrypt (Mã hóa mật khẩu).
+
+II. CẤU TRÚC THƯ MỤC CHUẨN (SRC ARCHITECTURE)
+--------------------------------------------------------------------------------
+Dự án được tổ chức theo mô hình "Clean Architecture" & "Feature-Driven Design":
+
+1. FRONTEND (my-web/frontend/src):
+   ├── app/              # Định nghĩa Routing (Trang chủ, Login, Admin, Profile...)
+   ├── components/       # Các thành phần giao diện tái sử dụng
+   │   ├── base/         # Các nút, bảng, input cơ bản
+   │   └── features/     # Các component theo nghiệp vụ (ví dụ: FoodCard)
+   ├── services/         # Layer gọi API (Tách biệt logic xử lý dữ liệu với UI)
+   ├── types/            # Định nghĩa Interface/Type cho TypeScript
+   ├── constants/        # Lưu trữ các biến hằng số, màu sắc
+   ├── utils/            # Các hàm bổ trợ dùng chung
+   └── index.css         # Cấu hình Tailwind và Global CSS
+
+2. BACKEND (my-web/backend/src):
+   ├── auth/             # Xử lý Đăng ký, Đăng nhập, Phân quyền (Admin/Customer/Merchant)
+   ├── ai/               # Xử lý logic OpenAI, Vector Embeddings
+   ├── food/             # Quản lý dữ liệu món ăn, thực đơn
+   ├── prisma/           # Cấu hình và kết nối cơ sở dữ liệu
+   └── main.ts           # Điểm khởi đầu của hệ thống Server
+
+III. CÁC FILE CHỨC NĂNG QUAN TRỌNG
+--------------------------------------------------------------------------------
+- frontend/src/app/page.tsx: Giao diện chính, tích hợp AI Chat tìm kiếm món ăn.
+- frontend/src/services/food.service.ts: Quản lý toàn bộ lệnh gọi API đến Backend.
+- backend/prisma/schema.prisma: Trái tim của Database, định nghĩa các bảng và quan hệ.
+- backend/src/ai/ai.service.ts: Nơi AI "suy nghĩ" để đưa ra gợi ý món ăn.
+- backend/src/auth/admin.controller.ts: Các chức năng quản trị cấp cao cho Admin.
+
+IV. CƠ CHẾ HOẠT ĐỘNG (IMPLEMENTATION FLOW)
+--------------------------------------------------------------------------------
+1. Luồng Tìm kiếm AI:
+   Người dùng nhập câu lệnh -> Frontend gửi đến Backend -> Backend gọi OpenAI API 
+   -> OpenAI trả về Vector -> So sánh trong PostgreSQL (Vector Search) 
+   -> Trả về danh sách món ăn phù hợp nhất.
+
+2. Luồng Quản trị:
+   Admin đăng nhập -> Truy cập Admin Panel -> Quản lý người dùng/thương gia qua các 
+   Tab chuyên biệt -> Thao tác trực tiếp vào DB qua Prisma.
+
+V. HƯỚNG DẪN TRIỂN KHAI NHANH
+--------------------------------------------------------------------------------
+1. Chạy Backend: cd backend && npm run start:dev (Cổng 3001)
+2. Chạy Frontend: cd frontend && npm run dev (Cổng 3000)
+3. Xem Database: cd backend && npx prisma studio
+
+================================================================================
+Tài liệu này được tạo tự động để hỗ trợ quá trình phát triển dự án FOOD AI.
+================================================================================

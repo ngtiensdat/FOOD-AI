@@ -1,0 +1,204 @@
+// TÀI LIỆU CẤU TRÚC DATABASE (ERD) - FOOD AI
+// Sử dụng định dạng DBML (Database Markup Language)
+
+// ================== USERS & PROFILES ==================
+Table users {
+  id integer [primary key]
+  name varchar
+  email varchar [unique]
+  password varchar
+  role varchar // CUSTOMER, RESTAURANT, ADMIN
+  status varchar // PENDING, APPROVED, REJECTED
+  is_email_verified boolean [default: false]
+  verification_token varchar
+  legal_documents text
+  reset_token varchar
+  created_at timestamp
+}
+
+Table user_profiles {
+  user_id integer [primary key]
+  full_name varchar
+  phone varchar
+  avatar varchar
+  preferences_text text
+  embedding vector(1536)
+  created_at timestamp
+}
+
+// ================== RESTAURANTS ==================
+Table restaurants {
+  id integer [primary key]
+  name varchar
+  address varchar
+  latitude float
+  longitude float
+  description text
+  owner_id integer
+  created_at timestamp
+}
+
+Table restaurant_profiles {
+  restaurant_id integer [primary key]
+  cover_image varchar
+  bio text
+  opening_hours varchar
+  contact_email varchar
+  contact_phone varchar
+  created_at timestamp
+}
+
+// ================== FOODS & CATEGORIES ==================
+Table foods {
+  id integer [primary key]
+  name varchar
+  price float
+  image varchar
+  description text
+  
+  // Thông tin cho món Admin tạo
+  restaurant_name varchar
+  address varchar
+  
+  embedding vector(1536)
+  status varchar // PENDING, APPROVED, REJECTED
+  is_active boolean [default: true]
+  
+  // Gợi ý & Đề xuất
+  is_admin_recommended boolean [default: false]
+  is_featured_today boolean [default: false]
+  is_featured_weekly boolean [default: false]
+  
+  restaurant_id integer [note: 'null if system food']
+  created_at timestamp
+}
+
+Table categories {
+  id integer [primary key]
+  name varchar [unique]
+}
+
+// Bảng trung gian Food - Category (M-N)
+Table food_categories {
+  food_id integer
+  category_id integer
+}
+
+// ================== POSTS ==================
+Table posts {
+  id integer [primary key]
+  restaurant_id integer
+  title varchar
+  content text
+  image varchar
+  post_type varchar // FOOD, RESTAURANT
+  status varchar // PENDING, APPROVED, REJECTED
+  approved_by integer
+  approved_at timestamp
+  created_at timestamp
+}
+
+// Bảng trung gian Post - Food (M-N)
+Table post_foods {
+  post_id integer
+  food_id integer
+}
+
+// ================== INTERACTIONS ==================
+Table reviews {
+  id integer [primary key]
+  user_id integer
+  food_id integer
+  rating integer
+  comment text
+  created_at timestamp
+}
+
+Table favorites {
+  id integer [primary key]
+  user_id integer
+  food_id integer
+  created_at timestamp
+}
+
+Table histories {
+  id integer [primary key]
+  user_id integer
+  restaurant_id integer
+  food_id integer
+  visited_at timestamp
+}
+
+// ================== AI CHAT & CONTEXT ==================
+Table conversations {
+  id integer [primary key]
+  user_id integer
+  started_at timestamp
+}
+
+Table messages {
+  id integer [primary key]
+  conversation_id integer
+  role varchar // USER, AI
+  content text
+  created_at timestamp
+}
+
+Table conversation_context {
+  id integer [primary key]
+  conversation_id integer [unique]
+  extracted_preferences text
+  embedding vector(1536)
+  location_lat float
+  location_lng float
+  time_context varchar
+  budget float
+  updated_at timestamp
+}
+
+Table embeddings_log {
+  id integer [primary key]
+  entity_type varchar
+  entity_id integer
+  embedding vector(1536)
+  created_at timestamp
+}
+
+// ================== ADMIN ==================
+Table reports {
+  id integer [primary key]
+  user_id integer
+  target_type varchar
+  target_id integer
+  content text
+  status varchar
+  created_at timestamp
+}
+
+// ================== RELATIONSHIPS ==================
+Ref: user_profiles.user_id - users.id
+Ref: restaurants.owner_id > users.id
+Ref: restaurant_profiles.restaurant_id - restaurants.id
+
+Ref: foods.restaurant_id > restaurants.id
+Ref: food_categories.food_id > foods.id
+Ref: food_categories.category_id > categories.id
+
+Ref: posts.restaurant_id > restaurants.id
+Ref: posts.approved_by > users.id
+Ref: post_foods.post_id > posts.id
+Ref: post_foods.food_id > foods.id
+
+Ref: reviews.user_id > users.id
+Ref: reviews.food_id > foods.id
+Ref: favorites.user_id > users.id
+Ref: favorites.food_id > foods.id
+Ref: histories.user_id > users.id
+Ref: histories.restaurant_id > restaurants.id
+Ref: histories.food_id > foods.id
+
+Ref: conversations.user_id > users.id
+Ref: messages.conversation_id > conversations.id
+Ref: conversation_context.conversation_id - conversations.id
+
+Ref: reports.user_id > users.id
