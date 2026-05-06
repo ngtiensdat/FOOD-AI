@@ -61,6 +61,7 @@ export class AdminController {
   ) {
     const data = { ...body };
     if (data.price) data.price = parseFloat(data.price);
+    if (data.restaurantId) data.restaurantId = parseInt(data.restaurantId);
     
     return this.prisma.food.update({
       where: { id: parseInt(id) },

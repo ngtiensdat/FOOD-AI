@@ -60,21 +60,22 @@ async function main() {
           food.mapUrl || null,
           food.tags || [],
           food.lat || null,
-          food.lng || null
+          food.lng || null,
+          food.restaurantId || null
         ];
 
         let updateQuery = `
           UPDATE foods 
           SET price = $1, description = $2, image = $3, restaurant_name = $4, address = $5, 
               is_admin_recommended = $6, is_featured_today = $7, map_url = $8, tags = $9, 
-              lat = $10, lng = $11
+              lat = $10, lng = $11, restaurant_id = $12
         `;
 
         if (vectorStr) {
-          updateQuery += `, embedding = $12::vector WHERE id = $13`;
+          updateQuery += `, embedding = $13::vector WHERE id = $14`;
           params.push(vectorStr, foodId);
         } else {
-          updateQuery += ` WHERE id = $12`;
+          updateQuery += ` WHERE id = $13`;
           params.push(foodId);
         }
 
@@ -91,18 +92,19 @@ async function main() {
           food.isAdminRecommended || false,
           food.isFeaturedToday || false,
           food.lat || null,
-          food.lng || null
+          food.lng || null,
+          food.restaurantId || null
         ];
 
         let insertQuery = `
           INSERT INTO foods (
             name, price, description, image, restaurant_name, address, map_url, 
-            tags, is_admin_recommended, is_featured_today, lat, lng, 
+            tags, is_admin_recommended, is_featured_today, lat, lng, restaurant_id,
             status, is_active, created_at
             ${vectorStr ? ', embedding' : ''}
           )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'APPROVED', true, NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'APPROVED', true, NOW()
             ${vectorStr ? `, $${params.length + 1}::vector` : ''}
           )
         `;

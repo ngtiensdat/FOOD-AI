@@ -2,6 +2,7 @@
   {
     "name": "Bún bò Huế đặc biệt",
     "price": 60000,
+    "restaurantId": 1,
     "description": "Bún bò Huế là món ăn đặc trưng của miền Trung, được chế biến từ những nguyên liệu tươi ngon như thịt bò, chả Huế, giò heo, huyết... Nước dùng được ninh từ xương bò và gia vị đặc trưng, tạo nên hương vị đậm đà, thơm ngon. Món ăn này thường được ăn kèm với rau sống, rau thơm, giá đỗ, bắp chuối bào... giúp tăng thêm hương vị và dinh dưỡng.",
     "image": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAFqRPoSNfVtwMJsRGfr1vsDD5QRx1hJfjMdUjs1PAZHZlxdIg0X8D8j1HSh-XRlARE8TuR28RpyJULuXPOJCAKpObjuJXhj-JnNBl_NULX0Jy9W3jBHoS1b0IbjikKZXPuLG1sr=w215-h280-p-k-no",
     "restaurantName": "Huế Ngon Cs1 - Bún bò Huế",

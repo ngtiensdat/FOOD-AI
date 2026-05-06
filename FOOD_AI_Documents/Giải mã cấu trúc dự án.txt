@@ -1,0 +1,18 @@
+backend:
+- dist: viết tắt của Distribution (Phân phối) - nơi chứa mã sau khi biên dịch. Backend của bạn được viết bằng ngôn ngữ TypeScript (các file đuôi .ts). 
+Tuy nhiên, môi trường Node.js trên máy tính không thể đọc và hiểu trực tiếp file TypeScript được.
+Vì vậy, trước khi chạy, dự án cần qua một bước gọi là Build (biên dịch). Quá trình này sẽ biến toàn bộ code TypeScript trong thư mục src thành code JavaScript (đuôi .js) và bỏ vào thư mục dist.
+
+- prisma: Đây là thư mục chứa cấu hình kết nối cơ sở dữ liệu (trong file schema.prisma)
+và các file được sinh ra tự động bởi Prisma Client (trong thư mục node_modules/@prisma).
++ seed.js: Là một file script (dùng Node.js) để khởi tạo dữ liệu ban đầu cho cơ sở dữ liệu.
+Khi bạn chạy lệnh npm run db:seed, nó sẽ chạy file này để: Tạo tài khoản Admin, Thêm danh sách món ăn mẫu từ file foods.json vào database.
+
+- scripts:  là nơi chứa các công cụ hỗ trợ "chạy ngoài luồng" của dự án. Chúng không phải là một phần của chương trình chính nhưng cực kỳ hữu ích để xử lý dữ liệu.
++ import-foods.js: Đọc dữ liệu từ file foods.json -> Gửi sang API OpenAI để tạo Vector (tính toán ý nghĩa) -> Cập nhật vào database.
+
+- src: 
+    - common: Chứa những đoạn code dùng chung cho nhiều module (ví dụ: các hàm định dạng ngày tháng, các bộ lọc lỗi...).
+    - config: Nơi lưu trữ các cấu hình chung của ứng dụng như cổng (Port), các khóa bảo mật...
+    - database:
+    - modules: 

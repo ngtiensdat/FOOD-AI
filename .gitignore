@@ -1,4 +1,4 @@
-# Dependencies (Thư viện tải về - không cần đẩy lên)
+# Dependencies (Thư viện tải về)
 node_modules/
 /my-web/backend/node_modules/
 /my-web/frontend/node_modules/

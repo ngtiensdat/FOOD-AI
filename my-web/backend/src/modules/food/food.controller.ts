@@ -141,11 +141,13 @@ export class FoodController {
   }
   @Post()
   async createFood(@Body() body: any) {
-    const { name, price, description, image, tags, userId, restaurantName, address, mapUrl, lat, lng } = body;
+    const { name, price, description, image, tags, userId, restaurantId, restaurantName, address, mapUrl, lat, lng } = body;
 
     let finalRestaurantId: number | null = null;
 
-    if (userId) {
+    if (restaurantId) {
+      finalRestaurantId = parseInt(restaurantId);
+    } else if (userId) {
       // Tự động tìm Quán ăn do user này làm chủ
       const restaurant = await this.prisma.restaurant.findFirst({
         where: { ownerId: parseInt(userId) }
