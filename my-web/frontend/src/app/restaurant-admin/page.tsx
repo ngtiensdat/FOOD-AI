@@ -16,13 +16,12 @@ export default function RestaurantDashboard() {
   ]);
 
   const [isAddingFood, setIsAddingFood] = useState(false);
-  const [newFood, setNewFood] = useState({ 
-    name: '', 
-    price: '', 
-    description: '', 
-    image: '', 
-    tags: '', 
-    address: '',
+  const [newFood, setNewFood] = useState({
+    name: '',
+    price: '',
+    description: '',
+    image: '',
+    tags: '',
     mapUrl: '',
     lat: '',
     lng: ''
@@ -37,8 +36,8 @@ export default function RestaurantDashboard() {
 
   const handleAddFood = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!newFood.name || !newFood.price || !newFood.description || !newFood.image || !newFood.address || !newFood.tags) {
+
+    if (!newFood.name || !newFood.price || !newFood.description || !newFood.image || !newFood.tags) {
       alert('Vui lòng điền đầy đủ các trường thông tin bắt buộc!');
       return;
     }
@@ -47,15 +46,14 @@ export default function RestaurantDashboard() {
       const data = {
         ...newFood,
         tags: newFood.tags.split(',').map(t => t.trim()).filter(t => t),
-        userId: user?.id,
-        restaurantName: user?.name
+        userId: user?.id
       };
 
       const ok = await foodService.createFood(data);
       if (ok) {
         alert('Đã gửi yêu cầu thêm món ăn! Vui lòng chờ Admin phê duyệt.');
         setIsAddingFood(false);
-        setNewFood({ name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '' });
+        setNewFood({ name: '', price: '', description: '', image: '', tags: '', mapUrl: '', lat: '', lng: '' });
       } else {
         alert('Có lỗi xảy ra khi gửi yêu cầu.');
       }
@@ -91,8 +89,8 @@ export default function RestaurantDashboard() {
           </a>
         </nav>
 
-        <button 
-          onClick={() => { localStorage.removeItem('user'); window.location.href='/'; }}
+        <button
+          onClick={() => { localStorage.removeItem('user'); window.location.href = '/'; }}
           className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-all"
         >
           <LogOut size={18} /> Đăng xuất
@@ -108,7 +106,7 @@ export default function RestaurantDashboard() {
               </h2>
               <p className="text-gray-500 font-medium">Bếp Nhà FoodAI - Chào mừng bạn quay trở lại!</p>
             </div>
-            <button 
+            <button
               onClick={() => setIsAddingFood(true)}
               className="bg-primary text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 transition-all flex items-center gap-2"
             >
@@ -122,69 +120,63 @@ export default function RestaurantDashboard() {
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                 <h3 className="text-2xl font-bold mb-6">Thêm món ăn mới</h3>
                 <form onSubmit={handleAddFood} className="space-y-4">
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Tên món ăn</label>
-                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
-                        value={newFood.name} onChange={e => setNewFood({...newFood, name: e.target.value})} />
+                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
+                        value={newFood.name} onChange={e => setNewFood({ ...newFood, name: e.target.value })} />
                     </div>
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Giá (VNĐ)</label>
-                      <input type="number" required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
-                        value={newFood.price} onChange={e => setNewFood({...newFood, price: e.target.value})} />
+                      <input type="number" required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
+                        value={newFood.price} onChange={e => setNewFood({ ...newFood, price: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Hình ảnh (URL)</label>
-                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
                         placeholder="https://..."
-                        value={newFood.image} onChange={e => setNewFood({...newFood, image: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="text-sm font-bold text-gray-600 ml-1">Địa chỉ bán món này</label>
-                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
-                        placeholder="Số 10, Lý Quốc Sư..."
-                        value={newFood.address} onChange={e => setNewFood({...newFood, address: e.target.value})} />
+                        value={newFood.image} onChange={e => setNewFood({ ...newFood, image: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Link Google Map (Tùy chọn)</label>
-                      <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
                         placeholder="https://maps.app.goo.gl/..."
-                        value={newFood.mapUrl} onChange={e => setNewFood({...newFood, mapUrl: e.target.value})} />
+                        value={newFood.mapUrl} onChange={e => setNewFood({ ...newFood, mapUrl: e.target.value })} />
                     </div>
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Tags (Phân tách bằng dấu phẩy)</label>
-                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      <input required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
                         placeholder="Món nước, Bình dân, Truyền thống..."
-                        value={newFood.tags} onChange={e => setNewFood({...newFood, tags: e.target.value})} />
+                        value={newFood.tags} onChange={e => setNewFood({ ...newFood, tags: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Vĩ độ (Lat) (Tùy chọn)</label>
-                      <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
-                        placeholder="21.0285"
-                        value={newFood.lat} onChange={e => setNewFood({...newFood, lat: e.target.value})} />
+                      <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
+                        placeholder="xxx.xxx"
+                        value={newFood.lat} onChange={e => setNewFood({ ...newFood, lat: e.target.value })} />
                     </div>
                     <div>
                       <label className="text-sm font-bold text-gray-600 ml-1">Kinh độ (Lng) (Tùy chọn)</label>
-                      <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
-                        placeholder="105.8542"
-                        value={newFood.lng} onChange={e => setNewFood({...newFood, lng: e.target.value})} />
+                      <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all"
+                        placeholder="zzz.zzz"
+                        value={newFood.lng} onChange={e => setNewFood({ ...newFood, lng: e.target.value })} />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-bold text-gray-600 ml-1">Mô tả món ăn (Để AI gợi ý tốt hơn)</label>
-                    <textarea required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all min-h-[100px]" 
-                      value={newFood.description} onChange={e => setNewFood({...newFood, description: e.target.value})} />
+                    <textarea required className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all min-h-[100px]"
+                      value={newFood.description} onChange={e => setNewFood({ ...newFood, description: e.target.value })} />
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -199,8 +191,8 @@ export default function RestaurantDashboard() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             {stats.map((stat, i) => (
-              <motion.div 
-                key={i} 
+              <motion.div
+                key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}

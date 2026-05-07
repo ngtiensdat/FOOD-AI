@@ -38,7 +38,7 @@ function ExploreContent() {
 
   const filteredFoods = foods.filter(food => 
     food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    food.restaurantName?.toLowerCase().includes(searchQuery.toLowerCase())
+    (food.restaurant?.name || food.restaurantName || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -139,7 +139,7 @@ function ExploreContent() {
             <div className="w-full md:w-1/2 p-8 md:p-12 overflow-y-auto">
               <div className="mb-8">
                 <span className="inline-block px-4 py-1.5 bg-orange-50 text-primary rounded-full text-sm font-bold mb-4">
-                  {selectedFood.restaurantName || 'Hệ thống'}
+                  {selectedFood.restaurant?.name || selectedFood.restaurantName || 'Hệ thống'}
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">{selectedFood.name}</h2>
                 <p className="text-2xl font-bold text-primary">{selectedFood.price?.toLocaleString()}đ</p>
@@ -151,7 +151,7 @@ function ExploreContent() {
                   <p className="leading-relaxed">{selectedFood.description}</p>
                 </div>
                 
-                {selectedFood.address && (
+                {(selectedFood.address || selectedFood.restaurant?.address) && (
                   <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
                     <MapPin className="text-primary mt-1 shrink-0" size={20} />
                     <div className="flex-1">
@@ -163,11 +163,11 @@ function ExploreContent() {
                           rel="noopener noreferrer" 
                           className="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-between gap-2"
                         >
-                          <span>{selectedFood.address}</span>
+                          <span>{selectedFood.address || selectedFood.restaurant?.address}</span>
                           <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
                         </a>
                       ) : (
-                        <p className="text-sm text-gray-600">{selectedFood.address}</p>
+                        <p className="text-sm text-gray-600">{selectedFood.address || selectedFood.restaurant?.address}</p>
                       )}
                     </div>
                   </div>
@@ -175,9 +175,12 @@ function ExploreContent() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="flex-1 gradient-bg text-white py-4 rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                <Link 
+                  href={`/profile?id=${selectedFood.restaurant?.ownerId}`}
+                  className="flex-1 gradient-bg text-white py-4 rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                >
                   <Store size={20} /> Trang Quán ăn
-                </button>
+                </Link>
                 <button className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
                   <span>Xem các bài đánh giá</span>
                 </button>

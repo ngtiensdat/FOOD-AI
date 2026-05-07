@@ -46,7 +46,8 @@ export class AuthService {
     const verificationToken = crypto.randomUUID();
 
     // 5. Xác định trạng thái (Nhà hàng cần Admin duyệt)
-    const status = role === 'RESTAURANT' ? 'PENDING' : 'APPROVED';
+    const finalRole = (role || 'CUSTOMER').toUpperCase();
+    const status = finalRole === 'RESTAURANT' ? 'PENDING' : 'APPROVED';
 
     // 6. Tạo user mới kèm theo Profile tự động
     const user = await this.prisma.user.create({
@@ -54,9 +55,9 @@ export class AuthService {
         email,
         password: hashedPassword,
         name,
-        role: role || 'CUSTOMER',
-        status,
-        legalDocuments: role === 'RESTAURANT' ? legalDocuments : null,
+        role: finalRole as any,
+        status: status as any,
+        legalDocuments: finalRole === 'RESTAURANT' ? legalDocuments : null,
         isEmailVerified: true,
         // Tự động tạo Profile
         profile: {
@@ -98,7 +99,10 @@ export class AuthService {
   async login(data: any) {
     const { email, password } = data;
 
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { email },
+      include: { profile: true } 
+    });
     if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
     }
@@ -164,6 +168,51 @@ export class AuthService {
 
     return { message: 'Xác minh Email thành công!' };
   }
+  async updateProfile(userId: number, data: any) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true, restaurants: true }
+    });
+
+    if (!user) throw new UnauthorizedException('Người dùng không tồn tại');
+
+    // 1. Cập nhật thông tin cơ bản trong UserProfile (Dùng chung cho tất cả)
+    await this.prisma.userProfile.update({
+      where: { userId },
+      data: {
+        fullName: data.name || data.fullName,
+        phone: data.phone,
+        avatar: data.avatar,
+        coverImage: data.coverImage,
+        bio: data.bio,
+        address: data.address,
+        workAt: data.workAt,
+      }
+    });
+
+    // 2. Nếu là Thương gia, cập nhật thêm vào RestaurantProfile
+    if (user.role === 'RESTAURANT' && user.restaurants.length > 0) {
+      await this.prisma.restaurantProfile.update({
+        where: { restaurantId: user.restaurants[0].id },
+        data: {
+          coverImage: data.coverImage,
+          bio: data.bio,
+          contactEmail: data.email || data.contactEmail,
+          contactPhone: data.phone || data.contactPhone,
+        }
+      });
+    }
+
+    // 3. Cập nhật tên trong bảng User nếu có thay đổi
+    if (data.name) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { name: data.name }
+      });
+    }
+
+    return { message: 'Cập nhật trang cá nhân thành công!' };
+  }
 
   private generateToken(user: any) {
     const payload = { sub: user.id, email: user.email, role: user.role };
@@ -173,7 +222,9 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        avatar: user.profile?.avatar,
         role: user.role,
+        hasCompletedOnboarding: user.profile?.hasCompletedOnboarding || false,
       },
     };
   }

@@ -36,7 +36,7 @@ export class AdminController {
 
     return this.prisma.user.update({
       where: { id: parseInt(id) },
-      data: { status }
+      data: { status: status as any }
     });
   }
 
@@ -74,7 +74,7 @@ export class AdminController {
   @Get('users')
   async getAllUsers(@Query('role') role?: string) {
     return this.prisma.user.findMany({
-      where: role ? { role } : {},
+      where: role ? { role: role.toUpperCase() as any } : {},
       select: {
         id: true,
         name: true,

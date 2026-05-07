@@ -4,7 +4,9 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  avatar?: string;
   role: 'CUSTOMER' | 'ADMIN' | 'RESTAURANT';
+  hasCompletedOnboarding: boolean;
 }
 
 export const useAuth = () => {

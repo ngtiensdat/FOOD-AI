@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Sparkles, Send, Smile, DollarSign, MapPin, Navigation, Search,
-  Menu, User, Shield, Store, LogOut, X, Settings, Star, Lock, Eye, EyeOff, Mail, ArrowLeft
+  Menu, User, Shield, Store, LogOut, X, Settings, Star, Lock, Eye, EyeOff, Mail, ArrowLeft,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import { foodService, aiService } from '@/services/food.service';
 import { FoodCard } from '@/components/features/FoodCard';
+import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { useAuth } from '@/hooks/useAuth';
+import { authService as authServiceApi } from '@/services/auth.service';
 
 export default function Home() {
   const { user, isAuthenticated, isCustomer, logout } = useAuth();
@@ -55,6 +58,47 @@ export default function Home() {
 
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (mounted && isAuthenticated && user && user.hasCompletedOnboarding === false) {
+      setShowOnboarding(true);
+    }
+  }, [mounted, isAuthenticated, user]);
+
+  const handleOnboardingComplete = async (preferences: any) => {
+    if (!user) return;
+    try {
+      await authServiceApi.completeOnboarding({
+        userId: user.id,
+        preferences
+      });
+      
+      // Cập nhật local storage và state
+      const updatedUser = { ...user, hasCompletedOnboarding: true };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setShowOnboarding(false);
+      // Reload page to apply changes or just refresh state
+      window.location.reload(); 
+    } catch (error) {
+      console.error('Lỗi hoàn thành onboarding:', error);
+    }
+  };
+
+  // Refs cho các Slider
+  const nearbyRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
+  const weeklyRef = useRef<HTMLDivElement>(null);
+  const recommendedRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (ref: any, direction: 'left' | 'right') => {
+    if (ref.current) {
+      const { scrollLeft, clientWidth } = ref.current;
+      const scrollAmount = clientWidth * 0.8; // Cuộn 80% chiều rộng màn hình
+      const scrollTo = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
+      ref.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -279,18 +323,21 @@ export default function Home() {
           <button
             onClick={() => setActiveTab('home')}
             className={`pb-1 transition-all ${activeTab === 'home' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'}`}
+            suppressHydrationWarning
           >
             Trang chủ
           </button>
           <button
             onClick={() => setActiveTab('explore')}
             className={`pb-1 transition-all ${activeTab === 'explore' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'}`}
+            suppressHydrationWarning
           >
             Khám phá
           </button>
           <button
             onClick={() => setActiveTab('offers')}
             className={`pb-1 transition-all ${activeTab === 'offers' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'}`}
+            suppressHydrationWarning
           >
             Ưu đãi
           </button>
@@ -301,73 +348,83 @@ export default function Home() {
             className="p-2 hover:bg-orange-50 rounded-full transition-colors flex items-center gap-2 text-gray-500"
             title="Tìm kiếm chức năng"
             onClick={() => alert('Tính năng tìm kiếm chức năng đang phát triển!')}
+            suppressHydrationWarning
           >
             <Search size={20} />
             <span className="hidden lg:inline text-xs font-bold uppercase tracking-tighter">Tính năng</span>
           </button>
 
-          {user ? (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/profile"
-                className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-bold border-2 border-white shadow-md hover:scale-110 transition-all"
-                title="Trang cá nhân"
-              >
-                {user.name?.charAt(0).toUpperCase()}
-              </Link>
-
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-all"
-              >
-                <Menu size={24} />
-              </button>
-
-              {showMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 p-2 z-50"
+          {mounted && (
+            user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
+                  title="Trang cá nhân"
                 >
-                  <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tài khoản: {user.name}</p>
-                  </div>
-
-                  {user.role === 'ADMIN' && (
-                    <Link href="/admin" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
-                      <Shield size={18} className="text-primary" /> Panel Admin
-                    </Link>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
                   )}
-                  {user.role === 'RESTAURANT' && (
-                    <Link href="/restaurant-admin" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
-                      <Store size={18} className="text-primary" /> Quản lý quán
+                </Link>
+
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-all"
+                  suppressHydrationWarning
+                >
+                  <Menu size={24} />
+                </button>
+
+                {showMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 p-2 z-50"
+                  >
+                    <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tài khoản: {user.name}</p>
+                    </div>
+
+                    {user.role === 'ADMIN' && (
+                      <Link href="/admin" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
+                        <Shield size={18} className="text-primary" /> Panel Admin
+                      </Link>
+                    )}
+                    {user.role === 'RESTAURANT' && (
+                      <Link href="/restaurant-admin" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
+                        <Store size={18} className="text-primary" /> Quản lý quán
+                      </Link>
+                    )}
+                    <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
+                      <User size={18} className="text-primary" /> Dashboard cá nhân
                     </Link>
-                  )}
-                  <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700">
-                    <User size={18} className="text-primary" /> Dashboard cá nhân
-                  </Link>
 
-                  <button
-                    onClick={() => { setActiveTab('settings'); setShowMenu(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700"
-                  >
-                    <Settings size={18} className="text-primary" /> Cài đặt
-                  </button>
+                    <button
+                      onClick={() => { setActiveTab('settings'); setShowMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all text-sm font-bold text-gray-700"
+                    >
+                      <Settings size={18} className="text-primary" /> Cài đặt
+                    </button>
 
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 rounded-xl transition-all text-sm font-bold text-red-500 mt-1 border-t border-gray-50"
-                  >
-                    <LogOut size={18} /> Đăng xuất
-                  </button>
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <Link href="/login" className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all">
-              <User size={18} />
-              <span>Đăng nhập</span>
-            </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 rounded-xl transition-all text-sm font-bold text-red-500 mt-1 border-t border-gray-50"
+                    >
+                      <LogOut size={18} /> Đăng xuất
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            ) : (
+              <Link href="/login" className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all">
+                <User size={18} />
+                <span>Đăng nhập</span>
+              </Link>
+            )
           )}
         </div>
       </nav>
@@ -508,6 +565,7 @@ export default function Home() {
                       handleCategoryClick((e.target as HTMLInputElement).value);
                     }
                   }}
+                  suppressHydrationWarning
                 />
               </div>
 
@@ -519,6 +577,7 @@ export default function Home() {
                     key={t}
                     onClick={() => handleCategoryClick(t)}
                     className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold hover:bg-orange-100 hover:text-primary transition-all border border-transparent hover:border-orange-200 capitalize"
+                    suppressHydrationWarning
                   >
                     #{t}
                   </button>
@@ -544,7 +603,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Món ngon quanh đây (Dựa trên GPS) */}
           {nearbyFoods.length > 0 && (
             <section className="py-20 px-6 bg-blue-50/30">
               <div className="max-w-7xl mx-auto">
@@ -555,10 +613,28 @@ export default function Home() {
                     </h2>
                     <p className="text-gray-500 text-lg">Khám phá các món ăn hấp dẫn ngay tại vị trí của bạn</p>
                   </div>
+                  {/* Nút điều hướng */}
+                  <div className="hidden md:flex gap-3">
+                    <button
+                      onClick={() => scroll(nearbyRef, 'left')}
+                      className="w-12 h-12 rounded-full border border-blue-200 bg-white flex items-center justify-center text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(nearbyRef, 'right')}
+                      className="w-12 h-12 rounded-full border border-blue-200 bg-white flex items-center justify-center text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                  ref={nearbyRef}
+                  className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
+                >
                   {nearbyFoods.map((food, i) => (
-                    <div key={i} className="relative group">
+                    <div key={i} className="min-w-[280px] md:min-w-[320px] snap-start relative group">
                       <FoodCard food={food} onViewDetail={setSelectedFood} />
                       {food.distance !== undefined && (
                         <a
@@ -578,7 +654,6 @@ export default function Home() {
             </section>
           )}
 
-          {/* Món ăn nổi bật hôm nay */}
           {featuredToday.length > 0 && (
             <section className="py-20 px-6">
               <div className="max-w-7xl mx-auto">
@@ -589,17 +664,35 @@ export default function Home() {
                     </h2>
                     <p className="text-gray-500 text-lg">Những lựa chọn tuyệt vời được tuyển chọn trong ngày</p>
                   </div>
+                  <div className="hidden md:flex gap-3">
+                    <button
+                      onClick={() => scroll(todayRef, 'left')}
+                      className="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(todayRef, 'right')}
+                      className="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                  ref={todayRef}
+                  className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
+                >
                   {featuredToday.map((food, i) => (
-                    <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                    <div key={i} className="min-w-[280px] md:min-w-[320px] snap-start">
+                      <FoodCard food={food} onViewDetail={setSelectedFood} />
+                    </div>
                   ))}
                 </div>
               </div>
             </section>
           )}
 
-          {/* Món ăn nổi bật tuần qua */}
           {featuredWeekly.length > 0 && (
             <section className="py-20 px-6 bg-gray-50/50">
               <div className="max-w-7xl mx-auto">
@@ -610,17 +703,35 @@ export default function Home() {
                     </h2>
                     <p className="text-gray-500 text-lg">Danh sách các món ăn được cộng đồng yêu thích nhất tuần này</p>
                   </div>
+                  <div className="hidden md:flex gap-3">
+                    <button
+                      onClick={() => scroll(weeklyRef, 'left')}
+                      className="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(weeklyRef, 'right')}
+                      className="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                  ref={weeklyRef}
+                  className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
+                >
                   {featuredWeekly.map((food, i) => (
-                    <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                    <div key={i} className="min-w-[280px] md:min-w-[320px] snap-start">
+                      <FoodCard food={food} onViewDetail={setSelectedFood} />
+                    </div>
                   ))}
                 </div>
               </div>
             </section>
           )}
 
-          {/* Món ăn được gợi ý (Admin Push) */}
           {recommendedFoods.length > 0 && (
             <section className="py-20 px-6 bg-orange-50/30">
               <div className="max-w-7xl mx-auto">
@@ -631,10 +742,29 @@ export default function Home() {
                     </h2>
                     <p className="text-gray-500 text-lg">Các món ngon được chính Admin lựa chọn và đề xuất cho bạn</p>
                   </div>
+                  <div className="hidden md:flex gap-3">
+                    <button
+                      onClick={() => scroll(recommendedRef, 'left')}
+                      className="w-12 h-12 rounded-full border border-orange-200 bg-white flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(recommendedRef, 'right')}
+                      className="w-12 h-12 rounded-full border border-orange-200 bg-white flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                  ref={recommendedRef}
+                  className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
+                >
                   {recommendedFoods.map((food, i) => (
-                    <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                    <div key={i} className="min-w-[280px] md:min-w-[320px] snap-start">
+                      <FoodCard food={food} onViewDetail={setSelectedFood} />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -674,7 +804,7 @@ export default function Home() {
                 <div className="w-full md:w-1/2 p-8 md:p-12 overflow-y-auto">
                   <div className="mb-8">
                     <span className="inline-block px-4 py-1.5 bg-orange-50 text-primary rounded-full text-sm font-bold mb-4">
-                      {selectedFood.restaurantName || 'Hệ thống'}
+                      {selectedFood.restaurant?.name || selectedFood.restaurantName || 'Hệ thống'}
                     </span>
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">{selectedFood.name}</h2>
                     <p className="text-2xl font-bold text-primary">{selectedFood.price?.toLocaleString()}đ</p>
@@ -686,7 +816,7 @@ export default function Home() {
                       <p className="leading-relaxed">{selectedFood.description}</p>
                     </div>
 
-                    {selectedFood.address && (
+                    {(selectedFood.address || selectedFood.restaurant?.address) && (
                       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
                         <MapPin className="text-primary mt-1 shrink-0" size={20} />
                         <div className="flex-1">
@@ -698,11 +828,11 @@ export default function Home() {
                               rel="noopener noreferrer"
                               className="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-between gap-2"
                             >
-                              <span>{selectedFood.address}</span>
+                              <span>{selectedFood.address || selectedFood.restaurant?.address}</span>
                               <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
                             </a>
                           ) : (
-                            <p className="text-sm text-gray-600">{selectedFood.address}</p>
+                            <p className="text-sm text-gray-600">{selectedFood.address || selectedFood.restaurant?.address}</p>
                           )}
                         </div>
                       </div>
@@ -710,9 +840,12 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <button className="flex-1 gradient-bg text-white py-4 rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                    <Link
+                      href={`/profile?id=${selectedFood.restaurant?.ownerId}`}
+                      className="flex-1 gradient-bg text-white py-4 rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    >
                       <Store size={20} /> Trang Quán ăn
-                    </button>
+                    </Link>
                     <button className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
                       <span>Xem các bài đánh giá</span>
                     </button>
@@ -974,6 +1107,14 @@ export default function Home() {
             </button>
           </motion.div>
         </div>
+      )}
+
+      {/* Onboarding Modal */}
+      {showOnboarding && user && (
+        <OnboardingModal 
+          user={user} 
+          onComplete={handleOnboardingComplete} 
+        />
       )}
 
       {/* Footer */}

@@ -18,8 +18,10 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<any>(null);
   const [showMenu, setShowMenu] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const savedUser = localStorage.getItem('user');
     if (savedUser) setUser(JSON.parse(savedUser));
     fetchData();
@@ -194,18 +196,25 @@ export default function AdminDashboard() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            {user && (
+            {mounted && user && (
               <div className="flex items-center gap-3 relative">
                 <Link
                   href="/profile"
-                  className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-bold border-2 border-white shadow-sm hover:scale-110 transition-all"
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
                 >
-                  {user.name?.charAt(0).toUpperCase()}
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </Link>
 
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-all"
+                  suppressHydrationWarning
                 >
                   <Menu size={24} />
                 </button>
@@ -259,7 +268,7 @@ export default function AdminDashboard() {
                   <tr key={item.id} className="hover:bg-gray-50/50 transition-all">
                     <td className="px-8 py-6 font-bold text-gray-800">{item.name}</td>
                     <td className="px-8 py-6 text-gray-600 font-medium">
-                      {activeTab === 'menu' ? (foodSubTab === 'system' ? (item.restaurantName || 'Hệ thống') : (item.restaurant?.name || 'N/A')) : item.email}
+                      {activeTab === 'menu' ? (item.restaurant?.name || item.restaurantName || 'Hệ thống') : item.email}
                     </td>
                     <td className="px-8 py-6 text-gray-500">
                       {activeTab === 'menu' ? `${item.price.toLocaleString()}đ` : new Date(item.createdAt).toLocaleDateString('vi-VN')}
@@ -315,7 +324,6 @@ export default function AdminDashboard() {
                                   price: item.price,
                                   description: item.description,
                                   image: item.image,
-                                  address: item.address,
                                   tags: item.tags?.join(', ') || ''
                                 });
                               }}
@@ -373,11 +381,6 @@ export default function AdminDashboard() {
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">URL Hình ảnh</label>
                 <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
                   value={editFormData.image} onChange={e => setEditFormData({...editFormData, image: e.target.value})} />
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Địa chỉ</label>
-                <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
-                  value={editFormData.address} onChange={e => setEditFormData({...editFormData, address: e.target.value})} />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Tags (Phân tách bằng dấu phẩy)</label>

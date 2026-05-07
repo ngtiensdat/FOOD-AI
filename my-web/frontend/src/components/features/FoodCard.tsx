@@ -59,7 +59,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
 
         {/* Tên nhà hàng/quán ăn (Mới thêm) */}
         <p className="text-primary text-xs font-bold mb-3 uppercase tracking-wider">
-          {food.restaurantName || 'Hệ thống'}
+          {food.restaurant?.name || food.restaurantName || 'Hệ thống'}
         </p>
 
         <p className="text-gray-500 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>

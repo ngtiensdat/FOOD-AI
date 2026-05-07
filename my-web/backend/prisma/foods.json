@@ -75,5 +75,23 @@
     ],
     "isAdminRecommended": true,
     "isFeaturedToday": false
+  },
+  {
+    "name": "Bún Bò Huế Anh Quân",
+    "price": 40000,
+    "description": "Nhà hàng lâu đời ở Văn Khê. Ban sáng có phở bò ngon đông khách. Tối có bán lẩu bò các loại , ăn phần nào tính tiền phần đó",
+    "image": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEYfVCaEYJeVzzFyn3raiEWoMMD8-7kviMS-Q84OsgHeljSEHplN04CsJbH9AX1EBMoyNpu-0GXBPG63AwrInU70WoADf5ib8021XTg7uOLLzbfeVGqoZTi2GDGl7t5_oQC497e4Q=w408-h544-k-no",
+    "restaurantName": "Bún Bò Huế Anh Quân",
+    "address": "BT1-01, KĐT Văn Khê, Hà Đông",
+    "mapUrl": "https://maps.app.goo.gl/QNtn8LdjkpVdX8998",
+    "lat": 20.9740895,
+    "lng": 105.7578572,
+    "tags": [
+      "Món nước",
+      "Bún",
+      "Bún bò Huế"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": false
   }
 ]

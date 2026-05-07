@@ -7,24 +7,22 @@ export class FoodController {
 
   @Get()
   async getAllFoods(@Query('tag') tag?: string) {
-    const where: any = { isActive: true, status: 'APPROVED' };
-
-    if (tag) {
-      where.tags = { has: tag };
-    }
-
     const foods = await this.prisma.food.findMany({
       where: { isActive: true, status: 'APPROVED' },
+      include: {
+        restaurant: {
+          select: { name: true, address: true, ownerId: true }
+        }
+      },
       orderBy: { createdAt: 'desc' },
-      take: 100 // Lấy nhiều hơn một chút để lọc
+      take: 100
     });
 
     if (tag) {
       const searchTags = tag.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
-      
+
       return foods.filter(food => {
         const foodTagsLower = food.tags.map(t => t.toLowerCase());
-        // Phải chứa ĐỦ tất cả các tag được yêu cầu
         return searchTags.every(st => foodTagsLower.includes(st));
       }).slice(0, 20);
     }
@@ -36,7 +34,12 @@ export class FoodController {
   async getFeaturedToday() {
     return this.prisma.food.findMany({
       where: { isFeaturedToday: true, isActive: true, status: 'APPROVED' },
-      take: 4
+      include: {
+        restaurant: {
+          select: { name: true, address: true, ownerId: true }
+        }
+      },
+      take: 12
     });
   }
 
@@ -44,7 +47,12 @@ export class FoodController {
   async getFeaturedWeekly() {
     return this.prisma.food.findMany({
       where: { isFeaturedWeekly: true, isActive: true, status: 'APPROVED' },
-      take: 4
+      include: {
+        restaurant: {
+          select: { name: true, address: true, ownerId: true }
+        }
+      },
+      take: 12
     });
   }
 
@@ -52,13 +60,13 @@ export class FoodController {
   async getRecommendedFoods() {
     return this.prisma.food.findMany({
       where: { isAdminRecommended: true, isActive: true, status: 'APPROVED' },
-      orderBy: { createdAt: 'desc' },
       include: {
         restaurant: {
-          select: { name: true, address: true }
+          select: { name: true, address: true, ownerId: true }
         }
       },
-      take: 4
+      orderBy: { createdAt: 'desc' },
+      take: 12
     });
   }
 
@@ -66,38 +74,45 @@ export class FoodController {
   async getNearbyFoods(
     @Query('lat') lat: string,
     @Query('lng') lng: string,
-    @Query('radius') radius: string = '5' // Bán kính mặc định 5km
+    @Query('radius') radius: string = '10'
   ) {
     const userLat = parseFloat(lat);
     const userLng = parseFloat(lng);
     const rad = parseFloat(radius);
 
-    if (isNaN(userLat) || isNaN(userLng)) {
-      return [];
-    }
+    if (isNaN(userLat) || isNaN(userLng)) return [];
 
-    // Sử dụng công thức Haversine để tính khoảng cách trong SQL
-    // 6371 là bán kính Trái Đất (km)
-    const results: any[] = await this.prisma.$queryRaw`
-      SELECT * FROM (
-        SELECT *, 
-          (6371 * acos(cos(radians(${userLat})) * cos(radians(lat)) * cos(radians(lng) - radians(${userLng})) + sin(radians(${userLat})) * sin(radians(lat)))) AS distance
-        FROM foods
-        WHERE is_active = true AND status = 'APPROVED' AND lat IS NOT NULL AND lng IS NOT NULL
-      ) AS nearby_foods
-      WHERE distance <= ${rad}
+    // Lấy ID món ăn thỏa mãn điều kiện khoảng cách
+    const nearbyResults: any[] = await this.prisma.$queryRawUnsafe(`
+      SELECT id, 
+        (6371 * acos(cos(radians($1)) * cos(radians(lat)) * cos(radians(lng) - radians($2)) + sin(radians($1)) * sin(radians(lat)))) AS distance
+      FROM foods
+      WHERE is_active = true 
+        AND status = 'APPROVED' 
+        AND lat IS NOT NULL 
+        AND lng IS NOT NULL
+        AND (6371 * acos(cos(radians($1)) * cos(radians(lat)) * cos(radians(lng) - radians($2)) + sin(radians($1)) * sin(radians(lat)))) <= $3
       ORDER BY distance ASC
-      LIMIT 10
-    `;
+      LIMIT 12
+    `, userLat, userLng, rad);
 
-    // Map lại snake_case sang camelCase để khớp với Frontend
-    return results.map(item => ({
-      ...item,
-      mapUrl: item.map_url,
-      restaurantName: item.restaurant_name,
-      isAdminRecommended: item.is_admin_recommended,
-      isFeaturedToday: item.is_featured_today
-    }));
+    if (nearbyResults.length === 0) return [];
+
+    // Fetch thông tin đầy đủ kèm quan hệ restaurant
+    const foods = await this.prisma.food.findMany({
+      where: { id: { in: nearbyResults.map(r => r.id) } },
+      include: {
+        restaurant: {
+          select: { name: true, address: true, ownerId: true }
+        }
+      }
+    });
+
+    // Map lại distance
+    return foods.map(f => ({
+      ...f,
+      distance: nearbyResults.find(r => r.id === f.id)?.distance
+    })).sort((a, b) => a.distance - b.distance);
   }
 
   @Patch(':id/recommend')
@@ -106,9 +121,7 @@ export class FoodController {
       where: { id: parseInt(id) }
     });
 
-    if (!food) {
-      throw new Error('Món ăn không tồn tại');
-    }
+    if (!food) throw new Error('Món ăn không tồn tại');
 
     return this.prisma.food.update({
       where: { id: parseInt(id) },
@@ -124,38 +137,33 @@ export class FoodController {
       where: {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
-          { restaurantName: { contains: query, mode: 'insensitive' } },
-          { address: { contains: query, mode: 'insensitive' } },
-          { restaurant: { name: { contains: query, mode: 'insensitive' } } }
+          { restaurant: { name: { contains: query, mode: 'insensitive' } } },
+          { restaurant: { address: { contains: query, mode: 'insensitive' } } }
         ],
         isActive: true,
         status: 'APPROVED'
       },
       include: {
         restaurant: {
-          select: { name: true }
+          select: { name: true, address: true, ownerId: true }
         }
       },
       take: 20
     });
   }
+
   @Post()
   async createFood(@Body() body: any) {
-    const { name, price, description, image, tags, userId, restaurantId, restaurantName, address, mapUrl, lat, lng } = body;
+    const { name, price, description, image, tags, userId, restaurantId, lat, lng } = body;
 
     let finalRestaurantId: number | null = null;
-
     if (restaurantId) {
       finalRestaurantId = parseInt(restaurantId);
     } else if (userId) {
-      // Tự động tìm Quán ăn do user này làm chủ
       const restaurant = await this.prisma.restaurant.findFirst({
         where: { ownerId: parseInt(userId) }
       });
-      
-      if (restaurant) {
-        finalRestaurantId = restaurant.id;
-      }
+      if (restaurant) finalRestaurantId = restaurant.id;
     }
 
     return this.prisma.food.create({
@@ -166,12 +174,9 @@ export class FoodController {
         image,
         tags: tags || [],
         restaurantId: finalRestaurantId,
-        restaurantName,
-        address,
-        mapUrl,
         lat: lat ? parseFloat(lat) : null,
         lng: lng ? parseFloat(lng) : null,
-        status: 'PENDING', // Mặc định là chờ duyệt
+        status: 'PENDING',
         isActive: true
       }
     });

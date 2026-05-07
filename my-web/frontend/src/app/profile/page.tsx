@@ -1,24 +1,104 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Camera, Edit3, Grid, Info, Users, 
   MapPin, Calendar, Mail, Phone, Briefcase, Heart,
-  Search, Bell, MessageSquare, MoreHorizontal
+  Search, Bell, MessageSquare, MoreHorizontal, X, Save,
+  Shield, Store
 } from 'lucide-react';
+import { authService } from '@/services/auth.service';
 
-export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
+function ProfileContent() {
+  const searchParams = useSearchParams();
+  const targetId = searchParams.get('id');
+
+  const [user, setUser] = useState<any>(null); // Thông tin của người được xem Profile
+  const [me, setMe] = useState<any>(null); // Thông tin của chính mình
+  const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('posts');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>({});
+  const [loading, setLoading] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+    const myUser = savedUser ? JSON.parse(savedUser) : null;
+    setMe(myUser);
 
-  if (!user) return null;
+    const idToFetch = targetId ? parseInt(targetId) : myUser?.id;
+    if (idToFetch) {
+      fetchProfile(idToFetch, myUser?.id);
+    }
+  }, [targetId]);
+
+  const fetchProfile = async (id: number, requesterId?: number) => {
+    try {
+      const data = await authService.getProfile(id, requesterId);
+      setProfile(data);
+      setUser(data); // Cập nhật thông tin người được xem
+      setEditData({
+        name: data.name,
+        fullName: data.profile?.fullName || '',
+        phone: data.profile?.phone || '',
+        avatar: data.profile?.avatar || '',
+        coverImage: data.profile?.coverImage || '',
+        bio: data.profile?.bio || '',
+        address: data.profile?.address || '',
+        workAt: data.profile?.workAt || '',
+      });
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin profile:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await authService.updateProfile({ userId: user.id, ...editData });
+      await fetchProfile(user.id);
+      // Cập nhật lại localStorage nếu tên thay đổi
+      const updatedUser = { ...user, name: editData.name };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setMe(updatedUser);
+      setIsEditing(false);
+      alert('Cập nhật trang cá nhân thành công!');
+    } catch (error) {
+      alert('Có lỗi xảy ra khi cập nhật');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFollowUser = async () => {
+    if (!me) {
+      alert('Vui lòng đăng nhập để theo dõi!');
+      return;
+    }
+    setIsFollowLoading(true);
+    try {
+      const response = await fetch('http://localhost:3001/auth/toggle-follow-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followerId: me.id, followingId: user.id }),
+      });
+      await fetchProfile(user.id, me.id); // Reload data
+    } catch (error) {
+      console.error('Lỗi khi follow:', error);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  if (!user || !profile) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
@@ -41,40 +121,93 @@ export default function ProfilePage() {
         {/* Header Section (Cover & Profile Pic) */}
         <div className="bg-white rounded-b-xl shadow-sm overflow-hidden">
           {/* Cover Photo */}
-          <div className="h-64 md:h-96 bg-gradient-to-r from-orange-400 to-rose-400 relative group cursor-pointer">
+          <div 
+            className="h-64 md:h-96 bg-cover bg-center relative group cursor-pointer"
+            style={{ 
+              backgroundImage: profile.profile?.coverImage 
+                ? `url(${profile.profile.coverImage})` 
+                : 'linear-gradient(to right, #fb923c, #f43f5e)' 
+            }}
+          >
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all"></div>
-            <button className="absolute bottom-4 right-4 flex items-center gap-2 bg-white px-4 py-2 rounded-lg font-bold shadow-lg hover:scale-105 transition-all text-sm">
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="absolute bottom-4 right-4 flex items-center gap-2 bg-white px-4 py-2 rounded-lg font-bold shadow-lg hover:scale-105 transition-all text-sm"
+            >
               <Camera size={18} /> Chỉnh sửa ảnh bìa
             </button>
           </div>
 
           {/* Profile Info Area */}
-          <div className="px-6 md:px-12 pb-6">
-            <div className="relative flex flex-col md:flex-row items-center md:items-end gap-6 -mt-12 md:-mt-24 mb-6">
+          <div className="px-6 md:px-12 pb-10 pt-8">
+            <div className="relative flex flex-col md:flex-row items-center gap-8 mb-10">
               <div className="relative group">
-                <div className="w-32 h-32 md:w-44 md:h-44 rounded-full gradient-bg border-4 border-white shadow-xl flex items-center justify-center text-white text-5xl font-bold">
-                  {user.name?.charAt(0).toUpperCase()}
+                <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
+                  {profile.profile?.avatar ? (
+                    <img src={profile.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full gradient-bg flex items-center justify-center text-white text-5xl font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <button className="absolute bottom-2 right-2 p-2 bg-gray-200 rounded-full border-2 border-white hover:bg-gray-300 transition-all">
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="absolute bottom-2 right-2 p-2 bg-gray-200 rounded-full border-2 border-white hover:bg-gray-300 transition-all"
+                >
                   <Camera size={20} />
                 </button>
               </div>
               <div className="text-center md:text-left flex-1 md:pb-4">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">{user.name}</h1>
-                <p className="text-gray-500 font-medium text-lg mt-1">256 bạn bè • {user.role === 'ADMIN' ? 'Quản trị viên' : user.role === 'RESTAURANT' ? 'Chủ nhà hàng' : 'Thành viên'}</p>
-                <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4,5].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200"></div>
-                    ))}
-                  </div>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">{user.name}</h1>
+                <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 mt-3">
+                  <p className="text-gray-500 font-bold text-lg flex items-center gap-2">
+                    {user.role === 'ADMIN' ? (
+                      <span className="flex items-center gap-1.5"><Shield size={20} className="text-primary" /> Quản trị viên tối cao</span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-gray-800">
+                        {user.role === 'RESTAURANT' ? <Store size={20} className="text-primary" /> : <Heart size={20} className="text-primary" />}
+                        {(profile.restaurants?.[0]?._count?.followers || 0) + (profile._count?.userFollowers || 0)} người theo dõi • {(profile._count?.userFollowing || 0) + (profile._count?.follows || 0)} đang theo dõi
+                      </span>
+                    )}
+                  </p>
                 </div>
+                <p className="text-gray-600 mt-3 max-w-lg font-medium text-lg">
+                  {profile.profile?.bio || "Chia sẻ suy nghĩ của bạn..."}
+                </p>
               </div>
-              <div className="flex gap-2 md:mb-4">
-                <button className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:brightness-110 transition-all">
-                  <Edit3 size={18} /> Chỉnh sửa trang cá nhân
-                </button>
-                <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all text-gray-600">
+
+              <div className="flex flex-wrap justify-center gap-3 md:mb-6">
+                {me?.id !== user.id && user.role !== 'ADMIN' && me?.role !== 'ADMIN' ? (
+                  <button 
+                    onClick={handleFollowUser}
+                    disabled={isFollowLoading}
+                    className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all ${
+                      user.isFollowing 
+                        ? 'bg-gray-200 text-gray-800' 
+                        : 'bg-primary text-white hover:brightness-110'
+                    }`}
+                  >
+                    {isFollowLoading ? (
+                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      user.isFollowing ? 'Đang theo dõi' : 'Theo dõi'
+                    )}
+                  </button>
+                ) : me?.id === user.id ? (
+                  <>
+                    <button className="flex items-center gap-2 bg-[#1877F2] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all">
+                      <Grid size={18} /> Bảng điều khiển
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="flex items-center gap-2 bg-gray-200 text-gray-800 px-6 py-3 rounded-2xl font-bold hover:bg-gray-300 transition-all"
+                    >
+                      <Edit3 size={18} /> Chỉnh sửa
+                    </button>
+                  </>
+                ) : null}
+                <button className="p-3 bg-gray-200 rounded-2xl hover:bg-gray-300 transition-all text-gray-800">
                   <MoreHorizontal size={20} />
                 </button>
               </div>
@@ -85,9 +218,12 @@ export default function ProfilePage() {
               {[
                 { id: 'posts', label: 'Bài viết' },
                 { id: 'about', label: 'Giới thiệu' },
-                { id: 'friends', label: 'Bạn bè' },
+                { id: 'friends', label: user.role === 'RESTAURANT' ? `Người theo dõi (${(profile.restaurants?.[0]?._count?.followers || 0) + (profile._count?.userFollowers || 0)})` : `Người theo dõi (${profile._count?.userFollowers || 0})` },
                 { id: 'photos', label: 'Ảnh' },
-              ].map(tab => (
+              ].filter(tab => {
+                if (user.role === 'CUSTOMER' && tab.id === 'friends') return false;
+                return true;
+              }).map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -109,11 +245,11 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-gray-700">
                   <Briefcase size={20} className="text-gray-400" />
-                  <span>Làm việc tại <span className="font-bold">Food AI Global</span></span>
+                  <span>Làm việc tại <span className="font-bold">{profile.profile?.workAt || "Chưa cập nhật"}</span></span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-700">
                   <MapPin size={20} className="text-gray-400" />
-                  <span>Sống tại <span className="font-bold">Hà Nội, Việt Nam</span></span>
+                  <span>Sống tại <span className="font-bold">{profile.profile?.address || "Chưa cập nhật"}</span></span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-700">
                   <Mail size={20} className="text-gray-400" />
@@ -121,24 +257,15 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-3 text-gray-700">
                   <Calendar size={20} className="text-gray-400" />
-                  <span>Tham gia từ {new Date().getFullYear()}</span>
+                  <span>Tham gia từ {new Date(profile.createdAt).getFullYear()}</span>
                 </div>
               </div>
-              <button className="w-full mt-6 py-2 bg-gray-100 rounded-lg font-bold text-gray-700 hover:bg-gray-200 transition-all">
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="w-full mt-6 py-2 bg-gray-100 rounded-lg font-bold text-gray-700 hover:bg-gray-200 transition-all"
+              >
                 Chỉnh sửa chi tiết
               </button>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-extrabold text-gray-900">Ảnh</h2>
-                <button className="text-primary font-bold text-sm hover:underline">Xem tất cả</button>
-              </div>
-              <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
-                {[1,2,3,4,5,6].map(i => (
-                  <div key={i} className="aspect-square bg-gray-100 hover:brightness-90 transition-all cursor-pointer"></div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -146,23 +273,13 @@ export default function ProfilePage() {
           <div className="md:col-span-7 space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <div className="flex gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase()}
+                <div className="w-10 h-10 rounded-full overflow-hidden gradient-bg flex items-center justify-center text-white font-bold">
+                  {profile.profile?.avatar ? (
+                    <img src={profile.profile.avatar} className="w-full h-full object-cover" />
+                  ) : user.name?.charAt(0).toUpperCase()}
                 </div>
                 <button className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-2 text-left text-gray-500 transition-all">
                   {user.name} ơi, bạn đang nghĩ gì thế?
-                </button>
-              </div>
-              <div className="h-px bg-gray-100 my-4"></div>
-              <div className="grid grid-cols-3 gap-2">
-                <button className="flex items-center justify-center gap-2 py-2 hover:bg-gray-50 rounded-lg text-gray-500 font-bold transition-all">
-                   <Grid className="text-green-500" size={20} /> Ảnh/Video
-                </button>
-                <button className="flex items-center justify-center gap-2 py-2 hover:bg-gray-50 rounded-lg text-gray-500 font-bold transition-all">
-                   <Users className="text-blue-500" size={20} /> Gắn thẻ
-                </button>
-                <button className="flex items-center justify-center gap-2 py-2 hover:bg-gray-50 rounded-lg text-gray-500 font-bold transition-all">
-                   <Heart className="text-red-500" size={20} /> Cảm xúc
                 </button>
               </div>
             </div>
@@ -176,6 +293,118 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {isEditing && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 className="text-xl font-bold">Chỉnh sửa trang cá nhân</h3>
+                <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">Tên hiển thị</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">Số điện thoại</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">URL Ảnh đại diện</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      value={editData.avatar} onChange={e => setEditData({...editData, avatar: e.target.value})} 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">URL Ảnh bìa</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      value={editData.coverImage} onChange={e => setEditData({...editData, coverImage: e.target.value})} 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold text-gray-600 ml-1">Tiểu sử</label>
+                  <textarea 
+                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all min-h-[80px]" 
+                    value={editData.bio} onChange={e => setEditData({...editData, bio: e.target.value})} 
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">Sống tại</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      placeholder="Hà Nội, Việt Nam..."
+                      value={editData.address} onChange={e => setEditData({...editData, address: e.target.value})} 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold text-gray-600 ml-1">Làm việc tại</label>
+                    <input 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 outline-none focus:border-primary transition-all" 
+                      placeholder="Công ty ABC..."
+                      value={editData.workAt} onChange={e => setEditData({...editData, workAt: e.target.value})} 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gray-50 flex gap-3">
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 py-4 bg-white border border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-100 transition-all"
+                >
+                  Hủy
+                </button>
+                <button 
+                  disabled={loading}
+                  onClick={handleSave}
+                  className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-orange-100 flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 transition-all"
+                >
+                  {loading ? 'Đang lưu...' : <><Save size={18} /> Lưu thay đổi</>}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

@@ -1,18 +1,23 @@
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const fs = require('fs');
-const path = require('path');
 require('dotenv').config();
 
-const prisma = new PrismaClient();
+// 1. Tạo Pool kết nối
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+
+// 2. Khởi tạo Prisma với Adapter
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('--- ĐANG KIỂM TRA VÀ KHỞI TẠO DỮ LIỆU ---');
+  console.log('--- ĐANG KHỞI TẠO DỮ LIỆU HỆ THỐNG ---');
 
   const adminPassword = await bcrypt.hash('admin123456', 10);
 
-  // 1. Tạo/Cập nhật Admin
-  await prisma.user.upsert({
+  // 1. Tạo/Cập nhật Admin mặc định
+  const admin = await prisma.user.upsert({
     where: { email: 'admin@gmail.com' },
     update: { password: adminPassword },
     create: {
@@ -23,50 +28,30 @@ async function main() {
       status: 'APPROVED',
       isEmailVerified: true,
       profile: {
-        create: { fullName: 'Hệ thống Quản trị' }
+        create: {
+          fullName: 'Admin FoodAI',
+          bio: 'Quản trị viên cấp cao của hệ thống Food AI'
+        }
       }
     },
   });
+  console.log(`- Đã khởi tạo Admin: ${admin.email}`);
 
-  // 2. Đọc dữ liệu từ foods.json
-  const foodsPath = path.join(__dirname, 'foods.json');
-  if (fs.existsSync(foodsPath)) {
-    console.log('--- Đang nạp dữ liệu món ăn từ foods.json ---');
-    const foodsData = JSON.parse(fs.readFileSync(foodsPath, 'utf8'));
+  // 2. Tạo các Danh mục (Categories) mẫu
+  const categories = [
+    'Món nước', 'Cơm', 'Phở', 'Bún', 'Đồ ăn nhanh', 'Lẩu', 'Hải sản', 'Ăn vặt', 'Đồ uống'
+  ];
 
-    for (const food of foodsData) {
-      // Kiểm tra trùng lặp theo tên để không tạo record dư thừa khi chạy lại
-      const existing = await prisma.food.findFirst({
-        where: { name: food.name }
-      });
-
-      if (existing) {
-        // Cập nhật nếu đã tồn tại
-        await prisma.food.update({
-          where: { id: existing.id },
-          data: {
-            ...food,
-            status: 'APPROVED',
-            isActive: true
-          }
-        });
-        console.log(`Đã cập nhật: ${food.name}`);
-      } else {
-        // Tạo mới nếu chưa có
-        await prisma.food.create({
-          data: {
-            ...food,
-            status: 'APPROVED',
-            isActive: true
-          }
-        });
-        console.log(`Đã thêm mới: ${food.name}`);
-      }
-    }
-    console.log(`--- Hoàn tất xử lý ${foodsData.length} món ăn ---`);
+  console.log('- Đang tạo danh mục món ăn...');
+  for (const name of categories) {
+    await prisma.category.upsert({
+      where: { name },
+      update: {},
+      create: { name }
+    });
   }
 
-  console.log('--- HOÀN TẤT: DATABASE ĐÃ ĐƯỢC CẬP NHẬT ---');
+  console.log('--- HOÀN TẤT: HỆ THỐNG ĐÃ SẴN SÀNG ---');
 }
 
 main()
@@ -76,4 +61,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
