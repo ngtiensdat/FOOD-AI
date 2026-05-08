@@ -1,30 +1,63 @@
-import { Controller, Get, Post, Body, Query, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Patch,
+  Param,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { AiService } from '../ai/ai.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { AuthorizationService } from '../../common/services/authorization.service';
+import { UserRole, FoodStatus } from '@prisma/client';
 
 @Controller('foods')
 export class FoodController {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private aiService: AiService,
+    private authZ: AuthorizationService,
+  ) { }
 
   @Get()
   async getAllFoods(@Query('tag') tag?: string) {
     const foods = await this.prisma.food.findMany({
-      where: { isActive: true, status: 'APPROVED' },
+      where: {
+        isActive: true,
+        status: 'APPROVED',
+        OR: [
+          { restaurantId: null },
+          { restaurant: { is: { isActive: true } } },
+        ],
+      },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
+          select: { id: true, name: true, address: true, ownerId: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
-      take: 100
+      take: 100,
     });
 
     if (tag) {
-      const searchTags = tag.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+      const searchTags = tag
+        .split(',')
+        .map((t) => t.trim().toLowerCase())
+        .filter((t) => t);
 
-      return foods.filter(food => {
-        const foodTagsLower = food.tags.map(t => t.toLowerCase());
-        return searchTags.every(st => foodTagsLower.includes(st));
-      }).slice(0, 20);
+      return foods
+        .filter((food) => {
+          const foodTagsLower = food.tags.map((t) => t.toLowerCase());
+          return searchTags.every((st) => foodTagsLower.includes(st));
+        })
+        .slice(0, 20);
     }
 
     return foods.slice(0, 20);
@@ -33,40 +66,64 @@ export class FoodController {
   @Get('featured-today')
   async getFeaturedToday() {
     return this.prisma.food.findMany({
-      where: { isFeaturedToday: true, isActive: true, status: 'APPROVED' },
+      where: {
+        isFeaturedToday: true,
+        isActive: true,
+        status: 'APPROVED',
+        OR: [
+          { restaurantId: null },
+          { restaurant: { is: { isActive: true } } },
+        ],
+      },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
+          select: { id: true, name: true, address: true, ownerId: true },
+        },
       },
-      take: 12
+      take: 12,
     });
   }
 
   @Get('featured-weekly')
   async getFeaturedWeekly() {
     return this.prisma.food.findMany({
-      where: { isFeaturedWeekly: true, isActive: true, status: 'APPROVED' },
+      where: {
+        isFeaturedWeekly: true,
+        isActive: true,
+        status: 'APPROVED',
+        OR: [
+          { restaurantId: null },
+          { restaurant: { is: { isActive: true } } },
+        ],
+      },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
+          select: { id: true, name: true, address: true, ownerId: true },
+        },
       },
-      take: 12
+      take: 12,
     });
   }
 
   @Get('recommended')
   async getRecommendedFoods() {
     return this.prisma.food.findMany({
-      where: { isAdminRecommended: true, isActive: true, status: 'APPROVED' },
+      where: {
+        isAdminRecommended: true,
+        isActive: true,
+        status: 'APPROVED',
+        OR: [
+          { restaurantId: null },
+          { restaurant: { is: { isActive: true } } },
+        ],
+      },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
+          select: { name: true, address: true, ownerId: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
-      take: 12
+      take: 12,
     });
   }
 
@@ -74,7 +131,7 @@ export class FoodController {
   async getNearbyFoods(
     @Query('lat') lat: string,
     @Query('lng') lng: string,
-    @Query('radius') radius: string = '10'
+    @Query('radius') radius: string = '10',
   ) {
     const userLat = parseFloat(lat);
     const userLng = parseFloat(lng);
@@ -82,50 +139,90 @@ export class FoodController {
 
     if (isNaN(userLat) || isNaN(userLng)) return [];
 
-    // Lấy ID món ăn thỏa mãn điều kiện khoảng cách
-    const nearbyResults: any[] = await this.prisma.$queryRawUnsafe(`
-      SELECT id, 
-        (6371 * acos(cos(radians($1)) * cos(radians(lat)) * cos(radians(lng) - radians($2)) + sin(radians($1)) * sin(radians(lat)))) AS distance
-      FROM foods
-      WHERE is_active = true 
-        AND status = 'APPROVED' 
-        AND lat IS NOT NULL 
-        AND lng IS NOT NULL
-        AND (6371 * acos(cos(radians($1)) * cos(radians(lat)) * cos(radians(lng) - radians($2)) + sin(radians($1)) * sin(radians(lat)))) <= $3
+    const nearbyResults: any[] = await this.prisma.$queryRaw`
+      SELECT f.id, 
+        (6371 * acos(cos(radians(${userLat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${userLng})) + sin(radians(${userLat})) * sin(radians(f.lat)))) AS distance
+      FROM foods f
+      JOIN restaurants r ON f.restaurant_id = r.id
+      WHERE f.is_active = true 
+        AND r.is_active = true
+        AND f.status = 'APPROVED' 
+        AND f.lat IS NOT NULL 
+        AND f.lng IS NOT NULL
+        AND (6371 * acos(cos(radians(${userLat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${userLng})) + sin(radians(${userLat})) * sin(radians(f.lat)))) <= ${rad}
       ORDER BY distance ASC
       LIMIT 12
-    `, userLat, userLng, rad);
+    `;
 
     if (nearbyResults.length === 0) return [];
 
-    // Fetch thông tin đầy đủ kèm quan hệ restaurant
     const foods = await this.prisma.food.findMany({
-      where: { id: { in: nearbyResults.map(r => r.id) } },
-      include: {
+      where: { id: { in: nearbyResults.map((r) => r.id) } },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        description: true,
+        image: true,
+        tags: true,
+        lat: true,
+        lng: true,
+        address: true,
+        mapUrl: true,
+        restaurantId: true,
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
-      }
+          select: { name: true, address: true, ownerId: true },
+        },
+      } as any,
     });
 
-    // Map lại distance
-    return foods.map(f => ({
-      ...f,
-      distance: nearbyResults.find(r => r.id === f.id)?.distance
-    })).sort((a, b) => a.distance - b.distance);
+    return foods
+      .map((f) => ({
+        ...f,
+        distance: nearbyResults.find((r) => r.id === f.id)?.distance,
+      }))
+      .sort((a, b) => a.distance - b.distance);
   }
 
   @Patch(':id/recommend')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async toggleRecommendFood(@Param('id') id: string) {
+    const foodId = parseInt(id);
     const food = await this.prisma.food.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: foodId },
     });
 
     if (!food) throw new Error('Món ăn không tồn tại');
 
     return this.prisma.food.update({
-      where: { id: parseInt(id) },
-      data: { isAdminRecommended: !food.isAdminRecommended }
+      where: { id: foodId },
+      data: { isAdminRecommended: !food.isAdminRecommended },
+    });
+  }
+
+  @Get('my-foods')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
+  async getMerchantFoods(@GetUser() user: any) {
+    const whereClause: any = {};
+
+    if (user.role === UserRole.RESTAURANT) {
+      const restaurant = await this.prisma.restaurant.findFirst({
+        where: { ownerId: user.id },
+      });
+      if (!restaurant) return [];
+      whereClause.restaurantId = restaurant.id;
+    }
+
+    return this.prisma.food.findMany({
+      where: whereClause,
+      include: {
+        restaurant: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -135,38 +232,70 @@ export class FoodController {
 
     return this.prisma.food.findMany({
       where: {
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { restaurant: { name: { contains: query, mode: 'insensitive' } } },
-          { restaurant: { address: { contains: query, mode: 'insensitive' } } }
+        AND: [
+          {
+            OR: [
+              { name: { contains: query, mode: 'insensitive' } },
+              { restaurant: { is: { name: { contains: query, mode: 'insensitive' } } } },
+              { restaurant: { is: { address: { contains: query, mode: 'insensitive' } } } },
+            ]
+          },
+          {
+            OR: [
+              { restaurantId: null },
+              { restaurant: { is: { isActive: true } } },
+            ]
+          }
         ],
         isActive: true,
-        status: 'APPROVED'
+        status: 'APPROVED',
       },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true }
-        }
+          select: { name: true, address: true, ownerId: true },
+        },
       },
-      take: 20
+      take: 20,
     });
   }
 
   @Post()
-  async createFood(@Body() body: any) {
-    const { name, price, description, image, tags, userId, restaurantId, lat, lng } = body;
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
+  async createFood(@GetUser() user: any, @Body() body: any) {
+    const { name, price, description, image, tags, restaurantId, lat, lng } =
+      body;
 
-    let finalRestaurantId: number | null = null;
-    if (restaurantId) {
-      finalRestaurantId = parseInt(restaurantId);
-    } else if (userId) {
+    // 1. Nếu là RESTAURANT, buộc phải lấy nhà hàng của họ
+    let finalRestaurantId: number | null;
+
+    if (user.role === UserRole.RESTAURANT) {
       const restaurant = await this.prisma.restaurant.findFirst({
-        where: { ownerId: parseInt(userId) }
+        where: { ownerId: user.id },
       });
-      if (restaurant) finalRestaurantId = restaurant.id;
+      if (!restaurant)
+        throw new ForbiddenException('Bạn chưa đăng ký nhà hàng.');
+      finalRestaurantId = restaurant.id;
+    } else {
+      // Admin có thể chỉ định restaurantId hoặc để null (món hệ thống)
+      finalRestaurantId = restaurantId ? parseInt(restaurantId) : null;
     }
 
-    return this.prisma.food.create({
+    // 2. Lấy tọa độ mặc định từ nhà hàng nếu không cung cấp
+    let finalLat = lat ? parseFloat(lat) : null;
+    let finalLng = lng ? parseFloat(lng) : null;
+
+    if (finalRestaurantId && (!finalLat || !finalLng)) {
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: finalRestaurantId },
+      });
+      if (restaurant) {
+        finalLat = finalLat || restaurant.latitude;
+        finalLng = finalLng || restaurant.longitude;
+      }
+    }
+
+    const food = await this.prisma.food.create({
       data: {
         name,
         price: parseFloat(price),
@@ -174,11 +303,61 @@ export class FoodController {
         image,
         tags: tags || [],
         restaurantId: finalRestaurantId,
-        lat: lat ? parseFloat(lat) : null,
-        lng: lng ? parseFloat(lng) : null,
-        status: 'PENDING',
-        isActive: true
-      }
+        lat: finalLat,
+        lng: finalLng,
+        status:
+          user.role === UserRole.ADMIN
+            ? FoodStatus.APPROVED
+            : FoodStatus.PENDING,
+        isActive: true,
+      },
+    });
+
+    this.aiService.updateFoodEmbedding(food.id);
+    return food;
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
+  async updateFood(
+    @GetUser() user: any,
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    const foodId = parseInt(id);
+
+    // Authorization Check
+    await this.authZ.checkFoodOwnership(user.id, user.role, foodId);
+
+    const { price, ...rest } = body;
+    const data: any = { ...rest };
+    if (price) data.price = parseFloat(price);
+
+    // Nếu người cập nhật là Thương gia, chuyển trạng thái về CHỜ DUYỆT
+    if (user.role === UserRole.RESTAURANT) {
+      data.status = FoodStatus.PENDING;
+    }
+
+    const updatedFood = await this.prisma.food.update({
+      where: { id: foodId },
+      data,
+    });
+
+    this.aiService.updateFoodEmbedding(updatedFood.id);
+    return updatedFood;
+  }
+
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async approveFood(
+    @Param('id') id: string,
+    @Body('status') status: FoodStatus,
+  ) {
+    return this.prisma.food.update({
+      where: { id: parseInt(id) },
+      data: { status },
     });
   }
 }

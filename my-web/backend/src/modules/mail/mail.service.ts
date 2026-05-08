@@ -3,27 +3,27 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
-    private transporter;
+  private transporter;
 
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: Number(process.env.MAIL_PORT),
-            auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS,
-            },
-        });
-    }
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: Number(process.env.MAIL_PORT),
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+  }
 
-    async sendVerificationEmail(to: string, name: string, token: string) {
-        const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
+  async sendVerificationEmail(to: string, name: string, token: string) {
+    const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
 
-        const mailOptions = {
-            from: process.env.MAIL_FROM,
-            to,
-            subject: 'Xác minh tài khoản của bạn trên Food AI',
-            html: `
+    const mailOptions = {
+      from: process.env.MAIL_FROM,
+      to,
+      subject: 'Xác minh tài khoản của bạn trên Food AI',
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
           <h2 style="color: #FF5E1A; text-align: center;">Chào mừng ${name} đến với Food AI!</h2>
           <p>Cảm ơn bạn đã đăng ký tài khoản. Để hoàn tất việc đăng ký, vui lòng nhấn vào nút dưới đây để xác minh email:</p>
@@ -35,8 +35,8 @@ export class MailService {
           <p style="color: #666; font-size: 12px; text-align: center;">Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.</p>
         </div>
       `,
-        };
+    };
 
-        return this.transporter.sendMail(mailOptions);
-    }
+    return this.transporter.sendMail(mailOptions);
+  }
 }

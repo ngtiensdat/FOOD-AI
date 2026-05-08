@@ -5,7 +5,7 @@ import { AiService } from './modules/ai/ai.service';
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const aiService = app.get(AiService);
-  
+
   console.log('Testing AI Service...');
   try {
     const result = await aiService.getEmbedding('Test');

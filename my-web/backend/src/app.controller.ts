@@ -16,7 +16,9 @@ export class AppController {
 
   @Get('test-ai')
   async testAi(@Query('text') text: string) {
-    const embedding = await this.aiService.getEmbedding(text || 'Cơm tấm Sài Gòn');
+    const embedding = await this.aiService.getEmbedding(
+      text || 'Cơm tấm Sài Gòn',
+    );
     return {
       text: text || 'Cơm tấm Sài Gòn',
       vectorLength: embedding.length,

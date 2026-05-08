@@ -33,7 +33,7 @@ export default function AdminDashboard() {
       const [foods, users, pending] = await Promise.all([
         adminService.getAllFoods(),
         adminService.getAllUsers(),
-        fetch('http://localhost:3001/admin/pending-users').then(res => res.json())
+        adminService.getPendingMerchants()
       ]);
       setAllFoods(foods);
       setAllUsers(users);
@@ -60,12 +60,8 @@ export default function AdminDashboard() {
 
   const handleUpdateStatus = async (userId: number, status: string) => {
     try {
-      const res = await fetch(`http://localhost:3001/admin/update-status/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) fetchData();
+      const ok = await adminService.updateUserStatus(userId, status);
+      if (ok) fetchData();
     } catch (error) {
       console.log('Lỗi cập nhật trạng thái:', error);
     }
@@ -324,7 +320,11 @@ export default function AdminDashboard() {
                                   price: item.price,
                                   description: item.description,
                                   image: item.image,
-                                  tags: item.tags?.join(', ') || ''
+                                  tags: item.tags?.join(', ') || '',
+                                  address: item.address || '',
+                                  lat: item.lat || '',
+                                  lng: item.lng || '',
+                                  mapUrl: item.mapUrl || item.map_url || ''
                                 });
                               }}
                               className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all"
@@ -362,33 +362,63 @@ export default function AdminDashboard() {
       {/* Modal Chỉnh sửa món ăn */}
       {editingFood && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Settings className="text-blue-500" /> Chỉnh sửa thông tin món ăn
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
+              <div className="md:col-span-2">
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Tên món</label>
-                <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
+                <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 font-bold text-gray-700" 
                   value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} />
               </div>
+              
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Giá (VNĐ)</label>
                 <input type="number" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
                   value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} />
               </div>
+              
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Tags (Phân tách bằng dấu phẩy)</label>
+                <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
+                  value={editFormData.tags} onChange={e => setEditFormData({...editFormData, tags: e.target.value})} />
+              </div>
+
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">URL Hình ảnh</label>
                 <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
                   value={editFormData.image} onChange={e => setEditFormData({...editFormData, image: e.target.value})} />
               </div>
+
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Tags (Phân tách bằng dấu phẩy)</label>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Địa chỉ cụ thể</label>
                 <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
-                  value={editFormData.tags} onChange={e => setEditFormData({...editFormData, tags: e.target.value})} />
+                  placeholder="Ví dụ: 123 Đường ABC, Hà Nội..."
+                  value={editFormData.address} onChange={e => setEditFormData({...editFormData, address: e.target.value})} />
               </div>
+
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Mô tả</label>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Google Maps URL</label>
+                <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
+                  placeholder="https://maps.app.goo.gl/..."
+                  value={editFormData.mapUrl} onChange={e => setEditFormData({...editFormData, mapUrl: e.target.value})} />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Vĩ độ (Latitude)</label>
+                <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
+                  value={editFormData.lat} onChange={e => setEditFormData({...editFormData, lat: e.target.value})} />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Kinh độ (Longitude)</label>
+                <input type="number" step="any" className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1" 
+                  value={editFormData.lng} onChange={e => setEditFormData({...editFormData, lng: e.target.value})} />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Mô tả chi tiết</label>
                 <textarea className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mt-1 min-h-[100px]" 
                   value={editFormData.description} onChange={e => setEditFormData({...editFormData, description: e.target.value})} />
               </div>
@@ -398,9 +428,12 @@ export default function AdminDashboard() {
               <button 
                 onClick={() => handleUpdateFood(editingFood.id, {
                   ...editFormData,
+                  price: parseFloat(editFormData.price),
+                  lat: editFormData.lat ? parseFloat(editFormData.lat) : null,
+                  lng: editFormData.lng ? parseFloat(editFormData.lng) : null,
                   tags: editFormData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
                 })} 
-                className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg"
+                className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all"
               >
                 Lưu thay đổi
               </button>

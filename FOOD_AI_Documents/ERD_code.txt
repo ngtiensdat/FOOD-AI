@@ -38,6 +38,8 @@ Table user_profiles {
   work_at varchar
 
   embedding vector(1536)
+  has_completed_onboarding boolean [default: false]
+  preferences json
 
   created_at timestamp
   updated_at timestamp
@@ -58,6 +60,7 @@ Table restaurants {
   created_at timestamp
   updated_at timestamp
   deleted_at timestamp
+  is_active boolean [default: true]
 }
 
 Table restaurant_profiles {
@@ -92,6 +95,8 @@ Table foods {
 
   lat float
   lng float
+  address varchar
+  map_url varchar
 
   restaurant_id integer
 
@@ -164,6 +169,13 @@ Table follows {
   user_id integer
   restaurant_id integer
 
+  created_at timestamp
+}
+
+Table user_follows {
+  id integer [primary key]
+  follower_id integer
+  following_id integer
   created_at timestamp
 }
 
@@ -272,4 +284,7 @@ Ref: histories.food_id > foods.id
 Ref: conversations.user_id > users.id
 Ref: messages.conversation_id > conversations.id
 
-Ref: reports.user_id > users.id
+Ref: reports.user_id > users.id 
+
+Ref: user_follows.follower_id > users.id
+Ref: user_follows.following_id > users.id

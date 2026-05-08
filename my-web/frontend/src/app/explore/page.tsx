@@ -20,6 +20,17 @@ function ExploreContent() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFood, setSelectedFood] = useState<any>(null);
+  
+  // Debug dữ liệu khi chọn món
+  useEffect(() => {
+    if (selectedFood) {
+      console.log('--- FRONTEND: DỮ LIỆU MÓN ĐANG XEM ---');
+      console.log('Tên:', selectedFood.name);
+      console.log('Địa chỉ:', selectedFood.address);
+      console.log('Map URL:', selectedFood.mapUrl || selectedFood.map_url);
+      console.log('Full Object:', selectedFood);
+    }
+  }, [selectedFood]);
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -151,27 +162,27 @@ function ExploreContent() {
                   <p className="leading-relaxed">{selectedFood.description}</p>
                 </div>
                 
-                {(selectedFood.address || selectedFood.restaurant?.address) && (
-                  <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
-                    <MapPin className="text-primary mt-1 shrink-0" size={20} />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-gray-800">Địa chỉ quán</h4>
-                      {selectedFood.mapUrl ? (
-                        <a 
-                          href={selectedFood.mapUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-between gap-2"
-                        >
-                          <span>{selectedFood.address || selectedFood.restaurant?.address}</span>
-                          <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
-                        </a>
-                      ) : (
-                        <p className="text-sm text-gray-600">{selectedFood.address || selectedFood.restaurant?.address}</p>
-                      )}
-                    </div>
+                <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
+                  <MapPin className="text-primary mt-1 shrink-0" size={20} />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold text-gray-800">Địa chỉ quán</h4>
+                    {selectedFood.mapUrl || selectedFood.map_url ? (
+                      <a 
+                        href={selectedFood.mapUrl || selectedFood.map_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-sm text-blue-600 hover:underline font-medium flex items-center justify-between gap-2"
+                      >
+                        <span>{selectedFood.address || selectedFood.restaurant?.address || 'Xem vị trí trên bản đồ'}</span>
+                        <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
+                      </a>
+                    ) : (
+                      <p className="text-sm text-gray-600">
+                        {selectedFood.address || selectedFood.restaurant?.address || 'Chưa cập nhật địa chỉ'}
+                      </p>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">

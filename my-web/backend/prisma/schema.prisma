@@ -106,7 +106,7 @@ model UserProfile {
   workAt     String?  @map("work_at")
 
   hasCompletedOnboarding Boolean @default(false) @map("has_completed_onboarding")
-  preferences            Json?    @map("preferences") // Lưu trữ các câu trả lời khảo sát
+  preferences            Json?    @map("preferences") // Lưu trữ các câu trả lời khảo sát dạng JSON
 
   embedding  Unsupported("vector(1536)")?
 
@@ -132,6 +132,7 @@ model Restaurant {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
+  isActive    Boolean   @default(true) @map("is_active")
 
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   profile     RestaurantProfile?
@@ -170,7 +171,7 @@ model Food {
   image       String?
   tags        String[]   @default([])
 
-  status      FoodStatus @default(APPROVED)
+  status      FoodStatus @default(PENDING)
   isActive    Boolean    @default(true) @map("is_active")
 
   isAdminRecommended Boolean @default(false) @map("is_admin_recommended")
@@ -179,6 +180,8 @@ model Food {
 
   lat         Float?   
   lng         Float?   
+  address     String?
+  mapUrl      String?    @map("map_url")
 
   restaurantId Int?      @map("restaurant_id")
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)

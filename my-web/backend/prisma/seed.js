@@ -27,13 +27,17 @@ async function main() {
       role: 'ADMIN',
       status: 'APPROVED',
       isEmailVerified: true,
-      profile: {
-        create: {
-          fullName: 'Admin FoodAI',
-          bio: 'Quản trị viên cấp cao của hệ thống Food AI'
-        }
-      }
     },
+  });
+
+  await prisma.userProfile.upsert({
+    where: { userId: admin.id },
+    update: {},
+    create: {
+      userId: admin.id,
+      fullName: 'Admin FoodAI',
+      bio: 'Quản trị viên cấp cao của hệ thống Food AI'
+    }
   });
   console.log(`- Đã khởi tạo Admin: ${admin.email}`);
 

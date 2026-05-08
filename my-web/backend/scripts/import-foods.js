@@ -51,6 +51,12 @@ async function main() {
         ['admin@gmail.com', hashedPassword, 'Quản trị viên tối cao', 'ADMIN', 'APPROVED', true]
       );
       adminId = newAdmin.rows[0].id;
+      
+      // Tạo Profile cho Admin
+      await client.query(
+        'INSERT INTO user_profiles (user_id, full_name, has_completed_onboarding, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())',
+        [adminId, 'Quản trị viên tối cao', true]
+      );
     } else {
       adminId = userRes.rows[0].id;
     }
@@ -60,8 +66,19 @@ async function main() {
       
       // 1. Xử lý Nhà hàng (Normalization)
       let finalRestaurantId = null;
-      if (food.restaurantName) {
-        // Tìm xem nhà hàng này đã tồn tại chưa
+      
+      if (food.restaurantId) {
+        // Ưu tiên dùng restaurantId nếu được cung cấp trực tiếp
+        const restRes = await client.query('SELECT id FROM restaurants WHERE id = $1', [food.restaurantId]);
+        if (restRes.rows.length > 0) {
+          finalRestaurantId = food.restaurantId;
+        } else {
+          console.warn(`[Cảnh báo] Restaurant ID ${food.restaurantId} không tồn tại. Đang thử dùng restaurantName...`);
+        }
+      }
+
+      if (!finalRestaurantId && food.restaurantName) {
+        // Tìm hoặc tạo mới theo tên nếu chưa có ID hợp lệ
         const restRes = await client.query('SELECT id FROM restaurants WHERE name = $1', [food.restaurantName]);
         if (restRes.rows.length > 0) {
           finalRestaurantId = restRes.rows[0].id;
@@ -77,7 +94,15 @@ async function main() {
       }
 
       // 2. Tạo vector embedding
-      const contextText = `${food.name}. ${food.restaurantName || ''}. ${food.description}`;
+      let restaurantNameContext = food.restaurantName || '';
+      if (!restaurantNameContext && finalRestaurantId) {
+        const restNameRes = await client.query('SELECT name FROM restaurants WHERE id = $1', [finalRestaurantId]);
+        if (restNameRes.rows.length > 0) {
+          restaurantNameContext = restNameRes.rows[0].name;
+        }
+      }
+      
+      const contextText = `${food.name}. ${restaurantNameContext}. ${food.description}`;
       const embedding = await getEmbedding(contextText);
       const vectorStr = embedding ? `[${embedding.join(',')}]` : null;
 
@@ -90,21 +115,23 @@ async function main() {
         const params = [
           food.price, food.description, food.image, 
           food.isAdminRecommended || false, food.isFeaturedToday || false, food.isFeaturedWeekly || false,
-          food.tags || [], food.lat || null, food.lng || null, finalRestaurantId, foodId
+          food.tags || [], food.lat || null, food.lng || null, food.address || null, food.mapUrl || null,
+          finalRestaurantId, foodId
         ];
 
         let updateQuery = `
           UPDATE foods 
           SET price = $1, description = $2, image = $3, 
               is_admin_recommended = $4, is_featured_today = $5, is_featured_weekly = $6,
-              tags = $7, lat = $8, lng = $9, restaurant_id = $10, updated_at = NOW()
+              tags = $7, lat = $8, lng = $9, address = $10, map_url = $11, 
+              restaurant_id = $12, updated_at = NOW()
         `;
 
         if (vectorStr) {
-          updateQuery += `, embedding = $12::vector WHERE id = $11`;
+          updateQuery += `, embedding = $14::vector WHERE id = $13`;
           params.push(vectorStr);
         } else {
-          updateQuery += ` WHERE id = $11`;
+          updateQuery += ` WHERE id = $13`;
         }
 
         await client.query(updateQuery, params);
@@ -114,18 +141,18 @@ async function main() {
         const params = [
           food.name, food.price, food.description, food.image, 
           food.tags || [], food.isAdminRecommended || false, food.isFeaturedToday || false, food.isFeaturedWeekly || false,
-          food.lat || null, food.lng || null, finalRestaurantId
+          food.lat || null, food.lng || null, food.address || null, food.mapUrl || null, finalRestaurantId
         ];
 
         let insertQuery = `
           INSERT INTO foods (
             name, price, description, image, tags, 
             is_admin_recommended, is_featured_today, is_featured_weekly, 
-            lat, lng, restaurant_id, status, is_active, created_at, updated_at
+            lat, lng, address, map_url, restaurant_id, status, is_active, created_at, updated_at
             ${vectorStr ? ', embedding' : ''}
           )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'APPROVED', true, NOW(), NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'APPROVED', true, NOW(), NOW()
             ${vectorStr ? `, $${params.length + 1}::vector` : ''}
           )
         `;

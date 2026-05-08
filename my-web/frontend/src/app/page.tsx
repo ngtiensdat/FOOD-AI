@@ -61,8 +61,14 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (mounted && isAuthenticated && user && user.hasCompletedOnboarding === false) {
-      setShowOnboarding(true);
+    if (mounted && isAuthenticated && user) {
+      // Kiểm tra kỹ trạng thái onboarding từ nhiều nguồn (phòng trường hợp cấu trúc dữ liệu khác nhau)
+      const isOnboarded = user.hasCompletedOnboarding === true || 
+                          user.profile?.hasCompletedOnboarding === true;
+      
+      if (!isOnboarded) {
+        setShowOnboarding(true);
+      }
     }
   }, [mounted, isAuthenticated, user]);
 
@@ -74,11 +80,19 @@ export default function Home() {
         preferences
       });
       
-      // Cập nhật local storage và state
-      const updatedUser = { ...user, hasCompletedOnboarding: true };
+      // Cập nhật local storage và state một cách triệt để
+      const updatedUser = { 
+        ...user, 
+        hasCompletedOnboarding: true,
+        profile: {
+          ...user.profile,
+          hasCompletedOnboarding: true
+        }
+      };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setShowOnboarding(false);
-      // Reload page to apply changes or just refresh state
+      
+      // Thông báo thành công và reload nhẹ hoặc chuyển hướng
       window.location.reload(); 
     } catch (error) {
       console.error('Lỗi hoàn thành onboarding:', error);
@@ -173,7 +187,21 @@ export default function Home() {
     setIsAiLoading(true);
 
     try {
-      const aiData = await aiService.chat(user!.id, aiInput);
+      // Lấy vị trí người dùng để Geo Search
+      let lat: number | undefined;
+      let lng: number | undefined;
+
+      if (navigator.geolocation) {
+        const position = await new Promise<GeolocationPosition | null>((resolve) => {
+          navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { timeout: 5000 });
+        });
+        if (position) {
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+        }
+      }
+
+      const aiData = await aiService.chat(user!.id, aiInput, lat, lng);
       setAiResponse(aiData.reply || '');
       setSuggestedFoods(aiData.suggestions || []);
     } catch (error) {
@@ -236,8 +264,9 @@ export default function Home() {
     }
 
     setIsChangingPassword(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const response = await fetch('http://localhost:3001/auth/change-password', {
+      const response = await fetch(`${API_URL}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -267,8 +296,9 @@ export default function Home() {
 
   const fetchUserProfile = async () => {
     if (!user?.id) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const res = await fetch(`http://localhost:3001/auth/profile/${user.id}`);
+      const res = await fetch(`${API_URL}/auth/profile/${user.id}`);
       if (res.ok) {
         const data = await res.json();
         setIsEmailVerifiedInProfile(!!data.isEmailVerified);
@@ -289,8 +319,9 @@ export default function Home() {
     }
 
     setIsVerifyingEmail(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const res = await fetch('http://localhost:3001/auth/verify-profile-email', {
+      const res = await fetch(`${API_URL}/auth/verify-profile-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user?.id, email: verifyEmail }),
@@ -510,22 +541,17 @@ export default function Home() {
                         <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">{aiResponse}</p>
 
                         {suggestedFoods.length > 0 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-orange-50">
-                            {suggestedFoods.map((food, idx) => (
-                              <div
-                                key={idx}
-                                onClick={() => setSelectedFood(food)}
-                                className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-primary transition-all flex justify-between items-center group cursor-pointer"
-                              >
-                                <div>
-                                  <h4 className="font-bold text-gray-800 group-hover:text-primary transition-colors">{food.name}</h4>
-                                  <p className="text-primary font-bold text-sm">{food.price.toLocaleString()}đ</p>
-                                </div>
-                                <div className="bg-orange-50 p-2 rounded-lg text-primary">
-                                  <Eye size={18} />
-                                </div>
-                              </div>
-                            ))}
+                          <div className="pt-6 border-t border-orange-100">
+                            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Các món ăn gợi ý cho bạn:</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {suggestedFoods.map((food, idx) => (
+                                <FoodCard 
+                                  key={idx} 
+                                  food={food} 
+                                  onViewDetail={setSelectedFood} 
+                                />
+                              ))}
+                            </div>
                           </div>
                         )}
 
@@ -816,27 +842,27 @@ export default function Home() {
                       <p className="leading-relaxed">{selectedFood.description}</p>
                     </div>
 
-                    {(selectedFood.address || selectedFood.restaurant?.address) && (
-                      <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
-                        <MapPin className="text-primary mt-1 shrink-0" size={20} />
-                        <div className="flex-1">
-                          <h4 className="text-sm font-bold text-gray-800">Địa chỉ quán</h4>
-                          {selectedFood.mapUrl ? (
-                            <a
-                              href={selectedFood.mapUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-between gap-2"
-                            >
-                              <span>{selectedFood.address || selectedFood.restaurant?.address}</span>
-                              <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
-                            </a>
-                          ) : (
-                            <p className="text-sm text-gray-600">{selectedFood.address || selectedFood.restaurant?.address}</p>
-                          )}
-                        </div>
+                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 group/addr">
+                      <MapPin className="text-primary mt-1 shrink-0" size={20} />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-gray-800">Địa chỉ quán</h4>
+                        {selectedFood.mapUrl || selectedFood.map_url ? (
+                          <a
+                            href={selectedFood.mapUrl || selectedFood.map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline font-medium flex items-center justify-between gap-2"
+                          >
+                            <span>{selectedFood.address || selectedFood.restaurant?.address || 'Xem vị trí trên bản đồ'}</span>
+                            <Navigation size={16} className="text-blue-500 group-hover/addr:scale-125 transition-transform" />
+                          </a>
+                        ) : (
+                          <p className="text-sm text-gray-600">
+                            {selectedFood.address || selectedFood.restaurant?.address || 'Chưa cập nhật địa chỉ'}
+                          </p>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">

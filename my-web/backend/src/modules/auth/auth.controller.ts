@@ -1,12 +1,24 @@
-import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../database/prisma.service';
+import { AiService } from '../ai/ai.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private aiService: AiService,
   ) {}
 
   @Post('register')
@@ -20,27 +32,30 @@ export class AuthController {
   }
 
   @Get('profile/:id')
-  async getProfile(@Param('id') id: string, @Query('requesterId') requesterId?: string) {
+  async getProfile(
+    @Param('id') id: string,
+    @Query('requesterId') requesterId?: string,
+  ) {
     const targetUserId = parseInt(id);
     const user = await this.prisma.user.findUnique({
       where: { id: targetUserId },
-      include: { 
+      include: {
         profile: true,
         _count: {
-          select: { 
-            follows: true, 
+          select: {
+            follows: true,
             userFollowers: true,
-            userFollowing: true
-          }
+            userFollowing: true,
+          },
         },
         restaurants: {
           include: {
             _count: {
-              select: { followers: true }
-            }
-          }
-        }
-      }
+              select: { followers: true },
+            },
+          },
+        },
+      },
     });
 
     if (!user) return null;
@@ -51,67 +66,87 @@ export class AuthController {
         where: {
           followerId_followingId: {
             followerId: parseInt(requesterId),
-            followingId: targetUserId
-          }
-        }
+            followingId: targetUserId,
+          },
+        },
       });
       isFollowing = !!follow;
     }
 
-    return { ...user, isFollowing };
+    const { password, ...userWithoutPassword } = user;
+    return { ...userWithoutPassword, isFollowing };
   }
 
   @Post('change-password')
-  async changePassword(@Body() body: any) {
-    return this.authService.changePassword(body);
+  @UseGuards(JwtAuthGuard)
+  async changePassword(@GetUser('id') userId: number, @Body() body: any) {
+    return this.authService.changePassword({ ...body, userId });
   }
 
   @Post('verify-profile-email')
-  async verifyProfileEmail(@Body() body: any) {
-    return this.authService.verifyProfileEmail(body);
+  @UseGuards(JwtAuthGuard)
+  async verifyProfileEmail(@GetUser('id') userId: number, @Body() body: any) {
+    return this.authService.verifyProfileEmail({ ...body, userId });
   }
 
   @Post('update-profile')
-  async updateProfile(@Body() body: any) {
-    const { userId, ...data } = body;
-    return this.authService.updateProfile(parseInt(userId), data);
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(@GetUser('id') userId: number, @Body() body: any) {
+    return this.authService.updateProfile(userId, body);
   }
 
   @Post('toggle-follow-user')
-  async toggleFollowUser(@Body() body: { followerId: number, followingId: number }) {
-    const { followerId, followingId } = body;
-    if (followerId === followingId) throw new Error('Không thể tự theo dõi chính mình');
+  @UseGuards(JwtAuthGuard)
+  async toggleFollowUser(
+    @GetUser('id') userId: number,
+    @Body() body: { followingId: number },
+  ) {
+    const { followingId } = body;
+    const followerId = userId;
+    if (followerId === followingId)
+      throw new Error('Không thể tự theo dõi chính mình');
 
     const existing = await this.prisma.userFollow.findUnique({
       where: {
-        followerId_followingId: { followerId, followingId }
-      }
+        followerId_followingId: { followerId, followingId },
+      },
     });
 
     if (existing) {
       await this.prisma.userFollow.delete({
         where: {
-          followerId_followingId: { followerId, followingId }
-        }
+          followerId_followingId: { followerId, followingId },
+        },
       });
       return { followed: false };
     } else {
       await this.prisma.userFollow.create({
-        data: { followerId, followingId }
+        data: { followerId, followingId },
       });
       return { followed: true };
     }
   }
 
   @Post('complete-onboarding')
-  async completeOnboarding(@Body() body: { userId: number, preferences: any }) {
-    const { userId, preferences } = body;
-    return this.prisma.userProfile.update({
+  @UseGuards(JwtAuthGuard)
+  async completeOnboarding(
+    @GetUser('id') userId: number,
+    @Body() body: { preferences: any },
+  ) {
+    const result = await this.prisma.userProfile.upsert({
       where: { userId },
-      data: {
+      update: {
         hasCompletedOnboarding: true,
-        preferences: preferences
-      }
+        preferences: body.preferences,
+      },
+      create: {
+        userId,
+        hasCompletedOnboarding: true,
+        preferences: body.preferences,
+      },
     });
+
+    this.aiService.updateUserEmbedding(userId);
+    return result;
   }
 }

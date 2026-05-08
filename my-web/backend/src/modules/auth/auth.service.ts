@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -9,7 +13,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async register(data: any) {
     const { email, password, name, role, legalDocuments } = data;
@@ -26,16 +30,25 @@ export class AuthService {
 
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!password || !passwordRegex.test(password)) {
-      throw new ConflictException('Mật khẩu phải tối thiểu 8 ký tự, bao gồm cả chữ và số');
+      throw new ConflictException(
+        'Mật khẩu phải tối thiểu 8 ký tự, bao gồm cả chữ và số',
+      );
     }
 
     // 2. Kiểm tra tài liệu cho Nhà hàng
-    if (role === 'RESTAURANT' && (!legalDocuments || legalDocuments.trim().length < 10)) {
-      throw new ConflictException('Thương gia cần cung cấp thông tin giấy tờ pháp lý hợp lệ');
+    if (
+      role === 'RESTAURANT' &&
+      (!legalDocuments || legalDocuments.trim().length < 10)
+    ) {
+      throw new ConflictException(
+        'Thương gia cần cung cấp thông tin giấy tờ pháp lý hợp lệ',
+      );
     }
 
     // 3. Kiểm tra user tồn tại
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
     if (existingUser) {
       throw new ConflictException('Email này đã được đăng ký');
     }
@@ -55,7 +68,7 @@ export class AuthService {
         email,
         password: hashedPassword,
         name,
-        role: finalRole as any,
+        role: finalRole,
         status: status as any,
         legalDocuments: finalRole === 'RESTAURANT' ? legalDocuments : null,
         isEmailVerified: true,
@@ -66,29 +79,32 @@ export class AuthService {
           },
         },
         // Nếu là Nhà hàng, tự động tạo luôn bản ghi Restaurant và Profile của nó
-        ...(role === 'RESTAURANT' ? {
-          restaurants: {
-            create: {
-              name: `Nhà hàng của ${name}`,
-              address: 'Chưa cập nhật',
-              latitude: 0,
-              longitude: 0,
-              // Tự động tạo RestaurantProfile
-              profile: {
+        ...(role === 'RESTAURANT'
+          ? {
+              restaurants: {
                 create: {
-                  bio: 'Chào mừng bạn đến với nhà hàng của chúng tôi!',
-                  openingHours: '09:00 - 21:00',
-                }
-              }
+                  name: `Nhà hàng của ${name}`,
+                  address: 'Chưa cập nhật',
+                  latitude: 10.762622, // Tọa độ mặc định (HCMC) hoặc lấy từ client nếu có
+                  longitude: 106.660172,
+                  // Tự động tạo RestaurantProfile
+                  profile: {
+                    create: {
+                      bio: 'Chào mừng bạn đến với nhà hàng của chúng tôi!',
+                      openingHours: '09:00 - 21:00',
+                    },
+                  },
+                },
+              },
             }
-          }
-        } : {})
+          : {}),
       },
     });
 
     if (status === 'PENDING') {
       return {
-        message: 'Đăng ký thành công! Tài khoản của bạn đang chờ Admin phê duyệt.',
+        message:
+          'Đăng ký thành công! Tài khoản của bạn đang chờ Admin phê duyệt.',
         status: 'PENDING',
       };
     }
@@ -99,9 +115,9 @@ export class AuthService {
   async login(data: any) {
     const { email, password } = data;
 
-    const user = await this.prisma.user.findUnique({ 
+    const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { profile: true } 
+      include: { profile: true },
     });
     if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
@@ -109,10 +125,14 @@ export class AuthService {
 
     // Kiểm tra trạng thái tài khoản
     if (user.status === 'PENDING') {
-      throw new UnauthorizedException('Tài khoản của bạn đang chờ phê duyệt, vui lòng quay lại sau');
+      throw new UnauthorizedException(
+        'Tài khoản của bạn đang chờ phê duyệt, vui lòng quay lại sau',
+      );
     }
     if (user.status === 'REJECTED') {
-      throw new UnauthorizedException('Tài khoản của bạn đã bị từ chối truy cập');
+      throw new UnauthorizedException(
+        'Tài khoản của bạn đã bị từ chối truy cập',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -126,7 +146,9 @@ export class AuthService {
   async changePassword(data: any) {
     const { userId, oldPassword, newPassword } = data;
 
-    const user = await this.prisma.user.findUnique({ where: { id: parseInt(userId) } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+    });
     if (!user) {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
@@ -138,7 +160,9 @@ export class AuthService {
 
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      throw new ConflictException('Mật khẩu mới phải tối thiểu 8 ký tự, bao gồm cả chữ và số');
+      throw new ConflictException(
+        'Mật khẩu mới phải tối thiểu 8 ký tự, bao gồm cả chữ và số',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -152,13 +176,17 @@ export class AuthService {
 
   async verifyProfileEmail(data: any) {
     const { userId, email } = data;
-    const user = await this.prisma.user.findUnique({ where: { id: parseInt(userId) } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+    });
     if (!user) {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
 
     if (user.email !== email) {
-      throw new ConflictException('Email nhập vào không chính xác với email đã đăng ký');
+      throw new ConflictException(
+        'Email nhập vào không chính xác với email đã đăng ký',
+      );
     }
 
     await this.prisma.user.update({
@@ -171,12 +199,12 @@ export class AuthService {
   async updateProfile(userId: number, data: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: true, restaurants: true }
+      include: { profile: true, restaurants: { include: { profile: true } } },
     });
 
     if (!user) throw new UnauthorizedException('Người dùng không tồn tại');
 
-    // 1. Cập nhật thông tin cơ bản trong UserProfile (Dùng chung cho tất cả)
+    // 1. Cập nhật thông tin cơ bản trong UserProfile
     await this.prisma.userProfile.update({
       where: { userId },
       data: {
@@ -187,27 +215,29 @@ export class AuthService {
         bio: data.bio,
         address: data.address,
         workAt: data.workAt,
-      }
+      },
     });
 
-    // 2. Nếu là Thương gia, cập nhật thêm vào RestaurantProfile
+    // 2. Nếu là Thương gia, cập nhật thêm vào RestaurantProfile của TẤT CẢ nhà hàng sở hữu (hoặc cái chính)
     if (user.role === 'RESTAURANT' && user.restaurants.length > 0) {
-      await this.prisma.restaurantProfile.update({
-        where: { restaurantId: user.restaurants[0].id },
-        data: {
-          coverImage: data.coverImage,
-          bio: data.bio,
-          contactEmail: data.email || data.contactEmail,
-          contactPhone: data.phone || data.contactPhone,
-        }
-      });
+      for (const restaurant of user.restaurants) {
+        await this.prisma.restaurantProfile.update({
+          where: { restaurantId: restaurant.id },
+          data: {
+            coverImage: data.coverImage,
+            bio: data.bio,
+            contactEmail: data.email || data.contactEmail,
+            contactPhone: data.phone || data.contactPhone,
+          },
+        });
+      }
     }
 
-    // 3. Cập nhật tên trong bảng User nếu có thay đổi
+    // 3. Cập nhật tên trong bảng User
     if (data.name) {
       await this.prisma.user.update({
         where: { id: userId },
-        data: { name: data.name }
+        data: { name: data.name },
       });
     }
 
@@ -225,6 +255,7 @@ export class AuthService {
         avatar: user.profile?.avatar,
         role: user.role,
         hasCompletedOnboarding: user.profile?.hasCompletedOnboarding || false,
+        profile: user.profile,
       },
     };
   }

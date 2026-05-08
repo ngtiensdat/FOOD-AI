@@ -4,15 +4,18 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Heart, DollarSign, AlertTriangle, 
-  Store, Utensils, Users, ArrowRight, CheckCircle2 
+  Store, Utensils, Users, ArrowRight, CheckCircle2, X 
 } from 'lucide-react';
 
 interface OnboardingModalProps {
   user: any;
   onComplete: (data: any) => void;
+  show?: boolean; // Cho phép force show từ Dashboard
+  onClose?: () => void; // Cho phép đóng khi đang ở Dashboard
+  title?: string;
 }
 
-export function OnboardingModal({ user, onComplete }: OnboardingModalProps) {
+export function OnboardingModal({ user, onComplete, show, onClose, title }: OnboardingModalProps) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<any>({});
   const [isFinishing, setIsFinishing] = useState(false);
@@ -144,18 +147,10 @@ export function OnboardingModal({ user, onComplete }: OnboardingModalProps) {
 
   const finishOnboarding = async (finalAnswers: any) => {
     setIsFinishing(true);
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      await fetch(`${API_URL}/auth/complete-onboarding`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, preferences: finalAnswers }),
-      });
+    // Để người dùng thấy animation thành công trong 2 giây rồi mới gọi onComplete
+    setTimeout(() => {
       onComplete(finalAnswers);
-    } catch (error) {
-      console.error('Lỗi lưu onboarding:', error);
-      onComplete(finalAnswers); // Vẫn tiếp tục để không làm gián đoạn trải nghiệm
-    }
+    }, 2000);
   };
 
   return (
@@ -171,6 +166,14 @@ export function OnboardingModal({ user, onComplete }: OnboardingModalProps) {
             exit={{ opacity: 0, x: -50, scale: 0.95 }}
             className="bg-white w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 p-8 md:p-12"
           >
+            {onClose && (
+              <button 
+                onClick={onClose}
+                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 transition-colors z-20"
+              >
+                <X size={24} />
+              </button>
+            )}
             {/* Progress bar */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gray-100">
               <motion.div 
@@ -186,8 +189,9 @@ export function OnboardingModal({ user, onComplete }: OnboardingModalProps) {
               </div>
 
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 leading-tight">
-                {currentQuestion.question}
+                {title || currentQuestion.question}
               </h2>
+              {title && <p className="text-primary font-bold mb-2">Câu hỏi: {currentQuestion.question}</p>}
               <p className="text-gray-500 mb-10 text-sm md:text-base font-medium">
                 {currentQuestion.description}
               </p>

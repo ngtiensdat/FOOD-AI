@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
 
+export interface UserProfile {
+  userId: number;
+  fullName?: string;
+  phone?: string;
+  avatar?: string;
+  coverImage?: string;
+  bio?: string;
+  address?: string;
+  workAt?: string;
+  hasCompletedOnboarding: boolean;
+  preferences?: any;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -7,7 +20,9 @@ export interface User {
   avatar?: string;
   role: 'CUSTOMER' | 'ADMIN' | 'RESTAURANT';
   hasCompletedOnboarding: boolean;
+  profile?: UserProfile;
 }
+
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);

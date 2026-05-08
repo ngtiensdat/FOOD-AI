@@ -4,10 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { User, Heart, Clock, Settings, Sparkles, ChevronRight, LogOut, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { OnboardingModal } from '@/components/features/OnboardingModal';
+import { authService } from '@/services/auth.service';
 
 export default function CustomerDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -18,8 +22,9 @@ export default function CustomerDashboard() {
       }
       const user = JSON.parse(savedUser);
       
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       try {
-        const res = await fetch(`http://localhost:3001/auth/profile/${user.id}`);
+        const res = await fetch(`${API_URL}/auth/profile/${user.id}`);
         if (!res.ok) throw new Error('Không thể kết nối đến máy chủ');
         const data = await res.json();
         setProfile(data);
@@ -37,6 +42,44 @@ export default function CustomerDashboard() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/';
+  };
+
+  const handleOnboardingComplete = async (preferences: any) => {
+    if (!profile) return;
+    try {
+      await authService.completeOnboarding({
+        userId: profile.id,
+        preferences
+      });
+      
+      // Cập nhật lại thông tin profile và đồng bộ LocalStorage
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${API_URL}/auth/profile/${profile.id}`);
+      const newData = await res.json();
+      setProfile(newData);
+
+      // Đồng bộ hóa triệt để với LocalStorage để Trang chủ không hiện lại Modal
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        const currentUser = JSON.parse(savedUser);
+        const updatedUser = { 
+          ...currentUser, 
+          hasCompletedOnboarding: true,
+          profile: {
+            ...currentUser.profile,
+            hasCompletedOnboarding: true,
+            preferences: preferences
+          }
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      
+      setShowOnboarding(false);
+      setUpdateSuccess(true);
+      setTimeout(() => setUpdateSuccess(false), 3000);
+    } catch (error) {
+      console.error('Lỗi cập nhật sở thích:', error);
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Đang tải thông tin...</div>;
@@ -63,7 +106,7 @@ export default function CustomerDashboard() {
             <Heart size={18} /> Món ăn yêu thích
           </a>
           <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-orange-50 hover:text-primary rounded-xl font-bold transition-all">
-            <Clock size={18} /> Lịch sử đơn hàng
+            <Clock size={18} /> Lịch sử đề xuất
           </a>
         </nav>
 
@@ -116,7 +159,17 @@ export default function CustomerDashboard() {
             <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-xl font-bold text-gray-800">Thông tin cá nhân</h3>
-                <button className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-400"><Settings size={20}/></button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowOnboarding(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-primary rounded-xl font-bold text-sm hover:bg-orange-100 transition-all"
+                  >
+                    <Sparkles size={16} /> Cập nhật sở thích AI
+                  </button>
+                  <button className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-400">
+                    <Settings size={20}/>
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-8">
                 <div>
@@ -129,7 +182,11 @@ export default function CustomerDashboard() {
                 </div>
                 <div className="col-span-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Sở thích ăn uống (AI Context)</label>
-                  <p className="font-bold text-gray-700 italic">"{profile?.profile?.preferencesText || 'Bạn chưa cập nhật sở thích để AI tư vấn tốt hơn.'}"</p>
+                  <p className="font-bold text-gray-700 italic">
+                    {profile?.profile?.preferences ? 
+                      Object.values(profile.profile.preferences).join(', ') : 
+                      'Bạn chưa cập nhật sở thích để AI tư vấn tốt hơn.'}
+                  </p>
                 </div>
               </div>
             </section>
@@ -147,7 +204,7 @@ export default function CustomerDashboard() {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-gray-800 text-sm group-hover:text-primary transition-colors">Bún chả Hà Nội</h4>
-                      <p className="text-xs text-gray-400">Đã đặt {i} ngày trước</p>
+                      <p className="text-xs text-gray-400">Được AI gợi ý {i} ngày trước</p>
                     </div>
                     <ChevronRight size={16} className="text-gray-300" />
                   </div>
@@ -157,6 +214,26 @@ export default function CustomerDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Modals & Notifications */}
+      {showOnboarding && (
+        <OnboardingModal 
+          user={profile} 
+          onComplete={handleOnboardingComplete}
+          onClose={() => setShowOnboarding(false)}
+          title="Cập nhật sở thích ăn uống"
+        />
+      )}
+
+      {updateSuccess && (
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-10 right-10 bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl z-[10000] font-bold flex items-center gap-3"
+        >
+          <Sparkles size={20} /> Cập nhật sở thích thành công!
+        </motion.div>
+      )}
     </div>
   );
 }

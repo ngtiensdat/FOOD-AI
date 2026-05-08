@@ -80,8 +80,9 @@ function ProfileContent() {
       return;
     }
     setIsFollowLoading(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     try {
-      const response = await fetch('http://localhost:3001/auth/toggle-follow-user', {
+      const response = await fetch(`${API_URL}/auth/toggle-follow-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ followerId: me.id, followingId: user.id }),

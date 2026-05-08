@@ -18,7 +18,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
       className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all border border-gray-100"
     >
       <div
-        className="h-48 bg-cover bg-center bg-gray-100 flex items-center justify-center text-gray-300 relative group"
+        className="h-50 bg-cover bg-center bg-gray-100 flex items-center justify-center text-gray-300 relative group"
         style={{ backgroundImage: (food.image) ? `url("${food.image}")` : 'none' }}
       >
         {!food.image && <ShoppingBag size={48} />}
@@ -41,9 +41,9 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
           <span className="text-primary font-bold text-lg">{food.price?.toLocaleString()}đ</span>
 
           {/* Icon bản đồ bên phải giá tiền */}
-          {food.mapUrl && (
+          {(food.mapUrl || food.map_url) && (
             <a
-              href={food.mapUrl}
+              href={food.mapUrl || food.map_url}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 bg-gray-50 text-gray-400 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
