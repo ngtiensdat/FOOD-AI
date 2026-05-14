@@ -1,75 +1,43 @@
 import { useState, useEffect } from 'react';
-
-export interface UserProfile {
-  userId: number;
-  fullName?: string;
-  phone?: string;
-  avatar?: string;
-  coverImage?: string;
-  bio?: string;
-  address?: string;
-  workAt?: string;
-  hasCompletedOnboarding: boolean;
-  preferences?: any;
-}
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar?: string;
-  role: 'CUSTOMER' | 'ADMIN' | 'RESTAURANT';
-  hasCompletedOnboarding: boolean;
-  profile?: UserProfile;
-}
-
+import { useAuthStore } from '@/store/useAuthStore';
+import { User, UserRole } from '@/types/user';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user: storeUser, setUser, logout: storeLogout } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-
-    if (savedUser && token) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      }
-    }
-    setLoading(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
   }, []);
 
-  const login = (userData: User, token: string) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', token);
+  const user = mounted ? storeUser : null;
+
+  const login = (userData: Partial<User>) => {
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setUser(null);
-    window.location.href = '/'; // Redirect to home on logout
+    storeLogout();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   const isAuthenticated = !!user;
-  const isCustomer = user?.role === 'CUSTOMER';
-  const isAdmin = user?.role === 'ADMIN';
-  const isRestaurant = user?.role === 'RESTAURANT';
+  const isCustomer = user?.role === UserRole.CUSTOMER;
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const isRestaurant = user?.role === UserRole.RESTAURANT;
 
   return {
     user,
-    loading,
+    loading: false, // Zustand persist handles loading internally or we can add a state if needed
     isAuthenticated,
     isCustomer,
     isAdmin,
     isRestaurant,
     login,
-    logout
+    logout,
   };
 };
+

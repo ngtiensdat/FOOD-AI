@@ -1,50 +1,39 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    return {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    };
-};
-
+import { apiClient } from '@/lib/api-client';
 
 export const authService = {
-    async getProfile(userId: number, requesterId?: number) {
-        const url = requesterId 
-            ? `${API_URL}/auth/profile/${userId}?requesterId=${requesterId}`
-            : `${API_URL}/auth/profile/${userId}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Lỗi khi tải thông tin cá nhân');
-        }
-        return response.json();
-    },
+  async login(credentials: any) {
+    return apiClient.post('/auth/login', credentials);
+  },
 
-    async updateProfile(data: any) {
-        const response = await fetch(`${API_URL}/auth/update-profile`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(data),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Lỗi khi cập nhật thông tin');
-        }
-        return response.json();
-    },
+  async register(data: any) {
+    return apiClient.post('/auth/register', data);
+  },
 
-    async completeOnboarding(data: { userId: number, preferences: any }) {
-        const response = await fetch(`${API_URL}/auth/complete-onboarding`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(data),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Lỗi khi lưu thông tin onboarding');
-        }
-        return response.json();
-    },
+  async logout() {
+    return apiClient.post('/auth/logout');
+  },
+
+  async getProfile(userId: number, requesterId?: number) {
+    return apiClient.get(`/auth/profile/${userId}`, { params: requesterId ? { requesterId } : undefined });
+  },
+
+  async updateProfile(data: any) {
+    return apiClient.post('/auth/update-profile', data);
+  },
+
+  async toggleFollowUser(data: { followingId: number }) {
+    return apiClient.post('/auth/toggle-follow-user', data);
+  },
+
+  async completeOnboarding(data: { preferences: any }) {
+    return apiClient.post('/auth/complete-onboarding', data);
+  },
+
+  async verifyEmail(data: { email: string }) {
+    return apiClient.post('/auth/verify-profile-email', data);
+  },
+
+  async changePassword(data: any) {
+    return apiClient.post('/auth/change-password', data);
+  }
 };

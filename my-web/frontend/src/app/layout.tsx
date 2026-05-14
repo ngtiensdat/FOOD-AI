@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
+import { ToastContainer } from "@/components/base/ToastContainer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,16 +18,19 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+  children, //truyền trang vào để hiển thị
+}: Readonly<{ //đảm bảo các trang truyền vào không bị thay đổi
   children: React.ReactNode;
 }>) {
   return (
     <html
-      lang="en"
+      lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
-    </html>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+        <ToastContainer />
+      </body>
+    </html>         //đảm bảo vị trí body và footer luôn ở dưới cùng
   );
 }

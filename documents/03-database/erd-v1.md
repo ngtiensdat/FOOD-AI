@@ -1,0 +1,307 @@
+# Sơ đồ thực thể ERD - Version 1
+
+Tài liệu này chứa mã nguồn DBML chính xác của dự án FOOD AI.
+
+## 1. Mã nguồn DBML
+
+```dbml
+// TÀI LIỆU CẤU TRÚC DATABASE (ERD) - FOOD AI
+// Sử dụng định dạng DBML (Database Markup Language)
+
+// ================== USERS ==================
+Table users {
+  id integer [primary key]
+  email varchar [unique]
+  password varchar
+  name varchar
+
+  role varchar // CUSTOMER, RESTAURANT, ADMIN
+  status varchar // PENDING, APPROVED, REJECTED
+
+  is_email_verified boolean [default: false]
+  verification_token varchar
+  reset_token varchar
+  legal_documents text
+
+  points integer [default: 0]
+  level integer [default: 1]
+  badge_title varchar
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+// ================== USER PROFILE ==================
+Table user_profiles {
+  user_id integer [primary key]
+
+  full_name varchar
+  phone varchar
+  avatar varchar
+  cover_image varchar
+  bio text
+  address varchar
+  work_at varchar
+
+  embedding vector(1536)
+  has_completed_onboarding boolean [default: false]
+  preferences json
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ================== RESTAURANTS ==================
+Table restaurants {
+  id integer [primary key]
+
+  name varchar
+  address varchar
+  latitude float
+  longitude float
+  description text
+
+  owner_id integer
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  is_active boolean [default: true]
+}
+
+Table restaurant_profiles {
+  restaurant_id integer [primary key]
+
+  cover_image varchar
+  bio text
+  opening_hours varchar
+  contact_email varchar
+  contact_phone varchar
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ================== FOODS ==================
+Table foods {
+  id integer [primary key]
+
+  name varchar
+  price float
+  image varchar
+  description text
+  tags varchar[]
+
+  status varchar // PENDING, APPROVED, REJECTED, OUT_OF_STOCK
+  is_active boolean [default: true]
+
+  is_admin_recommended boolean [default: false]
+  is_featured_today boolean [default: false]
+  is_featured_weekly boolean [default: false]
+
+  lat float
+  lng float
+  address varchar
+  map_url varchar
+
+  restaurant_id integer
+
+  embedding vector(1536)
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+// ================== CATEGORIES ==================
+Table categories {
+  id integer [primary key]
+  name varchar [unique]
+}
+
+// ================== FOOD - CATEGORY ==================
+Table food_categories {
+  food_id integer
+  category_id integer
+}
+
+// ================== POSTS ==================
+Table posts {
+  id integer [primary key]
+
+  author_id integer
+  approver_id integer
+  restaurant_id integer
+  food_id integer
+
+  title varchar
+  content text
+  image varchar
+
+  rating integer // 1-5
+
+  post_type varchar // NORMAL, REVIEW, PROMOTION
+  status varchar // PENDING, APPROVED, REJECTED
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+// ================== SOCIAL ==================
+Table likes {
+  id integer [primary key]
+
+  user_id integer
+  post_id integer
+
+  created_at timestamp
+}
+
+Table comments {
+  id integer [primary key]
+
+  content text
+
+  user_id integer
+  post_id integer
+
+  created_at timestamp
+}
+
+Table follows {
+  id integer [primary key]
+
+  user_id integer
+  restaurant_id integer
+
+  created_at timestamp
+}
+
+Table user_follows {
+  id integer [primary key]
+  follower_id integer
+  following_id integer
+  created_at timestamp
+}
+
+// ================== USER ACTIONS ==================
+Table favorites {
+  id integer [primary key]
+
+  user_id integer
+  food_id integer
+
+  created_at timestamp
+}
+
+Table histories {
+  id integer [primary key]
+
+  user_id integer
+  restaurant_id integer
+  food_id integer
+
+  visited_at timestamp
+}
+
+// ================== AI CHAT ==================
+Table conversations {
+  id integer [primary key]
+
+  user_id integer
+  metadata json
+
+  created_at timestamp
+}
+
+Table messages {
+  id integer [primary key]
+
+  conversation_id integer
+
+  role varchar // USER, AI, SYSTEM
+  content text
+
+  created_at timestamp
+}
+
+// ================== REPORTS ==================
+Table reports {
+  id integer [primary key]
+
+  user_id integer
+
+  target_type varchar
+  target_id integer
+
+  content text
+
+  status varchar // PENDING, RESOLVED, REJECTED
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ================== EMBEDDING LOG ==================
+Table embeddings_log {
+  id integer [primary key]
+
+  entity_type varchar
+  entity_id integer
+
+  embedding vector(1536)
+
+  created_at timestamp
+}
+
+// ================== RELATIONSHIPS ==================
+Ref: user_profiles.user_id - users.id
+
+Ref: restaurants.owner_id > users.id
+Ref: restaurant_profiles.restaurant_id - restaurants.id
+
+Ref: foods.restaurant_id > restaurants.id
+
+Ref: food_categories.food_id > foods.id
+Ref: food_categories.category_id > categories.id
+
+Ref: posts.author_id > users.id
+Ref: posts.approver_id > users.id
+Ref: posts.restaurant_id > restaurants.id
+Ref: posts.food_id > foods.id
+
+Ref: likes.user_id > users.id
+Ref: likes.post_id > posts.id
+
+Ref: comments.user_id > users.id
+Ref: comments.post_id > posts.id
+
+Ref: follows.user_id > users.id
+Ref: follows.restaurant_id > restaurants.id
+
+Ref: favorites.user_id > users.id
+Ref: favorites.food_id > foods.id
+
+Ref: histories.user_id > users.id
+Ref: histories.restaurant_id > restaurants.id
+Ref: histories.food_id > foods.id
+
+Ref: conversations.user_id > users.id
+Ref: messages.conversation_id > conversations.id
+
+Ref: reports.user_id > users.id 
+
+Ref: user_follows.follower_id > users.id
+Ref: user_follows.following_id > users.id
+```
+
+---
+
+## 2. Các mối quan hệ chính (Relationships)
+- `user_profiles.user_id` -> `users.id` (1-1)
+- `restaurants.owner_id` -> `users.id` (n-1)
+- `foods.restaurant_id` -> `restaurants.id` (n-1)
+- `messages.conversation_id` -> `conversations.id` (n-1)
+- `posts.author_id` -> `users.id` (n-1)

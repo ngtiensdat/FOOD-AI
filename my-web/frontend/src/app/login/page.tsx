@@ -1,56 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight, Sparkles, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+// Hooks
+import { useLoginActions } from '@/hooks/useLoginActions';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
+import { Alert } from '@/components/base/Alert';
+import { LABELS } from '@/constants/labels';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<any>({});
-
-  const validate = () => {
-    const newErrors: any = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) newErrors.email = 'Email không đúng định dạng';
-    if (password.length < 1) newErrors.password = 'Vui lòng nhập mật khẩu';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
-
-      // Lưu thông tin vào localStorage
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      alert('Đăng nhập thành công!');
-      window.location.href = '/';
-    } catch (error: any) {
-      alert('Lỗi: ' + error.message);
-    }
-  };
+  const {
+    email, setEmail,
+    password, setPassword,
+    showPassword, setShowPassword,
+    errors,
+    isLoading,
+    handleLogin
+  } = useLoginActions();
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 relative">
-      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-all">
-        <ArrowLeft size={20} /> Quay lại
+      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-all text-small">
+        <ArrowLeft size={20} /> {LABELS.COMMON.BACK}
       </Link>
 
       <motion.div
@@ -60,8 +35,8 @@ export default function LoginPage() {
       >
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-12 h-12 bg-white-400 rounded-xl flex items-center justify-center text-black shadow-lg">
-              <img src="/favicon.ico" alt="Food AI Logo" className="w-8 h-8 object-contain" />
+            <div className="relative w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-lg overflow-hidden">
+              <Image src="/favicon.ico" alt="Food AI Logo" fill className="object-contain p-2" />
             </div>
             <span className="text-3xl font-bold gradient-text">Food AI</span>
           </Link>
@@ -69,68 +44,62 @@ export default function LoginPage() {
 
         <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold mb-2">Đăng nhập</h1>
-            <p className="text-gray-500">Chào mừng bạn quay trở lại với FoodAI</p>
+            <h1 className="text-h2 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
+            <p className="text-gray-500 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6" suppressHydrationWarning>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1">Email</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
-                <input
-                  type="email"
-                  required
-                  placeholder="user123@gmail.com"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  suppressHydrationWarning
-                />
-              </div>
-              {errors.email && <p className="text-red-500 text-xs mt-1 ml-1 font-bold">{errors.email}</p>}
-            </div>
+          <form onSubmit={handleLogin} className="space-y-6">
+            {errors.form && (
+              <Alert type="error">{errors.form}</Alert>
+            )}
+            <Input
+              label={LABELS.FORM.EMAIL}
+              icon={Mail}
+              type="email"
+              required
+              placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={errors.email}
+            />
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1">Mật khẩu</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  suppressHydrationWarning
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
-                  suppressHydrationWarning
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1 ml-1 font-bold">{errors.password}</p>}
+            <div className="relative group">
+              <Input
+                label={LABELS.AUTH.PASSWORD}
+                icon={Lock}
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password}
+                className="pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
 
             <div className="text-right">
-              <a href="#" className="text-sm font-bold text-primary hover:underline">Quên mật khẩu?</a>
+              <a href="#" className="text-small font-bold text-primary hover:underline">{LABELS.AUTH.FORGOT_PASSWORD}</a>
             </div>
 
-            <button
+            <Button
               type="submit"
-              className="w-full gradient-bg text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-orange-200 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-              suppressHydrationWarning
+              fullWidth
+              loading={isLoading}
+              className="py-4 text-lg"
             >
-              Đăng nhập <ArrowRight size={20} />
-            </button>
+              {LABELS.AUTH.LOGIN} <ArrowRight size={20} className="ml-2" />
+            </Button>
           </form>
 
-          <div className="mt-8 text-center text-gray-500">
-            Chưa có tài khoản? <Link href="/register" className="text-primary font-bold hover:underline">Đăng ký ngay</Link>
+          <div className="mt-8 text-center text-gray-500 text-small">
+            {LABELS.AUTH.NO_ACCOUNT} <Link href="/register" className="text-primary font-bold hover:underline">{LABELS.AUTH.REGISTER_NOW}</Link>
           </div>
         </div>
       </motion.div>

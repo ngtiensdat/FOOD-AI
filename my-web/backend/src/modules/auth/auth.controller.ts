@@ -6,29 +6,47 @@ import {
   Param,
   Query,
   UseGuards,
+  Res,
+  Req,
 } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { PrismaService } from '../../database/prisma.service';
-import { AiService } from '../ai/ai.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private prisma: PrismaService,
-    private aiService: AiService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() body: any) {
-    return this.authService.register(body);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.register(dto);
+    this.setCookies(res, result.accessToken, result.refreshToken);
+    return { user: result.user };
   }
 
   @Post('login')
-  async login(@Body() body: any) {
-    return this.authService.login(body);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(dto);
+    this.setCookies(res, result.accessToken, result.refreshToken);
+    return { user: result.user };
+  }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    return { message: 'Logged out successfully' };
   }
 
   @Get('profile/:id')
@@ -36,63 +54,32 @@ export class AuthController {
     @Param('id') id: string,
     @Query('requesterId') requesterId?: string,
   ) {
-    const targetUserId = parseInt(id);
-    const user = await this.prisma.user.findUnique({
-      where: { id: targetUserId },
-      include: {
-        profile: true,
-        _count: {
-          select: {
-            follows: true,
-            userFollowers: true,
-            userFollowing: true,
-          },
-        },
-        restaurants: {
-          include: {
-            _count: {
-              select: { followers: true },
-            },
-          },
-        },
-      },
-    });
-
-    if (!user) return null;
-
-    let isFollowing = false;
-    if (requesterId) {
-      const follow = await this.prisma.userFollow.findUnique({
-        where: {
-          followerId_followingId: {
-            followerId: parseInt(requesterId),
-            followingId: targetUserId,
-          },
-        },
-      });
-      isFollowing = !!follow;
-    }
-
-    const { password, ...userWithoutPassword } = user;
-    return { ...userWithoutPassword, isFollowing };
+    return this.authService.getProfile(
+      parseInt(id),
+      requesterId ? parseInt(requesterId) : undefined,
+    );
   }
 
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
-  async changePassword(@GetUser('id') userId: number, @Body() body: any) {
-    return this.authService.changePassword({ ...body, userId });
-  }
-
-  @Post('verify-profile-email')
-  @UseGuards(JwtAuthGuard)
-  async verifyProfileEmail(@GetUser('id') userId: number, @Body() body: any) {
-    return this.authService.verifyProfileEmail({ ...body, userId });
+  async changePassword(
+    @GetUser('id') userId: number,
+    @Body() body: { oldPassword?: string; newPassword: string },
+  ) {
+    return this.authService.changePassword(
+      userId,
+      body.oldPassword,
+      body.newPassword,
+    );
   }
 
   @Post('update-profile')
   @UseGuards(JwtAuthGuard)
-  async updateProfile(@GetUser('id') userId: number, @Body() body: any) {
-    return this.authService.updateProfile(userId, body);
+  async updateProfile(
+    @GetUser('id') userId: number,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(userId, dto);
   }
 
   @Post('toggle-follow-user')
@@ -101,52 +88,43 @@ export class AuthController {
     @GetUser('id') userId: number,
     @Body() body: { followingId: number },
   ) {
-    const { followingId } = body;
-    const followerId = userId;
-    if (followerId === followingId)
-      throw new Error('Không thể tự theo dõi chính mình');
-
-    const existing = await this.prisma.userFollow.findUnique({
-      where: {
-        followerId_followingId: { followerId, followingId },
-      },
-    });
-
-    if (existing) {
-      await this.prisma.userFollow.delete({
-        where: {
-          followerId_followingId: { followerId, followingId },
-        },
-      });
-      return { followed: false };
-    } else {
-      await this.prisma.userFollow.create({
-        data: { followerId, followingId },
-      });
-      return { followed: true };
-    }
+    return this.authService.toggleFollow(userId, body.followingId);
   }
 
   @Post('complete-onboarding')
   @UseGuards(JwtAuthGuard)
   async completeOnboarding(
     @GetUser('id') userId: number,
-    @Body() body: { preferences: any },
+    @Body() dto: CompleteOnboardingDto,
   ) {
-    const result = await this.prisma.userProfile.upsert({
-      where: { userId },
-      update: {
-        hasCompletedOnboarding: true,
-        preferences: body.preferences,
-      },
-      create: {
-        userId,
-        hasCompletedOnboarding: true,
-        preferences: body.preferences,
-      },
-    });
+    return this.authService.completeOnboarding(userId, dto.preferences);
+  }
 
-    this.aiService.updateUserEmbedding(userId);
-    return result;
+  @Post('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = (req.cookies as Record<string, string>)[
+      'refreshToken'
+    ];
+    const result = await this.authService.refreshToken(refreshToken);
+    this.setCookies(res, result.accessToken, result.refreshToken);
+    return { user: result.user };
+  }
+
+  private setCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
   }
 }

@@ -6,6 +6,7 @@ import {
   Sparkles, Heart, DollarSign, AlertTriangle, 
   Store, Utensils, Users, ArrowRight, CheckCircle2, X 
 } from 'lucide-react';
+import { LABELS } from '@/constants/labels';
 
 interface OnboardingModalProps {
   user: any;
@@ -199,7 +200,7 @@ export function OnboardingModal({ user, onComplete, show, onClose, title }: Onbo
               <div className="w-full">
                 {!showOtherInput ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                    {[...currentQuestion.options, { label: 'Khác...', value: 'other', emoji: '✍️' }].map((option) => (
+                    {[...currentQuestion.options, { label: LABELS.COMMON.OTHER, value: 'other', emoji: '✍️' }].map((option) => (
                       <button
                         key={option.value}
                         onClick={() => handleSelect(option.value)}
@@ -233,14 +234,14 @@ export function OnboardingModal({ user, onComplete, show, onClose, title }: Onbo
                         onClick={() => setShowOtherInput(false)}
                         className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all"
                       >
-                        Quay lại
+                        {LABELS.COMMON.BACK}
                       </button>
                       <button 
                         onClick={handleOtherSubmit}
                         disabled={!otherValue.trim()}
                         className="flex-[2] py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        Tiếp theo <ArrowRight size={20} />
+                        {LABELS.COMMON.NEXT} <ArrowRight size={20} />
                       </button>
                     </div>
                   </motion.div>
@@ -248,7 +249,7 @@ export function OnboardingModal({ user, onComplete, show, onClose, title }: Onbo
               </div>
 
               <div className="mt-10 text-xs text-gray-400 font-bold uppercase tracking-widest">
-                Bước {step + 1} / {questions.length}
+                {LABELS.CUSTOMER.STEP(step + 1, questions.length)}
               </div>
             </div>
           </motion.div>
@@ -272,9 +273,9 @@ export function OnboardingModal({ user, onComplete, show, onClose, title }: Onbo
               <CheckCircle2 size={48} />
             </motion.div>
             
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Tuyệt vời!</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">{LABELS.CUSTOMER.ONBOARDING_SUCCESS}</h2>
             <p className="text-gray-500 mb-8 leading-relaxed">
-              AI đã học được những sở thích đầu tiên của bạn. Đang chuẩn bị bàn ăn của bạn...
+              {LABELS.CUSTOMER.ONBOARDING_PREPARING}
             </p>
             
             <div className="flex gap-2 justify-center">

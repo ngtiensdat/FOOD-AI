@@ -1,144 +1,118 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-const getAuthHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  };
-};
+import { apiClient } from '@/lib/api-client';
 
 export const foodService = {
   async getAllFoods(tag?: string) {
-    const query = tag ? `?tag=${encodeURIComponent(tag)}` : '';
-    const res = await fetch(`${API_URL}/foods${query}`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods', { params: tag ? { tag } : undefined }).catch(() => []);
   },
 
   async getFeaturedToday() {
-    const res = await fetch(`${API_URL}/foods/featured-today`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/featured-today').catch(() => []);
   },
 
   async getFeaturedWeekly() {
-    const res = await fetch(`${API_URL}/foods/featured-weekly`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/featured-weekly').catch(() => []);
   },
 
   async searchFoods(query: string) {
-    const res = await fetch(`${API_URL}/foods/search?q=${query}`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/search', { params: { q: query } }).catch(() => []);
   },
 
   async getRecommendedFoods() {
-    const res = await fetch(`${API_URL}/foods/recommended`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/recommended').catch(() => []);
   },
   
   async getNearbyFoods(lat: number, lng: number, radius: number = 5) {
-    const res = await fetch(`${API_URL}/foods/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/nearby', { params: { lat, lng, radius } }).catch(() => []);
   },
 
   async getMyFoods() {
-    const res = await fetch(`${API_URL}/foods/my-foods`, {
-      headers: getAuthHeaders(),
-    });
-    return res.ok ? res.json() : [];
+    return apiClient.get('/foods/my-foods').catch(() => []);
   },
   
   async createFood(data: any) {
-    const res = await fetch(`${API_URL}/foods`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.ok;
+    try {
+      await apiClient.post('/foods', data);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async updateFood(id: number, data: any) {
-    const res = await fetch(`${API_URL}/foods/${id}`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.ok;
+    try {
+      await apiClient.patch(`/foods/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
   }
 };
 
 export const aiService = {
-  async chat(userId: number, message: string, lat?: number, lng?: number) {
-    const res = await fetch(`${API_URL}/ai/chat`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ userId, message, lat, lng }),
-    });
-    return res.ok ? res.json() : { reply: '', suggestions: [] };
+  async chat(message: string, lat?: number, lng?: number) {
+    try {
+      return await apiClient.post('/ai/chat', { message, lat, lng });
+    } catch {
+      return { reply: '', suggestions: [] };
+    }
   }
 };
 
 export const adminService = {
   async getAllUsers(role?: string) {
-    const query = role ? `?role=${role}` : '';
-    const res = await fetch(`${API_URL}/admin/users${query}`, {
-      headers: getAuthHeaders(),
-    });
-    return res.ok ? res.json() : [];
+    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch(() => []);
   },
 
   async deleteUser(id: number) {
-    const res = await fetch(`${API_URL}/admin/user/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    return res.ok;
+    try {
+      await apiClient.delete(`/admin/user/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async getAllFoods() {
-    const res = await fetch(`${API_URL}/admin/all-foods`, {
-      headers: getAuthHeaders(),
-    });
-    return res.ok ? res.json() : [];
+    return apiClient.get('/admin/all-foods').catch(() => []);
   },
 
   async updateFood(id: number, data: any) {
-    const res = await fetch(`${API_URL}/admin/update-food/${id}`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.ok;
+    try {
+      await apiClient.patch(`/admin/update-food/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async recommendFood(id: number) {
-    const res = await fetch(`${API_URL}/foods/${id}/recommend`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-    });
-    return res.ok;
+    try {
+      await apiClient.patch(`/foods/${id}/recommend`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async deleteFood(id: number) {
-    const res = await fetch(`${API_URL}/admin/food/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    return res.ok;
+    try {
+      await apiClient.delete(`/admin/food/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async getPendingMerchants() {
-    const res = await fetch(`${API_URL}/admin/pending-users`, {
-      headers: getAuthHeaders(),
-    });
-    return res.ok ? res.json() : [];
+    return apiClient.get('/admin/pending-users').catch(() => []);
   },
 
   async updateUserStatus(userId: number, status: string) {
-    const res = await fetch(`${API_URL}/admin/update-status/${userId}`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ status }),
-    });
-    return res.ok;
+    try {
+      await apiClient.patch(`/admin/update-status/${userId}`, { status });
+      return true;
+    } catch {
+      return false;
+    }
   }
 };

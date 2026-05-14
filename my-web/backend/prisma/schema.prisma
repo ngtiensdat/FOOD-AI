@@ -64,6 +64,7 @@ model User {
   isEmailVerified Boolean      @default(false) @map("is_email_verified")
   verificationToken String?    @map("verification_token")
   resetToken      String?      @map("reset_token")
+  refreshToken   String?      @map("refresh_token")
   legalDocuments  String?      @map("legal_documents")
 
   points          Int          @default(0)

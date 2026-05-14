@@ -1,0 +1,325 @@
+﻿
+E:\FOOD_AI_code\my-web\frontend\src\app\admin\page.tsx
+   4:25  error    'X' is defined but never used                                                                                                                                                                                                                                                            unused-imports/no-unused-imports
+   4:61  error    'Sparkles' is defined but never used                                                                                                                                                                                                                                                     unused-imports/no-unused-imports
+   4:78  error    'Star' is defined but never used                                                                                                                                                                                                                                                         unused-imports/no-unused-imports
+   4:84  error    'Settings' is defined but never used                                                                                                                                                                                                                                                     unused-imports/no-unused-imports
+   4:94  error    'Trash2' is defined but never used                                                                                                                                                                                                                                                       unused-imports/no-unused-imports
+   5:10  error    'motion' is defined but never used                                                                                                                                                                                                                                                       unused-imports/no-unused-imports
+  72:60  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  97:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\FOOD_AI_code\my-web\frontend\src\app\dashboard\page.tsx
+   5:10  error  'motion' is defined but never used  unused-imports/no-unused-imports
+  14:10  error  'Alert' is defined but never used   unused-imports/no-unused-imports
+
+E:\FOOD_AI_code\my-web\frontend\src\app\explore\page.tsx
+   5:42  error    'MapPin' is defined but never used        unused-imports/no-unused-imports
+  23:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\app\login\page.tsx
+  3:17  error  'useState' is defined but never used  unused-imports/no-unused-imports
+
+E:\FOOD_AI_code\my-web\frontend\src\app\profile\page.tsx
+  12:10  error    'Alert' is defined but never used                                                                                                                                                                                                                                                        unused-imports/no-unused-imports
+  90:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  90:21  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+
+E:\FOOD_AI_code\my-web\frontend\src\app\register\page.tsx
+  3:17  error  'useState' is defined but never used  unused-imports/no-unused-imports
+
+E:\FOOD_AI_code\my-web\frontend\src\app\restaurant-admin\page.tsx
+   5:32  error    'Trash2' is defined but never used                                                                                                                                                                                                                                                       unused-imports/no-unused-imports
+   5:40  error    'Edit' is defined but never used                                                                                                                                                                                                                                                         unused-imports/no-unused-imports
+   5:46  error    'CheckCircle' is defined but never used                                                                                                                                                                                                                                                  unused-imports/no-unused-imports
+   6:3   error    'Clock' is defined but never used                                                                                                                                                                                                                                                        unused-imports/no-unused-imports
+   6:10  error    'XCircle' is defined but never used                                                                                                                                                                                                                                                      unused-imports/no-unused-imports
+   8:10  error    'motion' is defined but never used                                                                                                                                                                                                                                                       unused-imports/no-unused-imports
+  13:10  error    'Input' is defined but never used                                                                                                                                                                                                                                                        unused-imports/no-unused-imports
+  95:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\FOOD_AI_code\my-web\frontend\src\components\base\Input.tsx
+  25:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\base\Section.tsx
+  4:10  error  'motion' is defined but never used  unused-imports/no-unused-imports
+
+E:\FOOD_AI_code\my-web\frontend\src\components\base\Sidebar.tsx
+  5:32  error  'LogOut' is defined but never used  unused-imports/no-unused-imports
+  6:10  error  'motion' is defined but never used  unused-imports/no-unused-imports
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\AdminFoodModal.tsx
+  11:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\AdminTable.tsx
+  11:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\AiResponseBox.tsx
+  12:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\CategorySection.tsx
+  19:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:93  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\EditProfileModal.tsx
+  13:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\FoodCard.tsx
+  11:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\FoodDetailModal.tsx
+  12:9    warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:109  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\FoodFormModal.tsx
+  13:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\Footer.tsx
+  11:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\Hero.tsx
+  17:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\MenuTable.tsx
+  10:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\Navbar.tsx
+  15:23  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  24:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\Navbar.tsx:24:5
+  22 |
+  23 |   useEffect(() => {
+> 24 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, []);
+  26 |
+  27 |   if (!mounted) return null;  react-hooks/set-state-in-effect
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\OnboardingModal.tsx
+   12:9   warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+   13:22  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+   19:53  warning  'show' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+   21:42  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  139:32  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  149:49  warning  Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\ProfileHeader.tsx
+  11:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:7   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\ProfileIntro.tsx
+   9:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:7   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\SettingsSection.tsx
+   11:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   12:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   13:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\components\features\UserDropdown.tsx
+  10:9  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useAdminActions.ts
+  12:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  88:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useAdminData.ts
+   5:60  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+   6:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+   7:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  29:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useAdminData.ts:29:5
+  27 |
+  28 |   useEffect(() => {
+> 29 |     fetchData();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |   }, [fetchData]);
+  31 |
+  32 |   const deleteUser = async (id: number) => {  react-hooks/set-state-in-effect
+  48:51  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useDashboardActions.ts
+  12:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useHomeActions.ts
+  12:52  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  20:56  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  24:36  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  25:36  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  26:25  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useHomeActions.ts:26:25
+  24 |       const isOnboarded = (user as any).hasCompletedOnboarding === true || 
+  25 |                           (user as any).profile?.hasCompletedOnboarding === true;
+> 26 |       if (!isOnboarded) setShowOnboarding(true);
+     |                         ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |     }
+  28 |   }, [isAuthenticated, user]);
+  29 |  react-hooks/set-state-in-effect
+  30:56  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  81:65  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useHomeData.ts
+  5:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useLoginActions.ts
+  10:9   warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  16:40  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  20:22  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  40:21  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useProfileData.ts
+   9:42  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  16:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  31:20  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useProfileData.ts:31:20
+  29 |   useEffect(() => {
+  30 |     const idToFetch = targetId ? parseInt(targetId) : me?.id;
+> 31 |     if (idToFetch) fetchProfileData(idToFetch, me?.id);
+     |                    ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |   }, [targetId, me?.id, fetchProfileData]);
+  33 |
+  34 |   useEffect(() => {  react-hooks/set-state-in-effect
+  36:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useProfileData.ts:36:7
+  34 |   useEffect(() => {
+  35 |     if (profile) {
+> 36 |       setEditData({
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |         name: profile.name,
+  38 |         fullName: profile.profile?.fullName || '',
+  39 |         phone: profile.profile?.phone || '',                                        react-hooks/set-state-in-effect
+  53:15  warning  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       unused-imports/no-unused-vars
+  53:23  warning  'id' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           unused-imports/no-unused-vars
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useRegisterActions.ts
+  11:9   warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  12:9   warning  'setUser' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  22:40  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  27:22  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  67:19  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useRestaurantActions.ts
+  12:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  13:42  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  17:50  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  36:15  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\FOOD_AI_code\my-web\frontend\src\hooks\useRestaurantActions.ts:36:15
+  34 |
+  35 |   useEffect(() => {
+> 36 |     if (user) fetchMyFoods();
+     |               ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |   }, [user]);
+  38 |
+  39 |   const handleOpenAdd = () => {  react-hooks/set-state-in-effect
+  47:33  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  84:14  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          unused-imports/no-unused-vars
+
+E:\FOOD_AI_code\my-web\frontend\src\lib\api-client.ts
+   6:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  97:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\services\auth.service.ts
+   4:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\services\food.service.ts
+  32:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\FOOD_AI_code\my-web\frontend\src\types\user.ts
+  24:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 151 problems (28 errors, 123 warnings)
+  22 errors and 0 warnings potentially fixable with the `--fix` option.
+

@@ -1,212 +1,164 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { User, Heart, Clock, Settings, Sparkles, ChevronRight, LogOut, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import { User, Heart, Clock, Settings, Sparkles, ChevronRight, ArrowLeft, Menu } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { OnboardingModal } from '@/components/features/OnboardingModal';
-import { authService } from '@/services/auth.service';
+import { useAuth } from '@/hooks/useAuth';
+import { useDashboardActions } from '@/hooks/useDashboardActions';
+import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
+import { Button } from '@/components/base/Button';
+import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng UserDropdown
+// Tái sử dụng Alert
+import { LABELS } from '@/constants/labels';
 
 export default function CustomerDashboard() {
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const { user, login: updateMe, logout } = useAuth();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const savedUser = localStorage.getItem('user');
-      if (!savedUser) {
-        window.location.href = '/login';
-        return;
-      }
-      const user = JSON.parse(savedUser);
-      
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      try {
-        const res = await fetch(`${API_URL}/auth/profile/${user.id}`);
-        if (!res.ok) throw new Error('Không thể kết nối đến máy chủ');
-        const data = await res.json();
-        setProfile(data);
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Toàn bộ logic xử lý và trạng thái được quản lý bởi Hook này
+  const {
+    profile,
+    loading,
+    showOnboarding,
+    setShowOnboarding,
+    showMenu,
+    setShowMenu,
+    handleOnboardingComplete
+  } = useDashboardActions(user, updateMe);
 
-    fetchProfile();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  };
-
-  const handleOnboardingComplete = async (preferences: any) => {
-    if (!profile) return;
-    try {
-      await authService.completeOnboarding({
-        userId: profile.id,
-        preferences
-      });
-      
-      // Cập nhật lại thông tin profile và đồng bộ LocalStorage
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const res = await fetch(`${API_URL}/auth/profile/${profile.id}`);
-      const newData = await res.json();
-      setProfile(newData);
-
-      // Đồng bộ hóa triệt để với LocalStorage để Trang chủ không hiện lại Modal
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        const currentUser = JSON.parse(savedUser);
-        const updatedUser = { 
-          ...currentUser, 
-          hasCompletedOnboarding: true,
-          profile: {
-            ...currentUser.profile,
-            hasCompletedOnboarding: true,
-            preferences: preferences
-          }
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-      
-      setShowOnboarding(false);
-      setUpdateSuccess(true);
-      setTimeout(() => setUpdateSuccess(false), 3000);
-    } catch (error) {
-      console.error('Lỗi cập nhật sở thích:', error);
-    }
-  };
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Đang tải thông tin...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold text-h2 gradient-text">{LABELS.COMMON.LOADING}</div>;
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 flex flex-col p-6 fixed h-full">
-        <Link href="/" className="flex items-center gap-2 mb-12 px-2">
-          <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-white">
-            <Sparkles size={18} />
-          </div>
-          <span className="text-xl font-bold gradient-text">Food AI</span>
-        </Link>
+    <div className="admin-layout">
+      {/* Sidebar: Điều hướng cá nhân */}
+      <Sidebar brandLabel="Food AI">
+        <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
+        <SidebarItem icon={User} label={LABELS.AUTH.PROFILE} active />
+        <SidebarItem icon={Heart} label={LABELS.CUSTOMER.FAVORITES} />
+        <SidebarItem icon={Clock} label={LABELS.CUSTOMER.AI_HISTORY} />
+      </Sidebar>
 
-        <nav className="space-y-2 flex-1">
-          <Link href="/" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-orange-50 hover:text-primary rounded-xl font-bold transition-all">
-            <ArrowLeft size={18} /> Quay lại Home
-          </Link>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 bg-orange-50 text-primary rounded-xl font-bold transition-all">
-            <User size={18} /> Hồ sơ cá nhân
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-orange-50 hover:text-primary rounded-xl font-bold transition-all">
-            <Heart size={18} /> Món ăn yêu thích
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-orange-50 hover:text-primary rounded-xl font-bold transition-all">
-            <Clock size={18} /> Lịch sử đề xuất
-          </a>
-        </nav>
-
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-all"
-        >
-          <LogOut size={18} /> Đăng xuất
-        </button>
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-72 flex-1 p-12">
+      <main className="admin-main">
+        {/* Header: Chào hỏi và Menu người dùng */}
         <header className="mb-12 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <Link href="/" className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm">
-              <ArrowLeft size={24} />
+            <Link href="/">
+              <Button variant="outline" className="w-12 h-12 p-0 rounded-2xl shadow-sm">
+                <ArrowLeft size={24} />
+              </Button>
             </Link>
             <div>
-              <h2 className="text-3xl font-bold text-gray-800">Chào bạn, {profile?.name}! 👋</h2>
-              <p className="text-gray-500 font-medium">Hôm nay bạn muốn AI gợi ý món gì cho bữa trưa không?</p>
+              <h2 className="text-h2 text-gray-800">{LABELS.CUSTOMER.GREETING(profile?.name || '')}</h2>
+              <p className="text-body text-gray-500">{LABELS.CUSTOMER.SUBTITLE}</p>
             </div>
           </div>
+
           <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="font-bold text-gray-800">{profile?.name}</p>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{profile?.role}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-xl">
-              {profile?.name?.charAt(0).toUpperCase()}
-            </div>
+            {/* Tái sử dụng UserDropdown để đồng bộ trải nghiệm người dùng toàn ứng dụng */}
+            {user && (
+              <div className="flex items-center gap-3 relative">
+                <div className="text-right hidden md:block">
+                  <p className="font-bold text-gray-800">{profile?.name}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{profile?.role}</p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-12 h-12 p-0 rounded-2xl shadow-sm"
+                  onClick={() => setShowMenu(!showMenu)}
+                >
+                  <Menu size={24} />
+                </Button>
+
+                {showMenu && (
+                  <UserDropdown
+                    user={user}
+                    onLogout={logout}
+                    onSettingsClick={() => setShowMenu(false)}
+                  />
+                )}
+              </div>
+            )}
           </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* AI Suggestion Box */}
-            <section className="gradient-bg p-8 rounded-[2.5rem] text-white shadow-2xl shadow-orange-200 relative overflow-hidden">
+            {/* Banner gợi ý AI nổi bật */}
+            <section className="gradient-bg p-8 rounded-card text-white shadow-2xl shadow-orange-200 relative overflow-hidden">
               <div className="relative z-10">
-                <h3 className="text-2xl font-bold mb-4">Gợi ý AI dành riêng cho bạn</h3>
-                <p className="opacity-90 mb-8 max-w-md">Dựa trên lịch sử ăn uống của bạn, chúng tôi đề xuất món <b>Phở Bò Gia Truyền</b> cho hôm nay.</p>
-                <button className="bg-white text-primary px-8 py-3 rounded-2xl font-bold hover:scale-105 transition-transform">
-                  Thử ngay
-                </button>
+                <h3 className="text-h2 !text-white mb-4">{LABELS.CUSTOMER.AI_SUGGESTION}</h3>
+                <p className="text-body opacity-90 mb-8 max-w-md">
+                  {LABELS.CUSTOMER.AI_SUGGESTION_DESC(LABELS.CUSTOMER.PLACEHOLDER_FOOD)}
+                </p>
+                <Button variant="secondary" className="px-8 hover:scale-105">{LABELS.RESTAURANT.VIEW_INSIGHT}</Button>
               </div>
               <Sparkles className="absolute right-[-20px] bottom-[-20px] opacity-20" size={180} />
             </section>
 
-            {/* Profile Info */}
-            <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+            {/* Thông tin hồ sơ chi tiết */}
+            <section className="card-container p-8">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-gray-800">Thông tin cá nhân</h3>
+                <h3 className="text-xl font-bold text-gray-800">{LABELS.CUSTOMER.INFO}</h3>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => setShowOnboarding(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-primary rounded-xl font-bold text-sm hover:bg-orange-100 transition-all"
-                  >
-                    <Sparkles size={16} /> Cập nhật sở thích AI
-                  </button>
-                  <button className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-400">
-                    <Settings size={20}/>
-                  </button>
+                  <Button variant="secondary" size="sm" onClick={() => setShowOnboarding(true)}>
+                    <Sparkles size={16} className="mr-2" /> {LABELS.CUSTOMER.UPDATE_PREFERENCES}
+                  </Button>
+                  <Button variant="outline" className="w-10 h-10 p-0 rounded-xl">
+                    <Settings size={20} />
+                  </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-8">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-small">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Email</label>
+                  <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">{LABELS.FORM.EMAIL}</label>
                   <p className="font-bold text-gray-700">{profile?.email}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Số điện thoại</label>
-                  <p className="font-bold text-gray-700">{profile?.profile?.phone || 'Chưa cập nhật'}</p>
+                  <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">{LABELS.FORM.PHONE}</label>
+                  <p className="font-bold text-gray-700">{profile?.profile?.phone || LABELS.FORM.NOT_SET}</p>
                 </div>
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Sở thích ăn uống (AI Context)</label>
+                <div className="col-span-1 md:col-span-2">
+                  <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">{LABELS.CUSTOMER.AI_CONTEXT}</label>
                   <p className="font-bold text-gray-700 italic">
-                    {profile?.profile?.preferences ? 
-                      Object.values(profile.profile.preferences).join(', ') : 
-                      'Bạn chưa cập nhật sở thích để AI tư vấn tốt hơn.'}
+                    {profile?.profile?.preferences ? Object.values(profile.profile.preferences).join(', ') : LABELS.FORM.NO_PREFERENCES}
                   </p>
                 </div>
               </div>
             </section>
           </div>
 
-          {/* Quick Actions */}
           <div className="space-y-8">
-            <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">Món ăn gần đây</h3>
+            {/* Danh sách món ăn xem gần đây */}
+            <section className="card-container p-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6">{LABELS.CUSTOMER.RECENT_FOODS}</h3>
               <div className="space-y-4">
-                {[1, 2].map(i => (
-                  <div key={i} className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0">
-                      <img src={`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&auto=format`} alt="food" />
+                {/* Mock data cho danh sách xem gần đây - Sau này sẽ lấy từ API/Store */}
+                {[
+                  { id: 1, name: LABELS.CUSTOMER.PLACEHOLDER_FOOD_2, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100', days: 1 },
+                  { id: 2, name: LABELS.CUSTOMER.PLACEHOLDER_FOOD, img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100', days: 2 }
+                ].map((item) => (
+                  <div key={item.id} className="flex items-center gap-4 group cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all">
+                    <div className="relative w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0 shadow-sm">
+                      <Image 
+                        src={item.img} 
+                        alt={item.name} 
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-800 text-sm group-hover:text-primary transition-colors">Bún chả Hà Nội</h4>
-                      <p className="text-xs text-gray-400">Được AI gợi ý {i} ngày trước</p>
+                      <h4 className="font-bold text-gray-800 text-small group-hover:text-primary transition-colors">
+                        {item.name}
+                      </h4>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase">
+                        {LABELS.CUSTOMER.RECENT_FOOD_SUGGEST(item.days)}
+                      </p>
                     </div>
-                    <ChevronRight size={16} className="text-gray-300" />
+                    <ChevronRight size={16} className="text-gray-300 group-hover:text-primary" />
                   </div>
                 ))}
               </div>
@@ -215,25 +167,16 @@ export default function CustomerDashboard() {
         </div>
       </main>
 
-      {/* Modals & Notifications */}
+      {/* Modal Onboarding để cập nhật sở thích */}
       {showOnboarding && (
-        <OnboardingModal 
-          user={profile} 
+        <OnboardingModal
+          user={profile}
           onComplete={handleOnboardingComplete}
           onClose={() => setShowOnboarding(false)}
-          title="Cập nhật sở thích ăn uống"
+          title={LABELS.CUSTOMER.UPDATE_PREFERENCES}
         />
       )}
 
-      {updateSuccess && (
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-10 right-10 bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl z-[10000] font-bold flex items-center gap-3"
-        >
-          <Sparkles size={20} /> Cập nhật sở thích thành công!
-        </motion.div>
-      )}
     </div>
   );
 }

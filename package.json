@@ -1,0 +1,21 @@
+{
+  "name": "food-ai-workspace",
+  "private": true,
+  "workspaces": [
+    "my-web/backend",
+    "my-web/frontend"
+  ],
+  "scripts": {
+    "prepare": "husky",
+    "lint:backend": "npm run lint --prefix my-web/backend",
+    "lint:frontend": "npm run lint --prefix my-web/frontend"
+  },
+  "lint-staged": {
+    "my-web/backend/src/**/*.{ts,js}": [
+      "npm run lint:backend"
+    ],
+    "my-web/frontend/src/**/*.{ts,js,tsx,jsx}": [
+      "npm run lint:frontend"
+    ]
+  }
+}
