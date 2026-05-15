@@ -8,7 +8,13 @@ import {
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UserStatus, UserRole, User, UserProfile } from '@prisma/client';
+import {
+  UserStatus,
+  UserRole,
+  User,
+  UserProfile,
+  Prisma,
+} from '@prisma/client';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AiService } from '../ai/ai.service';
@@ -165,7 +171,7 @@ export class AuthService {
   ) {
     const result = await this.userRepository.upsertProfile(userId, {
       hasCompletedOnboarding: true,
-      preferences: preferences,
+      preferences: preferences as Prisma.InputJsonValue,
     });
     void this.aiService.updateUserEmbedding(userId);
     return result;
