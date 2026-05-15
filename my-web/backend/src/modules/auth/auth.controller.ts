@@ -18,10 +18,11 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('register')
   async register(
@@ -32,7 +33,7 @@ export class AuthController {
     this.setCookies(res, result.accessToken, result.refreshToken);
     return { user: result.user };
   }
-
+  @UseGuards(CustomThrottlerGuard)
   @Post('login')
   async login(
     @Body() dto: LoginDto,

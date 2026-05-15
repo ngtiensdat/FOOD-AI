@@ -66,7 +66,7 @@ export const useRegisterActions = () => {
         // setUser(data); // Có thể dùng nếu muốn auto-login
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || LABELS.COMMON.ERROR);
+      toast.error(err.message || LABELS.COMMON.ERROR);
     } finally {
       setIsLoading(false);
     }

@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ThrottlerExceptionFilter } from './common/filters/throttler-exception.filter';
 
 import { Request, Response, NextFunction } from 'express';
 
@@ -21,7 +22,7 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new TransformInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(), new ThrottlerExceptionFilter());
 
   // Thêm logger đơn giản để kiểm tra request có đến được server không
   app.use((req: Request, res: Response, next: NextFunction) => {

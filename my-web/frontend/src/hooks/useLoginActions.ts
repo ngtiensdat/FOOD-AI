@@ -38,7 +38,7 @@ export const useLoginActions = () => {
       toast.success(LABELS.COMMON.SUCCESS);
       window.location.href = '/';
     } catch (error: any) {
-      const msg = error.response?.data?.message || LABELS.COMMON.ERROR;
+      const msg = error.message || LABELS.COMMON.ERROR;
       toast.error(msg);
       setErrors({ form: msg });
     } finally {

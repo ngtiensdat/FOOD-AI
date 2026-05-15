@@ -69,8 +69,15 @@ class ApiClient {
     }
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+      
+      // Lấy message từ mảng errors của Backend
+      let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+      if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        errorMessage = errorData.errors[0].message;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();

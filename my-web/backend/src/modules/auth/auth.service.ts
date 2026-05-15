@@ -82,7 +82,7 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       console.warn(`[AuthService] User not found: ${dto.email}`);
-      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+      throw new NotFoundException('Tài khoản này chưa được đăng ký trên hệ thống.');
     }
 
     if (user.status === UserStatus.PENDING) {
@@ -95,7 +95,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       console.warn(`[AuthService] Invalid password for: ${dto.email}`);
-      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+      throw new UnauthorizedException('Mật khẩu không chính xác. Vui lòng thử lại.');
     }
 
     console.log(`[AuthService] Login successful: ${dto.email}`);
