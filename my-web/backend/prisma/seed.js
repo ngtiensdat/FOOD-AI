@@ -41,17 +41,93 @@ async function main() {
   });
   console.log(`- Đã khởi tạo Admin: ${admin.email}`);
 
-  // 2. Tạo các Danh mục (Categories) mẫu
-  const categories = [
-    'Món nước', 'Cơm', 'Phở', 'Bún', 'Đồ ăn nhanh', 'Lẩu', 'Hải sản', 'Ăn vặt', 'Đồ uống'
+  // 3. Tạo Merchant mẫu
+  const merchantPassword = await bcrypt.hash('merchant123456', 10);
+  const merchant = await prisma.user.upsert({
+    where: { email: 'merchant@gmail.com' },
+    update: {},
+    create: {
+      email: 'merchant@gmail.com',
+      name: 'Chủ quán ăn ngon',
+      password: merchantPassword,
+      role: 'RESTAURANT',
+      status: 'APPROVED',
+      isEmailVerified: true,
+    }
+  });
+
+  await prisma.userProfile.upsert({
+    where: { userId: merchant.id },
+    update: {},
+    create: {
+      userId: merchant.id,
+      fullName: 'Nguyễn Văn Chủ',
+    }
+  });
+  console.log(`- Đã khởi tạo Merchant: ${merchant.email}`);
+
+  // 4. Tạo Nhà hàng mẫu
+  const restaurant = await prisma.restaurant.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      name: 'Nhà Hàng Food AI Xa La',
+      address: 'Phố Xa La, Phúc La, Hà Đông, Hà Nội',
+      latitude: 20.9752273,
+      longitude: 105.7452284,
+      ownerId: merchant.id,
+      isActive: true,
+    }
+  });
+  console.log(`- Đã khởi tạo Nhà hàng: ${restaurant.name}`);
+
+  // 5. Tạo món ăn mẫu
+  console.log('- Đang tạo món ăn mẫu...');
+  const foodsData = [
+    {
+      name: "Ngũ cốc kiểu Pháp",
+      price: 199000,
+      description: "Ngũ cốc kiểu Pháp thơm ngon, giàu chất xơ.",
+      image: "https://res.cloudinary.com/dy16ujpkq/image/upload/v1778222690/cld-sample-4.jpg",
+      lat: 20.9752273,
+      lng: 105.7452284,
+      tags: ["Ngũ cốc", "Kiểu Pháp"],
+      isAdminRecommended: true,
+      isFeaturedToday: true,
+      status: 'APPROVED'
+    },
+    {
+      name: "Phở Bò Gia Truyền",
+      price: 55000,
+      description: "Phở bò nước dùng ngọt thanh, thịt bò mềm.",
+      image: "https://res.cloudinary.com/dy16ujpkq/image/upload/v1778222690/cld-sample-4.jpg",
+      lat: 20.976,
+      lng: 105.746,
+      tags: ["Phở", "Bò"],
+      isAdminRecommended: true,
+      isFeaturedWeekly: true,
+      status: 'APPROVED'
+    },
+    {
+      name: "Cơm Tấm Sườn Bì",
+      price: 45000,
+      description: "Cơm tấm sài gòn chính hiệu.",
+      image: "https://res.cloudinary.com/dy16ujpkq/image/upload/v1778222690/cld-sample-4.jpg",
+      lat: 20.974,
+      lng: 105.744,
+      tags: ["Cơm Tấm"],
+      isFeaturedToday: true,
+      status: 'APPROVED'
+    }
   ];
 
-  console.log('- Đang tạo danh mục món ăn...');
-  for (const name of categories) {
-    await prisma.category.upsert({
-      where: { name },
-      update: {},
-      create: { name }
+  for (const food of foodsData) {
+    await prisma.food.create({
+      data: {
+        ...food,
+        restaurantId: restaurant.id
+      }
     });
   }
 

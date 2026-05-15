@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ShoppingBag, Navigation, Heart } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { formatCurrency, formatDistance } from '@/utils/formatters';
 
 interface FoodCardProps {
   food: any;
@@ -49,13 +50,13 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
       </div>
       <div className="p-6">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-primary font-bold text-lg">{food.price?.toLocaleString()}đ</span>
+          <span className="text-primary font-bold text-lg">{formatCurrency(food.price)}</span>
 
           <div className="flex items-center gap-2">
             {food.distance !== undefined && food.distance !== null && (
               <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold">
                 <Navigation size={12} />
-                <span>{food.distance < 1 ? `${(food.distance * 1000).toFixed(0)}m` : `${food.distance.toFixed(1)}km`}</span>
+                <span>{formatDistance(food.distance)}</span>
               </div>
             )}
 

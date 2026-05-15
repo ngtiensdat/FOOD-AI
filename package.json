@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "prepare": "husky",
+    "dev": "concurrently \"npm run start:dev --prefix my-web/backend\" \"npm run dev --prefix my-web/frontend\"",
     "lint:backend": "npm run lint --prefix my-web/backend",
     "lint:frontend": "npm run lint --prefix my-web/frontend"
   },
@@ -17,5 +18,9 @@
     "my-web/frontend/src/**/*.{ts,js,tsx,jsx}": [
       "npm run lint:frontend"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7"
   }
 }

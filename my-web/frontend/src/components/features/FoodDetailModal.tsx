@@ -7,6 +7,7 @@ import { X, MapPin, Navigation, Store } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { formatCurrency } from '@/utils/formatters';
 
 interface FoodDetailModalProps {
   food: any;
@@ -51,7 +52,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
               {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
             </span>
             <h2 className="text-h2 text-gray-800 mb-2">{food.name}</h2>
-            <p className="text-2xl font-bold text-primary">{food.price?.toLocaleString()}đ</p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(food.price)}</p>
           </div>
 
           <div className="space-y-6 mb-10 text-gray-600">

@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 
+export interface NearbyResult {
+  id: number;
+  distance: number;
+}
+
 @Injectable()
 export class FoodRepository {
   constructor(private prisma: PrismaService) {}
@@ -67,7 +72,7 @@ export class FoodRepository {
   }
 
   async findNearby(lat: number, lng: number, radius: number) {
-    const nearbyResults = await this.prisma.$queryRaw`
+    const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
       SELECT f.id, 
         (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) AS distance
       FROM foods f
@@ -95,13 +100,17 @@ export class FoodRepository {
 
     return foods
       .map((f) => {
-        const result = nearbyResults.find((r) => r.id === f.id);
+        const row = nearbyResults.find((r) => r.id === f.id);
+        const distanceValue = row ? row.distance : 0;
         return {
           ...f,
-          distance: result ? result.distance : 0,
+          distance: distanceValue,
         };
       })
-      .sort((a, b) => a.distance - b.distance);
+      .sort(
+        (a: { distance: number }, b: { distance: number }) =>
+          a.distance - b.distance,
+      );
   }
 
   async create(data: Prisma.FoodCreateInput) {

@@ -74,8 +74,9 @@ class ApiClient {
     }
 
     const result = await response.json();
-    // Tự động unwrap nếu data có cấu trúc { success, data, message }
-    if (result && typeof result === 'object' && 'success' in result && 'data' in result) {
+    
+    // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
+    if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {
       return result.data;
     }
 

@@ -39,6 +39,7 @@ export const Button = ({
 
   return (
     <motion.button
+      suppressHydrationWarning
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthStyle} ${className}`}
       {...props}
     >

@@ -11,6 +11,7 @@ import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
 import { UserDropdown } from '@/components/features/UserDropdown';
 import { LABELS } from '@/constants/labels';
+import { formatCurrency } from '@/utils/formatters';
 
 // Feature Components
 import { MenuTable } from '@/components/features/MenuTable';
@@ -95,7 +96,7 @@ export default function RestaurantDashboard() {
                       <h4 className="font-bold text-gray-800 text-body">{food.name}</h4>
                       <p className="text-small text-gray-400">{LABELS.RESTAURANT.STATUS}: <span className="text-primary font-bold">{food.status}</span></p>
                     </div>
-                    <p className="font-bold text-gray-800 text-body">{food.price.toLocaleString()}đ</p>
+                    <p className="font-bold text-gray-800 text-body">{formatCurrency(food.price)}</p>
                   </div>
                 ))}
                 {myFoods.length === 0 && <p className="text-center text-gray-400 py-8">{LABELS.RESTAURANT.NO_FOOD}</p>}

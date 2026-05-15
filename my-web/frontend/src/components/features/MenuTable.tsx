@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { CheckCircle, Clock, XCircle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { formatCurrency } from '@/utils/formatters';
 
 interface MenuTableProps {
   myFoods: any[];
@@ -44,7 +45,7 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
                   </div>
                   <div>
                     <span className="font-bold text-gray-800 text-lg block">{food.name}</span>
-                    <span className="text-primary font-bold">{food.price.toLocaleString()}đ</span>
+                    <span className="text-primary font-bold">{formatCurrency(food.price)}</span>
                   </div>
                 </div>
               </td>

@@ -38,6 +38,7 @@ export const Hero = ({
         alt="Hero Background"
         fill
         priority
+        sizes="100vw"
         className="object-cover opacity-10"
       />
       <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
@@ -68,6 +69,7 @@ export const Hero = ({
           <div className="flex items-center gap-3 px-4 w-full">
             <Sparkles className="text-primary shrink-0" size={24} />
             <input
+              suppressHydrationWarning
               type="text"
               className="w-full bg-transparent border-none outline-none text-body py-2"
               placeholder={isAuthenticated ? LABELS.HERO.PLACEHOLDER_AUTH : LABELS.HERO.PLACEHOLDER_GUEST}

@@ -4,6 +4,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import { Request } from 'express';
+import { UserStatus } from '@prisma/client';
+import { JwtPayload } from '../types/jwt-payload';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,10 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: (req: Request) => {
-        let token = null;
-        if (req && req.cookies) {
-          token = (req.cookies as Record<string, string>)['accessToken'];
-        }
+        const token = (req?.cookies?.['accessToken'] as string) || null;
         return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
       },
       ignoreExpiration: false,
@@ -25,18 +24,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number; email: string; role: string }) {
+  async validate(payload: JwtPayload) {
+    const userId = Number(payload.sub);
+
+    if (isNaN(userId)) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, role: true, status: true },
+      where: { id: userId },
+      select: { id: true, email: true, role: true, status: true, name: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user.status !== 'APPROVED') {
-      throw new UnauthorizedException('Account not approved or blocked');
+    if (user.status !== UserStatus.APPROVED) {
+      throw new UnauthorizedException(
+        'Tài khoản chưa được phê duyệt hoặc đã bị khóa',
+      );
     }
 
     return user;

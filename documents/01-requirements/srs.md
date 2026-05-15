@@ -101,3 +101,55 @@ Bao gồm 4 thành phần chính:
 - Quản lý thông tin nhà hàng và menu món ăn.
 - Tạo/đăng bài viết và theo dõi trạng thái duyệt bài.
 - Cập nhật trạng thái món ăn.
+
+---
+
+## IV. Yêu cầu phi chức năng (Non-functional Requirements)
+
+### 1. Hiệu năng (Performance)
+- **Thời gian phản hồi AI:** Chatbot phải phản hồi (stream hoặc câu trả lời đầy đủ) trong vòng tối đa 5-10 giây tùy thuộc vào độ phức tạp của yêu cầu.
+- **Tối ưu hóa tìm kiếm:** Các truy vấn Vector Search trên `pgvector` phải đảm bảo phản hồi dưới 500ms đối với tập dữ liệu hàng chục nghìn bản ghi.
+- **Tải trang:** Thời gian tải trang đầu tiên (First Contentful Paint) dưới 2 giây.
+
+### 2. Bảo mật (Security)
+- **Xác thực:** Sử dụng JWT (JSON Web Token) để quản lý phiên đăng nhập, lưu trữ an toàn trong HttpOnly Cookie.
+- **Phân quyền (RBAC):** Đảm bảo người dùng chỉ truy cập được các tài nguyên thuộc quyền hạn của mình (Admin/Merchant/Customer).
+- **Bảo mật dữ liệu:** Mã hóa mật khẩu người dùng bằng các thuật toán hiện đại (như bcrypt).
+
+### 3. Tính khả dụng (Usability)
+- **Giao diện:** Thân thiện, hỗ trợ tốt trên cả máy tính và thiết bị di động (Responsive Design).
+- **Trải nghiệm AI:** Cung cấp các gợi ý mẫu để người dùng dễ dàng bắt đầu hội thoại với chatbot.
+
+---
+
+## V. Luồng xử lý chi tiết (Detailed Functional Flows)
+
+### 1. Luồng gợi ý món ăn bằng AI (RAG Flow)
+1.  **Nhận yêu cầu:** Người dùng gửi yêu cầu bằng ngôn ngữ tự nhiên qua giao diện chat.
+2.  **Xử lý Vector:** Hệ thống chuyển yêu cầu thành Vector Embedding thông qua OpenAI API.
+3.  **Tìm kiếm ngữ nghĩa (Semantic Search):** Hệ thống tìm kiếm các món ăn có vector tương đồng nhất trong database (PostgreSQL + pgvector).
+4.  **Tạo ngữ cảnh (Contextualize):** Kết hợp yêu cầu của người dùng + danh sách món ăn tìm được + lịch sử trò chuyện.
+5.  **Phản hồi:** Gửi ngữ cảnh cho AI để tạo ra câu trả lời tự nhiên, thân thiện và chính xác.
+
+### 2. Quy trình kiểm duyệt bài đăng (Moderation Flow)
+1.  Merchant tạo bài đăng -> Trạng thái bài đăng là `Pending`.
+2.  Admin nhận thông báo bài đăng mới trong danh sách chờ.
+3.  Admin kiểm tra nội dung (hình ảnh, ngôn từ) -> `Approve` (hiển thị công khai) hoặc `Reject` (kèm lý do).
+4.  Hệ thống cập nhật trạng thái và thông báo cho Merchant.
+
+---
+
+## VI. Quản lý ngoại lệ (Exception Handling)
+
+- **Lỗi dịch vụ AI:** Nếu OpenAI API gặp sự cố hoặc quá tải, hệ thống phải thông báo cho người dùng một cách khéo léo và chuyển sang chế độ tìm kiếm từ khóa truyền thống hoặc gợi ý món ăn phổ biến.
+- **Không tìm thấy kết quả:** Khi AI không tìm thấy món ăn phù hợp, chatbot sẽ gợi ý các món ăn tương tự hoặc yêu cầu người dùng mở rộng tiêu chí tìm kiếm.
+- **Lỗi kết nối database:** Hiển thị trang thông báo lỗi bảo trì để người dùng quay lại sau.
+
+---
+
+## VII. Thuật ngữ (Glossary)
+
+- **RAG (Retrieval-Augmented Generation):** Quy trình kết hợp việc truy xuất dữ liệu từ nguồn tin cậy (Database) vào mô hình ngôn ngữ lớn để tạo ra câu trả lời chính xác và thực tế.
+- **Vector Embedding:** Kỹ thuật chuyển đổi văn bản hoặc hình ảnh thành một dãy số để máy tính có thể hiểu và so sánh ý nghĩa.
+- **pgvector:** Một phần mở rộng của PostgreSQL cho phép lưu trữ và tìm kiếm dữ liệu vector hiệu quả.
+- **NLP (Natural Language Processing):** Xử lý ngôn ngữ tự nhiên, giúp máy tính hiểu được tiếng người.

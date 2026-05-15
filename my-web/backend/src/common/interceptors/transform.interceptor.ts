@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Response<T> {
+  success: boolean;
   data: T;
   meta?: {
     total?: number;
@@ -32,6 +33,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
         if (data && typeof data === 'object' && 'data' in data) {
           const wrapper = data as unknown as Response<T>;
           return {
+            success: true,
             data: wrapper.data,
             meta: wrapper.meta || {},
           };
@@ -39,6 +41,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
 
         // Nếu data là một mảng, chúng ta mặc định meta rỗng hoặc có thể bổ sung logic pagination sau
         return {
+          success: true,
           data: data,
           meta: {},
         };

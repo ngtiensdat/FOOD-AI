@@ -4,6 +4,7 @@ import React from 'react';
 import { Check, X, Star, Sparkles, Settings, Trash2 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { formatCurrency, formatDate } from '@/utils/formatters';
 
 interface AdminTableProps {
   activeTab: string;
@@ -55,7 +56,7 @@ export const AdminTable = ({
                   {activeTab === 'menu' ? (item.restaurant?.name || LABELS.FOOD.SYSTEM) : item.email}
                 </td>
                 <td className="px-8 py-6 text-gray-500">
-                  {activeTab === 'menu' ? `${item.price.toLocaleString()}đ` : new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                  {activeTab === 'menu' ? formatCurrency(item.price) : formatDate(item.createdAt)}
                 </td>
                 <td className="px-8 py-6 text-center">
                   <div className="flex justify-center gap-2">

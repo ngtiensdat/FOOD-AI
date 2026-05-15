@@ -36,6 +36,7 @@ export const Input = ({
           />
         )}
         <InputComponent
+          suppressHydrationWarning
           className={`${inputStyles} ${className} ${isTextArea ? 'min-h-[100px]' : ''}`}
           {...props}
         />

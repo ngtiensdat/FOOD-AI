@@ -37,7 +37,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50">
       <div className="flex items-center gap-2">
         <div className="relative w-10 h-10">
-          <Image src="/favicon.ico" alt="Food AI Logo" fill className="object-contain" />
+          <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="40px" className="object-contain" />
         </div>
         <span className="text-2xl font-bold gradient-text tracking-tight">Food AI</span>
       </div>
@@ -45,6 +45,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
       <div className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest">
         {tabs.map((tab) => (
           <button
+            suppressHydrationWarning
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`pb-1 transition-all ${
@@ -76,7 +77,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
               aria-label={LABELS.AUTH.PROFILE}
             >
               {user.avatar ? (
-                <Image src={user.avatar} alt={user.name || 'User'} fill className="object-cover" />
+                <Image src={user.avatar} alt={user.name || 'User'} fill sizes="40px" className="object-cover" />
               ) : (
                 <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
                   {user.name?.charAt(0).toUpperCase()}
@@ -85,6 +86,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
             </Link>
 
             <button
+              suppressHydrationWarning
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-all"
               aria-label={LABELS.COMMON.OTHER}

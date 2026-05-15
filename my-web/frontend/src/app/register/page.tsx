@@ -42,7 +42,7 @@ export default function RegisterPage() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
             <div className="relative w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-lg overflow-hidden">
-              <Image src="/favicon.ico" alt="Food AI Logo" fill className="object-contain p-2" />
+              <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="48px" className="object-contain p-2" />
             </div>
             <span className="text-3xl font-bold gradient-text">Food AI</span>
           </Link>
@@ -86,6 +86,7 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {['CUSTOMER', 'RESTAURANT'].map((r) => (
                       <button
+                        suppressHydrationWarning
                         key={r}
                         type="button"
                         onClick={() => setRole(r)}
@@ -133,6 +134,7 @@ export default function RegisterPage() {
                     className="pr-12"
                   />
                   <button
+                    suppressHydrationWarning
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
@@ -154,6 +156,7 @@ export default function RegisterPage() {
                     className="pr-12"
                   />
                   <button
+                    suppressHydrationWarning
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
@@ -177,7 +180,7 @@ export default function RegisterPage() {
                 )}
 
                 <div className="flex items-start gap-3 p-1">
-                  <input type="checkbox" required className="mt-1 accent-primary h-4 w-4" />
+                  <input suppressHydrationWarning type="checkbox" required className="mt-1 accent-primary h-4 w-4" />
                   <label className="text-xs text-gray-500 leading-relaxed">
                     {LABELS.AUTH.AGREE_TERMS}
                   </label>

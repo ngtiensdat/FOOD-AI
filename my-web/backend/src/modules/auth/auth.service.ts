@@ -13,6 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AiService } from '../ai/ai.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { JwtPayload } from '../../common/types/jwt-payload';
 
 @Injectable()
 export class AuthService {
@@ -164,7 +165,7 @@ export class AuthService {
   ) {
     const result = await this.userRepository.upsertProfile(userId, {
       hasCompletedOnboarding: true,
-      preferences: preferences as any, // Prisma expects JSON, which is compatible with our preferences record
+      preferences: preferences,
     });
     void this.aiService.updateUserEmbedding(userId);
     return result;
@@ -192,8 +193,8 @@ export class AuthService {
 
   async refreshToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
-      const user = await this.userRepository.findById(payload.sub);
+      const payload = this.jwtService.verify<JwtPayload>(token);
+      const user = await this.userRepository.findById(Number(payload.sub));
 
       if (!user || user.refreshToken !== token) {
         throw new UnauthorizedException('Invalid refresh token');

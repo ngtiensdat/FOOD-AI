@@ -22,6 +22,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
         <div className="max-w-xl mx-auto mb-6 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
+            suppressHydrationWarning
             type="text"
             placeholder={(LABELS as any).EXPLORE.TAG_PLACEHOLDER}
             className="w-full bg-white border border-gray-200 rounded-input py-3 pl-12 pr-4 outline-none focus:border-primary shadow-sm transition-all text-body"
@@ -38,6 +39,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
           <span className="text-small text-gray-400 font-bold mr-2 self-center">{(LABELS as any).EXPLORE.SUGGESTED_TAGS}</span>
           {SUGGESTED_TAGS.map(t => (
             <button
+              suppressHydrationWarning
               key={t}
               onClick={() => handleCategoryClick(t)}
               className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold hover:bg-orange-100 hover:text-primary transition-all border border-transparent hover:border-orange-200 capitalize"
