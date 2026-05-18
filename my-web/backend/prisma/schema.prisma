@@ -127,7 +127,7 @@ model Restaurant {
   latitude    Float
   longitude   Float
   description String?
-
+  mapUrl      String?     @map("map_url")
   ownerId     Int      @map("owner_id")
 
   createdAt   DateTime @default(now()) @map("created_at")

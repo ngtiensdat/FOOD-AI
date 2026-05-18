@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, FoodStatus } from '@prisma/client';
 
 export interface NearbyResult {
   id: number;
@@ -79,7 +79,7 @@ export class FoodRepository {
       JOIN restaurants r ON f.restaurant_id = r.id
       WHERE f.is_active = true 
         AND r.is_active = true
-        AND f.status = 'APPROVED' 
+        AND f.status = ${FoodStatus.APPROVED} 
         AND f.lat IS NOT NULL 
         AND f.lng IS NOT NULL
         AND (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) <= ${radius}

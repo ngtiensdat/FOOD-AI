@@ -30,10 +30,10 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
     fetchProfileData();
   }, [user?.id]);
 
-  const handleOnboardingComplete = async (preferences: any) => {
+  const handleOnboardingComplete = async (onboardingData: any) => {
     if (!profile) return;
     try {
-      await authService.completeOnboarding({ preferences });
+      await authService.completeOnboarding(onboardingData);
       const updatedUser = { ...profile, hasCompletedOnboarding: true };
       
       // Cập nhật store toàn cục và local state

@@ -12,6 +12,7 @@ import { Button } from '@/components/base/Button';
 import { UserDropdown } from '@/components/features/UserDropdown';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
+import { LIMITS } from '@/constants/limits.constant';
 
 // Feature Components
 import { MenuTable } from '@/components/features/MenuTable';
@@ -89,7 +90,7 @@ export default function RestaurantDashboard() {
             <div className="lg:col-span-2 card-container p-8">
               <h3 className="text-h2 text-gray-800 mb-8">{LABELS.RESTAURANT.RECENT_ACTIVITY}</h3>
               <div className="space-y-6">
-                {myFoods.slice(0, 3).map((food, i) => (
+                {myFoods.slice(0, LIMITS.RECENT_VIEWS_DASHBOARD).map((food, i) => (
                   <div key={i} className="flex items-center gap-6 p-4 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100">
                     <img src={food.image} className="w-16 h-16 rounded-xl object-cover shadow-sm" alt="" />
                     <div className="flex-1">

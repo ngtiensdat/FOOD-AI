@@ -65,27 +65,32 @@ export class FoodService {
   }
 
   async createFood(user: User, dto: CreateFoodDto) {
-    let finalRestaurantId: number | null = null;
+    // 1. Kiểm tra xem cơ sở (Restaurant) được chọn có thuộc quyền sở hữu của Merchant không
+    const restaurant = await this.repository.findRestaurantById(
+      dto.restaurantId,
+    );
+    if (!restaurant) throw new NotFoundException('Cơ sở không tồn tại.');
 
-    if (user.role === UserRole.RESTAURANT) {
-      const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
-      if (!restaurant)
-        throw new ForbiddenException('Bạn chưa đăng ký nhà hàng.');
-      finalRestaurantId = restaurant.id;
-    } else {
-      finalRestaurantId = dto.restaurantId || null;
+    if (user.role === UserRole.RESTAURANT && restaurant.ownerId !== user.id) {
+      throw new ForbiddenException(
+        'Bạn không có quyền đăng món ăn vào cơ sở này.',
+      );
     }
 
-    let { lat, lng } = dto;
-    if (finalRestaurantId && (!lat || !lng)) {
-      const restaurant =
-        await this.repository.findRestaurantById(finalRestaurantId);
-      if (restaurant) {
-        lat = lat || restaurant.latitude;
-        lng = lng || restaurant.longitude;
-      }
+    // 2. Tự động sao chép thông tin địa chỉ từ chi nhánh (Onboarding) sang món ăn
+    let lat = dto.lat;
+    let lng = dto.lng;
+    let address = dto.address;
+    let mapUrl = dto.mapUrl;
+
+    if (!lat || !lng || !address || !mapUrl) {
+      lat = lat || restaurant.latitude;
+      lng = lng || restaurant.longitude;
+      address = address || restaurant.address;
+      mapUrl = mapUrl || restaurant.mapUrl || undefined;
     }
 
+    // 3. Tạo món ăn trong DB liên kết với chi nhánh tương ứng
     const food = await this.repository.create({
       name: dto.name,
       price: dto.price,
@@ -94,9 +99,9 @@ export class FoodService {
       tags: dto.tags || [],
       lat,
       lng,
-      restaurant: finalRestaurantId
-        ? { connect: { id: finalRestaurantId } }
-        : undefined,
+      address,
+      mapUrl,
+      restaurant: { connect: { id: dto.restaurantId } },
       status:
         user.role === UserRole.ADMIN ? FoodStatus.APPROVED : FoodStatus.PENDING,
       isActive: true,

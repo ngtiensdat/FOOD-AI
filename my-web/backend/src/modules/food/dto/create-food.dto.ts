@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsArray,
   IsInt,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -29,17 +30,23 @@ export class CreateFoodDto {
   tags?: string[];
 
   @IsInt()
+  @IsNotEmpty({ message: 'Vui lòng chọn cơ sở áp dụng món ăn này.' })
   @Type(() => Number)
-  @IsOptional()
-  restaurantId?: number;
+  restaurantId: number;
 
   @IsNumber()
-  @Type(() => Number)
   @IsOptional()
   lat?: number;
 
   @IsNumber()
-  @Type(() => Number)
   @IsOptional()
   lng?: number;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsString()
+  @IsOptional()
+  mapUrl?: string;
 }

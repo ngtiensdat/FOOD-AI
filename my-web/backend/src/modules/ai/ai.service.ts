@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import OpenAI from 'openai';
 import { VectorRepository } from './vector.repository';
-import { UserProfile, Favorite, History } from '@prisma/client';
+import {
+  UserProfile,
+  Favorite,
+  History,
+  UserRole,
+  MessageRole,
+} from '@prisma/client';
 
 type FavoriteWithFood = Favorite & { food: { name: string } };
 type HistoryWithFood = History & { food: { name: string } | null };
@@ -104,7 +110,7 @@ export class AiService {
         where: { id: userId },
         select: { role: true },
       });
-      if (!user || user.role !== 'CUSTOMER') {
+      if (!user || user.role !== UserRole.CUSTOMER) {
         return {
           reply: 'Tính năng Trợ lý AI chỉ dành riêng cho Khách hàng.',
           suggestions: [],
@@ -145,7 +151,7 @@ export class AiService {
       await this.prisma.message.create({
         data: {
           conversationId: conversation.id,
-          role: 'USER',
+          role: MessageRole.USER,
           content: cleanMessage,
         },
       });
@@ -157,7 +163,7 @@ export class AiService {
       const chatHistory: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
         historyMessages.reverse().map((m) => {
           const role = (
-            m.role === 'AI' ? 'assistant' : m.role.toLowerCase()
+            m.role === MessageRole.AI ? 'assistant' : m.role.toLowerCase()
           ) as OpenAI.Chat.Completions.ChatCompletionMessageParam['role'];
           return {
             role,
@@ -200,7 +206,11 @@ export class AiService {
         completion.choices[0].message.content ||
         'Xin lỗi, tôi không thể trả lời lúc này.';
       await this.prisma.message.create({
-        data: { conversationId: conversation.id, role: 'AI', content: reply },
+        data: {
+          conversationId: conversation.id,
+          role: MessageRole.AI,
+          content: reply,
+        },
       });
 
       return {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { aiService } from '@/services/food.service';
 import { authService as authServiceApi } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
+import { LIMITS } from '@/constants/limits.constant';
 
 export const useHomeActions = () => {
   const { user, isAuthenticated, isCustomer, login } = useAuth();
@@ -30,10 +31,10 @@ export const useHomeActions = () => {
     }
   }, [isAuthenticated, user]);
 
-  const handleOnboardingComplete = async (preferences: any) => {
+  const handleOnboardingComplete = async (onboardingData: any) => {
     if (!user || !user.id) return;
     try {
-      await authServiceApi.completeOnboarding({ preferences });
+      await authServiceApi.completeOnboarding(onboardingData);
       login({ ...user, hasCompletedOnboarding: true });
       setShowOnboarding(false);
       window.location.reload(); 
@@ -63,7 +64,7 @@ export const useHomeActions = () => {
       let lat, lng;
       if (navigator.geolocation) {
         const pos = await new Promise<GeolocationPosition | null>((res) => {
-          navigator.geolocation.getCurrentPosition(res, () => res(null), { timeout: 5000 });
+          navigator.geolocation.getCurrentPosition(res, () => res(null), { timeout: LIMITS.GEOLOCATION_TIMEOUT });
         });
         if (pos) { lat = pos.coords.latitude; lng = pos.coords.longitude; }
       }

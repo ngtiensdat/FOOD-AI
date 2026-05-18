@@ -1,4 +1,9 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpStatus,
+} from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import { Response } from 'express';
 
@@ -21,7 +26,8 @@ export class ThrottlerExceptionFilter implements ExceptionFilter {
       errors: [
         {
           code: 'TOO_MANY_REQUESTS',
-          message: 'Tài khoản của bạn đã bị tạm khóa do thử đăng nhập sai quá nhiều lần. Vui lòng quay lại sau vài phút.',
+          message:
+            'Tài khoản của bạn đã bị tạm khóa do thử đăng nhập sai quá nhiều lần. Vui lòng quay lại sau vài phút.',
         },
       ],
     });
