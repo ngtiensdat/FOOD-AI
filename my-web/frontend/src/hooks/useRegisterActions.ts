@@ -6,6 +6,7 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { registerSchema } from '@/schemas/auth.schema';
 
 export const useRegisterActions = () => {
   const router = useRouter();
@@ -24,18 +25,27 @@ export const useRegisterActions = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
-    const newErrors: any = {};
-    if (name.trim().length < 2) newErrors.name = LABELS.FORM.NAME_REQUIRED;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) newErrors.email = LABELS.FORM.EMAIL_INVALID;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordRegex.test(password)) newErrors.password = LABELS.FORM.PASSWORD_INVALID;
-    if (password !== confirmPassword) newErrors.confirmPassword = LABELS.FORM.CONFIRM_PASSWORD_MISMATCH;
-    if (role === 'RESTAURANT' && legalDocuments.trim().length < 10) {
-      newErrors.legalDocuments = LABELS.FORM.LEGAL_DOCS_REQUIRED;
+    const result = registerSchema.safeParse({
+      name,
+      email,
+      password,
+      confirmPassword,
+      role,
+      legalDocuments,
+    });
+    if (!result.success) {
+      const newErrors: any = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0];
+        if (path) {
+          newErrors[path] = issue.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleRegister = async (e: React.FormEvent) => {

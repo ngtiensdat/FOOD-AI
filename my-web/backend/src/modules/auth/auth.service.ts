@@ -6,7 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserRepository } from './user.repository';
-import * as bcrypt from 'bcrypt';
+import { BcryptHelper } from '../../common/utils/bcrypt.helper';
+import { MESSAGES } from '../../common/constants/messages.constant';
 import { JwtService } from '@nestjs/jwt';
 import {
   UserStatus,
@@ -20,6 +21,8 @@ import { LoginDto } from './dto/login.dto';
 import { AiService } from '../ai/ai.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtPayload } from '../../common/types/jwt-payload';
+import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -27,15 +30,16 @@ export class AuthService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private aiService: AiService,
+    private prisma: PrismaService,
   ) {}
 
   async register(dto: RegisterDto) {
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
-      throw new ConflictException('Email này đã được đăng ký');
+      throw new ConflictException(MESSAGES.AUTH.USER_EXISTS);
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await BcryptHelper.hash(dto.password, 10);
     const status =
       dto.role === UserRole.RESTAURANT
         ? UserStatus.PENDING
@@ -56,20 +60,6 @@ export class AuthService {
       ...(dto.role === UserRole.RESTAURANT
         ? {
             legalDocuments: dto.legalDocuments,
-            restaurants: {
-              create: {
-                name: `Nhà hàng của ${dto.name}`,
-                address: 'Chưa cập nhật',
-                latitude: 10.762622,
-                longitude: 106.660172,
-                profile: {
-                  create: {
-                    bio: 'Chào mừng bạn đến với nhà hàng của chúng tôi!',
-                    openingHours: '09:00 - 21:00',
-                  },
-                },
-              },
-            },
           }
         : {}),
     });
@@ -82,7 +72,9 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       console.warn(`[AuthService] User not found: ${dto.email}`);
-      throw new NotFoundException('Tài khoản này chưa được đăng ký trên hệ thống.');
+      throw new NotFoundException(
+        'Tài khoản này chưa được đăng ký trên hệ thống.',
+      );
     }
 
     if (user.status === UserStatus.PENDING) {
@@ -92,10 +84,13 @@ export class AuthService {
       throw new UnauthorizedException('Tài khoản đã bị từ chối');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+    const isPasswordValid = await BcryptHelper.compare(
+      dto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       console.warn(`[AuthService] Invalid password for: ${dto.email}`);
-      throw new UnauthorizedException('Mật khẩu không chính xác. Vui lòng thử lại.');
+      throw new UnauthorizedException(MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
     console.log(`[AuthService] Login successful: ${dto.email}`);
@@ -165,16 +160,59 @@ export class AuthService {
     return { message: 'Cập nhật thành công' };
   }
 
-  async completeOnboarding(
-    userId: number,
-    preferences: Record<string, unknown>,
-  ) {
-    const result = await this.userRepository.upsertProfile(userId, {
+  async completeOnboarding(userId: number, dto: CompleteOnboardingDto) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+
+    if (user.role === UserRole.RESTAURANT) {
+      const branches = dto.branches;
+      if (!branches || branches.length === 0) {
+        throw new BadRequestException(
+          'Thương gia bắt buộc phải đăng ký ít nhất 1 cơ sở.',
+        );
+      }
+
+      // Sử dụng Database Transaction để đảm bảo tính toàn vẹn dữ liệu
+      await this.prisma.$transaction(async (tx) => {
+        // 1. Xóa toàn bộ cơ sở mặc định cũ của user này
+        await tx.restaurant.deleteMany({
+          where: { ownerId: userId },
+        });
+
+        // 2. Tạo hàng loạt chi nhánh mới
+        for (const branch of branches) {
+          await tx.restaurant.create({
+            data: {
+              name: branch.name,
+              address: branch.address,
+              latitude: branch.latitude,
+              longitude: branch.longitude,
+              mapUrl: branch.mapUrl,
+              ownerId: userId,
+              profile: {
+                create: {
+                  bio:
+                    branch.bio ||
+                    'Chào mừng bạn đến với nhà hàng của chúng tôi!',
+                  openingHours: branch.openingHours || '00:00 - 00:00',
+                },
+              },
+            },
+          });
+        }
+      });
+    }
+
+    // 3. Cập nhật trạng thái hoàn thành Onboarding
+    await this.userRepository.upsertProfile(userId, {
       hasCompletedOnboarding: true,
-      preferences: preferences as Prisma.InputJsonValue,
+      preferences:
+        user.role === UserRole.CUSTOMER
+          ? (dto.preferences as Prisma.InputJsonValue)
+          : undefined,
     });
-    void this.aiService.updateUserEmbedding(userId);
-    return result;
+
+    return { message: 'Hoàn thiện hồ sơ đa chi nhánh thành công.' };
   }
 
   async changePassword(userId: number, oldPass?: string, newPass?: string) {
@@ -187,12 +225,12 @@ export class AuthService {
 
     // Nếu có mật khẩu cũ thì phải kiểm tra (trường hợp user đã có mật khẩu)
     if (user.password && oldPass) {
-      const isValid = await bcrypt.compare(oldPass, user.password);
+      const isValid = await BcryptHelper.compare(oldPass, user.password);
       if (!isValid)
         throw new UnauthorizedException('Mật khẩu cũ không chính xác');
     }
 
-    const hashedPassword = await bcrypt.hash(newPass, 10);
+    const hashedPassword = await BcryptHelper.hash(newPass, 10);
     await this.userRepository.update(userId, { password: hashedPassword });
     return { message: 'Đổi mật khẩu thành công' };
   }
@@ -214,7 +252,7 @@ export class AuthService {
 
   async generateToken(user: User & { profile?: UserProfile | null }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1d' }); // Tăng thời hạn để test cho dễ, có thể chỉnh lại 15m
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1d' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
     await this.userRepository.updateRefreshToken(user.id, refreshToken);

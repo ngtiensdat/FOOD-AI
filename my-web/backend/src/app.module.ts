@@ -6,7 +6,7 @@ import { PrismaModule } from './database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AiModule } from './modules/ai/ai.module';
 import { FoodModule } from './modules/food/food.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 

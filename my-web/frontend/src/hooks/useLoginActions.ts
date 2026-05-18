@@ -6,6 +6,7 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { loginSchema } from '@/schemas/auth.schema';
 
 export const useLoginActions = () => {
   const router = useRouter();
@@ -18,13 +19,20 @@ export const useLoginActions = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
-    const newErrors: any = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) newErrors.email = LABELS.FORM.EMAIL_INVALID;
-    if (password.length < 1) newErrors.password = LABELS.FORM.PASSWORD_REQUIRED;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const newErrors: any = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0];
+        if (path) {
+          newErrors[path] = issue.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleLogin = async (e: React.FormEvent) => {

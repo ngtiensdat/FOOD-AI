@@ -22,7 +22,7 @@ import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('register')
   async register(
@@ -99,7 +99,7 @@ export class AuthController {
     @GetUser('id') userId: number,
     @Body() dto: CompleteOnboardingDto,
   ) {
-    return this.authService.completeOnboarding(userId, dto.preferences);
+    return this.authService.completeOnboarding(userId, dto);
   }
 
   @Post('refresh')

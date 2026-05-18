@@ -25,7 +25,7 @@ export const authService = {
     return apiClient.post('/auth/toggle-follow-user', data);
   },
 
-  async completeOnboarding(data: { preferences: any }) {
+  async completeOnboarding(data: any) {
     return apiClient.post('/auth/complete-onboarding', data);
   },
 

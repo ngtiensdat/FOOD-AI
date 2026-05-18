@@ -22,7 +22,10 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new TransformInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter(), new ThrottlerExceptionFilter());
+  app.useGlobalFilters(
+    new AllExceptionsFilter(),
+    new ThrottlerExceptionFilter(),
+  );
 
   // Thêm logger đơn giản để kiểm tra request có đến được server không
   app.use((req: Request, res: Response, next: NextFunction) => {
