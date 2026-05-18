@@ -47,14 +47,14 @@ function ExploreContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
       <Navbar activeTab={activeTab} setActiveTab={(tab) => {
         if (tab === 'home') router.push('/');
         else setActiveTab(tab);
       }} />
 
       {/* Header Area */}
-      <div className="bg-white border-b border-gray-100 pt-32 pb-12 px-6 sticky top-0 z-40 shadow-sm">
+      <div className="bg-white dark:bg-gray-100 border-b border-gray-100 dark:border-gray-200 pt-32 pb-12 px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-6">
@@ -67,7 +67,7 @@ function ExploreContent() {
                 <ArrowLeft size={24} />
               </Button>
               <div>
-                <h1 className="text-h2 text-gray-800">
+                <h1 className="text-h2 text-gray-900">
                   {LABELS.EXPLORE.TITLE_TAG(tag || '')}
                 </h1>
                 <p className="text-gray-500 font-medium text-small">
@@ -96,9 +96,9 @@ function ExploreContent() {
             <p className="text-gray-400 font-bold text-body">{LABELS.EXPLORE.SEARCHING}</p>
           </div>
         ) : filteredFoods.length === 0 ? (
-          <div className="text-center py-32 bg-white rounded-card border border-dashed border-gray-200 shadow-sm">
-            <ShoppingBag size={64} className="mx-auto text-gray-100 mb-6" />
-            <h3 className="text-h2 text-gray-800 mb-2">{LABELS.EXPLORE.EMPTY_TITLE}</h3>
+          <div className="text-center py-32 bg-white dark:bg-gray-100 rounded-card border border-dashed border-gray-200 dark:border-gray-300 shadow-sm transition-colors duration-300">
+            <ShoppingBag size={64} className="mx-auto text-gray-100 dark:text-gray-300 mb-6" />
+            <h3 className="text-h2 text-gray-900 mb-2">{LABELS.EXPLORE.EMPTY_TITLE}</h3>
             <p className="text-gray-400 text-body">{LABELS.EXPLORE.EMPTY_DESC}</p>
           </div>
         ) : (

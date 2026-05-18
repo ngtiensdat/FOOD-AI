@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <ToastContainer />
       </body>
     </html>         //đảm bảo vị trí body và footer luôn ở dưới cùng

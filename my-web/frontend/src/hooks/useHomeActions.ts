@@ -21,6 +21,22 @@ export const useHomeActions = () => {
   const [suggestedFoods, setSuggestedFoods] = useState<any[]>([]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (
+        tabParam === 'home' ||
+        tabParam === 'explore' ||
+        tabParam === 'offers' ||
+        tabParam === 'settings'
+      ) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated && user) {
       const isOnboarded = (user as any).hasCompletedOnboarding === true || 
                           (user as any).profile?.hasCompletedOnboarding === true;

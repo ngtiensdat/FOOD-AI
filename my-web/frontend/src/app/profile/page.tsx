@@ -35,7 +35,7 @@ function ProfileContent() {
   } = useProfileData(targetId);
 
   if (!profile) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
     </div>
@@ -44,7 +44,7 @@ function ProfileContent() {
   const user = profile;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
       <Navbar activeTab="profile" setActiveTab={() => {}} />
 
       <div className="max-w-5xl mx-auto pt-24 pb-20 px-4 md:px-6">
@@ -57,7 +57,7 @@ function ProfileContent() {
           onFollow={actions.toggleFollow} 
         />
 
-        <div className="flex items-center mt-6 border-b border-gray-100 bg-white rounded-t-card px-4 md:px-8">
+        <div className="flex items-center mt-6 border-b border-gray-100 dark:border-gray-200 bg-white dark:bg-gray-100 rounded-t-card px-4 md:px-8 transition-colors duration-300">
           {[
             { id: 'posts', label: LABELS.SETTINGS.PROFILE.TABS.POSTS },
             { id: 'about', label: LABELS.SETTINGS.PROFILE.TABS.ABOUT },
@@ -125,7 +125,7 @@ function ProfileContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
       </div>

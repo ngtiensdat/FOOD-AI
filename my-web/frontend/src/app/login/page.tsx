@@ -35,17 +35,17 @@ export default function LoginPage() {
       >
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-lg overflow-hidden">
+            <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
               <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="48px" className="object-contain p-2" />
             </div>
             <span className="text-3xl font-bold gradient-text">Food AI</span>
           </Link>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100">
+        <div className="bg-white dark:bg-gray-100 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-200">
           <div className="text-center mb-10">
-            <h1 className="text-h2 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
-            <p className="text-gray-500 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
+            <h1 className="text-h2 text-gray-900 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
+            <p className="text-gray-600 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">

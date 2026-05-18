@@ -42,7 +42,7 @@
 **Acceptance Criteria (AC):**
 - [x] Sidebar/Navbar chứa các menu: Trang chủ, Khám phá, Cá nhân.
 - [x] Header hiển thị thông tin người dùng và nút Đăng xuất.
-- [ ] Giao diện hỗ trợ Dark/Light Mode.
+- [x] Giao diện hỗ trợ Dark/Light Mode.
 - [ ] Responsive tốt trên Mobile, Tablet và Desktop.
 
 ### US-04: Trang chủ & Danh sách món ăn mẫu

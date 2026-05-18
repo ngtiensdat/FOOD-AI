@@ -1,15 +1,39 @@
-import { ThrottlerGuard, ThrottlerLimitDetail } from '@nestjs/throttler';
 import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  ExecutionContext,
-} from '@nestjs/common';
+  ThrottlerGuard,
+  ThrottlerLimitDetail,
+  ThrottlerException,
+} from '@nestjs/throttler';
+import { Injectable, ExecutionContext } from '@nestjs/common';
+import { MESSAGES } from '../constants/messages.constant';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected async getTracker(req: Record<string, any>): Promise<string> {
+  // Override canActivate to ONLY apply rate limiting on Auth (login/register) and AI routes
+  override async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context
+      .switchToHttp()
+      .getRequest<import('express').Request>();
+
+    // Chỉ áp dụng giới hạn tần suất yêu cầu (rate limit) đối với các router nhạy cảm:
+    // 1. Đăng nhập (/auth/login)
+    // 2. Đăng ký (/auth/register)
+    // 3. AI chat tư vấn (/ai/chat)
+    if (
+      request.url.includes('/auth/login') ||
+      request.url.includes('/auth/register') ||
+      request.url.includes('/ai/chat')
+    ) {
+      return super.canActivate(context);
+    }
+
+    // Bỏ qua (bypass) rate limit hoàn toàn đối với các API bình thường khác để tránh lỗi 429
+    return true;
+  }
+
+  protected override async getTracker(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    req: Record<string, any>,
+  ): Promise<string> {
     await Promise.resolve();
     const request = req as unknown as import('express').Request;
     const body = request.body as Record<string, unknown> | undefined;
@@ -21,19 +45,25 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     return request.ip || '';
   }
 
-  protected async throwThrottlerException(
+  protected override async throwThrottlingException(
     context: ExecutionContext,
-    throttlerLimitDetail: ThrottlerLimitDetail,
+    _throttlerLimitDetail: ThrottlerLimitDetail,
   ): Promise<void> {
     await Promise.resolve();
-    throw new HttpException(
-      {
-        statusCode: HttpStatus.TOO_MANY_REQUESTS,
-        message:
-          'Tài khoản này đã bị tạm khóa do thử đăng nhập sai quá nhiều lần. Vui lòng quay lại sau vài phút.',
-        error: 'Too Many Requests',
-      },
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
+    const request = context
+      .switchToHttp()
+      .getRequest<import('express').Request>();
+
+    const isAi = request.url.includes('/ai/chat');
+    const isRegister = request.url.includes('/auth/register');
+
+    let message = MESSAGES.AUTH.RATE_LIMIT_LOGIN;
+    if (isAi) {
+      message = MESSAGES.AI.RATE_LIMIT_CHAT;
+    } else if (isRegister) {
+      message = MESSAGES.AUTH.RATE_LIMIT_REGISTER;
+    }
+
+    throw new ThrottlerException(message);
   }
 }
