@@ -41,14 +41,14 @@ export default function RegisterPage() {
       >
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-lg overflow-hidden">
+            <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
               <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="48px" className="object-contain p-2" />
             </div>
             <span className="text-3xl font-bold gradient-text">Food AI</span>
           </Link>
         </div>
 
-        <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-100">
+        <div className="bg-white dark:bg-gray-100 p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-200">
           {successMessage ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -59,8 +59,8 @@ export default function RegisterPage() {
                 <CheckCircle2 className="w-12 h-12" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-2xl font-black text-gray-800 tracking-tight">{LABELS.AUTH.VERIFY_ACCOUNT}</h2>
-                <p className="text-sm text-gray-500 font-medium px-2 leading-relaxed">{successMessage}</p>
+                <h2 className="text-2xl font-black text-gray-800 dark:text-gray-900 tracking-tight">{LABELS.AUTH.VERIFY_ACCOUNT}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-600 font-medium px-2 leading-relaxed">{successMessage}</p>
               </div>
               <div className="pt-4 border-t border-gray-50">
                 <Link href="/login" className="w-full">
@@ -73,8 +73,8 @@ export default function RegisterPage() {
           ) : (
             <>
               <div className="text-center mb-8">
-                <h1 className="text-h2 mb-2">{LABELS.AUTH.REGISTER_TITLE}</h1>
-                <p className="text-gray-500 text-body">{LABELS.AUTH.REGISTER_SUBTITLE}</p>
+                <h1 className="text-h2 text-gray-900 mb-2">{LABELS.AUTH.REGISTER_TITLE}</h1>
+                <p className="text-gray-600 text-body">{LABELS.AUTH.REGISTER_SUBTITLE}</p>
               </div>
 
               <form onSubmit={handleRegister} className="space-y-5">
@@ -82,7 +82,7 @@ export default function RegisterPage() {
                   <Alert type="error">{errors.form}</Alert>
                 )}
                 <div className="space-y-2">
-                  <label className="text-small font-semibold text-gray-700 ml-1">{LABELS.AUTH.WHO_ARE_YOU}</label>
+                  <label className="text-small font-semibold text-gray-700 dark:text-gray-800 ml-1">{LABELS.AUTH.WHO_ARE_YOU}</label>
                   <div className="grid grid-cols-2 gap-4">
                     {['CUSTOMER', 'RESTAURANT'].map((r) => (
                       <button
@@ -91,7 +91,9 @@ export default function RegisterPage() {
                         type="button"
                         onClick={() => setRole(r)}
                         className={`py-3 rounded-xl border-2 font-bold transition-all text-small ${
-                          role === r ? 'border-primary bg-orange-50 text-primary' : 'border-gray-100 text-gray-500 hover:border-gray-200'
+                          role === r
+                            ? 'border-primary bg-orange-50 dark:bg-primary-light/10 text-primary'
+                            : 'border-gray-100 dark:border-gray-200 text-gray-500 hover:border-gray-200 dark:hover:border-gray-300'
                         }`}
                       >
                         {r === 'CUSTOMER' ? LABELS.AUTH.CUSTOMER : LABELS.AUTH.RESTAURANT}

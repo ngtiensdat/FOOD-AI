@@ -114,8 +114,22 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         toast.error(ONBOARDING_LABELS.REQUIRED_BRANCH_FIELDS(i + 1));
         return;
       }
-      if (isNaN(Number(b.latitude)) || isNaN(Number(b.longitude))) {
+      
+      const lat = Number(b.latitude);
+      const lng = Number(b.longitude);
+      
+      if (isNaN(lat) || isNaN(lng)) {
         toast.error(ONBOARDING_LABELS.INVALID_COORDINATES(i + 1));
+        return;
+      }
+      
+      if (lat < -90 || lat > 90) {
+        toast.error(ONBOARDING_LABELS.INVALID_LATITUDE(i + 1));
+        return;
+      }
+      
+      if (lng < -180 || lng > 180) {
+        toast.error(ONBOARDING_LABELS.INVALID_LONGITUDE(i + 1));
         return;
       }
     }

@@ -45,7 +45,7 @@ export const Hero = ({
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-h1 mb-6 leading-tight"
+          className="text-h1 text-gray-900 mb-6 leading-tight"
         >
           {LABELS.HERO.TITLE_START} <span className="gradient-text">{LABELS.HERO.TITLE_HIGHLIGHT}</span>
         </motion.h1>
@@ -54,7 +54,7 @@ export const Hero = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-body text-gray-600 mb-10 max-w-2xl mx-auto"
+          className="text-body text-gray-700 dark:text-gray-800 mb-10 max-w-2xl mx-auto"
         >
           {LABELS.HERO.DESCRIPTION}
         </motion.p>
@@ -90,7 +90,7 @@ export const Hero = ({
           onViewDetail={setSelectedFood}
         />
 
-        <div className="flex justify-center gap-8 mt-10 flex-wrap text-small text-gray-500 font-medium">
+        <div className="flex justify-center gap-8 mt-10 flex-wrap text-small text-gray-500 dark:text-slate-400 font-medium">
           <div className="flex items-center gap-2">
             <Smile size={18} className="text-orange-400" /> {LABELS.HERO.FEATURES.MOOD}
           </div>

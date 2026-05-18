@@ -18,17 +18,17 @@ export const Section = ({
   container = true,
 }: SectionProps) => {
   const bgStyles = {
-    white: 'bg-white',
-    gray: 'bg-gray-50/50',
-    orange: 'bg-orange-50/30',
-    blue: 'bg-blue-50/30',
+    white: 'bg-white dark:bg-slate-950',
+    gray: 'bg-gray-50/50 dark:bg-gray-100/10',
+    orange: 'bg-orange-50/30 dark:bg-primary/5',
+    blue: 'bg-blue-50/30 dark:bg-blue-950/10',
     transparent: 'bg-transparent',
   };
 
   return (
     <section 
       id={id} 
-      className={`p-layout ${bgStyles[bg]} ${className}`}
+      className={`p-layout transition-colors duration-300 ${bgStyles[bg]} ${className}`}
     >
       <div className={container ? 'max-w-7xl mx-auto' : ''}>
         {children}

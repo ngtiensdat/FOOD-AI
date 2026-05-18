@@ -19,9 +19,9 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
   return (
     <motion.div
       whileHover={{ y: -10 }}
-      className="bg-white rounded-card overflow-hidden shadow-md hover:shadow-2xl transition-all border border-gray-100"
+      className="card-premium overflow-hidden hover:shadow-2xl"
     >
-      <div className="h-48 bg-gray-100 relative group overflow-hidden">
+      <div className="h-48 bg-gray-100 dark:bg-gray-200 relative group overflow-hidden">
         {food.image ? (
           <Image 
             src={food.image} 
@@ -54,7 +54,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
 
           <div className="flex items-center gap-2">
             {food.distance !== undefined && food.distance !== null && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold">
+              <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold">
                 <Navigation size={12} />
                 <span>{formatDistance(food.distance)}</span>
               </div>
@@ -65,7 +65,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
                 href={food.mapUrl || food.map_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-gray-50 text-gray-400 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
+                className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-550 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
                 aria-label={LABELS.COMMON.OTHER}
               >
                 <Navigation size={18} />
@@ -74,13 +74,13 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
           </div>
         </div>
 
-        <h3 className="font-bold text-xl mb-0.5 line-clamp-1">{food.name}</h3>
+        <h3 className="font-bold text-xl mb-0.5 line-clamp-1 text-gray-900">{food.name}</h3>
 
         <p className="text-primary text-xs font-bold mb-3 uppercase tracking-wider">
           {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
         </p>
 
-        <p className="text-gray-500 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
+        <p className="text-gray-500 dark:text-gray-550 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
 
         <Button
           fullWidth

@@ -48,7 +48,15 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
   );
 
   return (
-    <section className={`p-layout ${bg === 'white' ? 'bg-white' : bg === 'gray' ? 'bg-gray-50/50' : bg === 'orange' ? 'bg-orange-50/30' : 'bg-blue-50/30'}`}>
+    <section className={`p-layout transition-colors duration-300 ${
+      bg === 'white' 
+        ? 'bg-white dark:bg-slate-950' 
+        : bg === 'gray' 
+          ? 'bg-gray-50/50 dark:bg-gray-100/10' 
+          : bg === 'orange' 
+            ? 'bg-orange-50/30 dark:bg-primary/5' 
+            : 'bg-blue-50/30 dark:bg-blue-950/10'
+    }`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-12">
           <div>

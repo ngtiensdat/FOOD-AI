@@ -48,7 +48,7 @@ export default function RestaurantDashboard() {
       <main className="admin-main">
         <header className="mb-12 flex justify-between items-center">
           <div>
-            <h2 className="text-h1 !text-4xl text-gray-800">
+            <h2 className="text-h1 !text-4xl text-gray-900">
               {activeTab === 'overview' ? LABELS.RESTAURANT.DASHBOARD_TITLE : 
                activeTab === 'menu' ? LABELS.RESTAURANT.MENU_MANAGEMENT : 
                LABELS.RESTAURANT.AI_HISTORY}

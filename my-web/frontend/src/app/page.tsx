@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Sparkles, MapPin, Star } from 'lucide-react';
 
 // Hooks
@@ -24,6 +25,7 @@ import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
 
 export default function Home() {
+  const router = useRouter();
   const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData();
   const {
     user,
@@ -91,7 +93,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === 'home' ? (
@@ -108,7 +110,7 @@ export default function Home() {
           />
 
           <CategorySection
-            handleCategoryClick={(cat) => window.location.href = `/explore?tag=${encodeURIComponent(cat)}`}
+            handleCategoryClick={(cat) => router.push(`/explore?tag=${encodeURIComponent(cat)}`)}
             selectedCategory={null}
           />
 

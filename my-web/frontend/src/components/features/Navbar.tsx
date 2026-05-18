@@ -1,8 +1,9 @@
 'use client';
-
+import { ThemeToggle } from '@/components/base/ThemeToggle';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/base/Button';
@@ -19,11 +20,29 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const { user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  const handleTabClick = (tabId: string) => {
+    if (pathname === '/') {
+      setActiveTab(tabId);
+    } else {
+      if (tabId === 'home') {
+        router.push('/');
+      } else if (tabId === 'explore') {
+        if (pathname !== '/explore') {
+          router.push('/explore');
+        }
+      } else {
+        router.push(`/?tab=${tabId}`);
+      }
+    }
+  };
 
   if (!mounted) return null;
 
@@ -34,7 +53,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50">
+    <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50 dark:border-slate-900">
       <div className="flex items-center gap-2">
         <div className="relative w-10 h-10">
           <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="40px" className="object-contain" />
@@ -47,10 +66,9 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           <button
             suppressHydrationWarning
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-1 transition-all ${
-              activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
-            }`}
+            onClick={() => handleTabClick(tab.id)}
+            className={`pb-1 transition-all ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
+              }`}
           >
             {tab.label}
           </button>
@@ -58,6 +76,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
       </div>
 
       <div className="flex items-center gap-4 relative">
+        <ThemeToggle />
         <Button
           variant="ghost"
           size="sm"
@@ -95,10 +114,13 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
             </button>
 
             {showMenu && (
-              <UserDropdown 
-                user={user} 
-                onLogout={logout} 
-                onSettingsClick={() => { setActiveTab('settings'); setShowMenu(false); }}
+              <UserDropdown
+                user={user}
+                onLogout={logout}
+                onSettingsClick={() => {
+                  handleTabClick('settings');
+                  setShowMenu(false);
+                }}
               />
             )}
           </div>
