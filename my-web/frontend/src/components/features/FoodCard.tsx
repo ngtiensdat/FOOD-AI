@@ -7,6 +7,7 @@ import { ShoppingBag, Navigation, Heart } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDistance } from '@/utils/formatters';
+import { getValidImageUrl } from '@/utils/helpers';
 
 interface FoodCardProps {
   food: any;
@@ -21,10 +22,10 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
       whileHover={{ y: -10 }}
       className="card-premium overflow-hidden hover:shadow-2xl"
     >
-      <div className="h-48 bg-gray-100 dark:bg-gray-200 relative group overflow-hidden">
+      <div className="relative h-48 sm:h-56 w-full overflow-hidden">
         {food.image ? (
           <Image 
-            src={food.image} 
+            src={getValidImageUrl(food.image)} 
             alt={food.name} 
             fill 
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

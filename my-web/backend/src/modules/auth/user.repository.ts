@@ -20,6 +20,7 @@ export class UserRepository {
         profile: true,
         restaurants: {
           include: {
+            profile: true,
             _count: {
               select: { followers: true },
             },

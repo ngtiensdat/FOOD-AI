@@ -5,6 +5,7 @@ import {
   Body,
   Query,
   Patch,
+  Delete,
   Param,
   UseGuards,
   ParseIntPipe,
@@ -94,6 +95,16 @@ export class FoodController {
     @Body() updateFoodDto: UpdateFoodDto,
   ) {
     return this.foodService.updateFood(user, id, updateFoodDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
+  deleteFood(
+    @GetUser() user: PrismaClient.User,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.foodService.deleteFood(user, id);
   }
 
   @Patch(':id/recommend')

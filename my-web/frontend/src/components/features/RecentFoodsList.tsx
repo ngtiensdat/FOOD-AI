@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { getValidImageUrl } from '@/utils/helpers';
 
 interface RecentFoodsListProps {
   items: any[];
@@ -31,7 +32,7 @@ export const RecentFoodsList = ({ items }: RecentFoodsListProps) => {
             >
               <div className="relative w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0 shadow-sm">
                 <Image 
-                  src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'} 
+                  src={getValidImageUrl(food.image)} 
                   alt={food.name} 
                   fill
                   sizes="64px"

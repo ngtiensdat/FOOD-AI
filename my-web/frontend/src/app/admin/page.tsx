@@ -3,7 +3,9 @@
 import React from 'react';
 import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, Menu } from 'lucide-react';
 import Link from 'next/link';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { useAdminData } from '@/hooks/useAdminData';
 import { useAdminActions } from '@/hooks/useAdminActions'; // Logic được tách ra đây
 import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
@@ -11,6 +13,8 @@ import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
+import Image from 'next/image';
+import { getValidImageUrl } from '@/utils/helpers';
 
 // Feature Components
 import { AdminTable } from '@/components/features/AdminTable';
@@ -33,6 +37,10 @@ export default function AdminDashboard() {
     setSearchQuery,
     showMenu,
     setShowMenu,
+    deleteFoodId,
+    setDeleteFoodId,
+    deleteUserId,
+    setDeleteUserId,
     getFilteredData,
     actions
   } = useAdminActions(adminData);
@@ -90,10 +98,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3 relative">
                 <Link
                   href="/profile"
-                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
+                  className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
                 >
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <Image src={getValidImageUrl(user.avatar)} alt={user.name || ''} fill sizes="40px" className="object-cover" />
                   ) : (
                     <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
                       {user.name?.charAt(0).toUpperCase()}
@@ -123,18 +131,41 @@ export default function AdminDashboard() {
 
         <AdminTable 
           activeTab={activeTab}
+          foodSubTab={foodSubTab}
           loading={loading}
           filteredData={filteredData}
           actions={actions}
         />
       </main>
 
-      <AdminFoodModal 
-        editingFood={editingFood}
-        editFormData={editFormData}
-        setEditFormData={setEditFormData}
-        onClose={() => setEditingFood(null)}
-        onSave={() => actions.handleUpdateFood(editingFood.id, editFormData)}
+      <AnimatePresence>
+        {editingFood && (
+          <AdminFoodModal 
+            editingFood={editingFood}
+            editFormData={editFormData}
+            setEditFormData={setEditFormData}
+            onClose={() => setEditingFood(null)}
+            onSave={() => actions.handleUpdateFood(editingFood.id, editFormData)}
+          />
+        )}
+      </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={deleteFoodId !== null}
+        title={LABELS.ADMIN.CONFIRM.DELETE_FOOD}
+        message={LABELS.ADMIN.CONFIRM.DELETE_FOOD_DESC}
+        onConfirm={actions.confirmDeleteFood}
+        onCancel={() => setDeleteFoodId(null)}
+        variant="danger"
+      />
+
+      <ConfirmModal
+        isOpen={deleteUserId !== null}
+        title={LABELS.ADMIN.CONFIRM.DELETE_USER}
+        message={LABELS.ADMIN.CONFIRM.DELETE_USER_DESC}
+        onConfirm={actions.confirmDeleteUser}
+        onCancel={() => setDeleteUserId(null)}
+        variant="danger"
       />
     </div>
   );

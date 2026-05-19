@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { LucideIcon, Sparkles } from 'lucide-react';
+import { LABELS } from '@/constants/labels';
 
 export interface SidebarItemProps {
   icon: LucideIcon;
@@ -48,7 +49,7 @@ interface SidebarProps {
   footer?: React.ReactNode;
 }
 
-export const Sidebar = ({ brandIcon: BrandIcon = Sparkles, brandLabel = "Food AI", children, footer }: SidebarProps) => {
+export const Sidebar = ({ brandIcon: BrandIcon = Sparkles, brandLabel = LABELS.COMMON.BRAND_NAME, children, footer }: SidebarProps) => {
   return (
     <aside className="w-80 bg-white border-r border-gray-100 flex flex-col p-8 fixed h-full z-20">
       <div className="flex items-center gap-3 mb-12 px-2">

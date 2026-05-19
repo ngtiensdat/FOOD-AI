@@ -35,7 +35,7 @@ export default function CustomerDashboard() {
   return (
     <div className="admin-layout">
       {/* Sidebar: Điều hướng cá nhân */}
-      <Sidebar brandLabel="Food AI">
+      <Sidebar brandLabel={LABELS.COMMON.BRAND_NAME}>
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
         <SidebarItem icon={User} label={LABELS.AUTH.PROFILE} active />
         <SidebarItem icon={Heart} label={LABELS.CUSTOMER.FAVORITES} />

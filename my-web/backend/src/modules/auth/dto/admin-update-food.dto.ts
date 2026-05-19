@@ -6,4 +6,12 @@ export class AdminUpdateFoodDto extends PartialType(CreateFoodDto) {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeaturedToday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isAdminRecommended?: boolean;
 }
