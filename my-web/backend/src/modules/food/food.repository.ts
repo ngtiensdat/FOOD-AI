@@ -127,7 +127,19 @@ export class FoodRepository {
   async delete(id: number) {
     return this.prisma.food.update({
       where: { id },
-      data: { isActive: false },
+      data: { isActive: false, deletedAt: new Date() },
+    });
+  }
+
+  async findAllFoodsWithRestaurant() {
+    return this.prisma.food.findMany({
+      where: { deletedAt: null },
+      include: {
+        restaurant: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

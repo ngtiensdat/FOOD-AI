@@ -3,6 +3,8 @@
 import React from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 
+import { LABELS } from '@/constants/labels';
+
 interface ButtonProps extends HTMLMotionProps<'button'> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'red';
   size?: 'sm' | 'md' | 'lg';
@@ -46,7 +48,7 @@ export const Button = ({
       {loading ? (
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          <span>Đang xử lý...</span>
+          <span>{LABELS.COMMON.PROCESSING}</span>
         </div>
       ) : children}
     </motion.button>

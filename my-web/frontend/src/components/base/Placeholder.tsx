@@ -4,6 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
 
+import { LABELS } from '@/constants/labels';
+
 interface PlaceholderProps {
   title?: string;
   description?: string;
@@ -13,11 +15,11 @@ interface PlaceholderProps {
 }
 
 export const Placeholder = ({ 
-  title = "Tính năng đang phát triển", 
-  description = "Chúng tôi đang phát triển tính năng này. Quay lại sau nhé! ✨", 
+  title = LABELS.COMMON.DEVELOPING, 
+  description = LABELS.COMMON.DEVELOPING_DESC, 
   icon = "🚧",
   onBack,
-  backText = "Quay lại trang chủ"
+  backText = LABELS.COMMON.BACK_HOME
 }: PlaceholderProps) => {
   return (
     <div className="pt-40 pb-40 px-6 max-w-4xl mx-auto text-center min-h-[60vh] flex flex-col justify-center items-center">
