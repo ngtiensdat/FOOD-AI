@@ -127,6 +127,7 @@ body {
 .gradient-text {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -287,11 +288,11 @@ body {
   font-size: 0.875rem;
   /* text-sm */
   font-weight: 700;
-  color: #374151;
+  color: var(--color-gray-700);
   /* text-gray-700 */
 
   &:hover {
-    background-color: #fff7ed;
+    background-color: var(--color-orange-50, #fff7ed);
     /* hover:bg-orange-50 */
   }
 

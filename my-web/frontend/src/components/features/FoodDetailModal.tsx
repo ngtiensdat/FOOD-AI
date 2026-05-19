@@ -41,6 +41,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
             src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'}
             alt={food.name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />

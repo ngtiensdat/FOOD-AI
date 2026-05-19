@@ -35,6 +35,7 @@ export const ProfileHeader = ({
             src={profile.profile.coverImage} 
             alt="Cover" 
             fill 
+            sizes="(max-width: 768px) 100vw, 100vw"
             className="object-cover" 
           />
         ) : (
@@ -57,7 +58,7 @@ export const ProfileHeader = ({
           <div className="relative group -mt-24 md:-mt-32">
             <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
               {profile?.profile?.avatar ? (
-                <Image src={profile.profile.avatar} alt="Avatar" fill className="object-cover" />
+                <Image src={profile.profile.avatar} alt="Avatar" fill sizes="(max-width: 768px) 160px, 192px" className="object-cover" />
               ) : (
                 <div className="w-full h-full gradient-bg flex items-center justify-center text-white text-5xl font-bold">
                   {user?.name?.charAt(0).toUpperCase()}

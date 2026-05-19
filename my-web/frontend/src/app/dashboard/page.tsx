@@ -147,6 +147,7 @@ export default function CustomerDashboard() {
                         src={item.img} 
                         alt={item.name} 
                         fill
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>
