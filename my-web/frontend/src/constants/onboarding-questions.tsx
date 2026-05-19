@@ -32,10 +32,10 @@ export const CUSTOMER_QUESTIONS = [
     description: 'Gợi ý các quán ăn phù hợp với túi tiền của bạn.',
     icon: <DollarSign className="text-green-500" size={32} />,
     options: [
-      { label: 'Dưới 50k', value: 'low', emoji: '💰' },
-      { label: '50k - 100k', value: 'medium', emoji: '💳' },
-      { label: '100k - 200k', value: 'high', emoji: '💎' },
-      { label: 'Trên 200k', value: 'premium', emoji: '👑' },
+      { label: 'Dưới 100k', value: 'under_100k', emoji: '💰' },
+      { label: '100k - 200k', value: '100k_200k', emoji: '💳' },
+      { label: '200k - 400k', value: '200k_400k', emoji: '💎' },
+      { label: 'Trên 400k', value: 'over_400k', emoji: '👑' },
     ]
   },
   {

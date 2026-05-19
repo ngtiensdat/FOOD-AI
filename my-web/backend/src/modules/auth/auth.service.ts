@@ -235,6 +235,87 @@ export class AuthService {
     return { message: 'Đổi mật khẩu thành công' };
   }
 
+  async deleteAccount(userId: number, password?: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    if (!password) {
+      throw new BadRequestException(
+        'Vui lòng cung cấp mật khẩu để xác nhận xóa tài khoản',
+      );
+    }
+
+    const isPasswordValid = await BcryptHelper.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        'Mật khẩu không chính xác. Không thể xóa tài khoản',
+      );
+    }
+
+    // Thực hiện hard delete thông tin người dùng trong Database thông qua transaction
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Xóa các followings & followers liên quan đến User
+      await tx.userFollow.deleteMany({
+        where: {
+          OR: [{ followerId: userId }, { followingId: userId }],
+        },
+      });
+
+      // 2. Xóa các lượt theo dõi nhà hàng
+      await tx.follow.deleteMany({
+        where: { userId },
+      });
+
+      // 3. Xóa các lượt yêu thích (favorites)
+      await tx.favorite.deleteMany({
+        where: { userId },
+      });
+
+      // 4. Xóa hồ sơ cá nhân (UserProfile)
+      await tx.userProfile.deleteMany({
+        where: { userId },
+      });
+
+      // 5. Nếu user là RESTAURANT (Merchant), thực hiện xóa/update các nhà hàng của họ
+      if (user.role === UserRole.RESTAURANT) {
+        // Tìm các nhà hàng của user này
+        const restaurants = await tx.restaurant.findMany({
+          where: { ownerId: userId },
+        });
+        const restaurantIds = restaurants.map((r) => r.id);
+
+        if (restaurantIds.length > 0) {
+          // Xóa hồ sơ nhà hàng
+          await tx.restaurantProfile.deleteMany({
+            where: { restaurantId: { in: restaurantIds } },
+          });
+
+          // Cập nhật các món ăn của nhà hàng này về null restaurantId hoặc xóa món ăn tùy business
+          // Ở đây, vì cascade schema, chúng ta sẽ xóa các món ăn thuộc các nhà hàng này
+          await tx.food.deleteMany({
+            where: { restaurantId: { in: restaurantIds } },
+          });
+
+          // Xóa bản thân các nhà hàng
+          await tx.restaurant.deleteMany({
+            where: { ownerId: userId },
+          });
+        }
+      }
+
+      // 6. Xóa chính User
+      await tx.user.delete({
+        where: { id: userId },
+      });
+    });
+
+    return {
+      message: 'Tài khoản của bạn đã được xóa vĩnh viễn khỏi hệ thống.',
+    };
+  }
+
   async refreshToken(token: string) {
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);

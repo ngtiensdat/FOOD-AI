@@ -16,3 +16,4 @@ Bản lộ trình phát triển tổng thể qua các Sprint để xây dựng m
 
 ## Giai đoạn 4: Moderation & Global Scaling
 - **Sprint 7 (Localization & Operations):** Hỗ trợ đa ngôn ngữ (VI/EN), hệ thống Báo cáo vi phạm (Report), bảng thống kê kinh doanh và Insight từ AI cho Merchant, Form báo lỗi kỹ thuật.
+- **Sprint 8 (Advanced Security & Engagement Optimization):** Tăng cường bảo mật (SQL Injection, XSS, CSRF), làm mới gợi ý AI thông minh (Refresh AI Suggestions) và tính năng chia sẻ bài viết qua MXH ngoài (Zalo, Facebook...).

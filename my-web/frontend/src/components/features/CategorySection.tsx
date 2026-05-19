@@ -56,11 +56,10 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
             key={i}
             whileHover={{ y: -5 }}
             onClick={() => handleCategoryClick(cat.name)}
-            className={`p-6 flex flex-col items-center gap-4 cursor-pointer group card-premium ${
-              selectedCategory === cat.name
+            className={`p-6 flex flex-col items-center gap-4 cursor-pointer group card-premium ${selectedCategory === cat.name
                 ? '!bg-primary !border-primary text-white shadow-xl scale-105'
                 : 'hover:border-orange-200 text-gray-900'
-            }`}
+              }`}
           >
             <div className="text-4xl group-hover:scale-110 transition-transform">{cat.icon}</div>
             <div className={`font-bold ${selectedCategory === cat.name ? 'text-white' : 'text-gray-900'}`}>

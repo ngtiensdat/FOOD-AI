@@ -30,6 +30,38 @@
 - [x] Hiển thị thông báo lỗi khi sai thông tin đăng nhập.
 - [x] Khóa tạm thời tài khoản sau 5 lần đăng nhập sai
 
+### US-05: Quên mật khẩu & Đặt lại mật khẩu
+- **As a** người dùng quên mật khẩu
+- **I want** yêu cầu liên kết đặt lại mật khẩu gửi về email của tôi
+- **So that** tôi có thể đặt mật khẩu mới và lấy lại quyền truy cập tài khoản.
+
+**Acceptance Criteria (AC):**
+- [ ] UI Form "Quên mật khẩu" cho phép điền Email.
+- [ ] Gửi email chứa token đặt lại mật khẩu (hoặc OTP reset).
+- [ ] UI Form "Đặt lại mật khẩu" nhập mật khẩu mới và xác nhận mật khẩu mới.
+- [ ] Vô hiệu hóa token đặt lại mật khẩu cũ sau khi mật khẩu mới được lưu thành công.
+
+### US-06: Xác thực tài khoản qua Email
+- **As a** người dùng mới đăng ký
+- **I want** nhận được email kích hoạt tài khoản
+- **So that** tôi có thể kích hoạt tài khoản của mình và chứng minh email là hợp lệ.
+
+**Acceptance Criteria (AC):**
+- [ ] Tự động gửi email chứa link hoặc mã kích hoạt tài khoản ngay sau khi đăng ký.
+- [ ] UI trang thông báo yêu cầu xác thực email và form nhập mã kích hoạt (OTP/Verification code).
+- [ ] Chặn các quyền truy cập của tài khoản chưa xác thực (nếu cấu hình bắt buộc xác thực).
+
+### US-07: Quyền riêng tư & Xóa tài khoản cá nhân
+- **As a** người dùng muốn ngừng sử dụng ứng dụng
+- **I want** yêu cầu xóa tài khoản và toàn bộ dữ liệu cá nhân của tôi
+- **So that** thông tin cá nhân của tôi được bảo vệ và loại bỏ khỏi hệ thống.
+
+**Acceptance Criteria (AC):**
+- [ ] UI nút "Xóa tài khoản" nằm trong phần thiết lập Hồ sơ cá nhân.
+- [ ] Modal cảnh báo và yêu cầu nhập lại mật khẩu hiện tại để xác nhận xóa.
+- [ ] Thực hiện Soft Delete hoặc Hard Delete tài khoản và các dữ liệu liên quan ở Backend.
+- [ ] Hủy phiên đăng nhập hiện tại và điều hướng về trang chủ sau khi xóa thành công.
+
 ---
 
 ## 2. Core UI & Layout

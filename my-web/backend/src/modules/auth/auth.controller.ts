@@ -102,6 +102,15 @@ export class AuthController {
     return this.authService.completeOnboarding(userId, dto);
   }
 
+  @Post('delete-account')
+  @UseGuards(JwtAuthGuard)
+  async deleteAccount(
+    @GetUser('id') userId: number,
+    @Body() body: { password?: string },
+  ) {
+    return this.authService.deleteAccount(userId, body.password);
+  }
+
   @Post('refresh')
   async refresh(
     @Req() req: Request,

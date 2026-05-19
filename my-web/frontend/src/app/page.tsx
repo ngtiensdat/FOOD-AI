@@ -45,7 +45,8 @@ export default function Home() {
     handleAiConsult,
     handleChangePassword,
     handleVerifyEmail,
-    fetchUserProfile
+    fetchUserProfile,
+    handleDeleteAccount
   } = useHomeActions();
 
   // Danh sách các slider hiển thị trên trang chủ
@@ -138,6 +139,7 @@ export default function Home() {
           handleVerifyEmail={handleVerifyEmail}
           fetchUserProfile={fetchUserProfile}
           isEmailVerified={isEmailVerifiedInProfile}
+          handleDeleteAccount={handleDeleteAccount}
         />
       ) : (
         <Placeholder onBack={() => setActiveTab('home')} />

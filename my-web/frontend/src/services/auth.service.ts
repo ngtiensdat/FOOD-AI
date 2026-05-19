@@ -35,5 +35,9 @@ export const authService = {
 
   async changePassword(data: any) {
     return apiClient.post('/auth/change-password', data);
-  }
+  },
+
+  async deleteAccount(data: { password?: string }) {
+    return apiClient.post('/auth/delete-account', data);
+  },
 };

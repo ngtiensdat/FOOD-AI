@@ -47,3 +47,14 @@
 **Acceptance Criteria (AC):**
 - [x] Backend tự động lưu lịch sử khi người dùng nhấn xem món.
 - [ ] Hiển thị danh sách hoạt động gần đây trong Dashboard/Profile.
+
+### US-13: Xem hồ sơ nhà hàng và Menu đầy đủ (Merchant Profile Public View)
+- **As a** người dùng
+- **I want** xem trang hồ sơ công khai của một Nhà hàng và toàn bộ thực đơn (Menu) món ăn của họ
+- **So that** tôi có thể chọn món ăn phù hợp của nhà hàng đó trước khi ghé thăm.
+
+**Acceptance Criteria (AC):**
+- [ ] UI Trang hồ sơ công khai của Nhà hàng hiển thị Tên, Ảnh bìa/Avatar, Mô tả, Địa chỉ, Trạng thái đóng/mở cửa.
+- [ ] Grid/List hiển thị tất cả các món ăn đang bán của nhà hàng đó.
+- [ ] Nút xem nhanh chi tiết món ăn từ menu của quán.
+- [ ] Nút Follow/Unfollow nhà hàng trực tiếp trên trang hồ sơ của họ.
