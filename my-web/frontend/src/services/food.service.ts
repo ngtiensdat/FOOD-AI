@@ -29,6 +29,10 @@ export const foodService = {
     return apiClient.get('/foods/my-foods').catch(() => []);
   },
   
+  async getRecentViews() {
+    return apiClient.get('/foods/recent-views').catch(() => []);
+  },
+  
   async createFood(data: any) {
     try {
       await apiClient.post('/foods', data);

@@ -11,6 +11,7 @@ import { JwtStrategy } from '../../common/strategies/jwt.strategy';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import { UserRepository } from './user.repository';
+import { FoodRepository } from '../food/food.repository';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserRepository } from './user.repository';
     AuthService,
     AdminService,
     UserRepository,
+    FoodRepository,
     JwtStrategy,
     RolesGuard,
     AuthorizationService,

@@ -1,31 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
+import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
 import { UserRole, UserStatus, Prisma } from '@prisma/client';
-import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     private userRepository: UserRepository,
+    private foodRepository: FoodRepository,
     private aiService: AiService,
-    private prisma: PrismaService, // Dùng cho food và restaurant queries
   ) {}
 
   async getPendingUsers() {
-    return this.prisma.user.findMany({
-      where: {
-        role: UserRole.RESTAURANT,
-        status: UserStatus.PENDING,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        legalDocuments: true,
-        createdAt: true,
-      },
-    });
+    return this.userRepository.findPendingUsers();
   }
 
   async updateUserStatus(id: number, status: string) {
@@ -38,25 +26,17 @@ export class AdminService {
     });
 
     if (updatedUser.role === UserRole.RESTAURANT) {
-      await this.prisma.restaurant.updateMany({
-        where: { ownerId: id },
-        data: { isActive: status === UserStatus.APPROVED },
-      });
+      await this.userRepository.updateRestaurantsStatus(
+        id,
+        status === UserStatus.APPROVED,
+      );
     }
 
     return updatedUser;
   }
 
   async getAllFoods() {
-    return this.prisma.food.findMany({
-      where: { deletedAt: null },
-      include: {
-        restaurant: {
-          select: { name: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.foodRepository.findAllFoodsWithRestaurant();
   }
 
   async updateFood(
@@ -82,31 +62,16 @@ export class AdminService {
     if (data.lng !== undefined)
       formattedData.lng = parseFloat(data.lng.toString());
 
-    const updatedFood = await this.prisma.food.update({
-      where: { id },
-      data: formattedData,
-    });
+    const updatedFood = await this.foodRepository.update(id, formattedData);
 
     await this.aiService.updateFoodEmbedding(updatedFood.id);
     return updatedFood;
   }
 
   async getAllUsers(role?: string) {
-    return this.prisma.user.findMany({
-      where: {
-        role: role ? (role.toUpperCase() as UserRole) : undefined,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.userRepository.findAllUsers(
+      role ? (role.toUpperCase() as UserRole) : undefined,
+    );
   }
 
   async deleteUser(id: number) {
@@ -114,9 +79,6 @@ export class AdminService {
   }
 
   async deleteFood(id: number) {
-    return this.prisma.food.update({
-      where: { id },
-      data: { deletedAt: new Date(), isActive: false },
-    });
+    return this.foodRepository.delete(id);
   }
 }

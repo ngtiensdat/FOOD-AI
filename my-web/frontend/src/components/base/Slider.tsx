@@ -4,6 +4,8 @@ import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
 
+import { LABELS } from '@/constants/labels';
+
 interface SliderProps {
   children: React.ReactNode;
   title: string;
@@ -31,7 +33,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
         size="sm" 
         onClick={() => scroll('left')}
         className="w-12 h-12 rounded-full p-0"
-        aria-label="Cuộn sang trái"
+        aria-label={LABELS.COMMON.SCROLL_LEFT}
       >
         <ChevronLeft size={24} />
       </Button>
@@ -40,7 +42,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
         size="sm" 
         onClick={() => scroll('right')}
         className="w-12 h-12 rounded-full p-0"
-        aria-label="Cuộn sang phải"
+        aria-label={LABELS.COMMON.SCROLL_RIGHT}
       >
         <ChevronRight size={24} />
       </Button>
