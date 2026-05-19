@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LIMITS } from '@/constants/limits.constant';
 
 export const useHomeActions = () => {
-  const { user, isAuthenticated, isCustomer, login } = useAuth();
+  const { user, isAuthenticated, isCustomer, login, logout } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('home');
   const [selectedFood, setSelectedFood] = useState<any>(null);
@@ -119,6 +119,12 @@ export const useHomeActions = () => {
     }
   };
 
+  const handleDeleteAccount = async (password: string) => {
+    if (!user?.id) return;
+    await authServiceApi.deleteAccount({ password });
+    logout();
+  };
+
   return {
     user,
     isAuthenticated,
@@ -138,6 +144,7 @@ export const useHomeActions = () => {
     handleAiConsult,
     handleChangePassword,
     handleVerifyEmail,
-    fetchUserProfile
+    fetchUserProfile,
+    handleDeleteAccount
   };
 };

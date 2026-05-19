@@ -197,6 +197,20 @@ export const LABELS = {
         ADDRESS: 'Địa chỉ / Nơi sống',
         WORK: 'Nơi làm việc',
       }
+    },
+    DANGER_ZONE: {
+      TITLE: '⚠️ Vùng nguy hiểm (Danger Zone)',
+      WARNING: 'CẢNH BÁO: Hành động này là vĩnh viễn và không thể đảo ngược. Khi bạn xác nhận xóa tài khoản: Toàn bộ dữ liệu của bạn bao gồm hồ sơ cá nhân, các bài viết, lượt thích, đánh giá, lịch sử gợi ý AI, thông tin chi nhánh nhà hàng (nếu có) sẽ bị xóa hoàn toàn khỏi hệ thống và KHÔNG THỂ KHÔI PHỤC.',
+      BUTTON: 'Xóa tài khoản của tôi',
+      MODAL_TITLE: 'Xác nhận xóa tài khoản?',
+      MODAL_WARNING: 'Hành động này sẽ xóa vĩnh viễn toàn bộ dữ liệu của bạn. Đây là thao tác tuyệt đối không thể khôi phục lại!',
+      PASSWORD_LABEL: 'Nhập mật khẩu của bạn để xác nhận:',
+      PASSWORD_PLACEHOLDER: 'Mật khẩu tài khoản của bạn',
+      CONFIRM_BUTTON: 'Xác nhận xóa',
+      CANCEL_BUTTON: 'Hủy bỏ',
+      TOAST_PASSWORD_REQUIRED: 'Vui lòng nhập mật khẩu để xác nhận.',
+      TOAST_SUCCESS: 'Tài khoản của bạn đã được xóa vĩnh viễn khỏi hệ thống.',
+      TOAST_ERROR: 'Mật khẩu không chính xác hoặc có lỗi xảy ra.'
     }
   },
   NAV: {

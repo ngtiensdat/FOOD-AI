@@ -14,6 +14,7 @@ interface SettingsSectionProps {
   handleVerifyEmail: (e: React.FormEvent, email: string) => Promise<void>;
   fetchUserProfile: () => Promise<any>;
   isEmailVerified: boolean | null;
+  handleDeleteAccount: (password: string) => Promise<void>;
 }
 
 export const SettingsSection = ({
@@ -23,6 +24,7 @@ export const SettingsSection = ({
   handleVerifyEmail,
   fetchUserProfile,
   isEmailVerified,
+  handleDeleteAccount,
 }: SettingsSectionProps) => {
   const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification'>('security');
   const [oldPassword, setOldPassword] = useState('');
@@ -33,6 +35,26 @@ export const SettingsSection = ({
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const onDeleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deletePassword) {
+      toast.error(LABELS.SETTINGS.DANGER_ZONE.TOAST_PASSWORD_REQUIRED);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await handleDeleteAccount(deletePassword);
+      toast.success(LABELS.SETTINGS.DANGER_ZONE.TOAST_SUCCESS);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || LABELS.SETTINGS.DANGER_ZONE.TOAST_ERROR);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const onPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,6 +161,24 @@ export const SettingsSection = ({
                 </div>
               </div>
             </div>
+
+            {/* Vùng nguy hiểm (Danger Zone) */}
+            <div className="bg-red-50/40 p-6 rounded-card border border-red-200/60 space-y-4">
+              <h3 className="font-bold text-lg text-red-600 flex items-center gap-2">
+                {LABELS.SETTINGS.DANGER_ZONE.TITLE}
+              </h3>
+              <p className="text-xs text-red-500 font-medium leading-relaxed">
+                {LABELS.SETTINGS.DANGER_ZONE.WARNING}
+              </p>
+              <Button 
+                onClick={() => setShowDeleteModal(true)} 
+                variant="red"
+                size="sm"
+              >
+                {LABELS.SETTINGS.DANGER_ZONE.BUTTON}
+              </Button>
+            </div>
+
             <Button variant="ghost" onClick={() => setActiveTab('home')}>
               {LABELS.COMMON.BACK_HOME}
             </Button>
@@ -213,6 +253,75 @@ export const SettingsSection = ({
           </div>
         )}
       </motion.div>
+
+      {/* Modal xác nhận xóa tài khoản */}
+      {showDeleteModal && (
+        <div className="modal-backdrop">
+          <div 
+            className="absolute inset-0 bg-black/50" 
+            onClick={() => {
+              if (!isDeleting) {
+                setShowDeleteModal(false);
+                setDeletePassword('');
+              }
+            }} 
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="modal-card max-w-md relative z-10 space-y-6"
+          >
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto text-2xl rotate-3 shadow-inner">
+                ⚠️
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">{LABELS.SETTINGS.DANGER_ZONE.MODAL_TITLE}</h3>
+              <p className="text-xs text-red-500 font-semibold leading-relaxed px-2">
+                {LABELS.SETTINGS.DANGER_ZONE.MODAL_WARNING}
+              </p>
+            </div>
+
+            <form onSubmit={onDeleteSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">
+                  {LABELS.SETTINGS.DANGER_ZONE.PASSWORD_LABEL}
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder={LABELS.SETTINGS.DANGER_ZONE.PASSWORD_PLACEHOLDER}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-input py-3.5 px-4 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-50 transition-all text-sm font-medium"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1" 
+                  disabled={isDeleting}
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeletePassword('');
+                  }}
+                >
+                  {LABELS.SETTINGS.DANGER_ZONE.CANCEL_BUTTON}
+                </Button>
+                <Button 
+                  type="submit" 
+                  loading={isDeleting} 
+                  variant="red"
+                  className="flex-1"
+                >
+                  {LABELS.SETTINGS.DANGER_ZONE.CONFIRM_BUTTON}
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
