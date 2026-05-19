@@ -22,6 +22,8 @@
 }
 
 /* Dark Mode Colors Override */
+:root.dark,
+html.dark,
 .dark {
   --background: #020b24;
   /* Cosmic Deep Navy Page Background */
@@ -35,16 +37,26 @@
 
   /* Curated Premium Navy & Sapphire palette to override standard Tailwind gray variables in dark mode */
   --color-gray-950: #ffffff;
-  --color-gray-900: #f0f3ff; /* Ice White */
-  --color-gray-800: #d5defc; /* Soft Ice Blue */
-  --color-gray-700: #b0c2f6; /* Light Ice Sapphire */
-  --color-gray-600: #8ba2e6; /* Soft Sky Cobalt */
-  --color-gray-500: #6282d3; /* Glowing Soft Blue */
-  --color-gray-400: #4260a9; /* Cobalt Shadow */
-  --color-gray-300: #203c7e; /* Midnight Sapphire Border */
-  --color-gray-200: #0e2252; /* Card Border Navy */
-  --color-gray-100: #071330; /* Sleek Card Background */
-  --color-gray-50: #020b24;  /* Cosmic Navy Page Background */
+  --color-gray-900: #f0f3ff;
+  /* Ice White */
+  --color-gray-800: #d5defc;
+  /* Soft Ice Blue */
+  --color-gray-700: #b0c2f6;
+  /* Light Ice Sapphire */
+  --color-gray-600: #8ba2e6;
+  /* Soft Sky Cobalt */
+  --color-gray-500: #6282d3;
+  /* Glowing Soft Blue */
+  --color-gray-400: #4260a9;
+  /* Cobalt Shadow */
+  --color-gray-300: #203c7e;
+  /* Midnight Sapphire Border */
+  --color-gray-200: #0e2252;
+  /* Card Border Navy */
+  --color-gray-100: #071330;
+  /* Sleek Card Background */
+  --color-gray-50: #020b24;
+  /* Cosmic Navy Page Background */
 }
 
 @theme inline {
@@ -285,7 +297,7 @@ body {
 
   &:where(.dark, .dark *) {
     color: var(--color-gray-900);
-    
+
     &:hover {
       background-color: var(--color-gray-200);
     }
