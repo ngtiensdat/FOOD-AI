@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FoodController } from './food.controller';
-import { RestaurantController } from './restaurant.controller'; // Thêm dòng này
+import { RestaurantController } from './restaurant.controller';
+import { RestaurantPublicController } from './restaurant-public.controller';
 import { PrismaModule } from '../../database/prisma.module';
 import { AiModule } from '../ai/ai.module';
 import { AuthModule } from '../auth/auth.module';
@@ -10,7 +11,11 @@ import { AuthorizationService } from '../../common/services/authorization.servic
 
 @Module({
   imports: [PrismaModule, AiModule, AuthModule],
-  controllers: [FoodController, RestaurantController], // Đăng ký RestaurantController tại đây
+  controllers: [
+    FoodController,
+    RestaurantController,
+    RestaurantPublicController,
+  ],
   providers: [FoodService, FoodRepository, AuthorizationService],
   exports: [FoodService],
 })

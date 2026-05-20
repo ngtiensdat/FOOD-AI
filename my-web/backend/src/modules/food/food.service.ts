@@ -9,6 +9,8 @@ import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
 import { FoodQueryDto } from './dto/food-query.dto';
 import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
+import { LIMITS } from '../../common/constants/limits.constant';
+import { MESSAGES } from '../../common/constants/messages.constant';
 
 @Injectable()
 export class FoodService {
@@ -18,12 +20,45 @@ export class FoodService {
   ) {}
 
   async getAllFoods(query: FoodQueryDto) {
-    const { tag } = query;
+    const { tag, city, district } = query;
     const where: Prisma.FoodWhereInput = {
       isActive: true,
       status: FoodStatus.APPROVED,
       OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
     };
+
+    const andFilters: Prisma.FoodWhereInput[] = [];
+
+    if (city) {
+      andFilters.push({
+        OR: [
+          { address: { contains: city, mode: 'insensitive' } },
+          {
+            restaurant: {
+              is: { address: { contains: city, mode: 'insensitive' } },
+            },
+          },
+        ],
+      });
+    }
+
+    if (district) {
+      andFilters.push({
+        OR: [
+          { address: { contains: district, mode: 'insensitive' } },
+          {
+            restaurant: {
+              is: { address: { contains: district, mode: 'insensitive' } },
+            },
+          },
+        ],
+      });
+    }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
+    }
+
     const result = await this.repository.findAll(where);
     let foods = result.data;
 
@@ -53,15 +88,40 @@ export class FoodService {
     return this.repository.trackView(user.id, id);
   }
 
-  async getRecentFoods(user: User) {
+  async getRecentFoods(
+    user: User,
+    limit: number = LIMITS.DEFAULT_RECENT_VIEWS,
+  ) {
     if (!user) return [];
-    return this.repository.findRecentViews(user.id);
+    return this.repository.findRecentViews(user.id, limit);
   }
 
   async getNearbyFoods(query: FoodQueryDto) {
-    const { lat, lng, radius } = query;
+    const { lat, lng, radius, city, district } = query;
     if (lat === undefined || lng === undefined) return [];
-    return this.repository.findNearby(lat, lng, radius || 10);
+    let foods = await this.repository.findNearby(lat, lng, radius || 10);
+
+    if (city) {
+      const cityLower = city.toLowerCase();
+      foods = foods.filter(
+        (f) =>
+          (f.address && f.address.toLowerCase().includes(cityLower)) ||
+          (f.restaurant?.address &&
+            f.restaurant.address.toLowerCase().includes(cityLower)),
+      );
+    }
+
+    if (district) {
+      const districtLower = district.toLowerCase();
+      foods = foods.filter(
+        (f) =>
+          (f.address && f.address.toLowerCase().includes(districtLower)) ||
+          (f.restaurant?.address &&
+            f.restaurant.address.toLowerCase().includes(districtLower)),
+      );
+    }
+
+    return foods;
   }
 
   async createFood(user: User, dto: CreateFoodDto) {
@@ -281,6 +341,16 @@ export class FoodService {
     return restaurant;
   }
 
+  async getMyBranches(user: User) {
+    const branches = await this.repository.findManyRestaurantsByOwnerId(
+      user.id,
+    );
+    if (!branches || branches.length === 0) {
+      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+    }
+    return branches;
+  }
+
   async updateMyRestaurantStatus(user: User, isActive: boolean) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
@@ -296,11 +366,107 @@ export class FoodService {
   ) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
-      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
     return this.repository.updateRestaurantProfile(restaurant.id, {
       openingHours,
       contactPhone,
     });
+  }
+
+  async getPublicRestaurant(id: number, requestingUser?: User) {
+    const restaurant = await this.repository.findPublicRestaurantById(id);
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    let isFollowing = false;
+    if (requestingUser) {
+      isFollowing = await this.repository.isUserFollowingRestaurant(
+        requestingUser.id,
+        id,
+      );
+    }
+
+    const followingCount = await this.repository.countMerchantFollowing(
+      restaurant.ownerId,
+    );
+
+    // Lấy trạng thái ẩn/hiện danh sách follow từ preferences của Merchant
+    const prefs = (await this.repository.getUserPreferences(
+      restaurant.ownerId,
+    )) as { showFollowList?: boolean };
+    const showFollowList = prefs.showFollowList !== false; // mặc định là true
+
+    return {
+      restaurant: {
+        id: restaurant.id,
+        name: restaurant.name,
+        address: restaurant.address,
+        description: restaurant.description,
+        mapUrl: restaurant.mapUrl,
+        isActive: restaurant.isActive,
+        ownerId: restaurant.ownerId,
+        createdAt: restaurant.createdAt,
+        profile: restaurant.profile,
+        foods: restaurant.foods,
+      },
+      stats: {
+        followersCount: restaurant._count.followers,
+        followingCount,
+        showFollowList,
+      },
+      isFollowing,
+    };
+  }
+
+  private async checkFollowListVisibility(
+    restaurantId: number,
+    requestingUser?: User,
+  ) {
+    const restaurant = await this.repository.findRestaurantById(restaurantId);
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    const prefs = (await this.repository.getUserPreferences(
+      restaurant.ownerId,
+    )) as { showFollowList?: boolean };
+    const showFollowList = prefs.showFollowList !== false; // mặc định là true
+
+    if (!showFollowList && requestingUser?.id !== restaurant.ownerId) {
+      throw new ForbiddenException(MESSAGES.RESTAURANT.PRIVATE_FOLLOW_LIST);
+    }
+
+    return restaurant;
+  }
+
+  async getRestaurantFollowers(id: number, requestingUser?: User) {
+    await this.checkFollowListVisibility(id, requestingUser);
+    return this.repository.findRestaurantFollowers(id);
+  }
+
+  async getMerchantFollowing(id: number, requestingUser?: User) {
+    const restaurant = await this.checkFollowListVisibility(id, requestingUser);
+    return this.repository.findMerchantFollowing(restaurant.ownerId);
+  }
+
+  async toggleFollowRestaurant(userId: number, restaurantId: number) {
+    const restaurant = await this.repository.findRestaurantById(restaurantId);
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    const isFollowing = await this.repository.isUserFollowingRestaurant(
+      userId,
+      restaurantId,
+    );
+    if (isFollowing) {
+      await this.repository.unfollowRestaurant(userId, restaurantId);
+      return { followed: false };
+    } else {
+      await this.repository.followRestaurant(userId, restaurantId);
+      return { followed: true };
+    }
   }
 }

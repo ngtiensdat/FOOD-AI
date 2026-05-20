@@ -188,9 +188,127 @@ export class FoodRepository {
     });
   }
 
+  async findManyRestaurantsByOwnerId(ownerId: number) {
+    return this.prisma.restaurant.findMany({
+      where: { ownerId },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
   async findRestaurantById(id: number) {
     return this.prisma.restaurant.findUnique({
       where: { id },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
+  async findPublicRestaurantById(id: number) {
+    return this.prisma.restaurant.findUnique({
+      where: { id },
+      include: {
+        profile: true,
+        foods: {
+          where: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            followers: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getUserPreferences(userId: number): Promise<Record<string, unknown>> {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: { preferences: true },
+    });
+    return (profile?.preferences as Record<string, unknown>) || {};
+  }
+
+  async findRestaurantFollowers(restaurantId: number) {
+    return this.prisma.follow.findMany({
+      where: { restaurantId },
+      select: {
+        id: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findMerchantFollowing(ownerId: number) {
+    return this.prisma.follow.findMany({
+      where: { userId: ownerId },
+      select: {
+        id: true,
+        createdAt: true,
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            profile: {
+              select: {
+                coverImage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async isUserFollowingRestaurant(
+    userId: number,
+    restaurantId: number,
+  ): Promise<boolean> {
+    const follow = await this.prisma.follow.findUnique({
+      where: {
+        userId_restaurantId: { userId, restaurantId },
+      },
+    });
+    return !!follow;
+  }
+
+  async followRestaurant(userId: number, restaurantId: number) {
+    return this.prisma.follow.create({
+      data: { userId, restaurantId },
+    });
+  }
+
+  async unfollowRestaurant(userId: number, restaurantId: number) {
+    return this.prisma.follow.delete({
+      where: {
+        userId_restaurantId: { userId, restaurantId },
+      },
+    });
+  }
+
+  async countMerchantFollowing(ownerId: number): Promise<number> {
+    return this.prisma.follow.count({
+      where: { userId: ownerId },
     });
   }
 

@@ -32,4 +32,7 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   workAt?: string;
+
+  @IsOptional()
+  preferences?: Record<string, unknown>;
 }

@@ -11,4 +11,12 @@ export class AiChatDto {
   @IsOptional()
   @IsNumber()
   lng?: number;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  district?: string;
 }

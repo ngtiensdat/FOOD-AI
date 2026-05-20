@@ -46,7 +46,7 @@
 
 **Acceptance Criteria (AC):**
 - [x] Backend tự động lưu lịch sử khi người dùng nhấn xem món.
-- [ ] Hiển thị danh sách hoạt động gần đây trong Dashboard/Profile.
+- [x] Hiển thị danh sách hoạt động gần đây trong Dashboard.
 
 ### US-13: Xem hồ sơ nhà hàng và Menu đầy đủ (Merchant Profile Public View)
 - **As a** người dùng
@@ -54,7 +54,33 @@
 - **So that** tôi có thể chọn món ăn phù hợp của nhà hàng đó trước khi ghé thăm.
 
 **Acceptance Criteria (AC):**
-- [ ] UI Trang hồ sơ công khai của Nhà hàng hiển thị Tên, Ảnh bìa/Avatar, Mô tả, Địa chỉ, Trạng thái đóng/mở cửa.
-- [ ] Grid/List hiển thị tất cả các món ăn đang bán của nhà hàng đó.
-- [ ] Nút xem nhanh chi tiết món ăn từ menu của quán.
-- [ ] Nút Follow/Unfollow nhà hàng trực tiếp trên trang hồ sơ của họ.
+- [x] UI Trang hồ sơ công khai của Nhà hàng hiển thị Tên, Ảnh bìa/Avatar, Mô tả, Địa chỉ, Trạng thái đóng/mở cửa.
+- [x] Grid/List hiển thị tất cả các món ăn đang bán của nhà hàng đó.
+- [x] Nút xem nhanh chi tiết món ăn từ menu của quán.
+- [x] Nút Follow/Unfollow nhà hàng trực tiếp trên trang hồ sơ của họ.
+
+---
+
+## 3. Backlog Hỗ Trợ Tùy Biến Cửa Hàng & Khám Phá Quán Ăn 
+
+*(Chi tiết xem đề xuất thiết kế tại: [restaurant-customization-proposal.md](file:///e:/FOOD_AI_code/documents/06-backlog/sprint-3/restaurant-customization-proposal.md))*
+
+### US-14: Tùy biến thông tin quán ăn cho Merchant
+- **As a** chủ quán ăn (Merchant)
+- **I want** tự chỉnh sửa ảnh bìa, tên quán, địa chỉ, bản đồ chỉ đường, bio giới thiệu, email liên hệ
+- **So that** thông tin trang công khai của quán tôi luôn hiển thị chính xác nhất cho thực khách.
+
+**Acceptance Criteria (AC):**
+- [ ] Cập nhật đồng bộ các trường của Restaurant và RestaurantProfile.
+- [ ] Modal chỉnh sửa giao diện đẹp mắt tại trang dashboard quản lý.
+
+### US-15: Khám phá tìm kiếm trang cửa hàng công khai
+- **As a** người dùng
+- **I want** tìm kiếm trực tiếp các nhà hàng theo tên quán, địa phương hoặc danh mục món ăn
+- **So that** tôi có thể truy cập trang chi tiết công khai của nhà hàng và xem menu món ăn.
+
+**Acceptance Criteria (AC):**
+- [ ] Trang Explore hiển thị danh sách các RestaurantCard công khai.
+- [ ] Thanh tìm kiếm theo tên nhà hàng.
+- [ ] Hỗ trợ lọc theo tag (danh mục món ăn của quán).
+- [ ] Hỗ trợ lọc theo khu vực thành phố, quận/huyện.

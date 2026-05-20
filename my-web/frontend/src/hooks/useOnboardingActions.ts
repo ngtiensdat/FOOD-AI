@@ -23,7 +23,9 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
   const [branches, setBranches] = useState<any[]>([
     {
       name: '',
-      address: '',
+      city: 'Hà Nội',
+      district: '',
+      street: '',
       latitude: 0,
       longitude: 0,
       mapUrl: '',
@@ -75,7 +77,9 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       ...branches,
       {
         name: '',
-        address: '',
+        city: 'Hà Nội',
+        district: '',
+        street: '',
         latitude: 0,
         longitude: 0,
         mapUrl: '',
@@ -110,7 +114,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
     // Ràng buộc tính hợp lệ của dữ liệu
     for (let i = 0; i < branches.length; i++) {
       const b = branches[i];
-      if (!b.name.trim() || !b.address.trim()) {
+      if (!b.name.trim() || !b.city || !b.district || !b.street.trim()) {
         toast.error(ONBOARDING_LABELS.REQUIRED_BRANCH_FIELDS(i + 1));
         return;
       }
@@ -152,7 +156,12 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       }
     }
 
-    finishOnboarding(answers, branches);
+    const finalBranches = branches.map(b => ({
+      ...b,
+      address: `${b.street}, ${b.district}, ${b.city}`
+    }));
+
+    finishOnboarding(answers, finalBranches);
   };
 
   const finishOnboarding = async (finalAnswers: any, finalBranches?: any[]) => {

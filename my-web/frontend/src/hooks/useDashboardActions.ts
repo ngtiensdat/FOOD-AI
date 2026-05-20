@@ -5,6 +5,7 @@ import { authService } from '@/services/auth.service';
 import { foodService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { LIMITS } from '@/constants/limits.constant';
 
 /**
  * Custom Hook: useDashboardActions
@@ -16,6 +17,8 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'favorites' | 'history'>('profile');
+  const [selectedFood, setSelectedFood] = useState<any>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -23,7 +26,7 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
       try {
         const [profileData, recentData] = await Promise.all([
           authService.getProfile(user.id),
-          foodService.getRecentViews()
+          foodService.getRecentViews(LIMITS.RECENT_VIEWS_HISTORY)
         ]);
         setProfile(profileData);
         setRecentViews(recentData);
@@ -35,6 +38,13 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
     };
     fetchDashboardData();
   }, [user?.id]);
+
+  // Theo dõi khi click xem chi tiết trong dashboard để cập nhật trackView
+  useEffect(() => {
+    if (selectedFood?.id && user) {
+      foodService.trackView(selectedFood.id);
+    }
+  }, [selectedFood?.id, user]);
 
   const handleOnboardingComplete = async (onboardingData: any) => {
     if (!profile) return;
@@ -62,6 +72,10 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
     setShowOnboarding,
     showMenu,
     setShowMenu,
-    handleOnboardingComplete
+    handleOnboardingComplete,
+    activeTab,
+    setActiveTab,
+    selectedFood,
+    setSelectedFood
   };
 };

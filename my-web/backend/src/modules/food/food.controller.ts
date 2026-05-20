@@ -72,8 +72,12 @@ export class FoodController {
 
   @Get('recent-views')
   @UseGuards(JwtAuthGuard)
-  getRecentViews(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getRecentFoods(user);
+  getRecentViews(
+    @GetUser() user: PrismaClient.User,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.foodService.getRecentFoods(user, parsedLimit);
   }
 
   @Post()

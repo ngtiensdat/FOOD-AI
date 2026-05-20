@@ -4,6 +4,7 @@ import {
   ConflictException,
   UnauthorizedException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
@@ -118,6 +119,105 @@ export class AuthService {
     return { ...userWithoutSensitiveData, isFollowing };
   }
 
+  async getFollowers(targetId: number, requesterId?: number) {
+    const user = await this.userRepository.findById(targetId);
+    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+
+    // Kiểm tra cài đặt ẩn hiện danh sách (quyền riêng tư)
+    if (user.profile?.preferences) {
+      const preferences = user.profile.preferences as {
+        showFollowList?: boolean;
+      } | null;
+      if (preferences?.showFollowList === false && requesterId !== targetId) {
+        throw new ForbiddenException(
+          'Danh sách người theo dõi của người dùng này đã được ẩn.',
+        );
+      }
+    }
+
+    const follows = await this.prisma.userFollow.findMany({
+      where: { followingId: targetId },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            profile: {
+              select: {
+                avatar: true,
+                bio: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return follows.map((f) => f.follower);
+  }
+
+  async getFollowing(targetId: number, requesterId?: number) {
+    const user = await this.userRepository.findById(targetId);
+    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+
+    // Kiểm tra cài đặt ẩn hiện danh sách (quyền riêng tư)
+    if (user.profile?.preferences) {
+      const preferences = user.profile.preferences as {
+        showFollowList?: boolean;
+      } | null;
+      if (preferences?.showFollowList === false && requesterId !== targetId) {
+        throw new ForbiddenException(
+          'Danh sách đang theo dõi của người dùng này đã được ẩn.',
+        );
+      }
+    }
+
+    // Normal users can follow other users (userFollow) AND merchants (restaurant follows)
+    const userFollowings = await this.prisma.userFollow.findMany({
+      where: { followerId: targetId },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            profile: {
+              select: {
+                avatar: true,
+                bio: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const restaurantFollowings = await this.prisma.follow.findMany({
+      where: { userId: targetId },
+      include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            profile: {
+              select: {
+                coverImage: true,
+                bio: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      users: userFollowings.map((f) => f.following),
+      restaurants: restaurantFollowings.map((f) => f.restaurant),
+    };
+  }
+
   async toggleFollow(followerId: number, followingId: number) {
     if (followerId === followingId) {
       throw new ConflictException('Không thể tự theo dõi chính mình');
@@ -143,7 +243,7 @@ export class AuthService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('Người dùng không tồn tại');
 
-    await this.userRepository.upsertProfile(userId, {
+    const profileUpdate: Prisma.UserProfileUpdateInput = {
       fullName: data.name || data.fullName,
       phone: data.phone,
       avatar: data.avatar,
@@ -151,7 +251,22 @@ export class AuthService {
       bio: data.bio,
       address: data.address,
       workAt: data.workAt,
-    });
+    };
+
+    if (data.preferences !== undefined) {
+      const existingProfile = await this.prisma.userProfile.findUnique({
+        where: { userId },
+        select: { preferences: true },
+      });
+      const currentPrefs =
+        (existingProfile?.preferences as Prisma.JsonObject) || {};
+      profileUpdate.preferences = {
+        ...currentPrefs,
+        ...data.preferences,
+      } as Prisma.InputJsonValue;
+    }
+
+    await this.userRepository.upsertProfile(userId, profileUpdate);
 
     if (data.name) {
       await this.userRepository.update(userId, { name: data.name });

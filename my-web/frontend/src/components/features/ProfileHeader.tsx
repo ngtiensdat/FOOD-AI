@@ -15,6 +15,8 @@ interface ProfileHeaderProps {
   isFollowLoading: boolean;
   onEdit: () => void;
   onFollow: () => void;
+  onShowFollowers?: () => void;
+  onShowFollowing?: () => void;
 }
 
 // Helper to check operating status
@@ -50,7 +52,9 @@ export const ProfileHeader = ({
   me,
   isFollowLoading,
   onEdit,
-  onFollow
+  onFollow,
+  onShowFollowers,
+  onShowFollowing
 }: ProfileHeaderProps) => {
   const router = useRouter();
   const restaurant = profile?.restaurants?.[0];
@@ -129,9 +133,9 @@ export const ProfileHeader = ({
               {user?.role === 'ADMIN' ? (
                 <span className="flex items-center gap-1.5"><Shield size={18} className="text-primary" /> {LABELS.AUTH.ADMIN}</span>
               ) : (
-                <>
-                  {user?.role === 'RESTAURANT' ? (
-                    <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col gap-2">
+                  {user?.role === 'RESTAURANT' && (
+                    <div className="flex flex-wrap items-center gap-3 mb-1">
                       <span className="flex items-center gap-1.5"><Store size={18} className="text-primary" /> {LABELS.AUTH.RESTAURANT_ROLE}</span>
                       <span className="text-gray-300 dark:text-slate-700">|</span>
                       <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-slate-400">
@@ -140,20 +144,29 @@ export const ProfileHeader = ({
                       </span>
                       <span className="text-gray-300 dark:text-slate-700">|</span>
                       <span className="flex items-center gap-1.5 text-xs font-bold">
-                        <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                         <span className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
                           {isOpen ? LABELS.RESTAURANT.STATUS_OPEN : LABELS.RESTAURANT.STATUS_CLOSED}
                         </span>
                       </span>
                     </div>
-                  ) : (
-                    <>
-                      <span>{(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}</span>
-                      <span>•</span>
-                      <span>{(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}</span>
-                    </>
                   )}
-                </>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={onShowFollowers}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
+                    </button>
+                    <span>•</span>
+                    <button 
+                      onClick={onShowFollowing}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
             <p className="text-body text-gray-600 max-w-lg">

@@ -92,6 +92,8 @@ export class AiService {
     message: string,
     userLat?: number,
     userLng?: number,
+    city?: string,
+    district?: string,
   ) {
     try {
       const cleanMessage = message.trim();
@@ -175,6 +177,9 @@ export class AiService {
         userVector,
         userLat,
         userLng,
+        5,
+        city,
+        district,
       );
       const context =
         foods.length > 0

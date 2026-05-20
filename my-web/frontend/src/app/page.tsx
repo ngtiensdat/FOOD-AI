@@ -26,7 +26,6 @@ import { LABELS } from '@/constants/labels';
 
 export default function Home() {
   const router = useRouter();
-  const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData();
   const {
     user,
     isAuthenticated,
@@ -41,6 +40,10 @@ export default function Home() {
     aiResponse,
     isAiLoading,
     suggestedFoods,
+    selectedCity,
+    selectedDistrict,
+    setSelectedCity,
+    setSelectedDistrict,
     handleOnboardingComplete,
     handleAiConsult,
     handleChangePassword,
@@ -48,6 +51,8 @@ export default function Home() {
     fetchUserProfile,
     handleDeleteAccount
   } = useHomeActions();
+
+  const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
 
   // Danh sách các slider hiển thị trên trang chủ
   const sliderSections = [
@@ -108,6 +113,10 @@ export default function Home() {
             suggestedFoods={suggestedFoods}
             setSelectedFood={setSelectedFood}
             isAuthenticated={isAuthenticated}
+            selectedCity={selectedCity}
+            selectedDistrict={selectedDistrict}
+            onCityChange={setSelectedCity}
+            onDistrictChange={setSelectedDistrict}
           />
 
           <CategorySection

@@ -20,4 +20,12 @@ export class FoodQueryDto {
   @IsNumber()
   @Type(() => Number)
   radius?: number = 10;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  district?: string;
 }

@@ -19,9 +19,10 @@ export const useRestaurantActions = (user: any) => {
 
   const [restaurant, setRestaurant] = useState<any>(null);
   const [isRestaurantActive, setIsRestaurantActive] = useState<boolean>(true);
+  const [myBranches, setMyBranches] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
-    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: ''
+    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: ''
   });
 
   const fetchMyFoods = async () => {
@@ -44,6 +45,17 @@ export const useRestaurantActions = (user: any) => {
       }
     } catch (error) {
       console.error('Lỗi khi tải thông tin cửa hàng:', error);
+    }
+  };
+
+  const fetchMyBranches = async () => {
+    try {
+      const res = await restaurantService.getMyBranches();
+      if (res) {
+        setMyBranches(res);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách chi nhánh:', error);
     }
   };
 
@@ -96,13 +108,24 @@ export const useRestaurantActions = (user: any) => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchMyFoods();
       fetchRestaurant();
+      fetchMyBranches();
     }
   }, [user]);
 
   const handleOpenAdd = () => {
     setEditingFood(null);
+    const defaultBranch = myBranches[0];
     setFormData({ 
-      name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '' 
+      name: '', 
+      price: '', 
+      description: '', 
+      image: '', 
+      tags: '', 
+      address: defaultBranch ? defaultBranch.address || '' : '', 
+      mapUrl: defaultBranch ? defaultBranch.mapUrl || '' : '', 
+      lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '', 
+      lng: defaultBranch ? defaultBranch.longitude?.toString() || '' : '',
+      restaurantId: defaultBranch ? defaultBranch.id.toString() : ''
     });
     setIsAddingFood(true);
   };
@@ -118,26 +141,54 @@ export const useRestaurantActions = (user: any) => {
       address: food.address || '',
       mapUrl: food.mapUrl || food.map_url || '',
       lat: food.lat?.toString() || '',
-      lng: food.lng?.toString() || ''
+      lng: food.lng?.toString() || '',
+      restaurantId: food.restaurantId?.toString() || ''
     });
     setIsAddingFood(true);
   };
 
+  const handleSelectBranch = (branchId: number) => {
+    const selected = myBranches.find(b => b.id === branchId);
+    if (selected) {
+      setFormData(prev => ({
+        ...prev,
+        restaurantId: branchId.toString(),
+        address: selected.address || '',
+        mapUrl: selected.mapUrl || '',
+        lat: selected.latitude?.toString() || '',
+        lng: selected.longitude?.toString() || ''
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        restaurantId: '',
+        address: '',
+        mapUrl: '',
+        lat: '',
+        lng: ''
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.restaurantId) {
+      toast.error('Vui lòng chọn cơ sở kinh doanh');
+      return;
+    }
     const data = { 
       ...formData, 
       price: parseFloat(formData.price), 
       lat: formData.lat ? parseFloat(formData.lat) : null, 
       lng: formData.lng ? parseFloat(formData.lng) : null, 
       tags: formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
-      restaurantId: restaurant?.id
+      restaurantId: parseInt(formData.restaurantId)
     };
 
     try {
       const ok = editingFood 
-        ? await foodService.updateFood(editingFood.id, data) 
-        : await foodService.createFood(data);
+         ? await foodService.updateFood(editingFood.id, data) 
+         : await foodService.createFood(data);
       
       if (ok) {
         toast.success(editingFood ? LABELS.RESTAURANT.SAVE_SUCCESS_EDIT : LABELS.RESTAURANT.SAVE_SUCCESS_ADD);
@@ -179,6 +230,7 @@ export const useRestaurantActions = (user: any) => {
     setFormData,
     showMenu,
     setShowMenu,
+    myBranches,
     restaurant,
     isRestaurantActive,
     deleteConfirmId,
@@ -190,7 +242,8 @@ export const useRestaurantActions = (user: any) => {
       onConfirmDelete: handleConfirmDelete,
       handleSubmit,
       toggleRestaurantStatus,
-      updateProfileHours
+      updateProfileHours,
+      handleSelectBranch
     }
   };
 };

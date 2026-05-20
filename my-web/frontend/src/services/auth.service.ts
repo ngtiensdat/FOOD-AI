@@ -25,6 +25,14 @@ export const authService = {
     return apiClient.post('/auth/toggle-follow-user', data);
   },
 
+  async getFollowers(userId: number) {
+    return apiClient.get(`/auth/followers/${userId}`);
+  },
+
+  async getFollowing(userId: number) {
+    return apiClient.get(`/auth/following/${userId}`);
+  },
+
   async completeOnboarding(data: any) {
     return apiClient.post('/auth/complete-onboarding', data);
   },

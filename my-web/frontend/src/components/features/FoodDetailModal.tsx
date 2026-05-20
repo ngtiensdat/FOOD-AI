@@ -141,12 +141,14 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href={`/profile?id=${food.restaurant?.ownerId}`} className="flex-1">
-              <Button variant="primary" fullWidth className="py-4 rounded-2xl">
-                <Store size={20} className="mr-2" /> {LABELS.FOOD.STORE_PAGE}
-              </Button>
-            </Link>
-            <Button variant="outline" fullWidth className="py-4 rounded-2xl">
+            {food.restaurant?.id && (
+              <Link href={`/restaurant/${food.restaurant.id}`} className="flex-1">
+                <Button variant="primary" fullWidth className="py-4 rounded-2xl">
+                  <Store size={20} className="mr-2" /> {LABELS.FOOD.STORE_PAGE}
+                </Button>
+              </Link>
+            )}
+            <Button variant="outline" className={food.restaurant?.id ? "flex-1 py-4 rounded-2xl" : "w-full py-4 rounded-2xl"}>
               <span>{LABELS.FOOD.REVIEWS}</span>
             </Button>
           </div>

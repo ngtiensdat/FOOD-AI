@@ -12,7 +12,10 @@ import { UserDropdown } from '@/components/features/UserDropdown';
 import { AiSuggestionBanner } from '@/components/features/AiSuggestionBanner';
 import { UserProfileDetail } from '@/components/features/UserProfileDetail';
 import { RecentFoodsList } from '@/components/features/RecentFoodsList';
+import { FoodDetailModal } from '@/components/features/FoodDetailModal';
+import { FoodCard } from '@/components/features/FoodCard';
 import { LABELS } from '@/constants/labels';
+import { LIMITS } from '@/constants/limits.constant';
 
 export default function CustomerDashboard() {
   const { user, login: updateMe, logout } = useAuth();
@@ -26,7 +29,11 @@ export default function CustomerDashboard() {
     setShowOnboarding,
     showMenu,
     setShowMenu,
-    handleOnboardingComplete
+    handleOnboardingComplete,
+    activeTab,
+    setActiveTab,
+    selectedFood,
+    setSelectedFood
   } = useDashboardActions(user, updateMe);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-bold text-h2 gradient-text">{LABELS.COMMON.LOADING}</div>;
@@ -37,9 +44,24 @@ export default function CustomerDashboard() {
       {/* Sidebar: Điều hướng cá nhân */}
       <Sidebar brandLabel={LABELS.COMMON.BRAND_NAME}>
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
-        <SidebarItem icon={User} label={LABELS.AUTH.PROFILE} active />
-        <SidebarItem icon={Heart} label={LABELS.CUSTOMER.FAVORITES} />
-        <SidebarItem icon={Clock} label={LABELS.CUSTOMER.AI_HISTORY} />
+        <SidebarItem 
+          icon={User} 
+          label={LABELS.AUTH.PROFILE} 
+          active={activeTab === 'profile'} 
+          onClick={() => setActiveTab('profile')} 
+        />
+        <SidebarItem 
+          icon={Heart} 
+          label={LABELS.CUSTOMER.FAVORITES} 
+          active={activeTab === 'favorites'} 
+          onClick={() => setActiveTab('favorites')} 
+        />
+        <SidebarItem 
+          icon={Clock} 
+          label={LABELS.CUSTOMER.AI_HISTORY} 
+          active={activeTab === 'history'} 
+          onClick={() => setActiveTab('history')} 
+        />
       </Sidebar>
 
       <main className="admin-main">
@@ -86,22 +108,75 @@ export default function CustomerDashboard() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Banner gợi ý AI nổi bật */}
-            <AiSuggestionBanner />
+        {activeTab === 'profile' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              {/* Banner gợi ý AI nổi bật */}
+              <AiSuggestionBanner />
 
-            {/* Thông tin hồ sơ chi tiết */}
-            <UserProfileDetail 
-              profile={profile} 
-              onUpdatePreferences={() => setShowOnboarding(true)} 
-            />
-          </div>
+              {/* Thông tin hồ sơ chi tiết */}
+              <UserProfileDetail 
+                profile={profile} 
+                onUpdatePreferences={() => setShowOnboarding(true)} 
+              />
+            </div>
 
-          <div className="space-y-8">
-            <RecentFoodsList items={recentViews} />
+            <div className="space-y-8">
+              <RecentFoodsList 
+                items={recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET)} 
+                onViewDetail={setSelectedFood} 
+                onSeeMore={() => setActiveTab('history')}
+              />
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="space-y-12 max-w-5xl">
+            <div>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">{LABELS.CUSTOMER.RECENT_FOODS}</h2>
+                <p className="text-gray-500 text-small mt-1">{LABELS.CUSTOMER.RECENT_FOODS_DESC(LIMITS.RECENT_VIEWS_WIDGET)}</p>
+              </div>
+
+              {recentViews.length === 0 ? (
+                <div className="card-container p-8 text-center text-gray-400">
+                  {LABELS.CUSTOMER.NO_HISTORY}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET).map((item) => (
+                    <FoodCard key={item.id} food={item.food} onViewDetail={setSelectedFood} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {recentViews.length > LIMITS.RECENT_VIEWS_WIDGET && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{LABELS.CUSTOMER.OLDER_HISTORY}</h2>
+                  <p className="text-gray-500 text-small mt-1">{LABELS.CUSTOMER.OLDER_HISTORY_DESC(LIMITS.RECENT_VIEWS_HISTORY)}</p>
+                </div>
+                <RecentFoodsList 
+                  items={recentViews.slice(LIMITS.RECENT_VIEWS_WIDGET)} 
+                  onViewDetail={setSelectedFood} 
+                  title={LABELS.CUSTOMER.OLDER_FOODS_TITLE} 
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'favorites' && (
+          <div className="card-container p-12 text-center py-20 max-w-4xl">
+            <Heart size={64} className="mx-auto text-primary/45 mb-6 animate-pulse" />
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">{LABELS.COMMON.DEVELOPING}</h3>
+            <p className="text-gray-500 text-body max-w-md mx-auto">
+              {LABELS.COMMON.DEVELOPING_DESC}
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Modal Onboarding để cập nhật sở thích */}
@@ -111,6 +186,13 @@ export default function CustomerDashboard() {
           onComplete={handleOnboardingComplete}
           onClose={() => setShowOnboarding(false)}
           title={LABELS.CUSTOMER.UPDATE_PREFERENCES}
+        />
+      )}
+
+      {selectedFood && (
+        <FoodDetailModal 
+          food={selectedFood} 
+          onClose={() => setSelectedFood(null)} 
         />
       )}
 

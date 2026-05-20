@@ -7,6 +7,7 @@ import { Sparkles, Send, Smile, DollarSign, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { AiResponseBox } from './AiResponseBox';
 import { LABELS } from '@/constants/labels';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 import heroBg from '../../assets/hero-bg.png';
 
@@ -19,6 +20,10 @@ interface HeroProps {
   suggestedFoods: any[];
   setSelectedFood: (food: any) => void;
   isAuthenticated: boolean;
+  selectedCity: string;
+  selectedDistrict: string;
+  onCityChange: (city: string) => void;
+  onDistrictChange: (district: string) => void;
 }
 
 export const Hero = ({
@@ -30,6 +35,10 @@ export const Hero = ({
   suggestedFoods,
   setSelectedFood,
   isAuthenticated,
+  selectedCity,
+  selectedDistrict,
+  onCityChange,
+  onDistrictChange,
 }: HeroProps) => {
   return (
     <section className="pt-32 pb-20 px-6 relative overflow-hidden min-h-[600px] flex items-center">
@@ -64,7 +73,7 @@ export const Hero = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           onSubmit={handleAiConsult}
-          className="glass p-3 rounded-card shadow-2xl flex flex-col md:flex-row gap-2 max-w-3xl mx-auto items-center"
+          className="glass p-3 rounded-card shadow-2xl flex flex-col md:flex-row gap-2 max-w-3xl mx-auto items-center animate-glow"
         >
           <div className="flex items-center gap-3 px-4 w-full">
             <Sparkles className="text-primary shrink-0" size={24} />
@@ -82,6 +91,47 @@ export const Hero = ({
             <span>{LABELS.HERO.SEARCH_BUTTON}</span>
           </Button>
         </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center gap-3 mt-4 max-w-md mx-auto"
+        >
+          <div className="flex items-center gap-2 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-full px-4 py-2.5 text-slate-700 dark:text-slate-200 shadow-sm w-1/2">
+            <MapPin size={16} className="text-primary shrink-0 animate-bounce" />
+            <select
+              value={selectedCity}
+              onChange={(e) => onCityChange(e.target.value)}
+              className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+            >
+              {LOCATION_DATA.map((city) => (
+                <option key={city.value} value={city.value} className="text-slate-900 bg-white">
+                  {city.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-full px-4 py-2.5 text-slate-700 dark:text-slate-200 shadow-sm w-1/2">
+            <MapPin size={16} className="text-primary shrink-0 animate-bounce" />
+            <select
+              value={selectedDistrict}
+              onChange={(e) => onDistrictChange(e.target.value)}
+              className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+            >
+              <option value="" className="text-slate-900 bg-white">
+                Tất cả Quận/Huyện
+              </option>
+              {LOCATION_DATA.find((c) => c.value === selectedCity)
+                ?.districts.map((d) => (
+                  <option key={d.value} value={d.value} className="text-slate-900 bg-white">
+                    {d.label}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </motion.div>
 
         <AiResponseBox 
           isLoading={isAiLoading}

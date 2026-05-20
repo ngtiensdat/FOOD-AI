@@ -1,50 +1,38 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, ArrowLeft, ShoppingBag } from 'lucide-react';
+import React, { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, ArrowLeft, ShoppingBag, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Services & Components
-import { foodService } from '@/services/food.service';
 import { FoodCard } from '@/components/features/FoodCard';
 import { FoodDetailModal } from '@/components/features/FoodDetailModal';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { useExploreActions } from '@/hooks/useExploreActions';
 import { LABELS } from '@/constants/labels';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 function ExploreContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const tag = searchParams.get('tag') || '';
-
-  const [foods, setFoods] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFood, setSelectedFood] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('explore');
-
-  useEffect(() => {
-    const fetchFoods = async () => {
-      setLoading(true);
-      try {
-        const data = await foodService.getAllFoods(tag);
-        setFoods(data);
-      } catch (error) {
-        console.error('Lỗi lấy dữ liệu món ăn:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchFoods();
-  }, [tag]);
-
-  const filteredFoods = foods.filter(food =>
-    food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (food.restaurant?.name || food.restaurantName || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    tag,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    selectedFood,
+    setSelectedFood,
+    activeTab,
+    setActiveTab,
+    filteredFoods,
+    selectedCity,
+    selectedDistrict,
+    setSelectedCity,
+    setSelectedDistrict,
+  } = useExploreActions();
 
   return (
     <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
@@ -56,7 +44,7 @@ function ExploreContent() {
       {/* Header Area */}
       <div className="bg-white dark:bg-gray-100 border-b border-gray-100 dark:border-gray-200 pt-32 pb-12 px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <div className="flex items-center gap-6">
               <Button
                 variant="outline"
@@ -76,14 +64,50 @@ function ExploreContent() {
               </div>
             </div>
 
-            <div className="w-full md:w-96">
-              <Input
-                icon={Search}
-                placeholder={LABELS.EXPLORE.SEARCH_IN_TAG(tag || '')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-gray-50 focus:bg-white"
-              />
+            <div className="w-full xl:w-auto flex flex-col md:flex-row gap-3">
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full md:w-44">
+                <MapPin size={18} className="text-primary shrink-0" />
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+                >
+                  {LOCATION_DATA.map((city) => (
+                    <option key={city.value} value={city.value} className="text-slate-900 bg-white">
+                      {city.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full md:w-52">
+                <MapPin size={18} className="text-primary shrink-0" />
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+                >
+                  <option value="" className="text-slate-900 bg-white">
+                    Tất cả Quận/Huyện
+                  </option>
+                  {LOCATION_DATA.find((c) => c.value === selectedCity)
+                    ?.districts.map((d) => (
+                      <option key={d.value} value={d.value} className="text-slate-900 bg-white">
+                        {d.label}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="w-full md:w-80">
+                <Input
+                  icon={Search}
+                  placeholder={LABELS.EXPLORE.SEARCH_IN_TAG(tag || '')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
             </div>
           </div>
         </div>

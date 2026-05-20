@@ -6,6 +6,7 @@ import { ArrowLeft, User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { authService } from '@/services/auth.service';
 
 interface SettingsSectionProps {
   user: any;
@@ -38,6 +39,7 @@ export const SettingsSection = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
 
   const onDeleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,9 +126,20 @@ export const SettingsSection = ({
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
+              onClick={async () => {
                 setSettingsTab(tab.id as any);
                 if (tab.id === 'verification') fetchUserProfile();
+                if (tab.id === 'profile' && user?.id) {
+                  setIsLoading(true);
+                  try {
+                    const data = await authService.getProfile(user.id);
+                    setProfileData(data);
+                  } catch (err) {
+                    console.error('Lỗi khi lấy thông tin profile:', err);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }
               }}
               className={`pb-3 transition-all flex items-center gap-2 ${
                 settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
@@ -161,6 +174,49 @@ export const SettingsSection = ({
                 </div>
               </div>
             </div>
+
+            {user?.role === 'RESTAURANT' && (
+              <div className="bg-gray-50 p-6 rounded-card border border-gray-100 space-y-4">
+                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                  {LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_TITLE}
+                </h3>
+                <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100">
+                  <div className="pr-4">
+                    <span className="font-bold text-gray-700 block mb-0.5">{LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_LABEL}</span>
+                    <span className="text-xs text-gray-400 font-medium">{LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_DESC}</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={profileData?.profile?.preferences?.showFollowList !== false}
+                      onChange={async (e) => {
+                        const checked = e.target.checked;
+                        try {
+                          await authService.updateProfile({
+                            preferences: { showFollowList: checked }
+                          });
+                          toast.success(LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_SUCCESS);
+                          setProfileData((prev: any) => ({
+                            ...prev,
+                            profile: {
+                              ...prev?.profile,
+                              preferences: {
+                                ...prev?.profile?.preferences,
+                                showFollowList: checked
+                              }
+                            }
+                          }));
+                        } catch (err: any) {
+                          toast.error(LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_ERROR);
+                        }
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+              </div>
+            )}
 
             {/* Vùng nguy hiểm (Danger Zone) */}
             <div className="bg-red-50/40 p-6 rounded-card border border-red-200/60 space-y-4">

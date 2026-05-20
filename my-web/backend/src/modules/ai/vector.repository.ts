@@ -23,6 +23,8 @@ export class VectorRepository {
     userLat?: number,
     userLng?: number,
     limit = 5,
+    city?: string,
+    district?: string,
   ): Promise<SearchResult[]> {
     const vectorStr = `[${vector.join(',')}]`;
 
@@ -45,6 +47,8 @@ export class VectorRepository {
         AND r.is_active = true
         AND f.status = 'APPROVED'
         AND f.embedding IS NOT NULL
+        AND (CAST(${city || null} AS text) IS NULL OR r.address ILIKE '%' || CAST(${city || null} AS text) || '%')
+        AND (CAST(${district || null} AS text) IS NULL OR r.address ILIKE '%' || CAST(${district || null} AS text) || '%')
       ORDER BY similarity DESC
       LIMIT ${limit}
     `;

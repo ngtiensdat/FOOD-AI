@@ -13,6 +13,7 @@ import {
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -91,6 +92,18 @@ export class AuthController {
     @Body() body: { followingId: number },
   ) {
     return this.authService.toggleFollow(userId, body.followingId);
+  }
+
+  @Get('followers/:id')
+  @UseGuards(JwtAuthOptionalGuard)
+  async getFollowers(@Param('id') id: string, @GetUser('id') userId?: number) {
+    return this.authService.getFollowers(parseInt(id), userId);
+  }
+
+  @Get('following/:id')
+  @UseGuards(JwtAuthOptionalGuard)
+  async getFollowing(@Param('id') id: string, @GetUser('id') userId?: number) {
+    return this.authService.getFollowing(parseInt(id), userId);
   }
 
   @Post('complete-onboarding')

@@ -11,7 +11,14 @@ export class AiController {
 
   @Post('chat')
   async chat(@GetUser('id') userId: number, @Body() dto: AiChatDto) {
-    return this.aiService.chat(userId, dto.message, dto.lat, dto.lng);
+    return this.aiService.chat(
+      userId,
+      dto.message,
+      dto.lat,
+      dto.lng,
+      dto.city,
+      dto.district,
+    );
   }
 
   @Get('context')

@@ -8,12 +8,26 @@ import { getValidImageUrl } from '@/utils/helpers';
 
 interface RecentFoodsListProps {
   items: any[];
+  onViewDetail?: (food: any) => void;
+  title?: string;
+  onSeeMore?: () => void;
 }
 
-export const RecentFoodsList = ({ items }: RecentFoodsListProps) => {
+export const RecentFoodsList = ({ items, onViewDetail, title, onSeeMore }: RecentFoodsListProps) => {
   return (
     <section className="card-container p-8">
-      <h3 className="text-xl font-bold text-gray-800 mb-6">{LABELS.CUSTOMER.RECENT_FOODS}</h3>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-gray-800">{title || LABELS.CUSTOMER.RECENT_FOODS}</h3>
+        {onSeeMore && items.length > 0 && (
+          <button 
+            type="button"
+            onClick={onSeeMore} 
+            className="text-xs text-primary font-bold hover:underline"
+          >
+            {LABELS.COMMON.SEE_MORE}
+          </button>
+        )}
+      </div>
       <div className="space-y-4">
         {items.map((item) => {
           const food = item.food;
@@ -28,6 +42,7 @@ export const RecentFoodsList = ({ items }: RecentFoodsListProps) => {
           return (
             <div 
               key={item.id} 
+              onClick={() => onViewDetail?.(food)}
               className="flex items-center gap-4 group cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all"
             >
               <div className="relative w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0 shadow-sm">

@@ -3,6 +3,7 @@ import { authService } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { parseAddressString } from '@/utils/helpers';
 
 export const useProfileData = (targetId?: string | null) => {
   const { user: me, login: updateMe } = useAuth();
@@ -36,16 +37,20 @@ export const useProfileData = (targetId?: string | null) => {
 
   useEffect(() => {
     if (profile) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEditData({
-        name: profile.name,
-        fullName: profile.profile?.fullName || '',
-        phone: profile.profile?.phone || '',
-        avatar: profile.profile?.avatar || '',
-        coverImage: profile.profile?.coverImage || '',
-        bio: profile.profile?.bio || '',
-        address: profile.profile?.address || '',
-        workAt: profile.profile?.workAt || '',
+      const parsedAddress = parseAddressString(profile.profile?.address);
+      Promise.resolve().then(() => {
+        setEditData({
+          name: profile.name,
+          fullName: profile.profile?.fullName || '',
+          phone: profile.profile?.phone || '',
+          avatar: profile.profile?.avatar || '',
+          coverImage: profile.profile?.coverImage || '',
+          bio: profile.profile?.bio || '',
+          city: parsedAddress.city || 'Hà Nội',
+          district: parsedAddress.district || '',
+          street: parsedAddress.street || '',
+          workAt: profile.profile?.workAt || '',
+        });
       });
     }
   }, [profile]);
@@ -54,7 +59,8 @@ export const useProfileData = (targetId?: string | null) => {
     if (!profile?.id) return;
     setLoading(true);
     try {
-      const { userId, id, ...payload } = editData;
+      const { userId, id, city, district, street, ...payload } = editData;
+      payload.address = `${street}, ${district}, ${city}`;
       await authService.updateProfile(payload);
       const newData = await fetchProfileData(profile.id, me?.id);
       

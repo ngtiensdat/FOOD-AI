@@ -36,6 +36,7 @@ export default function RestaurantDashboard() {
     setFormData,
     showMenu,
     setShowMenu,
+    myBranches,
     restaurant,
     isRestaurantActive,
     deleteConfirmId,
@@ -99,6 +100,17 @@ export default function RestaurantDashboard() {
               </Button>
             )}
 
+            {restaurant?.id && (
+              <Button 
+                variant="outline" 
+                onClick={() => window.open(`/restaurant/${restaurant.id}`, '_blank')}
+                className="flex items-center gap-2 rounded-xl h-10 px-4 border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 transition-all shadow-sm"
+              >
+                <Store size={16} />
+                <span>Xem với tư cách khách</span>
+              </Button>
+            )}
+
             {user && (
               <div className="flex items-center gap-3 relative ml-2">
                 <Button 
@@ -110,11 +122,13 @@ export default function RestaurantDashboard() {
                 </Button>
 
                 {showMenu && (
-                  <UserDropdown 
-                    user={user} 
-                    onLogout={logout} 
-                    onSettingsClick={() => window.location.href = '/'} 
-                  />
+                  <div className="absolute right-0 top-12">
+                    <UserDropdown 
+                      user={user} 
+                      onLogout={logout} 
+                      onSettingsClick={() => window.location.href = '/'} 
+                    />
+                  </div>
                 )}
               </div>
             )}
@@ -210,6 +224,8 @@ export default function RestaurantDashboard() {
             formData={formData} 
             setFormData={setFormData} 
             onSubmit={actions.handleSubmit} 
+            myBranches={myBranches}
+            onSelectBranch={actions.handleSelectBranch}
           />
         )}
         {deleteConfirmId !== null && (

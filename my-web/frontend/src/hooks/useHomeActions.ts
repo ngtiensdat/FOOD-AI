@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { aiService } from '@/services/food.service';
+import { aiService, foodService } from '@/services/food.service';
 import { authService as authServiceApi } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LIMITS } from '@/constants/limits.constant';
@@ -9,11 +9,18 @@ import { LABELS } from '@/constants/labels';
 
 export const useHomeActions = () => {
   const { user, isAuthenticated, isCustomer, login, logout } = useAuth();
-  
+  const [selectedCity, setSelectedCity] = useState('Hà Nội');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('home');
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEmailVerifiedInProfile, setIsEmailVerifiedInProfile] = useState<boolean | null>(null);
+
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+    setSelectedDistrict('');
+  };
 
   // AI Section States
   const [aiInput, setAiInput] = useState('');
@@ -47,6 +54,12 @@ export const useHomeActions = () => {
       }
     }
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (selectedFood?.id && isAuthenticated) {
+      foodService.trackView(selectedFood.id);
+    }
+  }, [selectedFood?.id, isAuthenticated]);
 
   const handleOnboardingComplete = async (onboardingData: any) => {
     if (!user || !user.id) return;
@@ -87,7 +100,7 @@ export const useHomeActions = () => {
       }
 
       if (user?.id) {
-        const aiData = await aiService.chat(aiInput, lat, lng);
+        const aiData = await aiService.chat(aiInput, lat, lng, selectedCity, selectedDistrict);
         setAiResponse(aiData.reply || '');
         setSuggestedFoods(aiData.suggestions || []);
       }
@@ -141,6 +154,10 @@ export const useHomeActions = () => {
     aiResponse,
     isAiLoading,
     suggestedFoods,
+    selectedCity,
+    selectedDistrict,
+    setSelectedCity: handleCityChange,
+    setSelectedDistrict,
     handleOnboardingComplete,
     handleAiConsult,
     handleChangePassword,

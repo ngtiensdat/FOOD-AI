@@ -6,6 +6,7 @@ import { X, Save } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -76,17 +77,67 @@ export const EditProfileModal = ({
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Tỉnh / Thành phố */}
+            <div>
+              <label className="text-small font-semibold text-gray-700 ml-1">
+                Tỉnh/Thành phố
+              </label>
+              <select
+                value={editData.city || 'Hà Nội'}
+                onChange={(e) => {
+                  setEditData({
+                    ...editData,
+                    city: e.target.value,
+                    district: ''
+                  });
+                }}
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+              >
+                {LOCATION_DATA.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Quận / Huyện */}
+            <div>
+              <label className="text-small font-semibold text-gray-700 ml-1">
+                Quận/Huyện
+              </label>
+              <select
+                value={editData.district || ''}
+                onChange={(e) => setEditData({ ...editData, district: e.target.value })}
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+              >
+                <option value="" disabled hidden>
+                  Chọn Quận/Huyện
+                </option>
+                {LOCATION_DATA.find((c) => c.value === (editData.city || 'Hà Nội'))
+                  ?.districts.map((d) => (
+                    <option key={d.value} value={d.value}>
+                      {d.label}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* Địa chỉ chi tiết */}
             <Input 
-              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.ADDRESS} 
-              placeholder={LABELS.FORM.PLACEHOLDERS.ADDRESS} 
-              value={editData.address} 
-              onChange={e => setEditData({...editData, address: e.target.value})} 
+              label="Địa chỉ chi tiết (Số nhà, tên đường...)" 
+              placeholder="Ví dụ: 123 Đường Láng" 
+              value={editData.street || ''} 
+              onChange={e => setEditData({...editData, street: e.target.value})} 
+              className="md:col-span-2"
             />
+
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.WORK} 
               placeholder={LABELS.FORM.PLACEHOLDERS.WORK} 
               value={editData.workAt} 
               onChange={e => setEditData({...editData, workAt: e.target.value})} 
+              className="md:col-span-2"
             />
           </div>
         </div>

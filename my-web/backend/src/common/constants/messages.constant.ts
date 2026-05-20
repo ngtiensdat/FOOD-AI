@@ -17,4 +17,10 @@ export const MESSAGES = {
   SYSTEM: {
     INTERNAL_SERVER_ERROR: 'Lỗi hệ thống, vui lòng thử lại sau',
   },
+  RESTAURANT: {
+    NOT_FOUND: 'Cơ sở kinh doanh không tồn tại',
+    PRIVATE_FOLLOW_LIST:
+      'Danh sách theo dõi của nhà hàng này đã được đặt ở chế độ riêng tư',
+    NOT_OWNER: 'Bạn chưa sở hữu cơ sở kinh doanh nào.',
+  },
 };

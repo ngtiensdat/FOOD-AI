@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2, X, Plus, Trash2, MapPin, Compass } from 'luci
 import { LABELS } from '@/constants/labels';
 import { ONBOARDING_LABELS } from '@/constants/onboarding.constant';
 import { useOnboardingActions } from '@/hooks/useOnboardingActions';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 interface OnboardingModalProps {
   user: any;
@@ -124,18 +125,63 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             />
                           </div>
 
+                          {/* Tỉnh / Thành phố */}
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Tỉnh/Thành phố
+                            </label>
+                            <select
+                              required
+                              value={branch.city || 'Hà Nội'}
+                              onChange={(e) => {
+                                handleBranchChange(index, 'city', e.target.value);
+                                handleBranchChange(index, 'district', '');
+                              }}
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                            >
+                              {LOCATION_DATA.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Quận / Huyện */}
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Quận/Huyện
+                            </label>
+                            <select
+                              required
+                              value={branch.district || ''}
+                              onChange={(e) => handleBranchChange(index, 'district', e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                            >
+                              <option value="" disabled hidden>
+                                Chọn Quận/Huyện
+                              </option>
+                              {LOCATION_DATA.find((c) => c.value === (branch.city || 'Hà Nội'))
+                                ?.districts.map((d) => (
+                                  <option key={d.value} value={d.value}>
+                                    {d.label}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+
                           {/* Địa chỉ chi tiết */}
                           <div className="md:col-span-2">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.ADDRESS_LABEL}
+                              Địa chỉ chi tiết (Số nhà, tên đường...)
                             </label>
                             <input
                               type="text"
                               required
-                              value={branch.address}
-                              onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.ADDRESS_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              value={branch.street || ''}
+                              onChange={(e) => handleBranchChange(index, 'street', e.target.value)}
+                              placeholder="Ví dụ: 123 Đường Láng"
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs font-bold"
                             />
                           </div>
 

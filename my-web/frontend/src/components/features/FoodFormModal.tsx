@@ -14,6 +14,8 @@ interface FoodFormModalProps {
   formData: any;
   setFormData: (data: any) => void;
   onSubmit: (e: React.FormEvent) => void;
+  myBranches: any[];
+  onSelectBranch: (branchId: number) => void;
 }
 
 export const FoodFormModal = ({
@@ -22,7 +24,9 @@ export const FoodFormModal = ({
   editingFood,
   formData,
   setFormData,
-  onSubmit
+  onSubmit,
+  myBranches = [],
+  onSelectBranch
 }: FoodFormModalProps) => {
   if (!isOpen) return null;
 
@@ -46,6 +50,26 @@ export const FoodFormModal = ({
         
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Chọn Cơ sở */}
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-small font-semibold text-gray-700 ml-1">Cơ sở kinh doanh</label>
+              <select
+                required
+                value={formData.restaurantId || ''}
+                onChange={e => onSelectBranch(parseInt(e.target.value))}
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
+              >
+                <option value="" disabled hidden>
+                  -- Chọn cơ sở --
+                </option>
+                {myBranches.map((branch: any) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <Input 
               label={LABELS.FORM.FOOD_NAME} 
               value={formData.name} 
@@ -77,30 +101,32 @@ export const FoodFormModal = ({
               className="md:col-span-2" 
             />
             <Input 
-              label={LABELS.FORM.ADDRESS} 
+              label={`${LABELS.FORM.ADDRESS} (Tự động điền theo cơ sở)`} 
               value={formData.address} 
-              onChange={e => setFormData({ ...formData, address: e.target.value })} 
-              className="md:col-span-2" 
+              disabled
+              className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
             />
             <Input 
-              label={LABELS.FORM.MAP_URL} 
+              label="Bản đồ URL (Tự động điền theo cơ sở)" 
               value={formData.mapUrl} 
-              onChange={e => setFormData({ ...formData, mapUrl: e.target.value })} 
-              className="md:col-span-2" 
+              disabled
+              className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
             />
             <Input 
-              label={LABELS.FORM.LAT} 
+              label="Vĩ độ (Tự động điền)" 
               type="number"
               step="any"
               value={formData.lat} 
-              onChange={e => setFormData({ ...formData, lat: e.target.value })} 
+              disabled
+              className="bg-gray-100 text-gray-500 cursor-not-allowed"
             />
             <Input 
-              label={LABELS.FORM.LNG} 
+              label="Kinh độ (Tự động điền)" 
               type="number"
               step="any"
               value={formData.lng} 
-              onChange={e => setFormData({ ...formData, lng: e.target.value })} 
+              disabled
+              className="bg-gray-100 text-gray-500 cursor-not-allowed"
             />
           </div>
           <div className="flex gap-4 pt-4">

@@ -1,0 +1,124 @@
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { X, Users, Lock } from 'lucide-react';
+import Image from 'next/image';
+import { getValidImageUrl } from '@/utils/helpers';
+import { LABELS } from '@/constants/labels';
+
+interface FollowersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  loading: boolean;
+  error: string | null;
+  followersList: any[];
+  onItemClick: (item: any) => void;
+  title?: string;
+  emptyLabel?: string;
+}
+
+export const FollowersModal = ({
+  isOpen,
+  onClose,
+  loading,
+  error,
+  followersList,
+  onItemClick,
+  title,
+  emptyLabel
+}: FollowersModalProps) => {
+  if (!isOpen) return null;
+
+  const modalTitle = title || LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWERS_TITLE;
+  const modalEmpty = emptyLabel || LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWERS_EMPTY;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      />
+      
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white dark:bg-slate-900 rounded-card max-w-md w-full p-6 relative border border-gray-100 dark:border-slate-800 shadow-2xl z-10"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+        >
+          <X size={20} />
+        </button>
+
+        <h3 className="text-h3 font-black text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <Users size={22} className="text-primary" />
+          <span>{modalTitle}</span>
+        </h3>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500 font-semibold text-small flex flex-col items-center gap-2">
+            <Lock size={32} className="text-red-400 mb-2" />
+            <span>{error}</span>
+          </div>
+        ) : followersList.length === 0 ? (
+          <div className="text-center py-12 text-gray-400 text-small">
+            {modalEmpty}
+          </div>
+        ) : (
+          <div className="max-h-80 overflow-y-auto flex flex-col gap-4 pr-1">
+            {followersList.map((item) => {
+              // Hỗ trợ cả cấu trúc { user } (từ restaurant API) và cấu trúc { id, name } phẳng (từ User API)
+              const userObj = item.user || item;
+              if (!userObj) return null;
+
+              const userName = userObj.profile?.fullName || userObj.name || 'Người dùng';
+              const userEmail = userObj.email;
+              const userAvatar = userObj.profile?.avatar;
+              const userRoleLabel = userObj.role === 'RESTAURANT' ? 'Merchant' : 'Customer';
+
+              return (
+                <div 
+                  key={userObj.id} 
+                  onClick={() => onItemClick(userObj)}
+                  className="flex items-center gap-3.5 p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                >
+                  <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-body overflow-hidden relative shrink-0">
+                    {userAvatar ? (
+                      <Image 
+                        src={getValidImageUrl(userAvatar)} 
+                        alt={userObj.name || 'Avatar'} 
+                        fill
+                        sizes="44px"
+                        className="object-cover" 
+                      />
+                    ) : (
+                      (userObj.name || 'U').charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-body font-extrabold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
+                      {userName}
+                    </h4>
+                    <p className="text-mini text-gray-450 dark:text-gray-400 font-medium">
+                      {userEmail || userRoleLabel}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
