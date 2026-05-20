@@ -56,9 +56,9 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50 dark:border-slate-900">
       <div className="flex items-center gap-2">
         <div className="relative w-10 h-10">
-          <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="40px" className="object-contain" />
+          <Image src="/favicon.ico" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="40px" className="object-contain" />
         </div>
-        <span className="text-2xl font-bold gradient-text tracking-tight">Food AI</span>
+        <span className="text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
       </div>
 
       <div className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest">

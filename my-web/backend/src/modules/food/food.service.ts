@@ -122,9 +122,49 @@ export class FoodService {
       }
     }
 
-    // Update status to PENDING if merchant updates
+    // Check if any fields actually changed
+    let hasChanges = false;
+    if (dto.name !== undefined && dto.name !== food.name) hasChanges = true;
+    if (dto.price !== undefined && dto.price !== food.price) hasChanges = true;
+    if (
+      dto.description !== undefined &&
+      dto.description !== (food.description ?? '')
+    )
+      hasChanges = true;
+    if (dto.image !== undefined && dto.image !== (food.image ?? ''))
+      hasChanges = true;
+    if (dto.address !== undefined && dto.address !== (food.address ?? ''))
+      hasChanges = true;
+    if (dto.mapUrl !== undefined && dto.mapUrl !== (food.mapUrl ?? ''))
+      hasChanges = true;
+
+    if (dto.lat !== undefined && dto.lat !== null) {
+      if (food.lat === null || Number(dto.lat) !== Number(food.lat))
+        hasChanges = true;
+    } else if (dto.lat === null && food.lat !== null) {
+      hasChanges = true;
+    }
+
+    if (dto.lng !== undefined && dto.lng !== null) {
+      if (food.lng === null || Number(dto.lng) !== Number(food.lng))
+        hasChanges = true;
+    } else if (dto.lng === null && food.lng !== null) {
+      hasChanges = true;
+    }
+
+    if (dto.tags !== undefined) {
+      const currentTags = food.tags || [];
+      const newTags = dto.tags || [];
+      if (
+        currentTags.length !== newTags.length ||
+        !currentTags.every((t, i) => t === newTags[i])
+      ) {
+        hasChanges = true;
+      }
+    }
+
     const data: Prisma.FoodUpdateInput = { ...dto };
-    if (user.role === UserRole.RESTAURANT) {
+    if (user.role === UserRole.RESTAURANT && hasChanges) {
       data.status = FoodStatus.PENDING;
     }
 
@@ -147,6 +187,7 @@ export class FoodService {
       isFeaturedToday: true,
       isActive: true,
       status: FoodStatus.APPROVED,
+      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
     });
     return result.data;
   }
@@ -156,6 +197,7 @@ export class FoodService {
       isFeaturedWeekly: true,
       isActive: true,
       status: FoodStatus.APPROVED,
+      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
     });
     return result.data;
   }
@@ -165,6 +207,7 @@ export class FoodService {
       isAdminRecommended: true,
       isActive: true,
       status: FoodStatus.APPROVED,
+      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
     });
     return result.data;
   }
@@ -202,7 +245,7 @@ export class FoodService {
   }
 
   async getMerchantFoods(user: User) {
-    const where: Prisma.FoodWhereInput = {};
+    const where: Prisma.FoodWhereInput = { deletedAt: null };
     if (user.role === UserRole.RESTAURANT) {
       const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
       if (!restaurant) return [];
@@ -212,7 +255,52 @@ export class FoodService {
     return result.data;
   }
 
+  async deleteFood(user: User, id: number) {
+    const food = await this.repository.findById(id);
+    if (!food) throw new NotFoundException('Món ăn không tồn tại');
+
+    // Rule 5 - Security & Ownership
+    if (
+      user.role === UserRole.RESTAURANT &&
+      food.restaurant?.ownerId !== user.id
+    ) {
+      throw new ForbiddenException('Bạn không có quyền xóa món ăn này');
+    }
+
+    return this.repository.delete(id);
+  }
+
   async approveFood(id: number, status: FoodStatus) {
     return this.repository.update(id, { status });
+  }
+  async getMyRestaurant(user: User) {
+    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
+    if (!restaurant) {
+      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+    }
+    return restaurant;
+  }
+
+  async updateMyRestaurantStatus(user: User, isActive: boolean) {
+    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
+    if (!restaurant) {
+      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+    }
+    return this.repository.updateRestaurantStatus(restaurant.id, isActive);
+  }
+
+  async updateMyRestaurantProfile(
+    user: User,
+    openingHours?: string,
+    contactPhone?: string,
+  ) {
+    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
+    if (!restaurant) {
+      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+    }
+    return this.repository.updateRestaurantProfile(restaurant.id, {
+      openingHours,
+      contactPhone,
+    });
   }
 }

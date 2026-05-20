@@ -20,7 +20,7 @@ export const foodService = {
   async getRecommendedFoods() {
     return apiClient.get('/foods/recommended').catch(() => []);
   },
-  
+
   async getNearbyFoods(lat: number, lng: number, radius: number = 5) {
     return apiClient.get('/foods/nearby', { params: { lat, lng, radius } }).catch(() => []);
   },
@@ -28,7 +28,11 @@ export const foodService = {
   async getMyFoods() {
     return apiClient.get('/foods/my-foods').catch(() => []);
   },
-  
+
+  async getRecentViews() {
+    return apiClient.get('/foods/recent-views').catch(() => []);
+  },
+
   async createFood(data: any) {
     try {
       await apiClient.post('/foods', data);
@@ -41,6 +45,15 @@ export const foodService = {
   async updateFood(id: number, data: any) {
     try {
       await apiClient.patch(`/foods/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteFood(id: number) {
+    try {
+      await apiClient.delete(`/foods/${id}`);
       return true;
     } catch {
       return false;
@@ -114,5 +127,39 @@ export const adminService = {
     } catch {
       return false;
     }
+  },
+
+  async approveFood(id: number, status: string) {
+    try {
+      await apiClient.patch(`/foods/${id}/status`, { status });
+      return true;
+    } catch {
+      return false;
+    }
   }
 };
+
+export const restaurantService = {
+  async getMyRestaurant() {
+    return apiClient.get('/restaurants/my-restaurant').catch(() => null);
+  },
+
+  async updateRestaurantStatus(isActive: boolean) {
+    try {
+      await apiClient.patch('/restaurants/my-restaurant/status', { isActive });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async updateRestaurantProfile(data: { openingHours?: string; contactPhone?: string }) {
+    try {
+      await apiClient.patch('/restaurants/my-restaurant/profile', data);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+};
+

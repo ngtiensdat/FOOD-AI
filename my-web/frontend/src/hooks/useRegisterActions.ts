@@ -1,17 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth.service';
-import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { registerSchema } from '@/schemas/auth.schema';
 
 export const useRegisterActions = () => {
-  const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
-  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,7 +61,7 @@ export const useRegisterActions = () => {
       const msg = role === 'RESTAURANT'
         ? LABELS.AUTH.REGISTER_SUCCESS_PENDING
         : LABELS.AUTH.REGISTER_SUCCESS_VERIFY;
-      
+
       setSuccessMessage(msg);
       toast.success(msg);
 

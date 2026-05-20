@@ -10,6 +10,8 @@ import { useProfileData } from '@/hooks/useProfileData';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
+import Image from 'next/image';
+import { getValidImageUrl } from '@/utils/helpers';
 
 // Modular Feature Components
 import { ProfileHeader } from '@/components/features/ProfileHeader';
@@ -84,9 +86,9 @@ function ProfileContent() {
           <div className="md:col-span-7 space-y-6">
             <div className="card-container !p-6">
               <div className="flex gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden gradient-bg flex items-center justify-center text-white font-bold">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden gradient-bg flex items-center justify-center text-white font-bold">
                   {profile.profile?.avatar ? (
-                    <img src={profile.profile.avatar} className="w-full h-full object-cover" />
+                    <Image src={getValidImageUrl(profile.profile.avatar)} alt={user.name} fill sizes="40px" className="object-cover" />
                   ) : user.name?.charAt(0).toUpperCase()}
                 </div>
                 <button className="flex-1 bg-gray-50 hover:bg-gray-100 rounded-full px-6 py-2 text-left text-gray-500 transition-all text-small">
@@ -107,6 +109,7 @@ function ProfileContent() {
       <AnimatePresence>
         {isEditing && (
           <EditProfileModal 
+            key="edit-profile-modal"
             isOpen={isEditing} 
             onClose={() => setIsEditing(false)} 
             editData={editData} 

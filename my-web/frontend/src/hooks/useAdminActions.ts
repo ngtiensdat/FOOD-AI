@@ -16,6 +16,7 @@ export const useAdminActions = (adminData: any) => {
     updateFood, 
     deleteFood, 
     recommendFood,
+    approveFood,
     pendingMerchants,
     allFoods,
     allUsers
@@ -28,13 +29,22 @@ export const useAdminActions = (adminData: any) => {
   const [editFormData, setEditFormData] = useState<any>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [deleteFoodId, setDeleteFoodId] = useState<number | null>(null);
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
   // --- Actions ---
 
   const handleDeleteUser = async (id: number) => {
-    if (confirm(LABELS.ADMIN.CONFIRM.DELETE_USER)) {
-      await deleteUser(id);
+    setDeleteUserId(id);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (deleteUserId) {
+      if (await deleteUser(deleteUserId)) {
+        toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      }
     }
+    setDeleteUserId(null);
   };
 
   const handleUpdateStatus = async (userId: number, status: string) => {
@@ -45,13 +55,15 @@ export const useAdminActions = (adminData: any) => {
 
   const handleUpdateFood = async (foodId: number, data: any) => {
     // Xử lý chuyển đổi data (tags string -> array, price string -> float) trước khi gọi service
-    const processedData = {
-      ...data,
-      price: parseFloat(data.price),
-      tags: typeof data.tags === 'string' 
+    const processedData = { ...data };
+    if (data.price !== undefined) {
+      processedData.price = parseFloat(data.price);
+    }
+    if (data.tags !== undefined) {
+      processedData.tags = typeof data.tags === 'string' 
         ? data.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
-        : data.tags
-    };
+        : data.tags;
+    }
 
     if (await updateFood(foodId, processedData)) {
       setEditingFood(null);
@@ -60,15 +72,26 @@ export const useAdminActions = (adminData: any) => {
   };
 
   const handleDeleteFood = async (id: number) => {
-    if (confirm(LABELS.ADMIN.CONFIRM.DELETE_FOOD)) {
-      if (await deleteFood(id)) {
+    setDeleteFoodId(id);
+  };
+
+  const confirmDeleteFood = async () => {
+    if (deleteFoodId) {
+      if (await deleteFood(deleteFoodId)) {
         toast.success(LABELS.ADMIN.DELETE_SUCCESS);
       }
     }
+    setDeleteFoodId(null);
   };
 
   const handleRecommendFood = async (id: number) => {
     if (await recommendFood(id)) {
+      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+    }
+  };
+
+  const handleApproveFood = async (id: number, status: string) => {
+    if (await approveFood(id, status)) {
       toast.success(LABELS.ADMIN.SAVE_SUCCESS);
     }
   };
@@ -85,7 +108,19 @@ export const useAdminActions = (adminData: any) => {
   const getFilteredData = () => {
     let data: any[] = [];
     if (activeTab === 'merchants') data = pendingMerchants;
-    else if (activeTab === 'menu') data = allFoods.filter((f: any) => foodSubTab === 'system' ? !f.restaurantId : !!f.restaurantId);
+    else if (activeTab === 'menu') {
+      if (foodSubTab === 'system') {
+        data = allFoods.filter((f: any) => !f.restaurantId);
+      } else {
+        data = allFoods.filter((f: any) => !!f.restaurantId);
+        // Sort by restaurant name for grouping
+        data.sort((a, b) => {
+          const nameA = a.restaurant?.name || '';
+          const nameB = b.restaurant?.name || '';
+          return nameA.localeCompare(nameB);
+        });
+      }
+    }
     else if (activeTab === 'users') data = allUsers.filter((u: any) => u.role === 'RESTAURANT' && u.status === 'APPROVED');
     else if (activeTab === 'customers') data = allUsers.filter((u: any) => u.role === 'CUSTOMER');
 
@@ -109,13 +144,20 @@ export const useAdminActions = (adminData: any) => {
     setSearchQuery,
     showMenu,
     setShowMenu,
+    deleteFoodId,
+    setDeleteFoodId,
+    deleteUserId,
+    setDeleteUserId,
     getFilteredData,
     actions: {
       handleDeleteUser,
+      confirmDeleteUser,
       handleUpdateStatus,
       handleUpdateFood,
       handleDeleteFood,
+      confirmDeleteFood,
       handleRecommendFood,
+      handleApproveFood,
       openEditModal
     }
   };

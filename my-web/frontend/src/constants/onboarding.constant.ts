@@ -13,6 +13,7 @@ export const ONBOARDING_LABELS = {
   INVALID_COORDINATES: (index: number) => `Tọa độ (Kinh/Vĩ độ) của Cơ sở thứ ${index} bắt buộc phải là số.`,
   INVALID_LATITUDE: (index: number) => `Vĩ độ (Latitude) của Cơ sở thứ ${index} phải nằm trong khoảng từ -90 đến 90.`,
   INVALID_LONGITUDE: (index: number) => `Kinh độ (Longitude) của Cơ sở thứ ${index} phải nằm trong khoảng từ -180 đến 180.`,
+  INVALID_HOURS_FORMAT: (index: number) => `Giờ hoạt động của Cơ sở thứ ${index} không đúng định dạng (Ví dụ đúng: 08:00 - 22:00).`,
   MIN_BRANCH_REQUIRED: 'Thương gia bắt buộc phải khai báo ít nhất 1 cơ sở chính.',
   ADD_BRANCH_SUCCESS: 'Đã thêm 1 chi nhánh trống. Vui lòng điền thông tin bên dưới.',
   REMOVE_BRANCH_SUCCESS: 'Đã xóa cơ sở khỏi danh sách.',

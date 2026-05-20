@@ -94,14 +94,14 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       >
                         <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                           <span className="text-xs font-bold text-orange-500 flex items-center gap-1">
-                            📍 Cơ sở {index + 1}: {branch.name || 'Chưa đặt tên'}
+                            {LABELS.RESTAURANT.BRANCH_NUMBER(index + 1)}: {branch.name || LABELS.COMMON.UNNAMED}
                           </span>
                           {branches.length > 1 && (
                             <button
                               type="button"
                               onClick={() => handleRemoveBranch(index)}
                               className="text-red-500 hover:text-red-600 transition-colors p-1"
-                              title="Xóa cơ sở"
+                              title={LABELS.RESTAURANT.DELETE_BRANCH}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -256,7 +256,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 leading-tight">
                   {title || currentQuestion?.question}
                 </h2>
-                {title && <p className="text-primary font-bold mb-2">Câu hỏi: {currentQuestion?.question}</p>}
+                {title && <p className="text-primary font-bold mb-2">{LABELS.CUSTOMER.QUESTION}: {currentQuestion?.question}</p>}
                 <p className="text-gray-500 mb-10 text-sm md:text-base font-medium">
                   {currentQuestion?.description}
                 </p>
@@ -288,7 +288,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                     >
                       <textarea
                         autoFocus
-                        placeholder="Hãy nhập ý kiến của bạn tại đây..."
+                        placeholder={LABELS.FORM.OPINION_PLACEHOLDER}
                         className="w-full p-6 bg-gray-50 border-2 border-gray-200 rounded-3xl outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-lg min-h-[120px]"
                         value={otherValue}
                         onChange={(e) => setOtherValue(e.target.value)}

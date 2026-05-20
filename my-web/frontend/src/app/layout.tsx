@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { LABELS } from "@/constants/labels";
+
 export const metadata: Metadata = {
-  title: "FOOD AI - Món ngon mỗi ngày"
+  title: LABELS.COMMON.APP_TITLE
 }
 
 export default function RootLayout({
