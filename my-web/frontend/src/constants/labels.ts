@@ -23,6 +23,7 @@ export const LABELS = {
     SCROLL_LEFT: 'Cuộn sang trái',
     SCROLL_RIGHT: 'Cuộn sang phải',
     AI_BUSY: 'Rất tiếc, AI đang bận. Bạn thử lại sau nhé!',
+
     UNKNOWN: 'Chưa xác định',
     BRAND_NAME: 'Food AI',
     BRAND_LOGO_ALT: 'Food AI Logo',
