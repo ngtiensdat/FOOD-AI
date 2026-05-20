@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
+import { foodService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 
@@ -11,23 +12,28 @@ import { LABELS } from '@/constants/labels';
  */
 export const useDashboardActions = (user: any, updateMe: (user: any) => void) => {
   const [profile, setProfile] = useState<any>(null);
+  const [recentViews, setRecentViews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchDashboardData = async () => {
       if (!user?.id) return;
       try {
-        const data = await authService.getProfile(user.id);
-        setProfile(data);
+        const [profileData, recentData] = await Promise.all([
+          authService.getProfile(user.id),
+          foodService.getRecentViews()
+        ]);
+        setProfile(profileData);
+        setRecentViews(recentData);
       } catch (error) { 
-        console.error('Lỗi lấy profile:', error); 
+        console.error('Lỗi lấy dữ liệu dashboard:', error); 
       } finally { 
         setLoading(false); 
       }
     };
-    fetchProfileData();
+    fetchDashboardData();
   }, [user?.id]);
 
   const handleOnboardingComplete = async (onboardingData: any) => {
@@ -50,6 +56,7 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
 
   return {
     profile,
+    recentViews,
     loading,
     showOnboarding,
     setShowOnboarding,

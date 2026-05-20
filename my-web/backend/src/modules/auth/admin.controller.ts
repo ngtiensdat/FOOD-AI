@@ -15,6 +15,8 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
+import { AdminUpdateFoodDto } from './dto/admin-update-food.dto';
+
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -42,7 +44,7 @@ export class AdminController {
   @Patch('update-food/:id')
   updateFoodStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Record<string, unknown>,
+    @Body() body: AdminUpdateFoodDto,
   ) {
     return this.adminService.updateFood(id, body);
   }

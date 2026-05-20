@@ -5,6 +5,7 @@ import { aiService } from '@/services/food.service';
 import { authService as authServiceApi } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LIMITS } from '@/constants/limits.constant';
+import { LABELS } from '@/constants/labels';
 
 export const useHomeActions = () => {
   const { user, isAuthenticated, isCustomer, login, logout } = useAuth();
@@ -64,11 +65,11 @@ export const useHomeActions = () => {
     if (!aiInput.trim()) return;
 
     if (!user || !isAuthenticated) {
-      setAiResponse("Vui lòng đăng nhập để sử dụng tính năng AI tư vấn món ngon bạn nhé! ✨");
+      setAiResponse(LABELS.CUSTOMER.AI_LOGIN_REQUIRED);
       return;
     }
     if (!isCustomer) {
-      setAiResponse("Tính năng AI tư vấn hiện chỉ dành cho khách hàng. Cảm ơn bạn!");
+      setAiResponse(LABELS.CUSTOMER.AI_CUSTOMER_ONLY);
       return;
     }
 
@@ -92,7 +93,7 @@ export const useHomeActions = () => {
       }
     } catch (error) {
       console.error('Lỗi AI:', error);
-      setAiResponse('Rất tiếc, AI đang bận. Bạn thử lại sau nhé!');
+      setAiResponse(LABELS.COMMON.AI_BUSY);
     } finally {
       setIsAiLoading(false);
     }

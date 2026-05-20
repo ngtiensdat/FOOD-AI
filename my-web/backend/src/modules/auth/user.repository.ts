@@ -93,4 +93,45 @@ export class UserRepository {
       },
     });
   }
+
+  async findPendingUsers() {
+    return this.prisma.user.findMany({
+      where: {
+        role: 'RESTAURANT',
+        status: 'PENDING',
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        legalDocuments: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async updateRestaurantsStatus(ownerId: number, isActive: boolean) {
+    return this.prisma.restaurant.updateMany({
+      where: { ownerId },
+      data: { isActive },
+    });
+  }
+
+  async findAllUsers(role?: Prisma.UserWhereInput['role']) {
+    return this.prisma.user.findMany({
+      where: {
+        role,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
