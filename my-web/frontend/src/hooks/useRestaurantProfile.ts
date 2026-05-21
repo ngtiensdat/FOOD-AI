@@ -15,6 +15,14 @@ export const useRestaurantProfile = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'menu' | 'info'>('menu');
   
+  // Category & Foods state
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [foodsData, setFoodsData] = useState<any[]>([]);
+  const [foodPage, setFoodPage] = useState(1);
+  const [hasMoreFoods, setHasMoreFoods] = useState(false);
+  const [loadingFoods, setLoadingFoods] = useState(false);
+
   // Follow States
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -38,16 +46,36 @@ export const useRestaurantProfile = () => {
     if (!restaurantId) return;
     setLoading(true);
     try {
-      const data = await restaurantService.getPublicProfile(restaurantId);
-      setRestaurantData(data.restaurant);
-      setIsFollowing(data.isFollowing);
-      setFollowersCount(data.stats.followersCount);
-      setFollowingCount(data.stats.followingCount);
-      setShowFollowList(data.stats.showFollowList);
+      const [profileData, hierarchyData] = await Promise.all([
+        restaurantService.getPublicProfile(restaurantId),
+        import('@/services/category.service').then(m => m.categoryService.getPublicHierarchy(restaurantId))
+      ]);
+      setRestaurantData(profileData.restaurant);
+      setIsFollowing(profileData.isFollowing);
+      setFollowersCount(profileData.stats.followersCount);
+      setFollowingCount(profileData.stats.followingCount);
+      setShowFollowList(profileData.stats.showFollowList);
+      setCategories(hierarchyData);
     } catch (err) {
       console.error('Lỗi khi tải thông tin quán ăn:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFoods = async (page: number, catId: number | null, append: boolean = false) => {
+    if (!restaurantId) return;
+    setLoadingFoods(true);
+    try {
+      const res: any = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page);
+      if (res.data) {
+        setFoodsData(prev => append ? [...prev, ...res.data] : res.data);
+        setHasMoreFoods(res.meta.hasNextPage);
+      }
+    } catch (err) {
+      console.error('Lỗi khi tải món ăn:', err);
+    } finally {
+      setLoadingFoods(false);
     }
   };
 
@@ -57,13 +85,30 @@ export const useRestaurantProfile = () => {
       await Promise.resolve();
       if (active) {
         fetchProfile();
+        fetchFoods(1, selectedCategoryId, false);
       }
     };
     load();
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantId]);
+
+  useEffect(() => {
+    if (restaurantData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFoodPage(1);
+      fetchFoods(1, selectedCategoryId, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId]);
+
+  const handleLoadMoreFoods = () => {
+    const nextPage = foodPage + 1;
+    setFoodPage(nextPage);
+    fetchFoods(nextPage, selectedCategoryId, true);
+  };
 
   const handleToggleFollow = async () => {
     if (!isAuthenticated) {
@@ -134,6 +179,15 @@ export const useRestaurantProfile = () => {
     loadingFollowers,
     errorFollowers,
     openFollowersModal,
+
+    // Category & Foods
+    categories,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    foodsData,
+    loadingFoods,
+    hasMoreFoods,
+    handleLoadMoreFoods,
 
     // Modal Following
     showFollowingModal,

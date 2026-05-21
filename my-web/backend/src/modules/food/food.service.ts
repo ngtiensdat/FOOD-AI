@@ -11,6 +11,7 @@ import { FoodQueryDto } from './dto/food-query.dto';
 import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
+import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
 
 @Injectable()
 export class FoodService {
@@ -99,7 +100,11 @@ export class FoodService {
   async getNearbyFoods(query: FoodQueryDto) {
     const { lat, lng, radius, city, district } = query;
     if (lat === undefined || lng === undefined) return [];
-    let foods = await this.repository.findNearby(lat, lng, radius || 10);
+    let foods = await this.repository.findNearby(
+      lat,
+      lng,
+      radius || LIMITS.DEFAULT_NEARBY_RADIUS,
+    );
 
     if (city) {
       const cityLower = city.toLowerCase();
@@ -129,7 +134,7 @@ export class FoodService {
     const restaurant = await this.repository.findRestaurantById(
       dto.restaurantId,
     );
-    if (!restaurant) throw new NotFoundException('Cơ sở không tồn tại.');
+    if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
 
     if (user.role === UserRole.RESTAURANT && restaurant.ownerId !== user.id) {
       throw new ForbiddenException(
@@ -161,7 +166,8 @@ export class FoodService {
       lng,
       address,
       mapUrl,
-      restaurant: { connect: { id: dto.restaurantId } },
+      categoryId: dto.categoryId || null,
+      restaurantId: dto.restaurantId,
       status:
         user.role === UserRole.ADMIN ? FoodStatus.APPROVED : FoodStatus.PENDING,
       isActive: true,
@@ -171,14 +177,51 @@ export class FoodService {
     return food;
   }
 
+  async createBulk(user: User, dto: BulkCreateFoodDto) {
+    const restaurant = await this.repository.findRestaurantById(
+      dto.restaurantId,
+    );
+    if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+
+    if (user.role === UserRole.RESTAURANT && restaurant.ownerId !== user.id) {
+      throw new ForbiddenException(MESSAGES.FOOD.NO_EDIT_PERMISSION);
+    }
+
+    const defaultLat = restaurant.latitude;
+    const defaultLng = restaurant.longitude;
+    const defaultAddress = restaurant.address;
+    const defaultMapUrl = restaurant.mapUrl || null;
+    const defaultStatus =
+      user.role === UserRole.ADMIN ? FoodStatus.APPROVED : FoodStatus.PENDING;
+
+    const dataToInsert = dto.foods.map((foodDto) => ({
+      name: foodDto.name,
+      price: foodDto.price,
+      description: foodDto.description || null,
+      image: foodDto.image || null,
+      tags: foodDto.tags || [],
+      lat: foodDto.lat ?? defaultLat,
+      lng: foodDto.lng ?? defaultLng,
+      address: foodDto.address ?? defaultAddress,
+      mapUrl: foodDto.mapUrl ?? defaultMapUrl,
+      restaurantId: dto.restaurantId,
+      categoryId: foodDto.categoryId || null,
+      status: defaultStatus,
+      isActive: true,
+    }));
+
+    const result = await this.repository.createMany(dataToInsert);
+    return { count: result.count };
+  }
+
   async updateFood(user: User, id: number, dto: UpdateFoodDto) {
     const food = await this.repository.findById(id);
-    if (!food) throw new NotFoundException('Món ăn không tồn tại');
+    if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
     // Kiểm tra quyền sở hữu (Rule 5 - Security & Ownership)
     if (user.role === UserRole.RESTAURANT) {
       if (food.restaurant?.ownerId !== user.id) {
-        throw new ForbiddenException('Bạn không có quyền chỉnh sửa món ăn này');
+        throw new ForbiddenException(MESSAGES.FOOD.NO_EDIT_PERMISSION);
       }
     }
 
@@ -235,7 +278,7 @@ export class FoodService {
 
   async toggleRecommend(id: number) {
     const food = await this.repository.findById(id);
-    if (!food) throw new NotFoundException('Món ăn không tồn tại');
+    if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
     return this.repository.update(id, {
       isAdminRecommended: !food.isAdminRecommended,
@@ -317,14 +360,14 @@ export class FoodService {
 
   async deleteFood(user: User, id: number) {
     const food = await this.repository.findById(id);
-    if (!food) throw new NotFoundException('Món ăn không tồn tại');
+    if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
     // Rule 5 - Security & Ownership
     if (
       user.role === UserRole.RESTAURANT &&
       food.restaurant?.ownerId !== user.id
     ) {
-      throw new ForbiddenException('Bạn không có quyền xóa món ăn này');
+      throw new ForbiddenException(MESSAGES.FOOD.NO_DELETE_PERMISSION);
     }
 
     return this.repository.delete(id);
@@ -336,7 +379,7 @@ export class FoodService {
   async getMyRestaurant(user: User) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
-      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
     return restaurant;
   }
@@ -346,7 +389,7 @@ export class FoodService {
       user.id,
     );
     if (!branches || branches.length === 0) {
-      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
     return branches;
   }
@@ -354,7 +397,7 @@ export class FoodService {
   async updateMyRestaurantStatus(user: User, isActive: boolean) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
-      throw new NotFoundException('Bạn chưa sở hữu cơ sở kinh doanh nào.');
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
     return this.repository.updateRestaurantStatus(restaurant.id, isActive);
   }
@@ -392,11 +435,14 @@ export class FoodService {
       restaurant.ownerId,
     );
 
-    // Lấy trạng thái ẩn/hiện danh sách follow từ preferences của Merchant
     const prefs = (await this.repository.getUserPreferences(
       restaurant.ownerId,
     )) as { showFollowList?: boolean };
     const showFollowList = prefs.showFollowList !== false; // mặc định là true
+
+    // Only return first 5 foods by default if categoryId is not applied,
+    // or we just return stats and let frontend fetch foods paginated.
+    // For backward compatibility, we'll keep foods here but maybe limited.
 
     return {
       restaurant: {
@@ -409,7 +455,7 @@ export class FoodService {
         ownerId: restaurant.ownerId,
         createdAt: restaurant.createdAt,
         profile: restaurant.profile,
-        foods: restaurant.foods,
+        foods: restaurant.foods.slice(0, LIMITS.RESTAURANT_INITIAL_FOODS),
       },
       stats: {
         followersCount: restaurant._count.followers,
@@ -417,6 +463,40 @@ export class FoodService {
         showFollowList,
       },
       isFollowing,
+    };
+  }
+
+  async getPublicRestaurantFoods(
+    restaurantId: number,
+    categoryId?: number,
+    page: number = 1,
+    pageSize: number = 5,
+  ) {
+    const where: Prisma.FoodWhereInput = {
+      restaurantId,
+      isActive: true,
+      status: FoodStatus.APPROVED,
+    };
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    const [data, total] = await Promise.all([
+      this.repository['prisma'].food.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.repository['prisma'].food.count({ where }),
+    ]);
+
+    return {
+      items: data,
+      total,
+      page,
+      pageSize,
     };
   }
 

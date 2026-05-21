@@ -2,7 +2,7 @@ export const LIMITS = {
   /**
    * Số lượng món ăn hiển thị tối đa trong danh sách hoạt động gần đây tại dashboard merchant
    */
-  RECENT_VIEWS_DASHBOARD: 3,
+  RECENT_VIEWS_DASHBOARD: 100,
 
   /**
    * Số lượng món ăn hiển thị trong widget hoạt động gần đây của khách hàng
@@ -33,4 +33,9 @@ export const LIMITS = {
    * Thời gian tự động ẩn thông báo Toast (ms)
    */
   TOAST_AUTO_REMOVE_DELAY: 3000,
+
+  /**
+   * Số lượng tối đa Nhóm danh mục một nhà hàng có thể tạo
+   */
+  MAX_CATEGORY_GROUPS: 10,
 };

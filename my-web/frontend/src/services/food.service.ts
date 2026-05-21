@@ -51,6 +51,15 @@ export const foodService = {
     }
   },
 
+  async createBulkFoods(data: any) {
+    try {
+      await apiClient.post('/foods/bulk', data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   async updateFood(id: number, data: any) {
     try {
       await apiClient.patch(`/foods/${id}`, data);
@@ -82,7 +91,10 @@ export const aiService = {
 
 export const adminService = {
   async getAllUsers(role?: string) {
-    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch(() => []);
+    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch((err) => {
+      console.error('Lỗi getAllUsers:', err);
+      return [];
+    });
   },
 
   async deleteUser(id: number) {
@@ -95,7 +107,10 @@ export const adminService = {
   },
 
   async getAllFoods() {
-    return apiClient.get('/admin/all-foods').catch(() => []);
+    return apiClient.get('/admin/all-foods').catch((err) => {
+      console.error('Lỗi getAllFoods:', err);
+      return [];
+    });
   },
 
   async updateFood(id: number, data: any) {
@@ -133,14 +148,30 @@ export const adminService = {
     try {
       await apiClient.patch(`/admin/update-status/${userId}`, { status });
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to update user status', error);
       return false;
     }
+  },
+
+  async importMerchantsExcel(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post('/admin/import-merchants', formData);
   },
 
   async approveFood(id: number, status: string) {
     try {
       await apiClient.patch(`/foods/${id}/status`, { status });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async toggleWeeklyFeatured(id: number, value: boolean) {
+    try {
+      await apiClient.patch(`/admin/food/${id}/weekly-featured`, { value });
       return true;
     } catch {
       return false;

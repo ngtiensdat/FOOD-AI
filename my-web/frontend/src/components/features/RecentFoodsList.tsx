@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
+import { calculateDaysDifference } from '@/utils/formatters';
 
 interface RecentFoodsListProps {
   items: any[];
@@ -34,10 +35,7 @@ export const RecentFoodsList = ({ items, onViewDetail, title, onSeeMore }: Recen
           if (!food) return null;
 
           // Tính số ngày trước đã ghé thăm
-          const visitedDate = new Date(item.visitedAt);
-          const now = new Date();
-          const diffTime = Math.abs(now.getTime() - visitedDate.getTime());
-          const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+          const diffDays = calculateDaysDifference(item.visitedAt);
 
           return (
             <div 

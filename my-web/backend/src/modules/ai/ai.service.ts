@@ -9,6 +9,9 @@ import {
   UserRole,
   MessageRole,
 } from '@prisma/client';
+import { LIMITS } from '../../common/constants/limits.constant';
+import { AI_CONSTANTS } from '../../common/constants/ai.constant';
+import { appConfig } from '../../config/app.config';
 
 type FavoriteWithFood = Favorite & { food: { name: string } };
 type HistoryWithFood = History & { food: { name: string } | null };
@@ -23,9 +26,8 @@ export class AiService {
     private prisma: PrismaService,
     private vectorRepository: VectorRepository,
   ) {
-    const apiKey = process.env.OPENAI_API_KEY;
     this.openai = new OpenAI({
-      apiKey: apiKey || 'dummy-key',
+      apiKey: appConfig().openaiApiKey || 'dummy-key',
     });
   }
 
@@ -35,12 +37,12 @@ export class AiService {
     if (cachedVector) return cachedVector;
 
     const response = await this.openai.embeddings.create({
-      model: 'text-embedding-3-small',
+      model: AI_CONSTANTS.MODELS.EMBEDDING,
       input: text,
     });
 
     const vector = response.data[0].embedding;
-    if (this.embeddingCache.size > 1000) {
+    if (this.embeddingCache.size > AI_CONSTANTS.CACHE.MAX_SIZE) {
       const firstKey = this.embeddingCache.keys().next().value as
         | string
         | undefined;
@@ -99,7 +101,7 @@ export class AiService {
       const cleanMessage = message.trim();
       const now = Date.now();
       const lastTime = this.lastChatTime.get(userId) || 0;
-      if (now - lastTime < 5000) {
+      if (now - lastTime < AI_CONSTANTS.RATE_LIMIT.CHAT_MS) {
         return {
           reply:
             'Bạn đang chat hơi nhanh quá. Hãy đợi một vài giây rồi gửi lại nhé! 😊',
@@ -125,13 +127,13 @@ export class AiService {
         this.prisma.favorite.findMany({
           where: { userId },
           include: { food: { select: { name: true } } },
-          take: 3,
+          take: LIMITS.AI_SUGGESTION_COUNT_SMALL,
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.history.findMany({
           where: { userId, foodId: { not: null } },
           include: { food: { select: { name: true } } },
-          take: 3,
+          take: LIMITS.AI_SUGGESTION_COUNT_SMALL,
           orderBy: { visitedAt: 'desc' },
         }),
       ]);
@@ -160,7 +162,7 @@ export class AiService {
       const historyMessages = await this.prisma.message.findMany({
         where: { conversationId: conversation.id },
         orderBy: { createdAt: 'desc' },
-        take: 6,
+        take: LIMITS.AI_CHAT_HISTORY_PAGINATION,
       });
       const chatHistory: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
         historyMessages.reverse().map((m) => {
@@ -177,7 +179,7 @@ export class AiService {
         userVector,
         userLat,
         userLng,
-        5,
+        LIMITS.AI_SUGGESTION_COUNT_MEDIUM,
         city,
         district,
       );
@@ -192,7 +194,7 @@ export class AiService {
           : '--- KHÔNG CÓ MÓN PHÙ HỢP ---';
 
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: AI_CONSTANTS.MODELS.CHAT,
         messages: [
           {
             role: 'system',
@@ -204,7 +206,7 @@ export class AiService {
           },
           ...chatHistory,
         ],
-        temperature: 0.2,
+        temperature: AI_CONSTANTS.DEFAULT_TEMPERATURE,
       });
 
       const reply =
@@ -244,7 +246,12 @@ export class AiService {
   async getChatContext(userId: number) {
     return this.prisma.conversation.findFirst({
       where: { userId },
-      include: { messages: { orderBy: { createdAt: 'desc' }, take: 10 } },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: LIMITS.AI_CHAT_HISTORY_PAGINATION,
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

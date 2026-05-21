@@ -22,7 +22,8 @@ export class MailService {
     name: string,
     token: string,
   ): Promise<SentMessageInfo> {
-    const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     const mailOptions = {
       from: process.env.MAIL_FROM,

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { 
-  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Menu, HelpCircle
+  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Menu, HelpCircle, FolderTree
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +20,8 @@ import Image from 'next/image';
 import { MenuTable } from '@/components/features/MenuTable';
 import { FoodFormModal } from '@/components/features/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
+import { CategoryManager } from '@/components/features/CategoryManager';
+import { UploadExcelModal } from '@/components/features/UploadExcelModal';
 
 export default function RestaurantDashboard() {
   const { user, logout } = useAuth();
@@ -44,10 +46,13 @@ export default function RestaurantDashboard() {
     actions
   } = useRestaurantActions(user);
 
+  const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
+
   return (
     <div className="admin-layout">
       <Sidebar brandIcon={Store} brandLabel={LABELS.RESTAURANT.MERCHANT_HUB}>
         <SidebarItem icon={BarChart3} label={LABELS.RESTAURANT.TABS.OVERVIEW} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+        <SidebarItem icon={FolderTree} label="Danh mục" active={activeTab === 'categories'} onClick={() => setActiveTab('categories')} />
         <SidebarItem icon={Pizza} label={LABELS.RESTAURANT.TABS.MENU} active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
         <SidebarItem icon={Sparkles} label={LABELS.RESTAURANT.TABS.HISTORY} active={activeTab === 'ai-history'} onClick={() => setActiveTab('ai-history')} />
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
@@ -95,9 +100,14 @@ export default function RestaurantDashboard() {
             </div>
 
             {activeTab === 'menu' && (
-              <Button onClick={actions.handleOpenAdd}>
-                <Plus size={24} className="mr-2" /> {LABELS.RESTAURANT.ADD_FOOD}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setIsUploadModalOpen(true)} className="border-emerald-500 text-emerald-600 hover:bg-emerald-50">
+                  <Plus size={20} className="mr-2" /> Upload Excel
+                </Button>
+                <Button onClick={actions.handleOpenAdd}>
+                  <Plus size={24} className="mr-2" /> {LABELS.RESTAURANT.ADD_FOOD}
+                </Button>
+              </div>
             )}
 
             {restaurant?.id && (
@@ -212,6 +222,10 @@ export default function RestaurantDashboard() {
             actions={actions}
           />
         )}
+
+        {activeTab === 'categories' && restaurant && (
+          <CategoryManager restaurantId={restaurant.id} />
+        )}
       </main>
 
       <AnimatePresence>
@@ -239,6 +253,19 @@ export default function RestaurantDashboard() {
             confirmText={LABELS.COMMON.DELETE}
             cancelText={LABELS.COMMON.CANCEL}
             variant="danger"
+          />
+        )}
+        {isUploadModalOpen && (
+          <UploadExcelModal
+            key="upload-excel-modal"
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            myBranches={myBranches}
+            onSuccess={() => {
+              // Re-fetch myFoods, wait let's use window.location.reload() or we need fetchMyFoods exposed.
+              // We'll just refresh for simplicity if fetchMyFoods isn't in actions yet.
+              window.location.reload();
+            }}
           />
         )}
       </AnimatePresence>

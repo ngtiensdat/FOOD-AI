@@ -5,10 +5,318 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  extensions = [pgvector(map: "vector")]
+  extensions = [vector]
 }
 
-// ================== ENUMS ==================
+model User {
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  password          String
+  name              String?
+  role              UserRole       @default(CUSTOMER)
+  status            UserStatus     @default(APPROVED)
+  isEmailVerified   Boolean        @default(false) @map("is_email_verified")
+  verificationToken String?        @map("verification_token")
+  resetToken        String?        @map("reset_token")
+  refreshToken      String?        @map("refresh_token")
+  legalDocuments    String?        @map("legal_documents")
+  points            Int            @default(0)
+  level             Int            @default(1)
+  badgeTitle        String?        @map("badge_title")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  deletedAt         DateTime?      @map("deleted_at")
+  comments          Comment[]
+  conversations     Conversation[]
+  favorites         Favorite[]
+  follows           Follow[]
+  histories         History[]
+  likes             Like[]
+  approvedPosts     Post[]         @relation("AdminApprovedPosts")
+  posts             Post[]         @relation("UserPosts")
+  reports           Report[]
+  restaurants       Restaurant[]
+  userFollowing     UserFollow[]   @relation("UserFollowing")
+  userFollowers     UserFollow[]   @relation("UserFollowers")
+  profile           UserProfile?
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model UserProfile {
+  userId                 Int                    @id @map("user_id")
+  fullName               String?                @map("full_name")
+  phone                  String?
+  avatar                 String?
+  coverImage             String?                @map("cover_image")
+  bio                    String?
+  address                String?
+  workAt                 String?                @map("work_at")
+  hasCompletedOnboarding Boolean                @default(false) @map("has_completed_onboarding")
+  preferences            Json?                  @map("preferences")
+  embedding              Unsupported("vector")?
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Restaurant {
+  id             Int                @id @default(autoincrement())
+  name           String
+  address        String
+  latitude       Float
+  longitude      Float
+  description    String?
+  mapUrl         String?            @map("map_url")
+  ownerId        Int                @map("owner_id")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  deletedAt      DateTime?          @map("deleted_at")
+  isActive       Boolean            @default(true) @map("is_active")
+  categoryGroups CategoryGroup[]
+  followers      Follow[]
+  foods          Food[]
+  histories      History[]
+  posts          Post[]
+  profile        RestaurantProfile?
+  owner          User               @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+  @@map("restaurants")
+}
+
+model RestaurantProfile {
+  restaurantId Int        @id @map("restaurant_id")
+  coverImage   String?    @map("cover_image")
+  bio          String?
+  openingHours String?    @map("opening_hours")
+  contactEmail String?    @map("contact_email")
+  contactPhone String?    @map("contact_phone")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("restaurant_profiles")
+}
+
+model Food {
+  id                 Int                    @id @default(autoincrement())
+  name               String
+  price              Float
+  description        String?
+  image              String?
+  tags               String[]               @default([])
+  status             FoodStatus             @default(PENDING)
+  isActive           Boolean                @default(true) @map("is_active")
+  isAdminRecommended Boolean                @default(false) @map("is_admin_recommended")
+  isFeaturedToday    Boolean                @default(false) @map("is_featured_today")
+  isFeaturedWeekly   Boolean                @default(false) @map("is_featured_weekly")
+  lat                Float?
+  lng                Float?
+  address            String?
+  mapUrl             String?                @map("map_url")
+  restaurantId       Int?                   @map("restaurant_id")
+  embedding          Unsupported("vector")?
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
+  deletedAt          DateTime?              @map("deleted_at")
+  categoryId         Int?                   @map("category_id")
+  favorites          Favorite[]
+  category           Category?              @relation(fields: [categoryId], references: [id])
+  restaurant         Restaurant?            @relation(fields: [restaurantId], references: [id])
+  histories          History[]
+  posts              Post[]                 @relation("PostToFood")
+
+  @@index([restaurantId, status])
+  @@map("foods")
+}
+
+model CategoryGroup {
+  id           Int        @id @default(autoincrement())
+  name         String
+  order        Int        @default(0)
+  restaurantId Int        @map("restaurant_id")
+  categories   Category[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, name])
+  @@map("category_groups")
+}
+
+model Category {
+  id       Int           @id @default(autoincrement())
+  name     String
+  order    Int           @default(0)
+  groupId  Int           @map("group_id")
+  parentId Int?          @map("parent_id")
+  depth    Int           @default(1)
+  group    CategoryGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  parent   Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[]    @relation("CategoryHierarchy")
+  foods    Food[]
+
+  @@unique([groupId, name])
+  @@map("categories")
+}
+
+model Post {
+  id           Int         @id @default(autoincrement())
+  authorId     Int         @map("author_id")
+  restaurantId Int?        @map("restaurant_id")
+  foodId       Int?        @map("food_id")
+  approverId   Int?        @map("approver_id")
+  title        String?
+  content      String?
+  image        String?
+  rating       Int?
+  postType     PostType    @default(NORMAL)
+  status       PostStatus  @default(APPROVED)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  comments     Comment[]
+  likes        Like[]
+  approver     User?       @relation("AdminApprovedPosts", fields: [approverId], references: [id])
+  author       User        @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  food         Food?       @relation("PostToFood", fields: [foodId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+
+  @@index([authorId, createdAt])
+  @@index([postType, status])
+  @@map("posts")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  postId    Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int      @map("user_id")
+  postId    Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("comments")
+}
+
+model Follow {
+  id           Int        @id @default(autoincrement())
+  userId       Int        @map("user_id")
+  restaurantId Int        @map("restaurant_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+  @@index([userId])
+  @@index([restaurantId])
+  @@map("follows")
+}
+
+model UserFollow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int      @map("follower_id")
+  followingId Int      @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("user_follows")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  foodId    Int      @map("food_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, foodId])
+  @@map("favorites")
+}
+
+model History {
+  id           Int         @id @default(autoincrement())
+  userId       Int         @map("user_id")
+  restaurantId Int?        @map("restaurant_id")
+  foodId       Int?        @map("food_id")
+  visitedAt    DateTime    @default(now()) @map("visited_at")
+  food         Food?       @relation(fields: [foodId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, visitedAt])
+  @@map("histories")
+}
+
+model Conversation {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  metadata  Json?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  role           MessageRole  @default(USER)
+  content        String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model Report {
+  id         Int          @id @default(autoincrement())
+  userId     Int          @map("user_id")
+  targetType String       @map("target_type")
+  targetId   Int          @map("target_id")
+  content    String
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("reports")
+}
+
+model EmbeddingLog {
+  id         Int                   @id @default(autoincrement())
+  entityType String                @map("entity_type")
+  entityId   Int                   @map("entity_id")
+  embedding  Unsupported("vector")
+  createdAt  DateTime              @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@map("embeddings_log")
+}
+
 enum UserRole {
   CUSTOMER
   RESTAURANT
@@ -50,339 +358,4 @@ enum MessageRole {
   USER
   AI
   SYSTEM
-}
-
-// ================== USERS ==================
-model User {
-  id              Int          @id @default(autoincrement())
-  email           String       @unique
-  password        String
-  name            String?
-  role            UserRole     @default(CUSTOMER)
-  status          UserStatus   @default(APPROVED)
-
-  isEmailVerified Boolean      @default(false) @map("is_email_verified")
-  verificationToken String?    @map("verification_token")
-  resetToken      String?      @map("reset_token")
-  refreshToken   String?      @map("refresh_token")
-  legalDocuments  String?      @map("legal_documents")
-
-  points          Int          @default(0)
-  level           Int          @default(1)
-  badgeTitle      String?      @map("badge_title")
-
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
-  deletedAt       DateTime?    @map("deleted_at")
-
-  profile         UserProfile?
-  restaurants     Restaurant[]
-  posts           Post[]       @relation("UserPosts")
-  approvedPosts   Post[]       @relation("AdminApprovedPosts")
-  favorites       Favorite[]
-  histories       History[]
-  conversations   Conversation[]
-  reports         Report[]
-  likes           Like[]
-  comments        Comment[]
-  follows         Follow[]
-  
-  // Quan hệ Follow giữa người dùng với nhau
-  userFollowers   UserFollow[] @relation("UserFollowers")
-  userFollowing   UserFollow[] @relation("UserFollowing")
-
-  @@index([role, status])
-  @@map("users")
-}
-
-// ================== USER PROFILE ==================
-model UserProfile {
-  userId     Int      @id @map("user_id")
-  fullName   String?  @map("full_name")
-  phone      String?
-  avatar     String?
-  coverImage String?  @map("cover_image")
-  bio        String?
-  address    String?
-  workAt     String?  @map("work_at")
-
-  hasCompletedOnboarding Boolean @default(false) @map("has_completed_onboarding")
-  preferences            Json?    @map("preferences") // Lưu trữ các câu trả lời khảo sát dạng JSON
-
-  embedding  Unsupported("vector(1536)")?
-
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_profiles")
-}
-
-// ================== RESTAURANT ==================
-model Restaurant {
-  id          Int      @id @default(autoincrement())
-  name        String
-  address     String
-  latitude    Float
-  longitude   Float
-  description String?
-  mapUrl      String?     @map("map_url")
-  ownerId     Int      @map("owner_id")
-
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
-  isActive    Boolean   @default(true) @map("is_active")
-
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
-  profile     RestaurantProfile?
-  foods       Food[]
-  posts       Post[]
-  histories   History[]
-  followers   Follow[]
-
-  @@index([ownerId])
-  @@map("restaurants")
-}
-
-// ================== RESTAURANT PROFILE ==================
-model RestaurantProfile {
-  restaurantId Int      @id @map("restaurant_id")
-  coverImage   String?  @map("cover_image")
-  bio          String?
-  openingHours String?  @map("opening_hours")
-  contactEmail String?  @map("contact_email")
-  contactPhone String?  @map("contact_phone")
-  
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-
-  @@map("restaurant_profiles")
-}
-
-// ================== FOOD ==================
-model Food {
-  id          Int        @id @default(autoincrement())
-  name        String
-  price       Float
-  description String?
-  image       String?
-  tags        String[]   @default([])
-
-  status      FoodStatus @default(PENDING)
-  isActive    Boolean    @default(true) @map("is_active")
-
-  isAdminRecommended Boolean @default(false) @map("is_admin_recommended")
-  isFeaturedToday    Boolean @default(false) @map("is_featured_today")
-  isFeaturedWeekly   Boolean @default(false) @map("is_featured_weekly")
-
-  lat         Float?   
-  lng         Float?   
-  address     String?
-  mapUrl      String?    @map("map_url")
-
-  restaurantId Int?      @map("restaurant_id")
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-
-  embedding   Unsupported("vector(1536)")?
-
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
-
-  categories  Category[] @relation("FoodToCategory")
-  posts       Post[]      @relation("PostToFood")
-  favorites   Favorite[]
-  histories   History[]
-
-  @@index([restaurantId, status])
-  @@map("foods")
-}
-
-// ================== CATEGORY ==================
-model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-
-  foods Food[] @relation("FoodToCategory")
-
-  @@map("categories")
-}
-
-// ================== POSTS ==================
-model Post {
-  id           Int        @id @default(autoincrement())
-  authorId     Int        @map("author_id")
-  restaurantId Int?       @map("restaurant_id")
-  foodId       Int?       @map("food_id")
-  approverId   Int?       @map("approver_id")
-
-  title        String?
-  content      String?
-  image        String?
-  rating       Int?       // Validation: 1-5
-
-  postType     PostType   @default(NORMAL)
-  status       PostStatus @default(APPROVED)
-
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  deletedAt    DateTime?  @map("deleted_at")
-
-  author       User       @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  approver     User?      @relation("AdminApprovedPosts", fields: [approverId], references: [id], onDelete: SetNull)
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-  food         Food?      @relation("PostToFood", fields: [foodId], references: [id], onDelete: SetNull)
-
-  likes        Like[]
-  comments     Comment[]
-
-  @@index([authorId, createdAt])
-  @@index([postType, status])
-  @@map("posts")
-}
-
-// ================== SOCIAL ==================
-model Like {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  postId    Int      @map("post_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, postId])
-  @@map("likes")
-}
-
-model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String
-  userId    Int      @map("user_id")
-  postId    Int      @map("post_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@map("comments")
-}
-
-model Follow {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @map("user_id")
-  restaurantId Int      @map("restaurant_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, restaurantId])
-  @@index([userId])
-  @@index([restaurantId])
-  @@map("follows")
-}
-
-model UserFollow {
-  id           Int      @id @default(autoincrement())
-  followerId   Int      @map("follower_id")
-  followingId  Int      @map("following_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  follower     User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
-  following    User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
-  @@map("user_follows")
-}
-
-// ================== USER ACTION ==================
-model Favorite {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  foodId    Int      @map("food_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, foodId])
-  @@map("favorites")
-}
-
-model History {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @map("user_id")
-  restaurantId Int?     @map("restaurant_id")
-  foodId       Int?     @map("food_id")
-  visitedAt    DateTime @default(now()) @map("visited_at")
-
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-  food         Food?       @relation(fields: [foodId], references: [id], onDelete: SetNull)
-
-  @@index([userId, visitedAt])
-  @@map("histories")
-}
-
-// ================== AI CHAT ==================
-model Conversation {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  metadata  Json?    
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-
-  @@map("conversations")
-}
-
-model Message {
-  id             Int         @id @default(autoincrement())
-  conversationId Int         @map("conversation_id")
-  role           MessageRole @default(USER)
-  content        String
-  createdAt      DateTime    @default(now()) @map("created_at")
-
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-  @@map("messages")
-}
-
-// ================== REPORT ==================
-model Report {
-  id         Int          @id @default(autoincrement())
-  userId     Int          @map("user_id")
-  targetType String       @map("target_type")
-  targetId   Int          @map("target_id")
-  content    String
-  status     ReportStatus @default(PENDING)
-
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt  DateTime     @updatedAt @map("updated_at")
-
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([status])
-  @@map("reports")
-}
-
-model EmbeddingLog {
-  id         Int      @id @default(autoincrement())
-  entityType String   @map("entity_type")
-  entityId   Int      @map("entity_id")
-  embedding  Unsupported("vector(1536)")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  @@index([entityType, entityId])
-  @@map("embeddings_log")
 }

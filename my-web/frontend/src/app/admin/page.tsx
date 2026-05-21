@@ -11,18 +11,19 @@ import { useAdminActions } from '@/hooks/useAdminActions'; // Logic được tá
 import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
-
 // Feature Components
 import { AdminTable } from '@/components/features/AdminTable';
 import { AdminFoodModal } from '@/components/features/AdminFoodModal';
+import { ImportExcelModal } from './components/ImportExcelModal';
+import { FileUp } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const adminData = useAdminData();
+  const [showImportModal, setShowImportModal] = React.useState(false);
 
   const {
     activeTab,
@@ -87,6 +88,16 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            {(activeTab === 'users' || activeTab === 'menu') && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => setShowImportModal(true)}
+              >
+                <FileUp className="w-4 h-4" />
+                Import Excel
+              </Button>
+            )}
             <Input
               icon={Search}
               placeholder={LABELS.COMMON.SEARCH}
@@ -96,17 +107,13 @@ export default function AdminDashboard() {
             />
             {user && (
               <div className="flex items-center gap-3 relative">
-                <Link
-                  href="/profile"
-                  className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
-                >
-                  {user.avatar ? (
-                    <Image src={getValidImageUrl(user.avatar)} alt={user.name || ''} fill sizes="40px" className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                <Link href="/profile" className="hover:scale-110 transition-transform">
+                  <Avatar
+                    src={user.avatar}
+                    name={user.name}
+                    size={40}
+                    className="border-2 border-white shadow-md bg-gray-100"
+                  />
                 </Link>
 
                 <Button
@@ -129,7 +136,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <AdminTable 
+        <AdminTable
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
@@ -140,7 +147,7 @@ export default function AdminDashboard() {
 
       <AnimatePresence>
         {editingFood && (
-          <AdminFoodModal 
+          <AdminFoodModal
             editingFood={editingFood}
             editFormData={editFormData}
             setEditFormData={setEditFormData}
@@ -160,12 +167,21 @@ export default function AdminDashboard() {
       />
 
       <ConfirmModal
-        isOpen={deleteUserId !== null}
-        title={LABELS.ADMIN.CONFIRM.DELETE_USER}
-        message={LABELS.ADMIN.CONFIRM.DELETE_USER_DESC}
+        isOpen={!!deleteUserId}
+        title={LABELS.ADMIN.CONFIRM_DELETE_USER}
+        message={LABELS.ADMIN.DELETE_WARNING}
         onConfirm={actions.confirmDeleteUser}
         onCancel={() => setDeleteUserId(null)}
         variant="danger"
+      />
+
+      <ImportExcelModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => {
+          // Tải lại dữ liệu sau khi import
+          adminData.fetchData();
+        }}
       />
     </div>
   );

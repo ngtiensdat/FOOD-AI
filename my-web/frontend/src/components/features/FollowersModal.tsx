@@ -3,9 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
 import { LABELS } from '@/constants/labels';
+import { Avatar } from '@/components/base/Avatar';
 
 interface FollowersModalProps {
   isOpen: boolean;
@@ -92,19 +91,13 @@ export const FollowersModal = ({
                   onClick={() => onItemClick(userObj)}
                   className="flex items-center gap-3.5 p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
                 >
-                  <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-body overflow-hidden relative shrink-0">
-                    {userAvatar ? (
-                      <Image 
-                        src={getValidImageUrl(userAvatar)} 
-                        alt={userObj.name || 'Avatar'} 
-                        fill
-                        sizes="44px"
-                        className="object-cover" 
-                      />
-                    ) : (
-                      (userObj.name || 'U').charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <Avatar 
+                    src={userAvatar} 
+                    name={userObj.name} 
+                    size={44} 
+                    className="bg-primary/10 text-primary font-black text-body shrink-0" 
+                    fallbackClassName="!bg-transparent"
+                  />
                   <div>
                     <h4 className="text-body font-extrabold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                       {userName}

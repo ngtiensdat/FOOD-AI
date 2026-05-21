@@ -4,9 +4,8 @@ import {
   ConflictException,
   UnauthorizedException,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../user/user.repository';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { JwtService } from '@nestjs/jwt';
@@ -20,7 +19,7 @@ import {
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AiService } from '../ai/ai.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
@@ -117,162 +116,6 @@ export class AuthService {
       ...userWithoutSensitiveData
     } = user;
     return { ...userWithoutSensitiveData, isFollowing };
-  }
-
-  async getFollowers(targetId: number, requesterId?: number) {
-    const user = await this.userRepository.findById(targetId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
-
-    // Kiểm tra cài đặt ẩn hiện danh sách (quyền riêng tư)
-    if (user.profile?.preferences) {
-      const preferences = user.profile.preferences as {
-        showFollowList?: boolean;
-      } | null;
-      if (preferences?.showFollowList === false && requesterId !== targetId) {
-        throw new ForbiddenException(
-          'Danh sách người theo dõi của người dùng này đã được ẩn.',
-        );
-      }
-    }
-
-    const follows = await this.prisma.userFollow.findMany({
-      where: { followingId: targetId },
-      include: {
-        follower: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            profile: {
-              select: {
-                avatar: true,
-                bio: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return follows.map((f) => f.follower);
-  }
-
-  async getFollowing(targetId: number, requesterId?: number) {
-    const user = await this.userRepository.findById(targetId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
-
-    // Kiểm tra cài đặt ẩn hiện danh sách (quyền riêng tư)
-    if (user.profile?.preferences) {
-      const preferences = user.profile.preferences as {
-        showFollowList?: boolean;
-      } | null;
-      if (preferences?.showFollowList === false && requesterId !== targetId) {
-        throw new ForbiddenException(
-          'Danh sách đang theo dõi của người dùng này đã được ẩn.',
-        );
-      }
-    }
-
-    // Normal users can follow other users (userFollow) AND merchants (restaurant follows)
-    const userFollowings = await this.prisma.userFollow.findMany({
-      where: { followerId: targetId },
-      include: {
-        following: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            profile: {
-              select: {
-                avatar: true,
-                bio: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const restaurantFollowings = await this.prisma.follow.findMany({
-      where: { userId: targetId },
-      include: {
-        restaurant: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            profile: {
-              select: {
-                coverImage: true,
-                bio: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return {
-      users: userFollowings.map((f) => f.following),
-      restaurants: restaurantFollowings.map((f) => f.restaurant),
-    };
-  }
-
-  async toggleFollow(followerId: number, followingId: number) {
-    if (followerId === followingId) {
-      throw new ConflictException('Không thể tự theo dõi chính mình');
-    }
-
-    const existing = await this.userRepository.findWithFollow(
-      followerId,
-      followingId,
-    );
-    if (existing) {
-      await this.userRepository.unfollow(followerId, followingId);
-      return { followed: false };
-    } else {
-      await this.userRepository.follow(followerId, followingId);
-      return { followed: true };
-    }
-  }
-
-  async updateProfile(
-    userId: number,
-    data: UpdateProfileDto & { password?: string },
-  ) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
-
-    const profileUpdate: Prisma.UserProfileUpdateInput = {
-      fullName: data.name || data.fullName,
-      phone: data.phone,
-      avatar: data.avatar,
-      coverImage: data.coverImage,
-      bio: data.bio,
-      address: data.address,
-      workAt: data.workAt,
-    };
-
-    if (data.preferences !== undefined) {
-      const existingProfile = await this.prisma.userProfile.findUnique({
-        where: { userId },
-        select: { preferences: true },
-      });
-      const currentPrefs =
-        (existingProfile?.preferences as Prisma.JsonObject) || {};
-      profileUpdate.preferences = {
-        ...currentPrefs,
-        ...data.preferences,
-      } as Prisma.InputJsonValue;
-    }
-
-    await this.userRepository.upsertProfile(userId, profileUpdate);
-
-    if (data.name) {
-      await this.userRepository.update(userId, { name: data.name });
-    }
-
-    return { message: 'Cập nhật thành công' };
   }
 
   async completeOnboarding(userId: number, dto: CompleteOnboardingDto) {
@@ -448,8 +291,16 @@ export class AuthService {
 
   async generateToken(user: User & { profile?: UserProfile | null }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1d' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    const accessToken = this.jwtService.sign(payload, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expiresIn: appConfig().jwtAccessExpiration as any,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expiresIn: appConfig().jwtRefreshExpiration as any,
+    });
 
     await this.userRepository.updateRefreshToken(user.id, refreshToken);
 

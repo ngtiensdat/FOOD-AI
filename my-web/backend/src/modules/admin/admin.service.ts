@@ -1,8 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../user/user.repository';
 import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
 import { UserRole, UserStatus, Prisma } from '@prisma/client';
+import { PrismaService } from '../../database/prisma.service';
+import { MerchantImportService } from './merchant-import.service';
 
 @Injectable()
 export class AdminService {
@@ -10,6 +12,8 @@ export class AdminService {
     private userRepository: UserRepository,
     private foodRepository: FoodRepository,
     private aiService: AiService,
+    private prisma: PrismaService,
+    private merchantImportService: MerchantImportService,
   ) {}
 
   async getPendingUsers() {
@@ -52,6 +56,7 @@ export class AdminService {
       lat?: string | number;
       lng?: string | number;
       address?: string;
+      tags?: string[];
     },
   ) {
     const formattedData: Prisma.FoodUpdateInput = {
@@ -82,5 +87,16 @@ export class AdminService {
 
   async deleteFood(id: number) {
     return this.foodRepository.delete(id);
+  }
+
+  async importMerchantsFromExcel(buffer: Buffer) {
+    return this.merchantImportService.importFromExcel(buffer);
+  }
+
+  async toggleWeeklyFeatured(id: number, value: boolean) {
+    return this.prisma.food.update({
+      where: { id },
+      data: { isFeaturedWeekly: value },
+    });
   }
 }

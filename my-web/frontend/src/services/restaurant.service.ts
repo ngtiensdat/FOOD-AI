@@ -5,6 +5,12 @@ export const restaurantService = {
     return apiClient.get(`/restaurants/${restaurantId}/public`);
   },
 
+  async getPublicRestaurantFoods(restaurantId: number, categoryId?: number, page: number = 1) {
+    return apiClient.get(`/restaurants/${restaurantId}/foods`, {
+      params: { categoryId, page }
+    });
+  },
+
   async getFollowers(restaurantId: number) {
     return apiClient.get(`/restaurants/${restaurantId}/followers`);
   },

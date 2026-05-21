@@ -90,6 +90,16 @@ export class FoodController {
     return this.foodService.createFood(user, createFoodDto);
   }
 
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
+  createBulkFood(
+    @GetUser() user: PrismaClient.User,
+    @Body() bulkDto: import('./dto/bulk-create-food.dto').BulkCreateFoodDto,
+  ) {
+    return this.foodService.createBulk(user, bulkDto);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)

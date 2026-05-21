@@ -156,10 +156,13 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       }
     }
 
-    const finalBranches = branches.map(b => ({
-      ...b,
-      address: `${b.street}, ${b.district}, ${b.city}`
-    }));
+    const finalBranches = branches.map(b => {
+      const { city, district, street, ...rest } = b;
+      return {
+        ...rest,
+        address: `${street}, ${district}, ${city}`
+      };
+    });
 
     finishOnboarding(answers, finalBranches);
   };

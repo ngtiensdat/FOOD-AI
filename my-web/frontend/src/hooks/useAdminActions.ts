@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { adminService } from '@/services/food.service';
 
 /**
  * Custom Hook: useAdminActions
@@ -19,7 +20,8 @@ export const useAdminActions = (adminData: any) => {
     approveFood,
     pendingMerchants,
     allFoods,
-    allUsers
+    allUsers,
+    fetchData
   } = adminData;
 
   // --- State Management ---
@@ -42,6 +44,7 @@ export const useAdminActions = (adminData: any) => {
     if (deleteUserId) {
       if (await deleteUser(deleteUserId)) {
         toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+        if (fetchData) fetchData();
       }
     }
     setDeleteUserId(null);
@@ -50,6 +53,7 @@ export const useAdminActions = (adminData: any) => {
   const handleUpdateStatus = async (userId: number, status: string) => {
     if (await updateStatus(userId, status)) {
       toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
     }
   };
 
@@ -68,6 +72,7 @@ export const useAdminActions = (adminData: any) => {
     if (await updateFood(foodId, processedData)) {
       setEditingFood(null);
       toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
     }
   };
 
@@ -79,6 +84,7 @@ export const useAdminActions = (adminData: any) => {
     if (deleteFoodId) {
       if (await deleteFood(deleteFoodId)) {
         toast.success(LABELS.ADMIN.DELETE_SUCCESS);
+        if (fetchData) fetchData();
       }
     }
     setDeleteFoodId(null);
@@ -87,12 +93,14 @@ export const useAdminActions = (adminData: any) => {
   const handleRecommendFood = async (id: number) => {
     if (await recommendFood(id)) {
       toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
     }
   };
 
   const handleApproveFood = async (id: number, status: string) => {
     if (await approveFood(id, status)) {
       toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
     }
   };
 
@@ -131,6 +139,16 @@ export const useAdminActions = (adminData: any) => {
     );
   };
 
+  const handleToggleWeeklyFeatured = async (id: number, value: boolean) => {
+    const success = await adminService.toggleWeeklyFeatured(id, value);
+    if (success) {
+      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
+    } else {
+      toast.error('Cập nhật thất bại');
+    }
+  };
+
   return {
     activeTab,
     setActiveTab,
@@ -158,7 +176,8 @@ export const useAdminActions = (adminData: any) => {
       confirmDeleteFood,
       handleRecommendFood,
       handleApproveFood,
-      openEditModal
+      openEditModal,
+      handleToggleWeeklyFeatured
     }
   };
 };

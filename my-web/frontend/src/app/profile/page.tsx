@@ -1,18 +1,16 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Info } from 'lucide-react';
-import { authService } from '@/services/auth.service';
 
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
+import { Avatar } from '@/components/base/Avatar';
 
 // Modular Feature Components
 import { ProfileHeader } from '@/components/features/ProfileHeader';
@@ -36,56 +34,11 @@ function ProfileContent() {
     setIsEditing,
     editData,
     setEditData,
-    actions
+    actions,
+    modals
   } = useProfileData(targetId);
 
   const router = useRouter();
-
-  // Trạng thái cho Modals hiển thị Followers và Following
-  const [showFollowersModal, setShowFollowersModal] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followersList, setFollowersList] = useState<any[]>([]);
-  const [followingList, setFollowingList] = useState<any>({ users: [], restaurants: [] });
-  const [loadingFollowers, setLoadingFollowers] = useState(false);
-  const [loadingFollowing, setLoadingFollowing] = useState(false);
-  const [errorFollowers, setErrorFollowers] = useState<string | null>(null);
-  const [errorFollowing, setErrorFollowing] = useState<string | null>(null);
-
-  // Đóng modals tự động khi id profile mục tiêu thay đổi
-  React.useEffect(() => {
-    Promise.resolve().then(() => {
-      setShowFollowersModal(false);
-      setShowFollowingModal(false);
-    });
-  }, [targetId]);
-
-  const openFollowersModal = async () => {
-    setShowFollowersModal(true);
-    setLoadingFollowers(true);
-    setErrorFollowers(null);
-    try {
-      const data = await authService.getFollowers(profile.id);
-      setFollowersList(data || []);
-    } catch (err: any) {
-      setErrorFollowers(err.response?.data?.message || 'Danh sách này là riêng tư hoặc đã bị ẩn.');
-    } finally {
-      setLoadingFollowers(false);
-    }
-  };
-
-  const openFollowingModal = async () => {
-    setShowFollowingModal(true);
-    setLoadingFollowing(true);
-    setErrorFollowing(null);
-    try {
-      const data = await authService.getFollowing(profile.id);
-      setFollowingList(data || { users: [], restaurants: [] });
-    } catch (err: any) {
-      setErrorFollowing(err.response?.data?.message || 'Danh sách này là riêng tư hoặc đã bị ẩn.');
-    } finally {
-      setLoadingFollowing(false);
-    }
-  };
 
   if (!profile) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
@@ -108,8 +61,8 @@ function ProfileContent() {
           isFollowLoading={isFollowLoading} 
           onEdit={() => setIsEditing(true)} 
           onFollow={actions.toggleFollow} 
-          onShowFollowers={openFollowersModal}
-          onShowFollowing={openFollowingModal}
+          onShowFollowers={actions.openFollowersModal}
+          onShowFollowing={actions.openFollowingModal}
         />
 
         <div className="flex items-center mt-6 border-b border-gray-100 dark:border-gray-200 bg-white dark:bg-gray-100 rounded-t-card px-4 md:px-8 transition-colors duration-300">
@@ -139,11 +92,7 @@ function ProfileContent() {
           <div className="md:col-span-7 space-y-6">
             <div className="card-container !p-6">
               <div className="flex gap-4 mb-4">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden gradient-bg flex items-center justify-center text-white font-bold">
-                  {profile.profile?.avatar ? (
-                    <Image src={getValidImageUrl(profile.profile.avatar)} alt={user.name} fill sizes="40px" className="object-cover" />
-                  ) : user.name?.charAt(0).toUpperCase()}
-                </div>
+                <Avatar src={profile.profile?.avatar} name={user.name} size={40} />
                 <button className="flex-1 bg-gray-50 hover:bg-gray-100 rounded-full px-6 py-2 text-left text-gray-500 transition-all text-small">
                   {LABELS.SETTINGS.PROFILE.POSTS.THINKING(user.name)}
                 </button>
@@ -175,43 +124,43 @@ function ProfileContent() {
 
       {/* Modal Followers */}
       <AnimatePresence>
-        {showFollowersModal && (
+        {modals.showFollowersModal && (
           <FollowersModal
-            isOpen={showFollowersModal}
-            onClose={() => setShowFollowersModal(false)}
-            loading={loadingFollowers}
-            error={errorFollowers}
-            followersList={followersList}
+            isOpen={modals.showFollowersModal}
+            onClose={() => modals.setShowFollowersModal(false)}
+            loading={modals.loadingFollowers}
+            error={modals.errorFollowers}
+            followersList={modals.followersList}
             onItemClick={(followerUser) => {
-              setShowFollowersModal(false);
+              modals.setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
-            title="Người theo dõi"
-            emptyLabel="Chưa có người theo dõi nào"
+            title={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWERS_TITLE}
+            emptyLabel={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWERS_EMPTY}
           />
         )}
       </AnimatePresence>
 
       {/* Modal Following */}
       <AnimatePresence>
-        {showFollowingModal && (
+        {modals.showFollowingModal && (
           <FollowingModal
-            isOpen={showFollowingModal}
-            onClose={() => setShowFollowingModal(false)}
-            loading={loadingFollowing}
-            error={errorFollowing}
-            users={followingList.users}
-            restaurants={followingList.restaurants}
+            isOpen={modals.showFollowingModal}
+            onClose={() => modals.setShowFollowingModal(false)}
+            loading={modals.loadingFollowing}
+            error={modals.errorFollowing}
+            users={modals.followingList.users}
+            restaurants={modals.followingList.restaurants}
             onUserClick={(followingUser) => {
-              setShowFollowingModal(false);
+              modals.setShowFollowingModal(false);
               router.push(`/profile?id=${followingUser.id}`);
             }}
             onRestaurantClick={(restaurantItem) => {
-              setShowFollowingModal(false);
+              modals.setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}
-            title="Đang theo dõi"
-            emptyLabel="Chưa theo dõi ai"
+            title={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWING_TITLE}
+            emptyLabel={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWING_EMPTY}
           />
         )}
       </AnimatePresence>

@@ -10,6 +10,7 @@ import {
   Settings 
 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 
 interface RestaurantHeaderCardProps {
@@ -50,7 +51,7 @@ export const RestaurantHeaderCard = ({
             onClick={() => window.location.href = '/restaurant-admin'}
             className="underline hover:text-primary-dark transition-colors font-extrabold"
           >
-            [Vào trang quản trị]
+            {LABELS.RESTAURANT.PUBLIC_PROFILE.GO_TO_ADMIN}
           </button>
         </div>
       )}
@@ -80,8 +81,21 @@ export const RestaurantHeaderCard = ({
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-card p-6 md:p-8 border border-white/20 dark:border-slate-800/30 shadow-xl transition-all duration-300">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary text-h1 font-extrabold shrink-0 shadow-inner">
-                {restaurantData.name.charAt(0).toUpperCase()}
+              <div className="hidden md:block">
+                <Avatar 
+                  name={restaurantData.name} 
+                  size={96} 
+                  className="rounded-3xl bg-primary/10 border-2 border-primary/20 shadow-inner"
+                  fallbackClassName="text-primary text-h1 font-extrabold !bg-transparent"
+                />
+              </div>
+              <div className="md:hidden">
+                <Avatar 
+                  name={restaurantData.name} 
+                  size={80} 
+                  className="rounded-3xl bg-primary/10 border-2 border-primary/20 shadow-inner"
+                  fallbackClassName="text-primary text-h1 font-extrabold !bg-transparent"
+                />
               </div>
               <div>
                 <h1 className="text-h1 font-black text-gray-900 mb-2">{restaurantData.name}</h1>
@@ -126,7 +140,7 @@ export const RestaurantHeaderCard = ({
                   onClick={() => window.location.href = '/restaurant-admin'}
                 >
                   <Settings size={18} />
-                  <span>Quản lý quán ăn</span>
+                  <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MANAGE_RESTAURANT}</span>
                 </Button>
               ) : (
                 <Button

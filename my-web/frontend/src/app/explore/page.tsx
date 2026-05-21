@@ -88,7 +88,7 @@ function ExploreContent() {
                   className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
                 >
                   <option value="" className="text-slate-900 bg-white">
-                    Tất cả Quận/Huyện
+                    {LABELS.EXPLORE.ALL_DISTRICTS}
                   </option>
                   {LOCATION_DATA.find((c) => c.value === selectedCity)
                     ?.districts.map((d) => (

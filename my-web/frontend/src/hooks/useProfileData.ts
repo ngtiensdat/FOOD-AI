@@ -16,6 +16,16 @@ export const useProfileData = (targetId?: string | null) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
 
+  // Modals States
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followersList, setFollowersList] = useState<any[]>([]);
+  const [followingList, setFollowingList] = useState<any>({ users: [], restaurants: [] });
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const [loadingFollowing, setLoadingFollowing] = useState(false);
+  const [errorFollowers, setErrorFollowers] = useState<string | null>(null);
+  const [errorFollowing, setErrorFollowing] = useState<string | null>(null);
+
   const fetchProfileData = useCallback(async (id: number, requesterId?: number) => {
     try {
       const data = await authService.getProfile(id, requesterId);
@@ -33,6 +43,10 @@ export const useProfileData = (targetId?: string | null) => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProfileData(idToFetch, me?.id);
     }
+    
+    // Đóng modals tự động khi id profile mục tiêu thay đổi
+    setShowFollowersModal(false);
+    setShowFollowingModal(false);
   }, [targetId, me?.id, fetchProfileData]);
 
   useEffect(() => {
@@ -96,6 +110,36 @@ export const useProfileData = (targetId?: string | null) => {
     }
   };
 
+  const openFollowersModal = async () => {
+    if (!profile) return;
+    setShowFollowersModal(true);
+    setLoadingFollowers(true);
+    setErrorFollowers(null);
+    try {
+      const data = await authService.getFollowers(profile.id);
+      setFollowersList(data || []);
+    } catch (err: any) {
+      setErrorFollowers(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
+    } finally {
+      setLoadingFollowers(false);
+    }
+  };
+
+  const openFollowingModal = async () => {
+    if (!profile) return;
+    setShowFollowingModal(true);
+    setLoadingFollowing(true);
+    setErrorFollowing(null);
+    try {
+      const data = await authService.getFollowing(profile.id);
+      setFollowingList(data || { users: [], restaurants: [] });
+    } catch (err: any) {
+      setErrorFollowing(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
+    } finally {
+      setLoadingFollowing(false);
+    }
+  };
+
   return {
     me,
     profile,
@@ -110,7 +154,16 @@ export const useProfileData = (targetId?: string | null) => {
     actions: {
       updateProfile,
       toggleFollow,
-      fetchProfileData
+      fetchProfileData,
+      openFollowersModal,
+      openFollowingModal,
+    },
+    modals: {
+      showFollowersModal, setShowFollowersModal,
+      showFollowingModal, setShowFollowingModal,
+      followersList, followingList,
+      loadingFollowers, loadingFollowing,
+      errorFollowers, errorFollowing,
     }
   };
 };

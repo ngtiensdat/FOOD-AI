@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { foodService, restaurantService } from '@/services/food.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { UI_MESSAGES } from '@/constants/ui-messages.constant';
 
 /**
  * Custom Hook: useRestaurantActions
@@ -12,7 +13,7 @@ import { toast } from '@/store/useToastStore';
 export const useRestaurantActions = (user: any) => {
   const [myFoods, setMyFoods] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
   const [editingFood, setEditingFood] = useState<any>(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -22,7 +23,7 @@ export const useRestaurantActions = (user: any) => {
   const [myBranches, setMyBranches] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
-    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: ''
+    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: ''
   });
 
   const fetchMyFoods = async () => {
@@ -125,7 +126,8 @@ export const useRestaurantActions = (user: any) => {
       mapUrl: defaultBranch ? defaultBranch.mapUrl || '' : '', 
       lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '', 
       lng: defaultBranch ? defaultBranch.longitude?.toString() || '' : '',
-      restaurantId: defaultBranch ? defaultBranch.id.toString() : ''
+      restaurantId: defaultBranch ? defaultBranch.id.toString() : '',
+      categoryId: ''
     });
     setIsAddingFood(true);
   };
@@ -142,7 +144,8 @@ export const useRestaurantActions = (user: any) => {
       mapUrl: food.mapUrl || food.map_url || '',
       lat: food.lat?.toString() || '',
       lng: food.lng?.toString() || '',
-      restaurantId: food.restaurantId?.toString() || ''
+      restaurantId: food.restaurantId?.toString() || '',
+      categoryId: food.categoryId?.toString() || ''
     });
     setIsAddingFood(true);
   };
@@ -173,7 +176,7 @@ export const useRestaurantActions = (user: any) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.restaurantId) {
-      toast.error('Vui lòng chọn cơ sở kinh doanh');
+      toast.error(UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
       return;
     }
     const data = { 
@@ -182,7 +185,8 @@ export const useRestaurantActions = (user: any) => {
       lat: formData.lat ? parseFloat(formData.lat) : null, 
       lng: formData.lng ? parseFloat(formData.lng) : null, 
       tags: formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
-      restaurantId: parseInt(formData.restaurantId)
+      restaurantId: parseInt(formData.restaurantId),
+      categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined
     };
 
     try {

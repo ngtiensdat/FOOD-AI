@@ -27,3 +27,15 @@ export const formatDistance = (distance: number | undefined | null): string => {
   }
   return `${distance.toFixed(1)}km`;
 };
+
+/**
+ * Tính số ngày chênh lệch giữa một mốc thời gian và hiện tại
+ */
+export const calculateDaysDifference = (date: string | Date): number => {
+  if (!date) return 0;
+  const targetDate = new Date(date);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - targetDate.getTime());
+  return Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+};
+

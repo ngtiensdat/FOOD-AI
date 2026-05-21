@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -23,6 +24,20 @@ export class RestaurantPublicController {
     @GetUser() user: PrismaClient.User | null,
   ) {
     return this.foodService.getPublicRestaurant(id, user || undefined);
+  }
+
+  @Get(':id/foods')
+  @UseGuards(JwtAuthOptionalGuard)
+  getPublicRestaurantFoods(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('categoryId') categoryId?: string,
+    @Query('page') page?: string,
+  ) {
+    return this.foodService.getPublicRestaurantFoods(
+      id,
+      categoryId ? parseInt(categoryId, 10) : undefined,
+      page ? parseInt(page, 10) : 1,
+    );
   }
 
   @Get(':id/followers')

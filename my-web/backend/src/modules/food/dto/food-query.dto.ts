@@ -1,5 +1,6 @@
 import { IsOptional, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
+import { LIMITS } from '../../../common/constants/limits.constant';
 
 export class FoodQueryDto {
   @IsOptional()
@@ -19,7 +20,7 @@ export class FoodQueryDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  radius?: number = 10;
+  radius?: number = LIMITS.DEFAULT_NEARBY_RADIUS;
 
   @IsOptional()
   @IsString()

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { foodService } from '@/services/food.service';
 import { useAuth } from '@/hooks/useAuth';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 export const useExploreActions = () => {
   const searchParams = useSearchParams();
@@ -15,7 +16,7 @@ export const useExploreActions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('explore');
-  const [selectedCity, setSelectedCity] = useState('Hà Nội');
+  const [selectedCity, setSelectedCity] = useState(LOCATION_DATA[0]?.value || 'Hà Nội');
   const [selectedDistrict, setSelectedDistrict] = useState('');
 
   const handleCityChange = (city: string) => {

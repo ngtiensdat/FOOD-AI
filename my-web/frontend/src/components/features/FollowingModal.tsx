@@ -3,9 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
 import { LABELS } from '@/constants/labels';
+import { Avatar } from '@/components/base/Avatar';
 
 interface FollowingModalProps {
   isOpen: boolean;
@@ -100,19 +99,13 @@ export const FollowingModal = ({
                         onClick={() => onUserClick && onUserClick(followingUser)}
                         className="flex items-center gap-3.5 p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-body overflow-hidden relative shrink-0">
-                          {userAvatar ? (
-                            <Image 
-                              src={getValidImageUrl(userAvatar)} 
-                              alt={followingUser.name || 'Avatar'} 
-                              fill
-                              sizes="40px"
-                              className="object-cover" 
-                            />
-                          ) : (
-                            (followingUser.name || 'U').charAt(0).toUpperCase()
-                          )}
-                        </div>
+                        <Avatar 
+                          src={userAvatar} 
+                          name={followingUser.name} 
+                          size={40} 
+                          className="bg-primary/10 text-primary font-black text-body shrink-0" 
+                          fallbackClassName="!bg-transparent"
+                        />
                         <div>
                           <h5 className="text-body font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                             {userName}
@@ -143,19 +136,13 @@ export const FollowingModal = ({
                         onClick={() => onRestaurantClick && onRestaurantClick(restaurantItem)}
                         className="flex items-center gap-3.5 p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-slate-800/50 flex items-center justify-center text-primary font-black text-body overflow-hidden relative shrink-0">
-                          {coverImage ? (
-                            <Image 
-                              src={getValidImageUrl(coverImage)} 
-                              alt={restaurantItem.name || 'Cover'} 
-                              fill
-                              sizes="40px"
-                              className="object-cover" 
-                            />
-                          ) : (
-                            (restaurantItem.name || 'R').charAt(0).toUpperCase()
-                          )}
-                        </div>
+                        <Avatar 
+                          src={coverImage} 
+                          name={restaurantItem.name} 
+                          size={40} 
+                          className="rounded-xl bg-orange-50 dark:bg-slate-800/50 text-primary font-black text-body shrink-0" 
+                          fallbackClassName="!bg-transparent"
+                        />
                         <div>
                           <h5 className="text-body font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                             {restaurantItem.name}

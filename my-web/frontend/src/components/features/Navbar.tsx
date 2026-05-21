@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/base/Button';
+import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -92,16 +93,10 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           <div className="flex items-center gap-3">
             <Link
               href="/profile"
-              className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
+              className="hover:scale-110 transition-transform"
               aria-label={LABELS.AUTH.PROFILE}
             >
-              {user.avatar ? (
-                <Image src={user.avatar} alt={user.name || 'User'} fill sizes="40px" className="object-cover" />
-              ) : (
-                <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <Avatar src={user.avatar} name={user.name} size={40} className="border-2 border-white shadow-md bg-gray-100" />
             </Link>
 
             <button

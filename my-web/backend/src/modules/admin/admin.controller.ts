@@ -8,7 +8,12 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -59,8 +64,28 @@ export class AdminController {
     return this.adminService.deleteUser(id);
   }
 
+  @Post('import-merchants')
+  @UseInterceptors(FileInterceptor('file'))
+  importMerchants(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Vui lòng upload file Excel');
+    }
+    return this.adminService.importMerchantsFromExcel(file.buffer);
+  }
+
   @Delete('food/:id')
   deleteFood(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deleteFood(id);
+  }
+
+  @Patch('food/:id/weekly-featured')
+  toggleWeeklyFeatured(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('value') value: boolean,
+  ) {
+    if (typeof value !== 'boolean') {
+      throw new BadRequestException('value must be boolean');
+    }
+    return this.adminService.toggleWeeklyFeatured(id, value);
   }
 }

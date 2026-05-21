@@ -6,6 +6,7 @@ import { Plus, Edit, XCircle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
+import { usePublicCategories } from '@/hooks/usePublicCategories';
 
 interface FoodFormModalProps {
   isOpen: boolean;
@@ -28,7 +29,37 @@ export const FoodFormModal = ({
   myBranches = [],
   onSelectBranch
 }: FoodFormModalProps) => {
+  const { categories } = usePublicCategories(formData.restaurantId);
+
   if (!isOpen) return null;
+
+  // Flatten categories for select dropdown
+  // Bỏ qua root category tự tạo (cùng tên group, parentId=null) - hiển thị Group là option chọn trực tiếp
+  const buildFlatOptions = () => {
+    const options: React.ReactNode[] = [];
+    categories.forEach(group => {
+      const rootCat = group.categories?.find(c => c.parentId === null && c.name === group.name);
+      // Thêm Group là option chọn trực tiếp (dùng ID root category ẩn)
+      if (rootCat) {
+        options.push(
+          <option key={`root-${rootCat.id}`} value={rootCat.id}>
+            📁 {group.name}
+          </option>
+        );
+      }
+      // Thêm các sub-category (bỏ qua root caù trùng tên)
+      group.categories?.forEach(cat => {
+        if (!(cat.parentId === null && cat.name === group.name)) {
+          options.push(
+            <option key={cat.id} value={cat.id}>
+                — {cat.name}
+            </option>
+          );
+        }
+      });
+    });
+    return options;
+  };
 
   return (
     <div className="modal-backdrop">
@@ -67,6 +98,19 @@ export const FoodFormModal = ({
                     {branch.name}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Chọn Danh mục */}
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-small font-semibold text-gray-700 ml-1">Danh mục món ăn (Tùy chọn)</label>
+              <select
+                value={formData.categoryId || ''}
+                onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
+              >
+                <option value="">-- Không thuộc danh mục nào --</option>
+                {buildFlatOptions()}
               </select>
             </div>
 

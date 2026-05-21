@@ -7,7 +7,6 @@ import { AnimatePresence } from 'framer-motion';
 
 // Services, Hooks & Components
 import { useRestaurantProfile } from '@/hooks/useRestaurantProfile';
-import { FoodCard } from '@/components/features/FoodCard';
 import { FoodDetailModal } from '@/components/features/FoodDetailModal';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
@@ -17,9 +16,15 @@ import { FollowersModal } from '@/components/features/FollowersModal';
 import { FollowingModal } from '@/components/features/FollowingModal';
 import { RestaurantHeaderCard } from '@/components/features/RestaurantHeaderCard';
 import { RestaurantInfoTab } from '@/components/features/RestaurantInfoTab';
+import { RestaurantMenuSidebar } from '@/components/features/RestaurantMenuSidebar';
+import { RestaurantFoodGrid } from '@/components/features/RestaurantFoodGrid';
 
 export default function RestaurantProfilePage() {
   const router = useRouter();
+
+  // Local state for expanded categories
+  const [expandedCategories, setExpandedCategories] = React.useState<Record<number, boolean>>({});
+
   const {
     restaurantData,
     loading,
@@ -31,6 +36,15 @@ export default function RestaurantProfilePage() {
     showFollowList,
     handleToggleFollow,
     
+    // Category & Foods
+    categories,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    foodsData,
+    loadingFoods,
+    hasMoreFoods,
+    handleLoadMoreFoods,
+
     // Modal Followers
     showFollowersModal,
     setShowFollowersModal,
@@ -126,24 +140,22 @@ export default function RestaurantProfilePage() {
 
         {/* Tab Contents */}
         {activeTab === 'menu' ? (
-          <div>
-            {!restaurantData.foods || restaurantData.foods.length === 0 ? (
-              <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-card border border-dashed border-gray-200 dark:border-slate-800 shadow-sm">
-                <Utensils size={48} className="mx-auto text-gray-200 dark:text-slate-800 mb-4" />
-                <h3 className="text-h3 text-gray-900 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.EMPTY_MENU}</h3>
-                <p className="text-gray-400 text-small">{LABELS.RESTAURANT.PUBLIC_PROFILE.EMPTY_MENU_DESC}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {restaurantData.foods.map((food: any) => (
-                  <FoodCard 
-                    key={food.id} 
-                    food={{ ...food, restaurant: restaurantData }} 
-                    onViewDetail={setSelectedFood} 
-                  />
-                ))}
-              </div>
-            )}
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <RestaurantMenuSidebar 
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              setSelectedCategoryId={setSelectedCategoryId}
+              expandedCategories={expandedCategories}
+              setExpandedCategories={setExpandedCategories}
+            />
+            <RestaurantFoodGrid 
+              foodsData={foodsData}
+              loadingFoods={loadingFoods}
+              hasMoreFoods={hasMoreFoods}
+              restaurantData={restaurantData}
+              handleLoadMoreFoods={handleLoadMoreFoods}
+              setSelectedFood={setSelectedFood}
+            />
           </div>
         ) : (
           <RestaurantInfoTab restaurantData={restaurantData} />
