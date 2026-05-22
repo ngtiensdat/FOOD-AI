@@ -71,7 +71,11 @@ export const useAdminActions = (adminData: any) => {
 
     if (await updateFood(foodId, processedData)) {
       setEditingFood(null);
-      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (data.isFeaturedToday !== undefined) {
+        toast.success(data.isFeaturedToday ? 'Đã Bật Nổi bật Ngày' : 'Đã Tắt Nổi bật Ngày');
+      } else {
+        toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      }
       if (fetchData) fetchData();
     }
   };
@@ -90,9 +94,9 @@ export const useAdminActions = (adminData: any) => {
     setDeleteFoodId(null);
   };
 
-  const handleRecommendFood = async (id: number) => {
+  const handleRecommendFood = async (id: number, newValue: boolean) => {
     if (await recommendFood(id)) {
-      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      toast.success(newValue ? 'Đã Bật Gợi ý' : 'Đã Tắt Gợi ý');
       if (fetchData) fetchData();
     }
   };
@@ -142,7 +146,7 @@ export const useAdminActions = (adminData: any) => {
   const handleToggleWeeklyFeatured = async (id: number, value: boolean) => {
     const success = await adminService.toggleWeeklyFeatured(id, value);
     if (success) {
-      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      toast.success(value ? 'Đã Bật Nổi bật Tuần' : 'Đã Tắt Nổi bật Tuần');
       if (fetchData) fetchData();
     } else {
       toast.error('Cập nhật thất bại');

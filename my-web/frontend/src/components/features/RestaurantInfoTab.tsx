@@ -1,3 +1,7 @@
+// Mục đích file này để làm gì: Component Tab hiển thị chi tiết thông tin liên hệ và giới thiệu của nhà hàng.
+// Các file khác hay file này có ý nghĩa như nào: Nằm trong phần Tabs của trang public profile nhà hàng, giúp người dùng tra cứu nhanh giờ mở cửa, số điện thoại, email, bản đồ và tiểu sử.
+// Các chức năng đặc biệt: Hiển thị an toàn khi thiếu dữ liệu (fallback tự động qua LABELS), tách layout linh hoạt giữa thông tin chính và tiểu sử.
+// Các biến, hàm đặc biệt trong file: Nhận prop restaurantData chứa thông tin profile để render các block chi tiết (thời gian, sđt, email, link map).
 'use client';
 
 import React from 'react';
@@ -11,7 +15,16 @@ import {
 import { LABELS } from '@/constants/labels';
 
 interface RestaurantInfoTabProps {
-  restaurantData: any;
+  restaurantData: {
+    mapUrl?: string;
+    profile?: {
+      openingHours?: string;
+      contactPhone?: string;
+      contactEmail?: string;
+      bio?: string;
+    };
+    [key: string]: unknown;
+  };
 }
 
 export const RestaurantInfoTab = ({ restaurantData }: RestaurantInfoTabProps) => {

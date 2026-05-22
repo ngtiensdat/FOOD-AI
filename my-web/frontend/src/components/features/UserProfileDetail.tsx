@@ -1,3 +1,7 @@
+// Mục đích file này để làm gì: Component hiển thị chi tiết thông tin cá nhân và preferences (Sở thích) của khách hàng.
+// Các file khác hay file này có ý nghĩa như nào: Nằm trong trang Dashboard cá nhân của người dùng, giúp xem lại các thông tin đã lưu.
+// Các chức năng đặc biệt: Hiển thị context AI dựa trên các preferences đã thiết lập để hệ thống AI hiểu rõ ngữ cảnh của user.
+// Các biến, hàm đặc biệt trong file: profile (thông tin khách hàng), onUpdatePreferences (hàm gọi modal cập nhật sở thích).
 'use client';
 
 import React from 'react';
@@ -6,7 +10,7 @@ import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 
 interface UserProfileDetailProps {
-  profile: any;
+  profile: { email?: string; profile?: { phone?: string; preferences?: Record<string, unknown> }; [key: string]: unknown } | null;
   onUpdatePreferences: () => void;
 }
 

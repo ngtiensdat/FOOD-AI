@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Component giao diện cơ bản (Base Component) để hiển thị Nút bấm (Button) tích hợp sẵn hiệu ứng chuyển động (framer-motion).
+ * Các file khác hay file này có ý nghĩa như nào: Là "Dumb Component" chuẩn mực, nhận Props để cấu hình kiểu dáng (variant), kích cỡ (size), và trạng thái loading. Được tái sử dụng ở mọi nơi.
+ * Các chức năng đặc biệt: Tự động hiển thị spinner và text loading (`LABELS.COMMON.PROCESSING`) khi prop `loading=true`. Quản lý style an toàn bằng object `variants` và `sizes`.
+ * Các biến, hàm đặc biệt trong file: Interface `ButtonProps` kế thừa từ `HTMLMotionProps` giúp Component tương thích hoàn hảo với mọi API animation của framer-motion.
+ */
 'use client';
 
 import React from 'react';

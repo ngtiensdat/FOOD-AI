@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Bảng hiển thị danh sách các món ăn của nhà hàng.
+ * Các file khác hay file này có ý nghĩa như nào: Được sử dụng ở trang quản lý (Dashboard) của nhà hàng để liệt kê thực đơn, kèm theo trạng thái phê duyệt.
+ * Các chức năng đặc biệt: Hiển thị giao diện danh sách bảng, hỗ trợ các nút thao tác nhanh (Chỉnh sửa, Xóa).
+ */
 'use client';
 
 import React from 'react';
@@ -8,11 +13,20 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 
+export interface MenuFoodItem {
+  id: number;
+  name: string;
+  image?: string;
+  price?: number;
+  status?: 'APPROVED' | 'PENDING' | 'REJECTED' | string;
+  [key: string]: unknown;
+}
+
 interface MenuTableProps {
-  myFoods: any[];
+  myFoods: MenuFoodItem[];
   loading: boolean;
   actions: {
-    onEdit: (food: any) => void;
+    onEdit: (food: MenuFoodItem) => void;
     onDelete: (id: number) => void;
   };
 }
@@ -31,7 +45,7 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
         <tbody className="divide-y divide-gray-50">
           {loading ? (
             <tr><td colSpan={3} className="px-8 py-12 text-center text-gray-400 font-bold">{LABELS.COMMON.LOADING}</td></tr>
-          ) : myFoods.map((food: any) => (
+          ) : myFoods.map((food) => (
             <tr key={food.id} className="hover:bg-gray-50/50 transition-all text-body">
               <td className="px-8 py-6">
                 <div className="flex items-center gap-6">

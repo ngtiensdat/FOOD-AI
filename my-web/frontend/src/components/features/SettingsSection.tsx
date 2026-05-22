@@ -1,3 +1,7 @@
+// Mục đích file này để làm gì: Component giao diện phần Cài đặt tài khoản (Settings) bao gồm Hồ sơ, Bảo mật, Xác thực và Xoá tài khoản.
+// Các file khác hay file này có ý nghĩa như nào: Là một màn hình con trong Dashboard/Profile của người dùng.
+// Các chức năng đặc biệt: Chuyển tab qua lại giữa Profile/Security/Verification, cảnh báo Danger Zone, cập nhật preference.
+// Các biến, hàm đặc biệt trong file: user prop, handleChangePassword, handleVerifyEmail, handleDeleteAccount, state settingsTab.
 'use client';
 
 import React, { useState } from 'react';
@@ -9,11 +13,11 @@ import { toast } from '@/store/useToastStore';
 import { authService } from '@/services/auth.service';
 
 interface SettingsSectionProps {
-  user: any;
-  setActiveTab: (tab: any) => void;
-  handleChangePassword: (e: React.FormEvent, data: any) => Promise<void>;
+  user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
+  setActiveTab: (tab: string) => void;
+  handleChangePassword: (e: React.FormEvent, data: Record<string, string>) => Promise<void>;
   handleVerifyEmail: (e: React.FormEvent, email: string) => Promise<void>;
-  fetchUserProfile: () => Promise<any>;
+  fetchUserProfile: () => Promise<void | Record<string, unknown>>;
   isEmailVerified: boolean | null;
   handleDeleteAccount: (password: string) => Promise<void>;
 }
@@ -39,7 +43,7 @@ export const SettingsSection = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<{ profile?: { preferences?: { showFollowList?: boolean } }; [key: string]: unknown } | null>(null);
 
   const onDeleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +55,8 @@ export const SettingsSection = ({
     try {
       await handleDeleteAccount(deletePassword);
       toast.success(LABELS.SETTINGS.DANGER_ZONE.TOAST_SUCCESS);
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }, message?: string };
       toast.error(err.response?.data?.message || err.message || LABELS.SETTINGS.DANGER_ZONE.TOAST_ERROR);
     } finally {
       setIsDeleting(false);
@@ -60,12 +65,12 @@ export const SettingsSection = ({
 
   const onPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword !== confirmNewPassword) {
       toast.error(LABELS.SETTINGS.SECURITY.MISMATCH);
       return;
     }
- 
+
     setIsLoading(true);
     try {
       await handleChangePassword(e, { oldPassword, newPassword });
@@ -73,7 +78,8 @@ export const SettingsSection = ({
       setOldPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string };
       toast.error(err.message || LABELS.COMMON.ERROR);
     } finally {
       setIsLoading(false);
@@ -86,7 +92,8 @@ export const SettingsSection = ({
     try {
       await handleVerifyEmail(e, verifyEmail);
       toast.success(LABELS.SETTINGS.VERIFICATION.SUCCESS);
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string };
       toast.error(err.message || LABELS.COMMON.ERROR);
     } finally {
       setIsLoading(false);
@@ -132,7 +139,7 @@ export const SettingsSection = ({
                 if (tab.id === 'profile' && user?.id) {
                   setIsLoading(true);
                   try {
-                    const data = await authService.getProfile(user.id);
+                    const data = await authService.getProfile(Number(user.id));
                     setProfileData(data);
                   } catch (err) {
                     console.error('Lỗi khi lấy thông tin profile:', err);
@@ -141,9 +148,8 @@ export const SettingsSection = ({
                   }
                 }
               }}
-              className={`pb-3 transition-all flex items-center gap-2 ${
-                settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
-              }`}
+              className={`pb-3 transition-all flex items-center gap-2 ${settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
+                }`}
             >
               <tab.icon size={18} />
               {tab.label}
@@ -186,8 +192,8 @@ export const SettingsSection = ({
                     <span className="text-xs text-gray-400 font-medium">{LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_DESC}</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="sr-only peer"
                       checked={profileData?.profile?.preferences?.showFollowList !== false}
                       onChange={async (e) => {
@@ -197,7 +203,7 @@ export const SettingsSection = ({
                             preferences: { showFollowList: checked }
                           });
                           toast.success(LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_SUCCESS);
-                          setProfileData((prev: any) => ({
+                          setProfileData((prev: { profile?: { preferences?: { showFollowList?: boolean } }; [key: string]: unknown } | null) => ({
                             ...prev,
                             profile: {
                               ...prev?.profile,
@@ -207,7 +213,7 @@ export const SettingsSection = ({
                               }
                             }
                           }));
-                        } catch (err: any) {
+                        } catch (error: unknown) {
                           toast.error(LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_ERROR);
                         }
                       }}
@@ -226,8 +232,8 @@ export const SettingsSection = ({
               <p className="text-xs text-red-500 font-medium leading-relaxed">
                 {LABELS.SETTINGS.DANGER_ZONE.WARNING}
               </p>
-              <Button 
-                onClick={() => setShowDeleteModal(true)} 
+              <Button
+                onClick={() => setShowDeleteModal(true)}
                 variant="red"
                 size="sm"
               >
@@ -313,14 +319,14 @@ export const SettingsSection = ({
       {/* Modal xác nhận xóa tài khoản */}
       {showDeleteModal && (
         <div className="modal-backdrop">
-          <div 
-            className="absolute inset-0 bg-black/50" 
+          <div
+            className="absolute inset-0 bg-black/50"
             onClick={() => {
               if (!isDeleting) {
                 setShowDeleteModal(false);
                 setDeletePassword('');
               }
-            }} 
+            }}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -353,10 +359,10 @@ export const SettingsSection = ({
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex-1" 
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
                   disabled={isDeleting}
                   onClick={() => {
                     setShowDeleteModal(false);
@@ -365,9 +371,9 @@ export const SettingsSection = ({
                 >
                   {LABELS.SETTINGS.DANGER_ZONE.CANCEL_BUTTON}
                 </Button>
-                <Button 
-                  type="submit" 
-                  loading={isDeleting} 
+                <Button
+                  type="submit"
+                  loading={isDeleting}
                   variant="red"
                   className="flex-1"
                 >

@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị khung chat phản hồi của AI trợ lý ảo trên giao diện người dùng.
+ * Các file khác hay file này có ý nghĩa như nào: Dùng chung ở màn hình Profile (Gợi ý món ăn) hoặc các tính năng chat với AI.
+ * Các chức năng đặc biệt: Hỗ trợ hiệu ứng gõ phím mượt mà, và tự động render danh sách thẻ món ăn (FoodCard) nếu AI gợi ý.
+ */
 'use client';
 
 import React from 'react';
@@ -7,11 +12,25 @@ import { FoodCard } from './FoodCard';
 import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
 
+export interface AiSuggestedFood {
+  id?: number | string;
+  name: string;
+  price?: number;
+  image?: string;
+  description?: string;
+  restaurant?: { name: string };
+  restaurantName?: string;
+  distance?: number;
+  mapUrl?: string;
+  map_url?: string;
+  [key: string]: unknown;
+}
+
 interface AiResponseBoxProps {
   isLoading: boolean;
   response: string;
-  suggestedFoods: any[];
-  onViewDetail: (food: any) => void;
+  suggestedFoods: AiSuggestedFood[];
+  onViewDetail: (food: AiSuggestedFood) => void;
 }
 
 export const AiResponseBox = ({

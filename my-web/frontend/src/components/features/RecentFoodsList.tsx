@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị danh sách các món ăn vừa được xem/đề xuất gần đây.
+ * Các file khác hay file này có ý nghĩa như nào: Thường được đặt ở cột trái hoặc phải của trang cá nhân Thực khách, giúp họ xem lại lịch sử gợi ý món ăn.
+ * Các chức năng đặc biệt: Tự động tính toán số ngày kể từ lần cuối xem món ăn (sử dụng hàm `calculateDaysDifference`).
+ */
 'use client';
 
 import React from 'react';
@@ -7,9 +12,22 @@ import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
 import { calculateDaysDifference } from '@/utils/formatters';
 
+export interface RecentFoodData {
+  name: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
+export interface RecentFoodItem {
+  id: number | string;
+  visitedAt: string | Date;
+  food?: RecentFoodData;
+  [key: string]: unknown;
+}
+
 interface RecentFoodsListProps {
-  items: any[];
-  onViewDetail?: (food: any) => void;
+  items: RecentFoodItem[];
+  onViewDetail?: (food: RecentFoodData) => void;
   title?: string;
   onSeeMore?: () => void;
 }

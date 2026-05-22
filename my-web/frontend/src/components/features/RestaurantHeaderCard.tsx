@@ -1,3 +1,7 @@
+// Mục đích file này để làm gì: Component Header hiển thị thông tin tổng quan của nhà hàng (ảnh bìa, avatar, tên, địa chỉ, lượt theo dõi).
+// Các file khác hay file này có ý nghĩa như nào: Nằm ở phần đầu của trang public profile nhà hàng, giúp người dùng nhận diện và thực hiện các thao tác nhanh (theo dõi/bỏ theo dõi, quản lý).
+// Các chức năng đặc biệt: Hiển thị giao diện khác biệt theo vai trò (chủ nhà hàng vs khách), có fallback cho cover image, thống kê người theo dõi và các nút hành động.
+// Các biến, hàm đặc biệt trong file: Nhận dữ liệu nhà hàng qua props, có các cờ isOwner, isFollowing và các hàm xử lý hành động tương tác như handleToggleFollow, onBack.
 'use client';
 
 import React from 'react';
@@ -14,7 +18,15 @@ import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 
 interface RestaurantHeaderCardProps {
-  restaurantData: any;
+  restaurantData: {
+    name: string;
+    address?: string;
+    description?: string;
+    profile?: {
+      coverImage?: string;
+    };
+    [key: string]: unknown;
+  };
   isOwner: boolean;
   isFollowing: boolean;
   followersCount: number;
@@ -25,6 +37,8 @@ interface RestaurantHeaderCardProps {
   openFollowingModal: () => void;
   onBack: () => void;
 }
+
+const DEFAULT_COVER_GRADIENT = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
 
 export const RestaurantHeaderCard = ({
   restaurantData,
@@ -40,7 +54,7 @@ export const RestaurantHeaderCard = ({
 }: RestaurantHeaderCardProps) => {
   const coverBg = restaurantData.profile?.coverImage 
     ? `url(${restaurantData.profile.coverImage})`
-    : 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
+    : DEFAULT_COVER_GRADIENT;
 
   return (
     <>

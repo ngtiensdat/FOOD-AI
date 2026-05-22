@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { foodService, restaurantService } from '@/services/food.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
-import { UI_MESSAGES } from '@/constants/ui-messages.constant';
 
 /**
  * Custom Hook: useRestaurantActions
@@ -21,7 +20,7 @@ export const useRestaurantActions = (user: any) => {
   const [restaurant, setRestaurant] = useState<any>(null);
   const [isRestaurantActive, setIsRestaurantActive] = useState<boolean>(true);
   const [myBranches, setMyBranches] = useState<any[]>([]);
-  
+
   const [formData, setFormData] = useState({
     name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: ''
   });
@@ -116,15 +115,15 @@ export const useRestaurantActions = (user: any) => {
   const handleOpenAdd = () => {
     setEditingFood(null);
     const defaultBranch = myBranches[0];
-    setFormData({ 
-      name: '', 
-      price: '', 
-      description: '', 
-      image: '', 
-      tags: '', 
-      address: defaultBranch ? defaultBranch.address || '' : '', 
-      mapUrl: defaultBranch ? defaultBranch.mapUrl || '' : '', 
-      lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '', 
+    setFormData({
+      name: '',
+      price: '',
+      description: '',
+      image: '',
+      tags: '',
+      address: defaultBranch ? defaultBranch.address || '' : '',
+      mapUrl: defaultBranch ? defaultBranch.mapUrl || '' : '',
+      lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '',
       lng: defaultBranch ? defaultBranch.longitude?.toString() || '' : '',
       restaurantId: defaultBranch ? defaultBranch.id.toString() : '',
       categoryId: ''
@@ -176,24 +175,24 @@ export const useRestaurantActions = (user: any) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.restaurantId) {
-      toast.error(UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
+      toast.error(LABELS.UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
       return;
     }
-    const data = { 
-      ...formData, 
-      price: parseFloat(formData.price), 
-      lat: formData.lat ? parseFloat(formData.lat) : null, 
-      lng: formData.lng ? parseFloat(formData.lng) : null, 
+    const data = {
+      ...formData,
+      price: parseFloat(formData.price),
+      lat: formData.lat ? parseFloat(formData.lat) : null,
+      lng: formData.lng ? parseFloat(formData.lng) : null,
       tags: formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
       restaurantId: parseInt(formData.restaurantId),
       categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined
     };
 
     try {
-      const ok = editingFood 
-         ? await foodService.updateFood(editingFood.id, data) 
-         : await foodService.createFood(data);
-      
+      const ok = editingFood
+        ? await foodService.updateFood(editingFood.id, data)
+        : await foodService.createFood(data);
+
       if (ok) {
         toast.success(editingFood ? LABELS.RESTAURANT.SAVE_SUCCESS_EDIT : LABELS.RESTAURANT.SAVE_SUCCESS_ADD);
         setIsAddingFood(false);
@@ -239,6 +238,7 @@ export const useRestaurantActions = (user: any) => {
     isRestaurantActive,
     deleteConfirmId,
     setDeleteConfirmId,
+    fetchMyFoods,
     actions: {
       handleOpenAdd,
       onEdit: handleOpenEdit,

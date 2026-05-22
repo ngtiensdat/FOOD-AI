@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { categoryService, CategoryGroup, Category } from '@/services/category.service';
 import { toast } from '@/store/useToastStore';
 import { LIMITS } from '@/constants/limits.constant';
-import { UI_MESSAGES } from '@/constants/ui-messages.constant';
+import { LABELS } from '@/constants/labels';
 
 export const useCategoryManager = (restaurantId: number) => {
   const [groups, setGroups] = useState<CategoryGroup[]>([]);
@@ -31,7 +31,7 @@ export const useCategoryManager = (restaurantId: number) => {
       const data = await categoryService.getPublicHierarchy(restaurantId);
       setGroups(data);
     } catch (error) {
-      toast.error(UI_MESSAGES.CATEGORY.LOAD_ERROR);
+      toast.error(LABELS.UI_MESSAGES.CATEGORY.LOAD_ERROR);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export const useCategoryManager = (restaurantId: number) => {
 
   const handleSubmitGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupFormData.name) return toast.error(UI_MESSAGES.CATEGORY.GROUP_NAME_REQUIRED);
+    if (!groupFormData.name) return toast.error(LABELS.UI_MESSAGES.CATEGORY.GROUP_NAME_REQUIRED);
     
     const targetOrder = parseInt(groupFormData.order) || 0;
     const isDuplicateOrder = groups.some(g => g.order === targetOrder && g.id !== editingGroup?.id);
@@ -78,13 +78,13 @@ export const useCategoryManager = (restaurantId: number) => {
           name: groupFormData.name, 
           order: parseInt(groupFormData.order) 
         });
-        toast.success(UI_MESSAGES.CATEGORY.GROUP_UPDATE_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.GROUP_UPDATE_SUCCESS);
       } else {
         await categoryService.createCategoryGroup({ 
           name: groupFormData.name, 
           order: parseInt(groupFormData.order) 
         });
-        toast.success(UI_MESSAGES.CATEGORY.GROUP_ADD_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.GROUP_ADD_SUCCESS);
       }
       setIsGroupModalOpen(false);
       fetchHierarchy();
@@ -117,7 +117,7 @@ export const useCategoryManager = (restaurantId: number) => {
 
   const handleSubmitCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryFormData.name) return toast.error(UI_MESSAGES.CATEGORY.CATEGORY_NAME_REQUIRED);
+    if (!categoryFormData.name) return toast.error(LABELS.UI_MESSAGES.CATEGORY.CATEGORY_NAME_REQUIRED);
 
     const targetOrder = parseInt(categoryFormData.order) || 0;
     const targetParentId = categoryFormData.parentId ? parseInt(categoryFormData.parentId as string) : null;
@@ -142,10 +142,10 @@ export const useCategoryManager = (restaurantId: number) => {
     try {
       if (editingCategory) {
         await categoryService.updateCategory(editingCategory.id, dataToSubmit);
-        toast.success(UI_MESSAGES.CATEGORY.CATEGORY_UPDATE_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.CATEGORY_UPDATE_SUCCESS);
       } else {
         await categoryService.createCategory(dataToSubmit);
-        toast.success(UI_MESSAGES.CATEGORY.CATEGORY_ADD_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.CATEGORY_ADD_SUCCESS);
       }
       setIsCategoryModalOpen(false);
       fetchHierarchy();
@@ -162,15 +162,15 @@ export const useCategoryManager = (restaurantId: number) => {
     try {
       if (deleteConfirm.type === 'group') {
         await categoryService.deleteCategoryGroup(deleteConfirm.id);
-        toast.success(UI_MESSAGES.CATEGORY.GROUP_DELETE_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.GROUP_DELETE_SUCCESS);
       } else {
         await categoryService.deleteCategory(deleteConfirm.id);
-        toast.success(UI_MESSAGES.CATEGORY.CATEGORY_DELETE_SUCCESS);
+        toast.success(LABELS.UI_MESSAGES.CATEGORY.CATEGORY_DELETE_SUCCESS);
       }
       setDeleteConfirm(null);
       fetchHierarchy();
     } catch (error) {
-      toast.error(UI_MESSAGES.CATEGORY.HAS_FOODS_ERROR);
+      toast.error(LABELS.UI_MESSAGES.CATEGORY.HAS_FOODS_ERROR);
     }
   };
 

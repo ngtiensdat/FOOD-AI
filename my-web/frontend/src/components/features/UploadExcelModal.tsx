@@ -1,3 +1,7 @@
+// Mục đích file này để làm gì: Component Modal hỗ trợ chủ nhà hàng tải lên danh sách món ăn hàng loạt từ file Excel.
+// Các file khác hay file này có ý nghĩa như nào: Được gọi từ trang Quản lý thực đơn (Admin), giúp tối ưu thời gian nhập liệu thay vì tạo từng món.
+// Các chức năng đặc biệt: Đọc và parse file Excel ngay dưới local, tự động map các cột tương ứng, chọn chi nhánh và danh mục trước khi upload, tải file mẫu.
+// Các biến, hàm đặc biệt trong file: handleFileUpload (parse Excel), handleSubmit (gửi API), previewData (hiển thị trước data).
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { XCircle, FileSpreadsheet, CheckCircle2, Download } from 'lucide-react';
@@ -18,7 +22,7 @@ interface CategoryFlat {
 interface UploadExcelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  myBranches: any[];
+  myBranches: { id: number; name: string;[key: string]: unknown }[];
   onSuccess: () => void;
 }
 
@@ -26,7 +30,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
   const [selectedBranchId, setSelectedBranchId] = useState<number | ''>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | ''>('');
   const [flatCategories, setFlatCategories] = useState<CategoryFlat[]>([]);
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [previewData, setPreviewData] = useState<{ name: string; price: number; description: string; image: string; tags: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const { categories: rawCategories, loading: loadingCategories } = usePublicCategories(selectedBranchId);
 
@@ -89,15 +93,15 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
+        const data = XLSX.utils.sheet_to_json(ws) as Record<string, string | number | undefined>[];
         const { COLS } = LABELS.RESTAURANT.UPLOAD_EXCEL;
 
-        const mappedData = data.map((row: any) => ({
-          name: row[COLS.NAME] || row['Name'],
-          price: parseFloat(row[COLS.PRICE] || row['Price'] || '0'),
-          description: row[COLS.DESC] || row['Description'] || '',
-          image: row[COLS.IMAGE] || row['Image'] || '',
-          tags: row[COLS.TAGS] ? row[COLS.TAGS].toString() : '',
+        const mappedData = data.map(row => ({
+          name: String(row[COLS.NAME] || row['Name'] || ''),
+          price: Number(row[COLS.PRICE] || row['Price'] || 0),
+          description: String(row[COLS.DESC] || row['Description'] || ''),
+          image: String(row[COLS.IMAGE] || row['Image'] || ''),
+          tags: row[COLS.TAGS] ? String(row[COLS.TAGS]) : '',
         })).filter(f => f.name && f.price > 0);
 
         if (mappedData.length === 0) {

@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal hiển thị danh mục những Người dùng và Nhà hàng mà bạn đang theo dõi.
+ * Các file khác hay file này có ý nghĩa như nào: Tương tự FollowersModal nhưng phân chia rõ 2 danh sách Users và Restaurants riêng biệt.
+ * Các chức năng đặc biệt: Danh sách được tách làm 2 khu vực rõ ràng để dễ dàng phân biệt.
+ */
 'use client';
 
 import React from 'react';
@@ -6,15 +11,36 @@ import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 
+export interface FollowingUser {
+  id: number;
+  name?: string;
+  role?: string;
+  profile?: {
+    fullName?: string;
+    avatar?: string;
+  };
+  [key: string]: unknown;
+}
+
+export interface FollowingRestaurant {
+  id: number;
+  name?: string;
+  address?: string;
+  profile?: {
+    coverImage?: string;
+  };
+  [key: string]: unknown;
+}
+
 interface FollowingModalProps {
   isOpen: boolean;
   onClose: () => void;
   loading: boolean;
   error: string | null;
-  users?: any[];
-  restaurants?: any[];
-  onUserClick?: (user: any) => void;
-  onRestaurantClick?: (restaurant: any) => void;
+  users?: FollowingUser[];
+  restaurants?: FollowingRestaurant[];
+  onUserClick?: (user: FollowingUser) => void;
+  onRestaurantClick?: (restaurant: FollowingRestaurant) => void;
   title?: string;
   emptyLabel?: string;
 }
@@ -88,10 +114,10 @@ export const FollowingModal = ({
               <div>
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">{LABELS.COMMON.USER}</h4>
                 <div className="flex flex-col gap-3">
-                  {users.map((followingUser: any) => {
-                    const userName = followingUser.profile?.fullName || followingUser.name || 'Người dùng';
+                  {users.map((followingUser) => {
+                    const userName = followingUser.profile?.fullName || followingUser.name || LABELS.COMMON.USER;
                     const userAvatar = followingUser.profile?.avatar;
-                    const userRoleLabel = followingUser.role === 'RESTAURANT' ? 'Merchant' : 'Customer';
+                    const userRoleLabel = followingUser.role === 'RESTAURANT' ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
 
                     return (
                       <div 
@@ -126,7 +152,7 @@ export const FollowingModal = ({
               <div>
                 {hasUsers && <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">{LABELS.COMMON.STORE}</h4>}
                 <div className="flex flex-col gap-3">
-                  {restaurants.map((restaurantItem: any) => {
+                  {restaurants.map((restaurantItem) => {
                     const coverImage = restaurantItem.profile?.coverImage;
                     const address = restaurantItem.address || '';
 

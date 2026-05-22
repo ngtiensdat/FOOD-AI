@@ -1,7 +1,12 @@
+/**
+ * @fileoverview frontend/src/app/admin/page.tsx
+ * @module AdminDashboard
+ * @description Trang điều phối (Orchestrator) chính của giao diện Admin. Lắp ráp các tính năng quản lý (User, Food, Category) và hoàn toàn không chứa logic nghiệp vụ, giao phó cho các Custom Hooks (`useAdminData`, `useAdminActions`).
+ */
 'use client';
 
 import React from 'react';
-import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, Menu } from 'lucide-react';
+import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +22,7 @@ import { LABELS } from '@/constants/labels';
 // Feature Components
 import { AdminTable } from '@/components/features/AdminTable';
 import { AdminFoodModal } from '@/components/features/AdminFoodModal';
-import { ImportExcelModal } from './components/ImportExcelModal';
+import { AdminImportExcelModal } from '@/components/features/AdminImportExcelModal';
 import { FileUp } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -95,7 +100,7 @@ export default function AdminDashboard() {
                 onClick={() => setShowImportModal(true)}
               >
                 <FileUp className="w-4 h-4" />
-                Import Excel
+                {LABELS.ADMIN.IMPORT_EXCEL}
               </Button>
             )}
             <Input
@@ -107,29 +112,39 @@ export default function AdminDashboard() {
             />
             {user && (
               <div className="flex items-center gap-3 relative">
-                <Link href="/profile" className="hover:scale-110 transition-transform">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
+                  aria-label={LABELS.NAV.USER_MENU}
+                >
                   <Avatar
                     src={user.avatar}
                     name={user.name}
                     size={40}
-                    className="border-2 border-white shadow-md bg-gray-100"
+                    className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
                   />
-                </Link>
-
-                <Button
-                  variant="outline"
-                  className="w-10 h-10 p-0 rounded-xl"
-                  onClick={() => setShowMenu(!showMenu)}
-                >
-                  <Menu size={24} />
-                </Button>
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
+                      showMenu ? 'rotate-180 text-primary' : ''
+                    }`} 
+                  />
+                </button>
 
                 {showMenu && (
-                  <UserDropdown
-                    user={user}
-                    onLogout={logout}
-                    onSettingsClick={() => { window.location.href = '/'; setShowMenu(false); }}
-                  />
+                  <>
+                    {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                      onClick={() => setShowMenu(false)} 
+                    />
+                    <UserDropdown
+                      user={user}
+                      onLogout={logout}
+                      onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
+                      onClose={() => setShowMenu(false)}
+                    />
+                  </>
                 )}
               </div>
             )}
@@ -175,7 +190,7 @@ export default function AdminDashboard() {
         variant="danger"
       />
 
-      <ImportExcelModal
+      <AdminImportExcelModal
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onSuccess={() => {

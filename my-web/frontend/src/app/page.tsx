@@ -100,7 +100,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar activeTab={activeTab} setActiveTab={(tab: string) => setActiveTab(tab as any)} />
 
       {activeTab === 'home' ? (
         <>
@@ -143,7 +143,7 @@ export default function Home() {
       ) : activeTab === 'settings' ? (
         <SettingsSection
           user={user}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab: string) => setActiveTab(tab as any)}
           handleChangePassword={handleChangePassword}
           handleVerifyEmail={handleVerifyEmail}
           fetchUserProfile={fetchUserProfile}

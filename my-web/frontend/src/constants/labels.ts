@@ -23,6 +23,8 @@ export const LABELS = {
     UNNAMED: 'Chưa đặt tên',
     SCROLL_LEFT: 'Cuộn sang trái',
     SCROLL_RIGHT: 'Cuộn sang phải',
+    TOGGLE_THEME: 'Chuyển đổi giao diện sáng/tối',
+    CLOSE: 'Đóng',
     AI_BUSY: 'Rất tiếc, AI đang bận. Bạn thử lại sau nhé!',
 
     UNKNOWN: 'Chưa xác định',
@@ -75,6 +77,7 @@ export const LABELS = {
     DELETE_BRANCH: 'Xóa cơ sở',
     BRANCH_NUMBER: (num: number) => `📍 Cơ sở ${num}`,
     VIEW_INSIGHT: 'Xem Insight chi tiết',
+    VIEW_AS_GUEST: 'Xem với tư cách khách',
     NO_FOOD: 'Chưa có món ăn nào.',
     SAVE_SUCCESS_EDIT: 'Đã lưu! Chờ Admin duyệt.',
     SAVE_SUCCESS_ADD: 'Đã đăng! Chờ Admin duyệt.',
@@ -91,6 +94,7 @@ export const LABELS = {
     STATUS_CLOSE_SUCCESS: 'Cửa hàng đã tạm đóng cửa đột xuất.',
     STATUS_UPDATE_ERROR: 'Không thể cập nhật trạng thái cửa hàng.',
     DELETE_FOOD_CONFIRM: 'Bạn có chắc chắn muốn xóa món ăn này khỏi thực đơn không? Món ăn sẽ bị ẩn và không hiển thị đối với thực khách nữa.',
+    DELETE_FOOD_CONFIRM_TITLE: 'Xác nhận xóa món ăn',
     HOURS_UPDATE_SUCCESS: 'Cập nhật giờ mở cửa thành công.',
     HOURS_UPDATE_ERROR: 'Không thể cập nhật giờ mở cửa.',
     CLOSED_WARNING_TITLE: 'Cửa hàng hiện đang tạm đóng cửa',
@@ -98,9 +102,11 @@ export const LABELS = {
     CLOSED_OUTSIDE_HOURS: (hours: string) => `Ngoài khung giờ hoạt động của cửa hàng (${hours}).`,
     NOT_SET: 'chưa thiết lập',
     OPERATING_HOURS_LABEL: 'Giờ hoạt động',
+    HOURS_PLACEHOLDER: 'Ví dụ: 08:00 - 22:00',
     HOURS_FORMAT_ERROR: 'Giờ hoạt động không đúng định dạng (Ví dụ đúng: 08:00 - 22:00).',
     TABS: {
       OVERVIEW: 'Tổng quan',
+      CATEGORIES: 'Danh mục',
       MENU: 'Thực đơn của tôi',
       HISTORY: 'Lịch sử đề xuất',
     },
@@ -116,6 +122,12 @@ export const LABELS = {
       EDIT_TITLE: 'Chỉnh sửa món ăn',
       SUBMIT_ADD: 'Đăng món ngay',
       SUBMIT_EDIT: 'Lưu thay đổi',
+      BRANCH_LABEL: 'Cơ sở kinh doanh',
+      BRANCH_PLACEHOLDER: '-- Chọn cơ sở --',
+      CATEGORY_LABEL: 'Danh mục món ăn (Tùy chọn)',
+      CATEGORY_PLACEHOLDER: '-- Không thuộc danh mục nào --',
+      AUTO_FILL_BRANCH: '(Tự động điền theo cơ sở)',
+      AUTO_FILL_LAT_LNG: '(Tự động điền)',
     },
     PUBLIC_PROFILE: {
       NOT_FOUND: 'Không tìm thấy quán ăn',
@@ -153,6 +165,33 @@ export const LABELS = {
       LOAD_MORE: 'Xem thêm món',
       GO_TO_ADMIN: '[Vào trang quản trị]',
       MANAGE_RESTAURANT: 'Quản lý quán ăn',
+      CATEGORY_MANAGER: {
+        TITLE: 'Quản lý Nhóm & Danh mục',
+        LOADING: 'Đang tải danh mục...',
+        HELP_TOOLTIP: 'Nhóm (Group) là thư mục gốc ngoài cùng. Sau khi tạo Nhóm, bạn có thể ấn nút dấu [+] trên nhóm đó để tạo ra các Phân loại con (Category) bên trong.',
+        ADD_GROUP: 'Thêm Nhóm Mới',
+        GUIDE_TITLE: '💡 Hướng dẫn phân loại món ăn:',
+        GUIDE_GROUP: 'Nhóm danh mục (Ví dụ: Đồ uống): Bạn có thể gán món ăn trực tiếp vào Nhóm này.',
+        GUIDE_CATEGORY: 'Phân loại con (Ví dụ: Trà sữa, Nước ép): Nếu muốn chi tiết hơn, hãy ấn nút [+] trên Nhóm để tạo Phân loại con, sau đó gán món vào Phân loại con tương ứng.',
+        PRIORITY_PREFIX: 'Ưu tiên hiển thị thứ: #',
+        PRIORITY_SHORT: 'Ưu tiên số: #',
+        ADD_ROOT_CATEGORY: 'Thêm danh mục gốc',
+        ADD_SUB_CATEGORY: 'Thêm phân loại con',
+        EMPTY_GROUP_NOTE: '📌 Bạn có thể gán món trực tiếp vào nhóm này, hoặc ấn nút [+] để tạo thêm phân loại con.',
+        EMPTY_GROUPS: 'Chưa có nhóm danh mục nào',
+        EDIT_GROUP: 'Sửa Nhóm',
+        GROUP_NAME: 'Tên nhóm',
+        DISPLAY_ORDER: 'Thứ tự hiển thị',
+        ORDER_DESC_GROUP: 'Dùng để sắp xếp vị trí hiển thị trên Menu. Số càng nhỏ, nhóm càng được ưu tiên xếp lên trên. Ví dụ: Nhập 0 sẽ xếp đầu tiên, 1 xếp thứ hai.',
+        GROUP_PLACEHOLDER: 'VD: Cơm phần, Đồ uống...',
+        EDIT_CATEGORY: 'Sửa Phân Loại',
+        ADD_CATEGORY: 'Thêm Phân Loại',
+        CATEGORY_NAME: 'Tên phân loại',
+        CATEGORY_PLACEHOLDER: 'VD: Cơm sườn, Nước ép...',
+        ORDER_DESC_CATEGORY: 'Dùng để sắp xếp vị trí hiển thị trên Menu. Số càng nhỏ, phân loại này càng được ưu tiên xếp lên trước. Ví dụ: 0 là xếp đầu tiên.',
+        CONFIRM_DELETE_TITLE: 'Xác nhận xóa',
+        CONFIRM_DELETE_MESSAGE: (type: string) => `Bạn có chắc chắn muốn xóa ${type} này? Toàn bộ các danh mục con (nếu có) cũng sẽ bị xóa theo!`
+      }
     },
     UPLOAD_EXCEL: {
       MAIN_GROUP: '📁 Nhóm chính',
@@ -195,6 +234,7 @@ export const LABELS = {
     MANAGE_MERCHANTS: 'Quản lý Thương gia',
     MANAGE_CUSTOMERS: 'Quản lý Thực khách',
     MANAGE_MENU: 'Quản lý Thực đơn',
+    IMPORT_EXCEL: 'Import Excel',
     SYSTEM_FOOD: 'Món ăn hệ thống',
     MERCHANT_FOOD: 'Món ăn đối tác',
     SAVE_SUCCESS: 'Cập nhật thành công!',
@@ -218,6 +258,9 @@ export const LABELS = {
       DATE: 'Ngày đăng ký',
       ACTION: 'Thao tác',
       EMPTY: 'Không tìm thấy dữ liệu nào.',
+      FEATURE_TODAY: 'Món ngon hôm nay',
+      FEATURE_WEEKLY: 'Món ngon tuần',
+      ADMIN_RECOMMEND: 'Admin khuyên dùng',
     },
     CONFIRM: {
       DELETE_USER: 'Bạn có chắc chắn muốn xóa tài khoản này?',
@@ -317,6 +360,11 @@ export const LABELS = {
         BIO: 'Tiểu sử',
         ADDRESS: 'Địa chỉ / Nơi sống',
         WORK: 'Nơi làm việc',
+        CITY: 'Tỉnh/Thành phố',
+        DISTRICT: 'Quận/Huyện',
+        DISTRICT_PLACEHOLDER: 'Chọn Quận/Huyện',
+        STREET: 'Địa chỉ chi tiết (Số nhà, tên đường...)',
+        STREET_PLACEHOLDER: 'Ví dụ: 123 Đường Láng',
       },
       MODALS: {
         FOLLOWERS_TITLE: 'Người theo dõi',
@@ -351,6 +399,7 @@ export const LABELS = {
     SETTINGS: 'Cài đặt',
     FEATURES: 'Tính năng',
     SEARCH_PLACEHOLDER: 'Tính năng tìm kiếm chức năng đang phát triển!',
+    USER_MENU: 'Menu người dùng',
   },
   FOOTER: {
     DESCRIPTION: 'Nền tảng gợi ý món ăn thông minh bằng AI, giúp bạn tìm thấy hương vị yêu thích mọi lúc mọi nơi.',
@@ -440,4 +489,145 @@ export const LABELS = {
     VIEW_DETAIL: 'Xem chi tiết',
     SYSTEM: 'Hệ thống',
   },
+  UI_MESSAGES: {
+    CATEGORY: {
+      LOAD_ERROR: 'Lỗi khi tải danh mục',
+      GROUP_NAME_REQUIRED: 'Vui lòng nhập tên nhóm',
+      GROUP_UPDATE_SUCCESS: 'Đã cập nhật nhóm',
+      GROUP_ADD_SUCCESS: 'Đã thêm nhóm mới',
+      GROUP_DELETE_SUCCESS: 'Đã xóa nhóm',
+      CATEGORY_NAME_REQUIRED: 'Vui lòng nhập tên phân loại',
+      CATEGORY_UPDATE_SUCCESS: 'Đã cập nhật phân loại',
+      CATEGORY_ADD_SUCCESS: 'Đã thêm phân loại mới',
+      CATEGORY_DELETE_SUCCESS: 'Đã xóa phân loại',
+      HAS_FOODS_ERROR: 'Có lỗi xảy ra (có thể danh mục đang có món ăn)',
+    },
+    RESTAURANT: {
+      SELECT_REQUIRED: 'Vui lòng chọn cơ sở kinh doanh',
+    },
+    ADMIN: {
+      UPDATE_FAILED: 'Cập nhật thất bại',
+      UPDATE_SUCCESS: 'Cập nhật thành công',
+    },
+  },
+  IMPORT_EXCEL: {
+    MESSAGES: {
+      INVALID_FILE_TYPE: 'Vui lòng chọn file Excel (.xlsx) hoặc CSV (.csv)',
+      IMPORT_SUCCESS: (created: number, appended: number) => `Import thành công! Đã tạo ${created} nhà hàng, gộp ${appended} nhà hàng.`,
+      IMPORT_ERROR_DEFAULT: 'Lỗi khi import file Excel',
+      VALID_TYPES: [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv'
+      ],
+      TEMPLATE_HEADERS: 'Email,Password,Owner Name,Restaurant Name,Address,Latitude,Longitude,Restaurant Map URL,Food Name,Food Price,Food Desc,Food Image URL,Food Tags\n',
+      TEMPLATE_SAMPLE: 'merchant@gmail.com,password123,Nguyen Van A,Pizza Ha Noi,Ha Noi,21.0285,105.8542,https://maps.app.goo.gl/example,Pizza Hai San,150000,Pizza ngon thuong hang,https://example.com/pizza.jpg,"ngon,hai san"\n',
+      TEMPLATE_FILENAME: 'merchant_template.csv',
+    },
+    UI: {
+      TITLE: 'Import dữ liệu hàng loạt',
+      TEMPLATE_TITLE: 'Tải file mẫu (Template)',
+      TEMPLATE_DESC: 'Sử dụng file CSV/Excel mẫu để nhập liệu chuẩn xác.',
+      BTN_DOWNLOAD: 'Tải mẫu',
+      DROPZONE_TITLE_FILE: 'Click hoặc kéo thả file vào đây',
+      DROPZONE_SUBTITLE_FILE: 'Hỗ trợ định dạng .xlsx, .csv',
+      BTN_REMOVE_FILE: 'Xóa file',
+      BTN_CANCEL: 'Hủy',
+      BTN_IMPORT: 'Import Ngay',
+      BTN_LOADING: 'Đang xử lý...'
+    }
+  },
+  ONBOARDING: {
+    BRANCH_STEP_TITLE: 'Thiết lập vị trí & chi nhánh kinh doanh',
+    BRANCH_STEP_DESC: 'Khai báo cơ sở (tên quán, địa chỉ chính xác, Google Maps) để AI tối ưu hóa hiển thị cho thực khách xung quanh.',
+    ADD_BRANCH_BTN: 'Thêm Cơ Sở Khác (+ Chi Nhánh)',
+    BACK_BTN: 'Quay Lại',
+    COMPLETE_BTN: 'Hoàn Tất & Khởi Tạo',
+    REQUIRED_BRANCH_FIELDS: (index: number) => `Vui lòng điền đầy đủ Tên và Địa chỉ của Cơ sở thứ ${index}.`,
+    INVALID_COORDINATES: (index: number) => `Tọa độ (Kinh/Vĩ độ) của Cơ sở thứ ${index} bắt buộc phải là số.`,
+    INVALID_LATITUDE: (index: number) => `Vĩ độ (Latitude) của Cơ sở thứ ${index} phải nằm trong khoảng từ -90 đến 90.`,
+    INVALID_LONGITUDE: (index: number) => `Kinh độ (Longitude) của Cơ sở thứ ${index} phải nằm trong khoảng từ -180 đến 180.`,
+    INVALID_HOURS_FORMAT: (index: number) => `Giờ hoạt động của Cơ sở thứ ${index} không đúng định dạng (Ví dụ đúng: 08:00 - 22:00).`,
+    MIN_BRANCH_REQUIRED: 'Thương gia bắt buộc phải khai báo ít nhất 1 cơ sở chính.',
+    ADD_BRANCH_SUCCESS: 'Đã thêm 1 chi nhánh trống. Vui lòng điền thông tin bên dưới.',
+    REMOVE_BRANCH_SUCCESS: 'Đã xóa cơ sở khỏi danh sách.',
+    STEP_INDICATOR: (current: number, total: number) => `Bước ${current} / ${total}`,
+    FORM: {
+      NAME_LABEL: 'Tên cơ sở / Chi nhánh',
+      NAME_PLACEHOLDER: 'Ví dụ: FOOD AI - Chi Nhánh Hà Nội',
+      ADDRESS_LABEL: 'Địa chỉ thực tế',
+      ADDRESS_PLACEHOLDER: 'Ví dụ: 123 Nguyễn Trãi, Thanh Xuân, Hà Nội',
+      LAT_LABEL: 'Vĩ độ (Latitude)',
+      LAT_PLACEHOLDER: 'Ví dụ: 20.976094137561798',
+      LNG_LABEL: 'Kinh độ (Longitude)',
+      LNG_PLACEHOLDER: 'Ví dụ: 105.76295609115984',
+      MAP_URL_LABEL: 'Link bản đồ Google Maps (Tùy chọn)',
+      MAP_URL_PLACEHOLDER: 'Ví dụ: https://maps.google.com/...',
+      HOURS_LABEL: 'Giờ hoạt động (Tùy chọn)',
+      HOURS_PLACEHOLDER: 'Ví dụ: 09:00 - 21:00',
+      BIO_LABEL: 'Khẩu hiệu / Giới thiệu ngắn',
+      BIO_PLACEHOLDER: 'Ví dụ: Đồ ăn sạch, tốt cho sức khỏe...',
+    },
+    QUESTIONS: {
+      CUSTOMER: {
+        GOAL: {
+          Q: 'Mục tiêu ăn uống của bạn là gì?',
+          DESC: 'Để AI gợi ý những món ăn phù hợp với sức khỏe của bạn.',
+          OPT: { WEIGHT_LOSS: 'Giảm cân', MUSCLE_GAIN: 'Tăng cơ', EAT_CLEAN: 'Ăn sạch (Eat Clean)', ENJOY: 'Thưởng thức' }
+        },
+        CUISINE: {
+          Q: 'Bạn đặc biệt thích phong cách ẩm thực nào?',
+          DESC: 'Chúng tôi sẽ ưu tiên hiển thị các quán có hương vị này.',
+          OPT: { VIETNAMESE: 'Việt Nam', KOREAN: 'Hàn Quốc', JAPANESE: 'Nhật Bản', WESTERN: 'Âu Mỹ' }
+        },
+        BUDGET: {
+          Q: 'Ngân sách cho một bữa ăn của bạn?',
+          DESC: 'Gợi ý các quán ăn phù hợp với túi tiền của bạn.',
+          OPT: { UNDER_100K: 'Dưới 100k', '100K_200K': '100k - 200k', '200K_400K': '200k - 400k', OVER_400K: 'Trên 400k' }
+        },
+        ALLERGIES: {
+          Q: 'Bạn có bị dị ứng với gì không?',
+          DESC: 'An toàn của bạn là trên hết. Hãy cho AI biết nhé!',
+          OPT: { SEAFOOD: 'Hải sản', PEANUTS: 'Đậu phộng', DAIRY: 'Sữa/Phô mai', NONE: 'Không dị ứng' }
+        }
+      },
+      RESTAURANT: {
+        STYLE: {
+          Q: 'Phong cách quán của bạn là gì?',
+          DESC: 'Giúp khách hàng hình dung về không gian quán.',
+          OPT: { LUXURY: 'Sang trọng', CASUAL: 'Bình dân', STREET: 'Vỉa hè/Đường phố', TAKEAWAY: 'Bán mang về' }
+        },
+        FLAVOR: {
+          Q: 'Hương vị chủ đạo của quán là gì?',
+          DESC: 'Khách hàng thường tìm kiếm theo hương vị ưa thích.',
+          OPT: { SPICY: 'Cay nồng', SWEET: 'Ngọt ngào', SAVORY: 'Đậm đà', LIGHT: 'Thanh đạm' }
+        },
+        TARGET: {
+          Q: 'Đối tượng khách hàng bạn muốn tiếp cận?',
+          DESC: 'AI sẽ ưu tiên hiển thị quán cho tệp khách này.',
+          OPT: { STUDENTS: 'Sinh viên', OFFICE: 'Dân văn phòng', FAMILY: 'Gia đình', TOURISTS: 'Khách du lịch' }
+        }
+      }
+    }
+  },
+  CATEGORIES: {
+    NAMES: {
+      WATER: 'Món nước',
+      RICE: 'Cơm / Xôi',
+      SNACK: 'Ăn vặt',
+      DESSERT: 'Tráng miệng',
+      CASUAL: 'Bình dân',
+      LUXURY: 'Cao cấp'
+    },
+    TAGS: {
+      TRADITIONAL: 'truyền thống',
+      FASTFOOD: 'ăn nhanh',
+      FRIED: 'đồ chiên',
+      ALONE: 'một mình',
+      GROUP: 'nhiều người',
+      OFFICE: 'văn phòng',
+      SPICY: 'cay',
+      HEALTHY: 'healthy'
+    }
+  }
 };

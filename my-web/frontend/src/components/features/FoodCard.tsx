@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Card hiển thị một món ăn (thông tin món, ảnh, giá, khoảng cách).
+ * Các file khác hay file này có ý nghĩa như nào: Dùng chung ở rất nhiều nơi (trang chủ, gợi ý AI, kết quả tìm kiếm).
+ * Các chức năng đặc biệt: Hiển thị icon bản đồ nếu có link map, tính toán khoảng cách (nếu có), nút yêu thích.
+ */
 'use client';
 
 import React, { useState } from 'react';
@@ -9,9 +14,23 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDistance } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 
+export interface FoodCardData {
+  id?: number | string;
+  name: string;
+  price?: number;
+  image?: string;
+  description?: string;
+  restaurant?: { name: string };
+  restaurantName?: string;
+  distance?: number;
+  mapUrl?: string;
+  map_url?: string;
+  [key: string]: unknown;
+}
+
 interface FoodCardProps {
-  food: any;
-  onViewDetail?: (food: any) => void;
+  food: FoodCardData;
+  onViewDetail?: (food: FoodCardData) => void;
 }
 
 export function FoodCard({ food, onViewDetail }: FoodCardProps) {
@@ -45,7 +64,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
           className={`absolute top-4 right-4 p-2.5 rounded-xl shadow-lg transition-all hover:scale-110 z-10 ${
             isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-400'
           }`}
-          aria-label={LABELS.COMMON.OTHER}
+          aria-label={LABELS.FOOD.ADD_FAVORITE}
         >
           <Heart size={20} fill={isFavorite ? "white" : "none"} />
         </button>
@@ -68,7 +87,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-550 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
-                aria-label={LABELS.COMMON.OTHER}
+                aria-label={LABELS.FOOD.VIEW_MAP}
               >
                 <Navigation size={18} />
               </a>

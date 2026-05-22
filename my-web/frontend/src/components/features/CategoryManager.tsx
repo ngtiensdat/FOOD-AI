@@ -1,9 +1,16 @@
+/**
+ * Mục đích file này để làm gì: Component quản lý hệ thống phân loại món ăn nhiều cấp (Nhóm -> Phân loại con).
+ * Các file khác hay file này có ý nghĩa như nào: Được dùng trong trang quản lý của Thương gia.
+ * Các chức năng đặc biệt: Hiển thị dạng cây (tree view), các thao tác CRUD danh mục.
+ */
+
 import React from 'react';
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Folder, FileText, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Category } from '@/services/category.service';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { useCategoryManager } from '@/hooks/useCategoryManager';
+import { LABELS } from '@/constants/labels';
 
 interface CategoryManagerProps {
   restaurantId: number;
@@ -15,7 +22,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
     loading,
     expandedGroups,
     toggleGroup,
-    
+
     // Group states and actions
     isGroupModalOpen,
     setIsGroupModalOpen,
@@ -55,11 +62,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
               <div className="flex items-center gap-3">
                 <FileText size={16} className="text-gray-400" />
                 <span className="font-semibold text-gray-700 dark:text-slate-200 text-sm">{category.name}</span>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800">Ưu tiên số: #{category.order}</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.PRIORITY_SHORT}{category.order}</span>
               </div>
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 {level < 3 && (
-                  <button onClick={() => handleOpenAddCategory(category.groupId, category.id)} className="p-1.5 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg" title="Thêm phân loại con">
+                  <button onClick={() => handleOpenAddCategory(category.groupId, category.id)} className="p-1.5 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_SUB_CATEGORY}>
                     <Plus size={14} />
                   </button>
                 )}
@@ -78,28 +85,28 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
     );
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Đang tải danh mục...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.LOADING}</div>;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-h3 text-gray-800 dark:text-slate-100">Quản lý Nhóm & Danh mục</h3>
-          <div title="Nhóm (Group) là thư mục gốc ngoài cùng. Sau khi tạo Nhóm, bạn có thể ấn nút dấu [+] trên nhóm đó để tạo ra các Phân loại con (Category) bên trong." className="cursor-help text-gray-400 hover:text-primary transition-colors bg-gray-100 p-1.5 rounded-full dark:bg-slate-800">
+          <h3 className="text-h3 text-gray-800 dark:text-slate-100">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.TITLE}</h3>
+          <div title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.HELP_TOOLTIP} className="cursor-help text-gray-400 hover:text-primary transition-colors bg-gray-100 p-1.5 rounded-full dark:bg-slate-800">
             <HelpCircle size={16} />
           </div>
         </div>
         <Button onClick={handleOpenAddGroup} className="flex items-center gap-2 rounded-xl">
-          <Plus size={18} /> Thêm Nhóm Mới
+          <Plus size={18} /> {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}
         </Button>
       </div>
 
       {/* Hướng dẫn sử dụng */}
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4 rounded-2xl text-blue-800 dark:text-blue-300 text-sm">
-        <p className="font-bold mb-1">💡 Hướng dẫn phân loại món ăn:</p>
+        <p className="font-bold mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_TITLE}</p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Nhóm danh mục (Ví dụ: Đồ uống):</strong> Bạn có thể gán món ăn trực tiếp vào Nhóm này.</li>
-          <li><strong>Phân loại con (Ví dụ: Trà sữa, Nước ép):</strong> Nếu muốn chi tiết hơn, hãy ấn nút <strong>[+]</strong> trên Nhóm để tạo Phân loại con, sau đó gán món vào Phân loại con tương ứng.</li>
+          <li>{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_GROUP}</li>
+          <li>{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_CATEGORY}</li>
         </ul>
       </div>
 
@@ -111,10 +118,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
                 {expandedGroups[group.id] ? <ChevronDown size={20} className="text-gray-400" /> : <ChevronRight size={20} className="text-gray-400" />}
                 <Folder size={20} className="text-primary" />
                 <span className="font-bold text-gray-800 dark:text-slate-100 text-body">{group.name}</span>
-                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2.5 py-1 rounded-md border border-orange-100 dark:border-orange-800">Ưu tiên hiển thị thứ: #{group.order}</span>
+                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2.5 py-1 rounded-md border border-orange-100 dark:border-orange-800">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.PRIORITY_PREFIX}{group.order}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleOpenAddCategory(group.id)} className="p-2 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl" title="Thêm danh mục gốc">
+                <button onClick={() => handleOpenAddCategory(group.id)} className="p-2 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_ROOT_CATEGORY}>
                   <Plus size={16} />
                 </button>
                 <button onClick={() => handleOpenEditGroup(group)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl">
@@ -125,24 +132,24 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
                 </button>
               </div>
             </div>
-            
+
             {expandedGroups[group.id] && (
               <div className="mt-4">
                 {group.categories && group.categories.length > 0 ? (
                   <>
                     {/* Hiển thị danh sách phân loại con, ẩn category gốc tự tạo cùng tên Group */}
                     {renderCategories(group.categories, group.name, null, 0)}
-                    
+
                     {/* Hiển thị note nếu nhóm chưa có sub-category nào do user tạo */}
                     {group.categories.filter(c => c.parentId === null && c.name !== group.name).length === 0 && (
                       <p className="text-sm text-gray-500 ml-8 mt-2 italic">
-                        📌 Bạn có thể gán món trực tiếp vào nhóm này, hoặc ấn nút [+] để tạo thêm phân loại con.
+                        {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EMPTY_GROUP_NOTE}
                       </p>
                     )}
                   </>
                 ) : (
                   <p className="text-sm text-gray-500 ml-8 mt-2 italic">
-                    📌 Bạn có thể gán món trực tiếp vào nhóm này, hoặc ấn nút [+] để tạo thêm phân loại con.
+                    {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EMPTY_GROUP_NOTE}
                   </p>
                 )}
               </div>
@@ -152,7 +159,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
         {groups.length === 0 && (
           <div className="text-center p-12 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
             <Folder size={48} className="mx-auto text-gray-300 dark:text-slate-600 mb-4" />
-            <p className="text-gray-500 dark:text-slate-400 font-medium">Chưa có nhóm danh mục nào</p>
+            <p className="text-gray-500 dark:text-slate-400 font-medium">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EMPTY_GROUPS}</p>
           </div>
         )}
       </div>
@@ -161,22 +168,22 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
       {isGroupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? 'Sửa Nhóm' : 'Thêm Nhóm Mới'}</h3>
+            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_GROUP : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}</h3>
             <form onSubmit={handleSubmitGroup} className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tên nhóm <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder="VD: Cơm phần, Đồ uống..." value={groupFormData.name} onChange={e => setGroupFormData({...groupFormData, name: e.target.value})} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_NAME} <span className="text-rose-500">*</span></label>
+                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">Thứ tự hiển thị <span className="text-rose-500">*</span></label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
-                  Dùng để sắp xếp vị trí hiển thị trên Menu. Số càng nhỏ, nhóm càng được ưu tiên xếp lên trên. Ví dụ: Nhập 0 sẽ xếp đầu tiên, 1 xếp thứ hai.
+                  {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_GROUP}
                 </p>
-                <input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({...groupFormData, order: e.target.value})} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>Hủy</Button>
-                <Button type="submit">Lưu</Button>
+                <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
+                <Button type="submit">{LABELS.COMMON.SAVE}</Button>
               </div>
             </form>
           </div>
@@ -186,22 +193,22 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? 'Sửa Phân Loại' : 'Thêm Phân Loại'}</h3>
+            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_CATEGORY}</h3>
             <form onSubmit={handleSubmitCategory} className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tên phân loại <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder="VD: Cơm sườn, Nước ép..." value={categoryFormData.name} onChange={e => setCategoryFormData({...categoryFormData, name: e.target.value})} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_NAME} <span className="text-rose-500">*</span></label>
+                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">Thứ tự hiển thị <span className="text-rose-500">*</span></label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
-                  Dùng để sắp xếp vị trí hiển thị trên Menu. Số càng nhỏ, phân loại này càng được ưu tiên xếp lên trước. Ví dụ: 0 là xếp đầu tiên.
+                  {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_CATEGORY}
                 </p>
-                <input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({...categoryFormData, order: e.target.value})} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>Hủy</Button>
-                <Button type="submit">Lưu</Button>
+                <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
+                <Button type="submit">{LABELS.COMMON.SAVE}</Button>
               </div>
             </form>
           </div>
@@ -211,12 +218,12 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
       {deleteConfirm && (
         <ConfirmModal
           isOpen={true}
-          title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa ${deleteConfirm.type === 'group' ? 'nhóm' : 'phân loại'} này? Toàn bộ các danh mục con (nếu có) cũng sẽ bị xóa theo!`}
+          title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_TITLE}
+          message={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_MESSAGE(deleteConfirm.type === 'group' ? 'nhóm' : 'phân loại')}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteConfirm(null)}
-          confirmText="Xóa"
-          cancelText="Hủy"
+          confirmText={LABELS.COMMON.DELETE}
+          cancelText={LABELS.COMMON.CANCEL}
           variant="danger"
         />
       )}

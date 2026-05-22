@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) hiển thị ô nhập liệu (Input hoặc Textarea) dùng chung cho toàn dự án.
+ * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI thuần (Dumb Component), nhận các Props cơ bản (label, icon, error) và tự động thay đổi kiểu dáng tương ứng.
+ * Các chức năng đặc biệt: Tích hợp 2 trong 1 (có thể biến thành Textarea nếu truyền cờ `isTextArea=true`). Hỗ trợ chèn Icon bên trong ô nhập liệu và tự động điều chỉnh padding (`pl-12`).
+ * Các biến, hàm đặc biệt trong file: Ép kiểu `React.ElementType` để TypeScript chấp nhận truyền mảng `...props` linh hoạt cho cả `input` và `textarea` mà không gây lỗi.
+ */
 'use client';
 
 import React from 'react';
@@ -22,8 +28,7 @@ export const Input = ({
     Icon ? 'pl-12' : 'px-6'
   } pr-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm`;
 
-  const TextAreaComponent = 'textarea' as any;
-  const InputComponent = isTextArea ? TextAreaComponent : 'input';
+  const InputComponent = (isTextArea ? 'textarea' : 'input') as React.ElementType;
 
   return (
     <div className="space-y-2">

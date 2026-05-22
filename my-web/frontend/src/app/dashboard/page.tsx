@@ -1,7 +1,12 @@
+/**
+ * @fileoverview frontend/src/app/dashboard/page.tsx
+ * @module CustomerDashboard
+ * @description Trang điều phối (Orchestrator) chính của giao diện Khách hàng. Quản lý việc lắp ráp các tính năng như Hồ sơ, Lịch sử AI, và Món ăn yêu thích. Tách biệt hoàn toàn logic sang `useDashboardActions`.
+ */
 'use client';
 
 import React from 'react';
-import { User, Heart, Clock, ArrowLeft, Menu } from 'lucide-react';
+import { User, Heart, Clock, ArrowLeft, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +14,7 @@ import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
 import { UserDropdown } from '@/components/features/UserDropdown';
+import { Avatar } from '@/components/base/Avatar';
 import { AiSuggestionBanner } from '@/components/features/AiSuggestionBanner';
 import { UserProfileDetail } from '@/components/features/UserProfileDetail';
 import { RecentFoodsList } from '@/components/features/RecentFoodsList';
@@ -44,23 +50,23 @@ export default function CustomerDashboard() {
       {/* Sidebar: Điều hướng cá nhân */}
       <Sidebar brandLabel={LABELS.COMMON.BRAND_NAME}>
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
-        <SidebarItem 
-          icon={User} 
-          label={LABELS.AUTH.PROFILE} 
-          active={activeTab === 'profile'} 
-          onClick={() => setActiveTab('profile')} 
+        <SidebarItem
+          icon={User}
+          label={LABELS.AUTH.PROFILE}
+          active={activeTab === 'profile'}
+          onClick={() => setActiveTab('profile')}
         />
-        <SidebarItem 
-          icon={Heart} 
-          label={LABELS.CUSTOMER.FAVORITES} 
-          active={activeTab === 'favorites'} 
-          onClick={() => setActiveTab('favorites')} 
+        <SidebarItem
+          icon={Heart}
+          label={LABELS.CUSTOMER.FAVORITES}
+          active={activeTab === 'favorites'}
+          onClick={() => setActiveTab('favorites')}
         />
-        <SidebarItem 
-          icon={Clock} 
-          label={LABELS.CUSTOMER.AI_HISTORY} 
-          active={activeTab === 'history'} 
-          onClick={() => setActiveTab('history')} 
+        <SidebarItem
+          icon={Clock}
+          label={LABELS.CUSTOMER.AI_HISTORY}
+          active={activeTab === 'history'}
+          onClick={() => setActiveTab('history')}
         />
       </Sidebar>
 
@@ -88,20 +94,39 @@ export default function CustomerDashboard() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{profile?.role}</p>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-12 h-12 p-0 rounded-2xl shadow-sm"
+                <button
                   onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
+                  aria-label={LABELS.NAV.USER_MENU}
                 >
-                  <Menu size={24} />
-                </Button>
+                  <Avatar
+                    src={user.avatar}
+                    name={user.name}
+                    size={40}
+                    className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
+                  />
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
+                      showMenu ? 'rotate-180 text-primary' : ''
+                    }`} 
+                  />
+                </button>
 
                 {showMenu && (
-                  <UserDropdown
-                    user={user}
-                    onLogout={logout}
-                    onSettingsClick={() => setShowMenu(false)}
-                  />
+                  <>
+                    {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                      onClick={() => setShowMenu(false)} 
+                    />
+                    <UserDropdown
+                      user={user}
+                      onLogout={logout}
+                      onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
+                      onClose={() => setShowMenu(false)}
+                    />
+                  </>
                 )}
               </div>
             )}
@@ -115,16 +140,16 @@ export default function CustomerDashboard() {
               <AiSuggestionBanner />
 
               {/* Thông tin hồ sơ chi tiết */}
-              <UserProfileDetail 
-                profile={profile} 
-                onUpdatePreferences={() => setShowOnboarding(true)} 
+              <UserProfileDetail
+                profile={profile}
+                onUpdatePreferences={() => setShowOnboarding(true)}
               />
             </div>
 
             <div className="space-y-8">
-              <RecentFoodsList 
-                items={recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET)} 
-                onViewDetail={setSelectedFood} 
+              <RecentFoodsList
+                items={recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET)}
+                onViewDetail={setSelectedFood}
                 onSeeMore={() => setActiveTab('history')}
               />
             </div>
@@ -158,10 +183,10 @@ export default function CustomerDashboard() {
                   <h2 className="text-2xl font-bold text-gray-900">{LABELS.CUSTOMER.OLDER_HISTORY}</h2>
                   <p className="text-gray-500 text-small mt-1">{LABELS.CUSTOMER.OLDER_HISTORY_DESC(LIMITS.RECENT_VIEWS_HISTORY)}</p>
                 </div>
-                <RecentFoodsList 
-                  items={recentViews.slice(LIMITS.RECENT_VIEWS_WIDGET)} 
-                  onViewDetail={setSelectedFood} 
-                  title={LABELS.CUSTOMER.OLDER_FOODS_TITLE} 
+                <RecentFoodsList
+                  items={recentViews.slice(LIMITS.RECENT_VIEWS_WIDGET)}
+                  onViewDetail={setSelectedFood}
+                  title={LABELS.CUSTOMER.OLDER_FOODS_TITLE}
                 />
               </div>
             )}
@@ -190,9 +215,9 @@ export default function CustomerDashboard() {
       )}
 
       {selectedFood && (
-        <FoodDetailModal 
-          food={selectedFood} 
-          onClose={() => setSelectedFood(null)} 
+        <FoodDetailModal
+          food={selectedFood}
+          onClose={() => setSelectedFood(null)}
         />
       )}
 

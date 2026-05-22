@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) để hiển thị Modal xác nhận hành động (Xóa, Cảnh báo, Thông báo).
+ * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI thuần (Dumb Component), nhận trạng thái hiển thị (`isOpen`), nội dung (`title`, `message`) và các hàm callback (`onConfirm`, `onCancel`) từ component cha.
+ * Các chức năng đặc biệt: Tích hợp sẵn `framer-motion` cho hiệu ứng chuyển động mượt mà. Hỗ trợ nhiều biến thể (danger, warning, info) tự động thay đổi icon và màu sắc tương ứng. Tái sử dụng `Button` component để đồng bộ giao diện.
+ * Các biến, hàm đặc biệt trong file: `getIcon` và `getConfirmButtonVariant` xử lý logic hiển thị tuỳ theo biến thể `variant`.
+ */
 'use client';
 
 import React from 'react';
@@ -55,7 +61,7 @@ export const ConfirmModal = ({
   const getConfirmButtonVariant = () => {
     switch (variant) {
       case 'danger':
-        return 'danger';
+        return 'red';
       default:
         return 'primary';
     }
@@ -93,13 +99,9 @@ export const ConfirmModal = ({
             </Button>
             <Button
               type="button"
-              variant={getConfirmButtonVariant() as any}
+              variant={getConfirmButtonVariant()}
               onClick={onConfirm}
-              className={`px-5 py-2 rounded-lg transition ${
-                variant === 'danger'
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              }`}
+              className="px-5 py-2 rounded-lg transition"
             >
               {confirmText}
             </Button>

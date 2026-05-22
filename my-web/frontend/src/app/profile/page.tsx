@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Đây là trang Profile chính của người dùng, đóng vai trò Orchestrator lắp ráp các module giao diện (ProfileHeader, ProfileIntro, Modals).
+ * Các file khác hay file này có ý nghĩa như nào: Tách biệt hoàn toàn UI và logic, nhường toàn bộ xử lý state/gọi API cho hook `useProfileData`. Các Component con trong `features/` đảm nhận phần hiển thị chi tiết.
+ * Các chức năng đặc biệt: Bọc `Suspense` an toàn cho `useSearchParams` (chuẩn Next.js App Router). Quản lý render động nhiều Tab và Modal (Followers, Following, Edit Profile).
+ * Các biến, hàm đặc biệt trong file: `ProfileContent` (chứa logic bóc tách URL Params), Component `ProfilePage` (bọc ngoài Suspense).
+ */
 'use client';
 
 import React, { Suspense } from 'react';
@@ -57,7 +63,7 @@ function ProfileContent() {
         <ProfileHeader 
           user={user} 
           profile={profile} 
-          me={me} 
+          me={me as any} 
           isFollowLoading={isFollowLoading} 
           onEdit={() => setIsEditing(true)} 
           onFollow={actions.toggleFollow} 

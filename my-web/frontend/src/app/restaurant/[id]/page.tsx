@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Đây là trang Profile của Nhà hàng (Restaurant). Đóng vai trò Orchestrator quản lý toàn bộ các tính năng như hiển thị Header, Tab Menu (với Sidebar Category và Grid Món ăn), Tab Info, và các Modal theo dõi.
+ * Các file khác hay file này có ý nghĩa như nào: Tách bạch rõ ràng logic và giao diện. Toàn bộ tính toán, quản lý state, API call đều được giấu trong `useRestaurantProfile`. Các Component hiển thị được đặt tại thư mục `features/`.
+ * Các chức năng đặc biệt: Layout với 2 Tab (Menu và Info). Có Sidebar sticky để filter Category. Modal Follower/Following dùng chung logic.
+ * Các biến, hàm đặc biệt trong file: Hook `useRestaurantProfile` điều phối chính. Component `RestaurantProfilePage` bọc ngoài cùng.
+ */
 'use client';
 
 import React from 'react';
@@ -192,7 +198,7 @@ export default function RestaurantProfilePage() {
             onClose={() => setShowFollowingModal(false)}
             loading={loadingFollowing}
             error={errorFollowing}
-            restaurants={followingList.map((item: any) => item.restaurant)}
+            restaurants={followingList.map((item) => item.restaurant)}
             onRestaurantClick={(restaurantItem) => {
               setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);

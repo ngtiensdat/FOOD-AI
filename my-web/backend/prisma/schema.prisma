@@ -82,7 +82,7 @@ model Restaurant {
   histories      History[]
   posts          Post[]
   profile        RestaurantProfile?
-  owner          User               @relation(fields: [ownerId], references: [id])
+  owner          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
   @@map("restaurants")
@@ -126,7 +126,7 @@ model Food {
   categoryId         Int?                   @map("category_id")
   favorites          Favorite[]
   category           Category?              @relation(fields: [categoryId], references: [id])
-  restaurant         Restaurant?            @relation(fields: [restaurantId], references: [id])
+  restaurant         Restaurant?            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   histories          History[]
   posts              Post[]                 @relation("PostToFood")
 
@@ -181,8 +181,8 @@ model Post {
   likes        Like[]
   approver     User?       @relation("AdminApprovedPosts", fields: [approverId], references: [id])
   author       User        @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  food         Food?       @relation("PostToFood", fields: [foodId], references: [id])
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  food         Food?       @relation("PostToFood", fields: [foodId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([authorId, createdAt])
   @@index([postType, status])
@@ -260,8 +260,8 @@ model History {
   restaurantId Int?        @map("restaurant_id")
   foodId       Int?        @map("food_id")
   visitedAt    DateTime    @default(now()) @map("visited_at")
-  food         Food?       @relation(fields: [foodId], references: [id])
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  food         Food?       @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, visitedAt])

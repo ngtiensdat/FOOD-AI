@@ -79,7 +79,7 @@ export const useProfileData = (targetId?: string | null) => {
       const newData = await fetchProfileData(profile.id, me?.id);
       
       if (me?.id === profile.id && newData) {
-        updateMe({ ...me, name: newData.name });
+        updateMe({ ...me, name: newData.name, avatar: newData.profile?.avatar || null });
       }
       
       setIsEditing(false);

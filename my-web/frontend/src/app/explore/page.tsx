@@ -1,3 +1,8 @@
+/**
+ * @fileoverview frontend/src/app/explore/page.tsx
+ * @module ExplorePage
+ * @description Trang Khám phá (Explore) hiển thị danh sách món ăn theo Tag, khu vực (City/District) và từ khóa. Đóng vai trò Orchestrator lắp ráp các filter và lưới thức ăn, logic được tách riêng sang `useExploreActions`. Bọc Suspense chuẩn xác cho Next.js App Router.
+**/
 'use client';
 
 import React, { Suspense } from 'react';
@@ -36,9 +41,9 @@ function ExploreContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
-      <Navbar activeTab={activeTab} setActiveTab={(tab) => {
+      <Navbar activeTab={activeTab} setActiveTab={(tab: string) => {
         if (tab === 'home') router.push('/');
-        else setActiveTab(tab);
+        else setActiveTab(tab as any);
       }} />
 
       {/* Header Area */}

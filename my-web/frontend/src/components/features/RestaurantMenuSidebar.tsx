@@ -1,11 +1,27 @@
+// Mục đích file này để làm gì: Component Sidebar hiển thị danh mục thực đơn của nhà hàng theo dạng cây (tree view).
+// Các file khác hay file này có ý nghĩa như nào: Đóng vai trò làm bộ lọc món ăn theo danh mục ở trang chi tiết nhà hàng, giúp người dùng dễ dàng tìm món.
+// Các chức năng đặc biệt: Render danh mục đa cấp (đệ quy) có thể đóng/mở (collapse/expand), highlight danh mục đang được chọn.
+// Các biến, hàm đặc biệt trong file: Hàm đệ quy renderCategoryTree render danh mục con, các state quản lý danh mục đang mở (expandedCategories) và danh mục đang chọn (selectedCategoryId).
 'use client';
 
 import React from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 
+export interface MenuCategory {
+  id: number;
+  name: string;
+  children?: MenuCategory[];
+}
+
+export interface MenuGroup {
+  id: number | string;
+  name: string;
+  categories?: MenuCategory[];
+}
+
 interface RestaurantMenuSidebarProps {
-  categories: any[];
+  categories: MenuGroup[];
   selectedCategoryId: number | null;
   setSelectedCategoryId: (id: number | null) => void;
   expandedCategories: Record<number, boolean>;
@@ -23,7 +39,7 @@ export const RestaurantMenuSidebar = ({
     setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const renderCategoryTree = (cats: any[], level = 0) => {
+  const renderCategoryTree = (cats: MenuCategory[], level = 0) => {
     return (
       <div className={`space-y-1 ${level > 0 ? 'ml-4 border-l border-gray-100 dark:border-slate-800 pl-2 mt-1' : ''}`}>
         {cats.map(cat => {
@@ -52,7 +68,7 @@ export const RestaurantMenuSidebar = ({
                   </button>
                 )}
               </div>
-              {hasChildren && isExpanded && renderCategoryTree(cat.children, level + 1)}
+              {hasChildren && isExpanded && cat.children && renderCategoryTree(cat.children, level + 1)}
             </div>
           );
         })}

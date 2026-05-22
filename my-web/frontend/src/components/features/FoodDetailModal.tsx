@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal để xem thông tin chi tiết của một món ăn.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị đè lên màn hình hiện tại thay vì chuyển trang. Chứa ảnh lớn, mô tả dài, và trạng thái đóng/mở cửa của nhà hàng.
+ * Các chức năng đặc biệt: Tích hợp nút xem bản đồ, chuyển hướng đến trang quán ăn, cảnh báo giờ đóng cửa.
+ */
 'use client';
 
 import React from 'react';
@@ -10,8 +15,30 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
 
+export interface FoodDetailData {
+  id?: number | string;
+  name: string;
+  price?: number;
+  image?: string;
+  description?: string;
+  address?: string;
+  mapUrl?: string;
+  map_url?: string;
+  restaurantName?: string;
+  restaurant?: {
+    id?: number;
+    name: string;
+    address?: string;
+    isActive?: boolean;
+    profile?: {
+      openingHours?: string;
+    };
+  };
+  [key: string]: unknown;
+}
+
 interface FoodDetailModalProps {
-  food: any;
+  food: FoodDetailData;
   onClose: () => void;
 }
 
@@ -87,7 +114,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
 
           <div className="space-y-6 mb-10 text-gray-600 dark:text-slate-300">
             <div>
-              <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{(LABELS as any).FOOD.DETAIL_TITLE}</h4>
+              <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{LABELS.FOOD.DETAIL_TITLE}</h4>
               <p className="leading-relaxed text-body">{food.description}</p>
             </div>
 

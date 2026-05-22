@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { AiService } from '../ai/ai.service';
 import * as xlsx from 'xlsx';
 import * as bcrypt from 'bcrypt';
 import { UserRole, UserStatus, FoodStatus } from '@prisma/client';
@@ -12,6 +13,7 @@ export const EXCEL_HEADERS = {
   ADDRESS: 'Address',
   LATITUDE: 'Latitude',
   LONGITUDE: 'Longitude',
+  MAP_URL: 'Restaurant Map URL',
   FOOD_NAME: 'Food Name',
   FOOD_PRICE: 'Food Price',
   FOOD_DESC: 'Food Desc',
@@ -30,7 +32,10 @@ export const DEFAULT_VALUES = {
 
 @Injectable()
 export class MerchantImportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiService: AiService,
+  ) {}
 
   async importFromExcel(buffer: Buffer) {
     const rows = this.parseExcelBuffer(buffer);
@@ -73,6 +78,7 @@ export class MerchantImportService {
           longitude:
             parseFloat(row[EXCEL_HEADERS.LONGITUDE]) ||
             DEFAULT_VALUES.LONGITUDE,
+          mapUrl: row[EXCEL_HEADERS.MAP_URL] || '',
           foods: [],
         });
       }
@@ -98,6 +104,7 @@ export class MerchantImportService {
   private async saveMerchantsToDatabase(merchantsMap: Map<string, any>) {
     let createdCount = 0;
     let appendedCount = 0;
+    const createdFoodIds: number[] = [];
 
     for (const merchant of merchantsMap.values()) {
       await this.prisma.$transaction(async (prisma) => {
@@ -132,6 +139,7 @@ export class MerchantImportService {
                   address: merchant.address,
                   latitude: merchant.latitude,
                   longitude: merchant.longitude,
+                  mapUrl: merchant.mapUrl,
                   isActive: true,
                   profile: {
                     create: {},
@@ -152,6 +160,7 @@ export class MerchantImportService {
                 address: merchant.address,
                 latitude: merchant.latitude,
                 longitude: merchant.longitude,
+                mapUrl: merchant.mapUrl,
                 isActive: true,
                 profile: { create: {} },
               },
@@ -164,26 +173,36 @@ export class MerchantImportService {
         }
 
         if (merchant.foods.length > 0) {
-          await prisma.food.createMany({
-            data: merchant.foods.map((food: any) => ({
-              restaurantId,
-              name: food.name,
-              price: food.price,
-              description: food.description,
-              image: food.image,
-              tags: food.tags,
-              status: FoodStatus.APPROVED,
-              isActive: true,
-            })),
-          });
+          // Tạo từng food riêng lẻ để lấy được ID và trigger AI embedding
+          for (const food of merchant.foods) {
+            const created = await prisma.food.create({
+              data: {
+                restaurantId,
+                name: food.name,
+                price: food.price,
+                description: food.description || '',
+                image: food.image || '',
+                tags: food.tags,
+                status: FoodStatus.APPROVED,
+                isActive: true,
+              },
+            });
+            createdFoodIds.push(created.id);
+          }
         }
       });
+    }
+
+    // Trigger AI embedding update cho tất cả foods vừa được tạo (background, không blocking)
+    for (const foodId of createdFoodIds) {
+      void this.aiService.updateFoodEmbedding(foodId);
     }
 
     return {
       message: 'Import thành công',
       createdMerchants: createdCount,
       appendedMerchants: appendedCount,
+      totalFoods: createdFoodIds.length,
     };
   }
 }

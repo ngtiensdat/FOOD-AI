@@ -65,6 +65,8 @@ class ApiClient {
             const { useAuthStore } = await import('@/store/useAuthStore');
             useAuthStore.getState().logout();
             window.location.href = '/login';
+            // Hang the promise to prevent throwing errors while redirecting
+            return new Promise(() => {});
           }
         }
       } catch (error) {

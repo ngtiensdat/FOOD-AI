@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Header của trang cá nhân (Profile).
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị thông tin tổng quan của người dùng hoặc nhà hàng, bao gồm ảnh bìa, avatar, thông tin trạng thái hoạt động và các nút tương tác (Follow, Edit, Dashboard).
+ * Các chức năng đặc biệt: Tự động tính toán trạng thái "Đang mở cửa / Đóng cửa" dựa trên giờ hoạt động (openingHours) và trạng thái hiển thị (isActive).
+ */
 'use client';
 
 import React from 'react';
@@ -9,10 +14,42 @@ import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
 import { getValidImageUrl } from '@/utils/helpers';
 
+export interface ProfileHeaderData {
+  id: number;
+  name?: string;
+  role?: string;
+  isFollowing?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ProfileData {
+  _count?: {
+    followers?: number;
+    userFollowers?: number;
+    userFollowing?: number;
+    follows?: number;
+  };
+  restaurants?: Array<{
+    isActive?: boolean;
+    profile?: {
+      openingHours?: string;
+    };
+    _count?: {
+      followers?: number;
+    };
+  }>;
+  profile?: {
+    coverImage?: string;
+    avatar?: string;
+    bio?: string;
+  };
+  [key: string]: unknown;
+}
+
 interface ProfileHeaderProps {
-  user: any;
-  profile: any;
-  me: any;
+  user: ProfileHeaderData | null;
+  profile: ProfileData;
+  me: ProfileHeaderData | null;
   isFollowLoading: boolean;
   onEdit: () => void;
   onFollow: () => void;
@@ -70,7 +107,7 @@ export const ProfileHeader = ({
         {profile?.profile?.coverImage ? (
           <Image 
             src={getValidImageUrl(profile.profile.coverImage)} 
-            alt="Cover" 
+            alt={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER}
             fill 
             sizes="(max-width: 768px) 100vw, 100vw"
             className="object-cover" 
@@ -112,6 +149,7 @@ export const ProfileHeader = ({
               <Avatar 
                 src={profile?.profile?.avatar} 
                 name={user?.name} 
+                size={192}
                 className="w-full h-full"
                 fallbackClassName="text-5xl"
               />
@@ -189,8 +227,8 @@ export const ProfileHeader = ({
                 <Button 
                   variant="primary" 
                   onClick={() => {
-                    if (me.role === 'ADMIN') router.push('/admin');
-                    else if (me.role === 'RESTAURANT') router.push('/restaurant-admin');
+                    if (me?.role === 'ADMIN') router.push('/admin');
+                    else if (me?.role === 'RESTAURANT') router.push('/restaurant-admin');
                     else router.push('/dashboard');
                   }}
                 >

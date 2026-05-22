@@ -1,3 +1,8 @@
+/**
+ * @fileoverview frontend/src/app/login/page.tsx
+ * @module AuthLogin
+ * @description Trang Đăng nhập của ứng dụng. Đóng vai trò UI Orchestrator chuyên biệt cho việc hiển thị form đăng nhập, toàn bộ logic xử lý trạng thái và gọi API được trừu tượng hoá vào hook `useLoginActions`.
+ */
 'use client';
 
 import React from 'react';

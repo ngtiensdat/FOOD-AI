@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal để Thêm mới hoặc Chỉnh sửa món ăn.
+ * Các file khác hay file này có ý nghĩa như nào: Dùng trong trang quản trị của nhà hàng hoặc admin, hiển thị form nhập liệu.
+ * Các chức năng đặc biệt: Tích hợp chọn danh mục, tự động điền địa chỉ/vị trí theo cơ sở kinh doanh, tái sử dụng cho cả Thêm và Sửa.
+ */
 'use client';
 
 import React from 'react';
@@ -8,14 +13,36 @@ import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { usePublicCategories } from '@/hooks/usePublicCategories';
 
+export interface FoodFormData {
+  id?: number;
+  name: string;
+  price: string | number;
+  tags: string;
+  image: string;
+  description: string;
+  restaurantId: number | string;
+  categoryId?: number | string | null;
+  address?: string;
+  mapUrl?: string;
+  lat?: string | number;
+  lng?: string | number;
+  [key: string]: unknown;
+}
+
+export interface BranchData {
+  id: number;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface FoodFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editingFood: any;
-  formData: any;
-  setFormData: (data: any) => void;
+  editingFood: FoodFormData | null;
+  formData: FoodFormData;
+  setFormData: (data: FoodFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
-  myBranches: any[];
+  myBranches: BranchData[];
   onSelectBranch: (branchId: number) => void;
 }
 
@@ -83,7 +110,7 @@ export const FoodFormModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Chọn Cơ sở */}
             <div className="md:col-span-2 space-y-2">
-              <label className="text-small font-semibold text-gray-700 ml-1">Cơ sở kinh doanh</label>
+              <label className="text-small font-semibold text-gray-700 ml-1">{LABELS.RESTAURANT.MODAL.BRANCH_LABEL}</label>
               <select
                 required
                 value={formData.restaurantId || ''}
@@ -91,9 +118,9 @@ export const FoodFormModal = ({
                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
               >
                 <option value="" disabled hidden>
-                  -- Chọn cơ sở --
+                  {LABELS.RESTAURANT.MODAL.BRANCH_PLACEHOLDER}
                 </option>
-                {myBranches.map((branch: any) => (
+                {myBranches.map((branch) => (
                   <option key={branch.id} value={branch.id}>
                     {branch.name}
                   </option>
@@ -103,13 +130,13 @@ export const FoodFormModal = ({
 
             {/* Chọn Danh mục */}
             <div className="md:col-span-2 space-y-2">
-              <label className="text-small font-semibold text-gray-700 ml-1">Danh mục món ăn (Tùy chọn)</label>
+              <label className="text-small font-semibold text-gray-700 ml-1">{LABELS.RESTAURANT.MODAL.CATEGORY_LABEL}</label>
               <select
                 value={formData.categoryId || ''}
                 onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
               >
-                <option value="">-- Không thuộc danh mục nào --</option>
+                <option value="">{LABELS.RESTAURANT.MODAL.CATEGORY_PLACEHOLDER}</option>
                 {buildFlatOptions()}
               </select>
             </div>
@@ -145,19 +172,19 @@ export const FoodFormModal = ({
               className="md:col-span-2" 
             />
             <Input 
-              label={`${LABELS.FORM.ADDRESS} (Tự động điền theo cơ sở)`} 
+              label={`${LABELS.FORM.ADDRESS} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_BRANCH}`} 
               value={formData.address} 
               disabled
               className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
             />
             <Input 
-              label="Bản đồ URL (Tự động điền theo cơ sở)" 
+              label={`${LABELS.FORM.MAP_URL} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_BRANCH}`} 
               value={formData.mapUrl} 
               disabled
               className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
             />
             <Input 
-              label="Vĩ độ (Tự động điền)" 
+              label={`${LABELS.FORM.LAT} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
               type="number"
               step="any"
               value={formData.lat} 
@@ -165,7 +192,7 @@ export const FoodFormModal = ({
               className="bg-gray-100 text-gray-500 cursor-not-allowed"
             />
             <Input 
-              label="Kinh độ (Tự động điền)" 
+              label={`${LABELS.FORM.LNG} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
               type="number"
               step="any"
               value={formData.lng} 

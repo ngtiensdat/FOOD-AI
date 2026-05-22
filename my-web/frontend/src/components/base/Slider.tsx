@@ -1,3 +1,9 @@
+/**
+ * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) để tạo một danh sách cuộn ngang (Slider/Carousel) với nút điều hướng mượt mà.
+ * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI thuần (Dumb Component), nhận các khối nội dung (`children`) và tự động dàn hàng ngang, có thể cuộn bằng tay hoặc bấm nút. Rất phù hợp để hiển thị danh sách Món ăn, Nhà hàng nổi bật.
+ * Các chức năng đặc biệt: Tích hợp logic tính toán `scrollLeft` để trượt sang ngang chính xác bằng 80% chiều rộng của container mỗi lần bấm nút. Có cơ chế tự động bôi màu Gradient cho 2 chữ cái cuối của Tiêu đề (giống `Section.tsx`).
+ * Các biến, hàm đặc biệt trong file: `bgStyles` chuẩn hoá các màu nền an toàn cho TailwindCSS. Hàm `scroll` thao tác trực tiếp với DOM thông qua `useRef`.
+ */
 'use client';
 
 import React, { useRef } from 'react';
@@ -49,16 +55,16 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
     </div>
   );
 
+  const bgStyles = {
+    white: 'bg-white dark:bg-slate-950',
+    gray: 'bg-gray-50/50 dark:bg-gray-100/10',
+    orange: 'bg-orange-50/30 dark:bg-primary/5',
+    blue: 'bg-blue-50/30 dark:bg-blue-950/10',
+    transparent: 'bg-transparent',
+  };
+
   return (
-    <section className={`p-layout transition-colors duration-300 ${
-      bg === 'white' 
-        ? 'bg-white dark:bg-slate-950' 
-        : bg === 'gray' 
-          ? 'bg-gray-50/50 dark:bg-gray-100/10' 
-          : bg === 'orange' 
-            ? 'bg-orange-50/30 dark:bg-primary/5' 
-            : 'bg-blue-50/30 dark:bg-blue-950/10'
-    }`}>
+    <section className={`p-layout transition-colors duration-300 ${bgStyles[bg]}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-12">
           <div>

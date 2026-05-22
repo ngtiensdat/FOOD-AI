@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal hiển thị danh sách người theo dõi hoặc người đang theo dõi.
+ * Các file khác hay file này có ý nghĩa như nào: Dùng chung ở trang Profile công khai của người dùng hoặc nhà hàng.
+ * Các chức năng đặc biệt: Xử lý cả hai cấu trúc dữ liệu trả về từ API (phẳng hoặc lồng trong thuộc tính `user`).
+ */
 'use client';
 
 import React from 'react';
@@ -6,13 +11,26 @@ import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 
+export interface FollowerItem {
+  id?: number;
+  name?: string;
+  email?: string;
+  role?: string;
+  profile?: {
+    fullName?: string;
+    avatar?: string;
+  };
+  user?: FollowerItem;
+  [key: string]: unknown;
+}
+
 interface FollowersModalProps {
   isOpen: boolean;
   onClose: () => void;
   loading: boolean;
   error: string | null;
-  followersList: any[];
-  onItemClick: (item: any) => void;
+  followersList: FollowerItem[];
+  onItemClick: (item: FollowerItem) => void;
   title?: string;
   emptyLabel?: string;
 }
@@ -80,10 +98,10 @@ export const FollowersModal = ({
               const userObj = item.user || item;
               if (!userObj) return null;
 
-              const userName = userObj.profile?.fullName || userObj.name || 'Người dùng';
+              const userName = userObj.profile?.fullName || userObj.name || LABELS.COMMON.USER;
               const userEmail = userObj.email;
               const userAvatar = userObj.profile?.avatar;
-              const userRoleLabel = userObj.role === 'RESTAURANT' ? 'Merchant' : 'Customer';
+              const userRoleLabel = userObj.role === 'RESTAURANT' ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
 
               return (
                 <div 

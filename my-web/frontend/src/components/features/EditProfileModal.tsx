@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal để người dùng chỉnh sửa thông tin cá nhân.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị popup chứa các form nhập liệu: tên, số điện thoại, avatar, cover, tiểu sử, địa chỉ, công việc.
+ * Các chức năng đặc biệt: Tích hợp dánh sách Tỉnh/Thành phố và Quận/Huyện động từ LOCATION_DATA.
+ */
 'use client';
 
 import React from 'react';
@@ -8,11 +13,24 @@ import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
 
+export interface EditProfileData {
+  name: string;
+  phone: string;
+  avatar: string;
+  coverImage: string;
+  bio: string;
+  city: string;
+  district: string;
+  street: string;
+  workAt: string;
+  [key: string]: unknown;
+}
+
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editData: any;
-  setEditData: (data: any) => void;
+  editData: EditProfileData;
+  setEditData: (data: EditProfileData) => void;
   loading: boolean;
   onSave: () => void;
 }
@@ -80,7 +98,7 @@ export const EditProfileModal = ({
             {/* Tỉnh / Thành phố */}
             <div>
               <label className="text-small font-semibold text-gray-700 ml-1">
-                Tỉnh/Thành phố
+                {LABELS.SETTINGS.PROFILE.EDIT_MODAL.CITY}
               </label>
               <select
                 value={editData.city || 'Hà Nội'}
@@ -104,7 +122,7 @@ export const EditProfileModal = ({
             {/* Quận / Huyện */}
             <div>
               <label className="text-small font-semibold text-gray-700 ml-1">
-                Quận/Huyện
+                {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT}
               </label>
               <select
                 value={editData.district || ''}
@@ -112,7 +130,7 @@ export const EditProfileModal = ({
                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
               >
                 <option value="" disabled hidden>
-                  Chọn Quận/Huyện
+                  {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
                 </option>
                 {LOCATION_DATA.find((c) => c.value === (editData.city || 'Hà Nội'))
                   ?.districts.map((d) => (
@@ -125,8 +143,8 @@ export const EditProfileModal = ({
 
             {/* Địa chỉ chi tiết */}
             <Input 
-              label="Địa chỉ chi tiết (Số nhà, tên đường...)" 
-              placeholder="Ví dụ: 123 Đường Láng" 
+              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.STREET} 
+              placeholder={LABELS.SETTINGS.PROFILE.EDIT_MODAL.STREET_PLACEHOLDER} 
               value={editData.street || ''} 
               onChange={e => setEditData({...editData, street: e.target.value})} 
               className="md:col-span-2"

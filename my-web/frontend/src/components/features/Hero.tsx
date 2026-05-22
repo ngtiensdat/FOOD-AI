@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Hero (banner lớn) hiển thị ở trang chủ, chứa câu chào, thanh tìm kiếm AI và bộ lọc vị trí.
+ * Các file khác hay file này có ý nghĩa như nào: Là điểm tương tác đầu tiên của người dùng, tích hợp khung kết quả AiResponseBox bên dưới.
+ * Các chức năng đặc biệt: Thiết kế bắt mắt, hỗ trợ tìm kiếm bằng giọng nói/text gửi thẳng tới AI.
+ */
 'use client';
 
 import React from 'react';
@@ -5,7 +10,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Sparkles, Send, Smile, DollarSign, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
-import { AiResponseBox } from './AiResponseBox';
+import { AiResponseBox, AiSuggestedFood } from './AiResponseBox';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
 
@@ -17,8 +22,8 @@ interface HeroProps {
   handleAiConsult: (e: React.FormEvent) => void;
   isAiLoading: boolean;
   aiResponse: string;
-  suggestedFoods: any[];
-  setSelectedFood: (food: any) => void;
+  suggestedFoods: AiSuggestedFood[];
+  setSelectedFood: (food: AiSuggestedFood) => void;
   isAuthenticated: boolean;
   selectedCity: string;
   selectedDistrict: string;
@@ -121,7 +126,7 @@ export const Hero = ({
               className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
             >
               <option value="" className="text-slate-900 bg-white">
-                Tất cả Quận/Huyện
+                {LABELS.EXPLORE.ALL_DISTRICTS}
               </option>
               {LOCATION_DATA.find((c) => c.value === selectedCity)
                 ?.districts.map((d) => (

@@ -1,18 +1,23 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị danh sách các món ăn của một nhà hàng dưới dạng lưới (Grid).
+ * Các file khác hay file này có ý nghĩa như nào: Nằm trên trang public profile của nhà hàng, lấy dữ liệu món ăn và render thông qua Component `FoodCard`. Hỗ trợ chức năng load more.
+ * Các chức năng đặc biệt: Hiển thị trạng thái đang tải (spin) hoặc trạng thái trống (Empty state) nếu nhà hàng chưa có món ăn nào. Truyền dữ liệu nhà hàng vào từng thẻ món ăn.
+ */
 'use client';
 
 import React from 'react';
 import { Utensils } from 'lucide-react';
-import { FoodCard } from '@/components/features/FoodCard';
+import { FoodCard, FoodCardData } from '@/components/features/FoodCard';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 
 interface RestaurantFoodGridProps {
-  foodsData: any[];
+  foodsData: FoodCardData[];
   loadingFoods: boolean;
   hasMoreFoods: boolean;
-  restaurantData: any;
+  restaurantData: { name: string; [key: string]: unknown } | null;
   handleLoadMoreFoods: () => void;
-  setSelectedFood: (food: any) => void;
+  setSelectedFood: (food: FoodCardData) => void;
 }
 
 export const RestaurantFoodGrid = ({
@@ -45,10 +50,10 @@ export const RestaurantFoodGrid = ({
   return (
     <div className="flex-1 w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {foodsData.map((food: any) => (
+        {foodsData.map((food: FoodCardData) => (
           <FoodCard 
             key={food.id} 
-            food={{ ...food, restaurant: restaurantData }} 
+            food={{ ...food, restaurant: restaurantData || undefined }} 
             onViewDetail={setSelectedFood} 
           />
         ))}

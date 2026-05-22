@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Modal dành cho Admin để chỉnh sửa thông tin nhanh của một món ăn trên hệ thống.
+ * Các file khác hay file này có ý nghĩa như nào: Được nhúng vào trang quản trị (Admin Panel), nhận dữ liệu từ bảng danh sách món ăn.
+ * Các chức năng đặc biệt: Nhận dữ liệu `editFormData` từ component cha và cập nhật liên tục khi gõ.
+ */
 'use client';
 
 import React from 'react';
@@ -7,10 +12,18 @@ import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
+export interface AdminFoodFormData {
+  name: string;
+  price: string | number;
+  tags: string;
+  image: string;
+  description: string;
+}
+
 interface AdminFoodModalProps {
-  editingFood: any;
-  editFormData: any;
-  setEditFormData: (data: any) => void;
+  editingFood: { id: number; [key: string]: unknown } | null;
+  editFormData: AdminFoodFormData;
+  setEditFormData: (data: AdminFoodFormData) => void;
   onClose: () => void;
   onSave: () => void;
 }

@@ -82,7 +82,7 @@ export class AdminService {
   }
 
   async deleteUser(id: number) {
-    return this.userRepository.update(id, { deletedAt: new Date() });
+    return this.userRepository.hardDeleteUser(id);
   }
 
   async deleteFood(id: number) {

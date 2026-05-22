@@ -4,7 +4,7 @@ Tài liệu này định nghĩa quy trình chuẩn (Standard Operating Procedure
 
 ## Bước 1: Nạp Bối cảnh & Tiêu chuẩn (Context Activation)
 - Truy xuất hoặc nhớ lại toàn bộ các nguyên tắc kiến trúc (Enterprise Architecture) được quy định trong thư mục `.agent/`: các rule, skill,...
-- Nhớ lại các tiêu chí rà soát chất lượng code nghiêm ngặt trong thư mục `.check-prompt/` (Clean Code, Bắt lỗi Hardcode, Magic Values, Unused variables).
+- Nhớ lại các tiêu chí rà soát chất lượng code nghiêm ngặt trong thư mục `.check-prompt/` (Clean Code, Bắt lỗi Hardcode, Magic Values, Unused variables). Đối với các lỗi về nhaxnm kiểm tra các file nhãn đã có trước đó xem có tận dụng được không
 
 ## Bước 2: Phân tích & Kiểm duyệt File (Code Audit)
 Với mỗi file User cung cấp, Agent tiến hành:
@@ -19,7 +19,8 @@ Với mỗi file User cung cấp, Agent tiến hành:
 - Chấm điểm mã nguồn hiện tại và đưa ra các nhận xét cụ thể về những gì cần phải thay đổi, điều chỉnh cho phù hợp với các nguyên tắc ở trên.
 - Sau khi mã nguồn đã đạt chuẩn, Agent **bắt buộc** chèn một khối bình luận (JSDoc/Comment) vào **dòng đầu tiên** của file với cấu trúc mẫu như sau:
 
-```typescript
+Nếu 10/10 thì thực hiện ngay comment mà không cần hỏi lại 
+```typescript không cần audit status
 // Mục đích file này để làm gì
 // Các file khác hay file này có ý nghĩa như nào
 // Các chức năng đặc biệt 
