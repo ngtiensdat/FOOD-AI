@@ -9,12 +9,17 @@ import { FoodModule } from './modules/food/food.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
+import { CategoryModule } from './modules/category/category.module';
+import { UserModule } from './modules/user/user.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
+    UserModule,
+    AdminModule,
     AiModule,
     FoodModule,
     ThrottlerModule.forRoot([
@@ -23,6 +28,7 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
         limit: 5,
       },
     ]),
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [

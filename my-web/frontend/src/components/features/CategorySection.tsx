@@ -1,11 +1,35 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị phần "Khám phá theo danh mục" trên trang chủ/explore.
+ * Các file khác hay file này có ý nghĩa như nào: Liệt kê các thẻ Category và các gợi ý Tags cho người dùng bấm vào.
+ * Các chức năng đặc biệt: Giao diện thẻ trực quan có hiệu ứng hover, tích hợp sẵn các hằng số CATEGORIES và SUGGESTED_TAGS cục bộ.
+ */
 'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import { CATEGORIES, SUGGESTED_TAGS } from '@/constants/categories';
 import { Section } from '@/components/base/Section';
 import { LABELS } from '@/constants/labels';
+
+const CATEGORIES = [
+  { name: LABELS.CATEGORIES.NAMES.WATER, icon: '🍜' },
+  { name: LABELS.CATEGORIES.NAMES.RICE, icon: '🍛' },
+  { name: LABELS.CATEGORIES.NAMES.SNACK, icon: '🍟' },
+  { name: LABELS.CATEGORIES.NAMES.DESSERT, icon: '🍰' },
+  { name: LABELS.CATEGORIES.NAMES.CASUAL, icon: '🍚' },
+  { name: LABELS.CATEGORIES.NAMES.LUXURY, icon: '🍣' },
+];
+
+const SUGGESTED_TAGS = [
+  LABELS.CATEGORIES.TAGS.TRADITIONAL,
+  LABELS.CATEGORIES.TAGS.FASTFOOD,
+  LABELS.CATEGORIES.TAGS.FRIED,
+  LABELS.CATEGORIES.TAGS.ALONE,
+  LABELS.CATEGORIES.TAGS.GROUP,
+  LABELS.CATEGORIES.TAGS.OFFICE,
+  LABELS.CATEGORIES.TAGS.SPICY,
+  LABELS.CATEGORIES.TAGS.HEALTHY,
+];
 
 interface CategorySectionProps {
   handleCategoryClick: (category: string) => void;
@@ -16,7 +40,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
   return (
     <Section id="categories">
       <div className="text-center mb-12">
-        <h2 className="text-h2 text-gray-900 mb-4">{(LABELS as any).EXPLORE.TITLE}</h2>
+        <h2 className="text-h2 text-gray-900 mb-4">{LABELS.EXPLORE.TITLE}</h2>
 
         {/* Thanh tìm kiếm Tag */}
         <div className="max-w-xl mx-auto mb-6 relative">
@@ -24,7 +48,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
           <input
             suppressHydrationWarning
             type="text"
-            placeholder={(LABELS as any).EXPLORE.TAG_PLACEHOLDER}
+            placeholder={LABELS.EXPLORE.TAG_PLACEHOLDER}
             className="w-full bg-white dark:bg-gray-100 border border-gray-200 dark:border-gray-200 rounded-input py-3 pl-12 pr-4 outline-none focus:border-primary dark:text-gray-900 shadow-sm transition-all text-body"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -36,7 +60,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
 
         {/* Gợi ý Tag */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
-          <span className="text-small text-gray-400 dark:text-gray-550 font-bold mr-2 self-center">{(LABELS as any).EXPLORE.SUGGESTED_TAGS}</span>
+          <span className="text-small text-gray-400 dark:text-gray-550 font-bold mr-2 self-center">{LABELS.EXPLORE.SUGGESTED_TAGS}</span>
           {SUGGESTED_TAGS.map(t => (
             <button
               suppressHydrationWarning

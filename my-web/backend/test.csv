@@ -1,0 +1,2 @@
+Email,Password,Owner Name,Restaurant Name,Address,Latitude,Longitude,Food Name,Food Price,Food Image URL,Food Desc,Food Tags
+merchant@test.com,pass123,Test Owner,Test Restaurant,123 Test St,21.0,105.8,Pizza,100000,https://example.com/pizza.jpg,Delicious pizza,spicy,cheese

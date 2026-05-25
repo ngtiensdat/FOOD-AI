@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Modal để xem thông tin chi tiết của một món ăn.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị đè lên màn hình hiện tại thay vì chuyển trang. Chứa ảnh lớn, mô tả dài, và trạng thái đóng/mở cửa của nhà hàng.
+ * Các chức năng đặc biệt: Tích hợp nút xem bản đồ, chuyển hướng đến trang quán ăn, cảnh báo giờ đóng cửa.
+ */
 'use client';
 
 import React from 'react';
@@ -8,40 +13,36 @@ import Link from 'next/link';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
-import { getValidImageUrl } from '@/utils/helpers';
+import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
+
+export interface FoodDetailData {
+  id?: number | string;
+  name: string;
+  price?: number;
+  image?: string;
+  description?: string;
+  address?: string;
+  mapUrl?: string;
+  map_url?: string;
+  restaurantName?: string;
+  restaurant?: {
+    id?: number;
+    name: string;
+    address?: string;
+    isActive?: boolean;
+    profile?: {
+      openingHours?: string;
+    };
+  };
+  [key: string]: unknown;
+}
 
 interface FoodDetailModalProps {
-  food: any;
+  food: FoodDetailData;
   onClose: () => void;
 }
 
-// Robust helper to check if restaurant is open based on hours & manual status
-const isRestaurantCurrentlyOpen = (openingHours?: string, isActive?: boolean) => {
-  if (isActive === false) return false;
-  if (!openingHours) return true; // default open
-
-  try {
-    const cleanHours = openingHours.replace(/\s+/g, '');
-    const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
-    if (!match) return true;
-
-    const [, sh, sm, eh, em] = match;
-    const startMin = parseInt(sh, 10) * 60 + parseInt(sm, 10);
-    const endMin = parseInt(eh, 10) * 60 + parseInt(em, 10);
-
-    const now = new Date();
-    const currentMin = now.getHours() * 60 + now.getMinutes();
-
-    if (startMin <= endMin) {
-      return currentMin >= startMin && currentMin <= endMin;
-    } else {
-      // Over midnight
-      return currentMin >= startMin || currentMin <= endMin;
-    }
-  } catch {
-    return true;
-  }
-};
+// Removed local isRestaurantCurrentlyOpen to utils/helpers
 
 export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
   const isOpen = isRestaurantCurrentlyOpen(
@@ -113,7 +114,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
 
           <div className="space-y-6 mb-10 text-gray-600 dark:text-slate-300">
             <div>
-              <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{(LABELS as any).FOOD.DETAIL_TITLE}</h4>
+              <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{LABELS.FOOD.DETAIL_TITLE}</h4>
               <p className="leading-relaxed text-body">{food.description}</p>
             </div>
 
@@ -141,12 +142,14 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href={`/profile?id=${food.restaurant?.ownerId}`} className="flex-1">
-              <Button variant="primary" fullWidth className="py-4 rounded-2xl">
-                <Store size={20} className="mr-2" /> {LABELS.FOOD.STORE_PAGE}
-              </Button>
-            </Link>
-            <Button variant="outline" fullWidth className="py-4 rounded-2xl">
+            {food.restaurant?.id && (
+              <Link href={`/restaurant/${food.restaurant.id}`} className="flex-1">
+                <Button variant="primary" fullWidth className="py-4 rounded-2xl">
+                  <Store size={20} className="mr-2" /> {LABELS.FOOD.STORE_PAGE}
+                </Button>
+              </Link>
+            )}
+            <Button variant="outline" className={food.restaurant?.id ? "flex-1 py-4 rounded-2xl" : "w-full py-4 rounded-2xl"}>
               <span>{LABELS.FOOD.REVIEWS}</span>
             </Button>
           </div>

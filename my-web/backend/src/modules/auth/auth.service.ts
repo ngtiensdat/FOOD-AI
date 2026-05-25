@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../user/user.repository';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { JwtService } from '@nestjs/jwt';
@@ -19,7 +19,7 @@ import {
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AiService } from '../ai/ai.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
@@ -118,48 +118,6 @@ export class AuthService {
     return { ...userWithoutSensitiveData, isFollowing };
   }
 
-  async toggleFollow(followerId: number, followingId: number) {
-    if (followerId === followingId) {
-      throw new ConflictException('Không thể tự theo dõi chính mình');
-    }
-
-    const existing = await this.userRepository.findWithFollow(
-      followerId,
-      followingId,
-    );
-    if (existing) {
-      await this.userRepository.unfollow(followerId, followingId);
-      return { followed: false };
-    } else {
-      await this.userRepository.follow(followerId, followingId);
-      return { followed: true };
-    }
-  }
-
-  async updateProfile(
-    userId: number,
-    data: UpdateProfileDto & { password?: string },
-  ) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
-
-    await this.userRepository.upsertProfile(userId, {
-      fullName: data.name || data.fullName,
-      phone: data.phone,
-      avatar: data.avatar,
-      coverImage: data.coverImage,
-      bio: data.bio,
-      address: data.address,
-      workAt: data.workAt,
-    });
-
-    if (data.name) {
-      await this.userRepository.update(userId, { name: data.name });
-    }
-
-    return { message: 'Cập nhật thành công' };
-  }
-
   async completeOnboarding(userId: number, dto: CompleteOnboardingDto) {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('Người dùng không tồn tại');
@@ -174,31 +132,61 @@ export class AuthService {
 
       // Sử dụng Database Transaction để đảm bảo tính toàn vẹn dữ liệu
       await this.prisma.$transaction(async (tx) => {
-        // 1. Xóa toàn bộ cơ sở mặc định cũ của user này
-        await tx.restaurant.deleteMany({
+        // Lấy danh sách các chi nhánh hiện có của user
+        const existingRestaurants = await tx.restaurant.findMany({
           where: { ownerId: userId },
+          orderBy: { id: 'asc' },
         });
 
-        // 2. Tạo hàng loạt chi nhánh mới
-        for (const branch of branches) {
-          await tx.restaurant.create({
-            data: {
-              name: branch.name,
-              address: branch.address,
-              latitude: branch.latitude,
-              longitude: branch.longitude,
-              mapUrl: branch.mapUrl,
-              ownerId: userId,
-              profile: {
-                create: {
-                  bio:
-                    branch.bio ||
-                    'Chào mừng bạn đến với nhà hàng của chúng tôi!',
-                  openingHours: branch.openingHours || '00:00 - 00:00',
+        for (let i = 0; i < branches.length; i++) {
+          const branch = branches[i];
+          if (i < existingRestaurants.length) {
+            // Cập nhật chi nhánh đã có (để không bị mất món ăn)
+            await tx.restaurant.update({
+              where: { id: existingRestaurants[i].id },
+              data: {
+                name: branch.name,
+                address: branch.address,
+                latitude: branch.latitude,
+                longitude: branch.longitude,
+                mapUrl: branch.mapUrl,
+                profile: {
+                  upsert: {
+                    create: {
+                      bio:
+                        branch.bio ||
+                        'Chào mừng bạn đến với nhà hàng của chúng tôi!',
+                      openingHours: branch.openingHours || '00:00 - 00:00',
+                    },
+                    update: {
+                      bio: branch.bio,
+                      openingHours: branch.openingHours,
+                    },
+                  },
                 },
               },
-            },
-          });
+            });
+          } else {
+            // Thêm mới nếu danh sách truyền lên nhiều hơn số hiện có
+            await tx.restaurant.create({
+              data: {
+                name: branch.name,
+                address: branch.address,
+                latitude: branch.latitude,
+                longitude: branch.longitude,
+                mapUrl: branch.mapUrl,
+                ownerId: userId,
+                profile: {
+                  create: {
+                    bio:
+                      branch.bio ||
+                      'Chào mừng bạn đến với nhà hàng của chúng tôi!',
+                    openingHours: branch.openingHours || '00:00 - 00:00',
+                  },
+                },
+              },
+            });
+          }
         }
       });
     }
@@ -333,8 +321,16 @@ export class AuthService {
 
   async generateToken(user: User & { profile?: UserProfile | null }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1d' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    const accessToken = this.jwtService.sign(payload, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expiresIn: appConfig().jwtAccessExpiration as any,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expiresIn: appConfig().jwtRefreshExpiration as any,
+    });
 
     await this.userRepository.updateRefreshToken(user.id, refreshToken);
 

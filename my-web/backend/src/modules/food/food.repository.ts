@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, FoodStatus } from '@prisma/client';
+import { LIMITS } from '../../common/constants/limits.constant';
 
 export interface NearbyResult {
   id: number;
@@ -30,7 +31,7 @@ export class FoodRepository {
           },
         },
         orderBy: { createdAt: 'desc' },
-        take: 100,
+        take: LIMITS.FOOD_LIST_PAGINATION,
       }),
       this.prisma.food.count({ where }),
     ]);
@@ -53,7 +54,10 @@ export class FoodRepository {
     });
   }
 
-  async findRecentViews(userId: number, limit: number = 5) {
+  async findRecentViews(
+    userId: number,
+    limit: number = LIMITS.DEFAULT_RECENT_VIEWS,
+  ) {
     return this.prisma.history.findMany({
       where: {
         userId,
@@ -97,6 +101,18 @@ export class FoodRepository {
   }
 
   async findNearby(lat: number, lng: number, radius: number) {
+    // 1. Tính toán Bounding Box để lọc thô (Tránh Full Table Scan tính Haversine)
+    // 1 độ vĩ độ (latitude) ~ 111.045 km
+    const latDelta = radius / 111.045;
+    // 1 độ kinh độ (longitude) ~ 111.045 * cos(lat) km
+    const lngDelta = radius / (111.045 * Math.cos((lat * Math.PI) / 180));
+
+    const minLat = lat - latDelta;
+    const maxLat = lat + latDelta;
+    const minLng = lng - lngDelta;
+    const maxLng = lng + lngDelta;
+
+    // 2. Lọc thô bằng Bounding Box trước, sau đó mới tính khoảng cách chính xác bằng Haversine
     const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
       SELECT f.id, 
         (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) AS distance
@@ -107,9 +123,11 @@ export class FoodRepository {
         AND f.status = ${FoodStatus.APPROVED} 
         AND f.lat IS NOT NULL 
         AND f.lng IS NOT NULL
+        AND f.lat BETWEEN ${minLat} AND ${maxLat}
+        AND f.lng BETWEEN ${minLng} AND ${maxLng}
         AND (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) <= ${radius}
       ORDER BY distance ASC
-      LIMIT 12
+      LIMIT ${LIMITS.DEFAULT_NEARBY_PAGINATION}
     `;
 
     if (nearbyResults.length === 0) return [];
@@ -147,8 +165,14 @@ export class FoodRepository {
       );
   }
 
-  async create(data: Prisma.FoodCreateInput) {
+  async create(data: Prisma.FoodUncheckedCreateInput) {
     return this.prisma.food.create({ data });
+  }
+
+  async createMany(data: Prisma.FoodCreateManyInput[]) {
+    return this.prisma.food.createMany({
+      data,
+    });
   }
 
   async update(id: number, data: Prisma.FoodUpdateInput) {
@@ -188,9 +212,127 @@ export class FoodRepository {
     });
   }
 
+  async findManyRestaurantsByOwnerId(ownerId: number) {
+    return this.prisma.restaurant.findMany({
+      where: { ownerId },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
   async findRestaurantById(id: number) {
     return this.prisma.restaurant.findUnique({
       where: { id },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
+  async findPublicRestaurantById(id: number) {
+    return this.prisma.restaurant.findUnique({
+      where: { id },
+      include: {
+        profile: true,
+        foods: {
+          where: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            followers: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getUserPreferences(userId: number): Promise<Record<string, unknown>> {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: { preferences: true },
+    });
+    return (profile?.preferences as Record<string, unknown>) || {};
+  }
+
+  async findRestaurantFollowers(restaurantId: number) {
+    return this.prisma.follow.findMany({
+      where: { restaurantId },
+      select: {
+        id: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findMerchantFollowing(ownerId: number) {
+    return this.prisma.follow.findMany({
+      where: { userId: ownerId },
+      select: {
+        id: true,
+        createdAt: true,
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            profile: {
+              select: {
+                coverImage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async isUserFollowingRestaurant(
+    userId: number,
+    restaurantId: number,
+  ): Promise<boolean> {
+    const follow = await this.prisma.follow.findUnique({
+      where: {
+        userId_restaurantId: { userId, restaurantId },
+      },
+    });
+    return !!follow;
+  }
+
+  async followRestaurant(userId: number, restaurantId: number) {
+    return this.prisma.follow.create({
+      data: { userId, restaurantId },
+    });
+  }
+
+  async unfollowRestaurant(userId: number, restaurantId: number) {
+    return this.prisma.follow.delete({
+      where: {
+        userId_restaurantId: { userId, restaurantId },
+      },
+    });
+  }
+
+  async countMerchantFollowing(ownerId: number): Promise<number> {
+    return this.prisma.follow.count({
+      where: { userId: ownerId },
     });
   }
 

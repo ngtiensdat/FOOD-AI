@@ -1,19 +1,25 @@
+/**
+ * Mục đích file này để làm gì: Component Thanh điều hướng (Navbar) chính của website.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị thanh menu ngang ở trên cùng, chứa logo, các tab chuyển hướng chính và nút tài khoản người dùng/menu mở rộng.
+ * Các chức năng đặc biệt: Tích hợp chế độ Dark Mode (ThemeToggle), tự động theo dõi trạng thái đăng nhập để hiển thị nút Đăng nhập hoặc Avatar.
+ */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, Search, User } from 'lucide-react';
+import { Menu, Search, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/base/Button';
+import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 
 interface NavbarProps {
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: string) => void;
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
@@ -89,39 +95,43 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         </Button>
 
         {user ? (
-          <div className="flex items-center gap-3">
-            <Link
-              href="/profile"
-              className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
-              aria-label={LABELS.AUTH.PROFILE}
-            >
-              {user.avatar ? (
-                <Image src={user.avatar} alt={user.name || 'User'} fill sizes="40px" className="object-cover" />
-              ) : (
-                <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </Link>
-
+          <div className="flex items-center gap-3 relative">
             <button
-              suppressHydrationWarning
               onClick={() => setShowMenu(!showMenu)}
-              className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-all"
-              aria-label={LABELS.COMMON.OTHER}
+              className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
+              aria-label={LABELS.NAV.USER_MENU}
             >
-              <Menu size={24} />
+              <Avatar 
+                src={user.avatar} 
+                name={user.name} 
+                size={40} 
+                className="border-2 border-white dark:border-gray-200 shadow-md bg-gray-100" 
+              />
+              <ChevronDown 
+                size={16} 
+                className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
+                  showMenu ? 'rotate-180 text-primary' : ''
+                }`} 
+              />
             </button>
 
             {showMenu && (
-              <UserDropdown
-                user={user}
-                onLogout={logout}
-                onSettingsClick={() => {
-                  handleTabClick('settings');
-                  setShowMenu(false);
-                }}
-              />
+              <>
+                {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
+                <div 
+                  className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                  onClick={() => setShowMenu(false)} 
+                />
+                <UserDropdown
+                  user={user}
+                  onLogout={logout}
+                  onSettingsClick={() => {
+                    handleTabClick('settings');
+                    setShowMenu(false);
+                  }}
+                  onClose={() => setShowMenu(false)}
+                />
+              </>
             )}
           </div>
         ) : (

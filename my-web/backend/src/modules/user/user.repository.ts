@@ -135,4 +135,10 @@ export class UserRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async hardDeleteUser(userId: number) {
+    return this.prisma.user.delete({
+      where: { id: userId },
+    });
+  }
 }

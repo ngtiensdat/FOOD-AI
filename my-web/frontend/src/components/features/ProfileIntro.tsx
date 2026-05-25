@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị phần Giới thiệu (Intro) ngắn gọn trên trang cá nhân.
+ * Các file khác hay file này có ý nghĩa như nào: Nằm bên cột trái (hoặc phía trên) của giao diện trang cá nhân, tóm tắt thông tin như nơi làm việc, nơi sống, email và ngày tham gia.
+ * Các chức năng đặc biệt: Tự động hiển thị nút "Chỉnh sửa chi tiết" nếu người dùng đang xem trang của chính mình.
+ */
 'use client';
 
 import React from 'react';
@@ -5,10 +10,25 @@ import { Briefcase, MapPin, Mail, Calendar } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 
+export interface ProfileIntroUserData {
+  id?: number | string;
+  email?: string;
+  [key: string]: unknown;
+}
+
+export interface ProfileIntroData {
+  createdAt?: Date | string;
+  profile?: {
+    workAt?: string;
+    address?: string;
+  };
+  [key: string]: unknown;
+}
+
 interface ProfileIntroProps {
-  profile: any;
-  user: any;
-  me: any;
+  profile: ProfileIntroData | null;
+  user: ProfileIntroUserData | null;
+  me: ProfileIntroUserData | null;
   onEdit: () => void;
 }
 

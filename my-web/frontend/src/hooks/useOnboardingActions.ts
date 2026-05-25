@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { toast } from '@/store/useToastStore';
-import { ONBOARDING_DEFAULTS, ONBOARDING_LABELS } from '@/constants/onboarding.constant';
-import { CUSTOMER_QUESTIONS, RESTAURANT_QUESTIONS } from '@/constants/onboarding-questions';
+import { CUSTOMER_QUESTIONS, RESTAURANT_QUESTIONS } from '@/configs/onboarding.config';
+import { LABELS } from '@/constants/labels';
 
 interface UseOnboardingActionsProps {
   user: any;
@@ -23,7 +23,9 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
   const [branches, setBranches] = useState<any[]>([
     {
       name: '',
-      address: '',
+      city: 'Hà Nội',
+      district: '',
+      street: '',
       latitude: 0,
       longitude: 0,
       mapUrl: '',
@@ -75,7 +77,9 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       ...branches,
       {
         name: '',
-        address: '',
+        city: 'Hà Nội',
+        district: '',
+        street: '',
         latitude: 0,
         longitude: 0,
         mapUrl: '',
@@ -83,16 +87,16 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         openingHours: '',
       }
     ]);
-    toast.success(ONBOARDING_LABELS.ADD_BRANCH_SUCCESS);
+    toast.success(LABELS.ONBOARDING.ADD_BRANCH_SUCCESS);
   };
 
   const handleRemoveBranch = (index: number) => {
     if (branches.length === 1) {
-      toast.error(ONBOARDING_LABELS.MIN_BRANCH_REQUIRED);
+      toast.error(LABELS.ONBOARDING.MIN_BRANCH_REQUIRED);
       return;
     }
     setBranches(branches.filter((_, i) => i !== index));
-    toast.success(ONBOARDING_LABELS.REMOVE_BRANCH_SUCCESS);
+    toast.success(LABELS.ONBOARDING.REMOVE_BRANCH_SUCCESS);
   };
 
   const handleBranchChange = (index: number, field: string, value: any) => {
@@ -110,8 +114,8 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
     // Ràng buộc tính hợp lệ của dữ liệu
     for (let i = 0; i < branches.length; i++) {
       const b = branches[i];
-      if (!b.name.trim() || !b.address.trim()) {
-        toast.error(ONBOARDING_LABELS.REQUIRED_BRANCH_FIELDS(i + 1));
+      if (!b.name.trim() || !b.city || !b.district || !b.street.trim()) {
+        toast.error(LABELS.ONBOARDING.REQUIRED_BRANCH_FIELDS(i + 1));
         return;
       }
       
@@ -119,17 +123,17 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       const lng = Number(b.longitude);
       
       if (isNaN(lat) || isNaN(lng)) {
-        toast.error(ONBOARDING_LABELS.INVALID_COORDINATES(i + 1));
+        toast.error(LABELS.ONBOARDING.INVALID_COORDINATES(i + 1));
         return;
       }
       
       if (lat < -90 || lat > 90) {
-        toast.error(ONBOARDING_LABELS.INVALID_LATITUDE(i + 1));
+        toast.error(LABELS.ONBOARDING.INVALID_LATITUDE(i + 1));
         return;
       }
       
       if (lng < -180 || lng > 180) {
-        toast.error(ONBOARDING_LABELS.INVALID_LONGITUDE(i + 1));
+        toast.error(LABELS.ONBOARDING.INVALID_LONGITUDE(i + 1));
         return;
       }
 
@@ -137,7 +141,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         const cleanHours = b.openingHours.replace(/\s+/g, '');
         const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
         if (!match) {
-          toast.error(ONBOARDING_LABELS.INVALID_HOURS_FORMAT(i + 1));
+          toast.error(LABELS.ONBOARDING.INVALID_HOURS_FORMAT(i + 1));
           return;
         }
         const [, sh, sm, eh, em] = match;
@@ -146,13 +150,21 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         const ehNum = parseInt(eh, 10);
         const emNum = parseInt(em, 10);
         if (shNum > 23 || smNum > 59 || ehNum > 23 || emNum > 59) {
-          toast.error(ONBOARDING_LABELS.INVALID_HOURS_FORMAT(i + 1));
+          toast.error(LABELS.ONBOARDING.INVALID_HOURS_FORMAT(i + 1));
           return;
         }
       }
     }
 
-    finishOnboarding(answers, branches);
+    const finalBranches = branches.map(b => {
+      const { city, district, street, ...rest } = b;
+      return {
+        ...rest,
+        address: `${street}, ${district}, ${city}`
+      };
+    });
+
+    finishOnboarding(answers, finalBranches);
   };
 
   const finishOnboarding = async (finalAnswers: any, finalBranches?: any[]) => {
@@ -162,7 +174,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         preferences: finalAnswers,
         ...(isRestaurant ? { branches: finalBranches } : {})
       });
-    }, ONBOARDING_DEFAULTS.SUCCESS_ANIMATION_TIMEOUT);
+    }, 2000);
   };
 
   return {

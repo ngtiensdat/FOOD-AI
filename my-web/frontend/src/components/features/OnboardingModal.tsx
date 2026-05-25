@@ -1,15 +1,20 @@
+/**
+ * Mục đích file này để làm gì: Component Modal để lấy thông tin khởi tạo tài khoản (Onboarding).
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị tự động khi người dùng mới đăng nhập lần đầu. Dùng chung cho cả luồng Thương gia (nhập chi nhánh) và Thực khách (khảo sát sở thích).
+ * Các chức năng đặc biệt: Tự động cuộn, validate form theo bước, có hiệu ứng pháo hoa khi hoàn thành.
+ */
 'use client';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CheckCircle2, X, Plus, Trash2, MapPin, Compass } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
-import { ONBOARDING_LABELS } from '@/constants/onboarding.constant';
 import { useOnboardingActions } from '@/hooks/useOnboardingActions';
+import { LOCATION_DATA } from '@/constants/location.constant';
 
 interface OnboardingModalProps {
-  user: any;
-  onComplete: (data: any) => void;
+  user: Record<string, unknown>;
+  onComplete: (data: Record<string, unknown>) => void;
   show?: boolean; // Cho phép force show từ Dashboard
   onClose?: () => void; // Cho phép đóng khi đang ở Dashboard
   title?: string;
@@ -77,10 +82,10 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                     <MapPin size={30} />
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">
-                    {ONBOARDING_LABELS.BRANCH_STEP_TITLE}
+                    {LABELS.ONBOARDING.BRANCH_STEP_TITLE}
                   </h2>
                   <p className="text-gray-500 text-xs md:text-sm font-medium">
-                    {ONBOARDING_LABELS.BRANCH_STEP_DESC}
+                    {LABELS.ONBOARDING.BRANCH_STEP_DESC}
                   </p>
                 </div>
 
@@ -112,37 +117,82 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                           {/* Tên cơ sở */}
                           <div className="md:col-span-2">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.NAME_LABEL}
+                              {LABELS.ONBOARDING.FORM.NAME_LABEL}
                             </label>
                             <input
                               type="text"
                               required
                               value={branch.name}
                               onChange={(e) => handleBranchChange(index, 'name', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.NAME_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.NAME_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
+                          </div>
+
+                          {/* Tỉnh / Thành phố */}
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              {LABELS.SETTINGS.PROFILE.EDIT_MODAL.CITY}
+                            </label>
+                            <select
+                              required
+                              value={branch.city || 'Hà Nội'}
+                              onChange={(e) => {
+                                handleBranchChange(index, 'city', e.target.value);
+                                handleBranchChange(index, 'district', '');
+                              }}
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                            >
+                              {LOCATION_DATA.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Quận / Huyện */}
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT}
+                            </label>
+                            <select
+                              required
+                              value={branch.district || ''}
+                              onChange={(e) => handleBranchChange(index, 'district', e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                            >
+                              <option value="" disabled hidden>
+                                {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
+                              </option>
+                              {LOCATION_DATA.find((c) => c.value === (branch.city || 'Hà Nội'))
+                                ?.districts.map((d) => (
+                                  <option key={d.value} value={d.value}>
+                                    {d.label}
+                                  </option>
+                                ))}
+                            </select>
                           </div>
 
                           {/* Địa chỉ chi tiết */}
                           <div className="md:col-span-2">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.ADDRESS_LABEL}
+                              {LABELS.ONBOARDING.FORM.ADDRESS_LABEL}
                             </label>
                             <input
                               type="text"
                               required
-                              value={branch.address}
-                              onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.ADDRESS_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              value={branch.street || ''}
+                              onChange={(e) => handleBranchChange(index, 'street', e.target.value)}
+                              placeholder={LABELS.ONBOARDING.FORM.ADDRESS_PLACEHOLDER}
+                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs font-bold"
                             />
                           </div>
 
                           {/* Vĩ độ */}
                           <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.LAT_LABEL}
+                              {LABELS.ONBOARDING.FORM.LAT_LABEL}
                             </label>
                             <input
                               type="number"
@@ -150,7 +200,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               required
                               value={branch.latitude}
                               onChange={(e) => handleBranchChange(index, 'latitude', parseFloat(e.target.value))}
-                              placeholder={ONBOARDING_LABELS.FORM.LAT_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.LAT_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
                           </div>
@@ -158,7 +208,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                           {/* Kinh độ */}
                           <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.LNG_LABEL}
+                              {LABELS.ONBOARDING.FORM.LNG_LABEL}
                             </label>
                             <input
                               type="number"
@@ -166,7 +216,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               required
                               value={branch.longitude}
                               onChange={(e) => handleBranchChange(index, 'longitude', parseFloat(e.target.value))}
-                              placeholder={ONBOARDING_LABELS.FORM.LNG_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.LNG_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
                           </div>
@@ -174,13 +224,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                           {/* Google Maps URL */}
                           <div className="md:col-span-2">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.MAP_URL_LABEL}
+                              {LABELS.ONBOARDING.FORM.MAP_URL_LABEL}
                             </label>
                             <input
                               type="url"
-                              value={branch.mapUrl}
+                              value={branch.mapUrl || ''}
                               onChange={(e) => handleBranchChange(index, 'mapUrl', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.MAP_URL_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.MAP_URL_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
                           </div>
@@ -188,13 +238,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                           {/* Giờ mở cửa */}
                           <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.HOURS_LABEL}
+                              {LABELS.ONBOARDING.FORM.HOURS_LABEL}
                             </label>
                             <input
                               type="text"
-                              value={branch.openingHours}
+                              value={branch.openingHours || ''}
                               onChange={(e) => handleBranchChange(index, 'openingHours', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.HOURS_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.HOURS_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
                           </div>
@@ -202,13 +252,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                           {/* Bio */}
                           <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                              {ONBOARDING_LABELS.FORM.BIO_LABEL}
+                              {LABELS.ONBOARDING.FORM.BIO_LABEL}
                             </label>
                             <input
                               type="text"
-                              value={branch.bio}
+                              value={branch.bio || ''}
                               onChange={(e) => handleBranchChange(index, 'bio', e.target.value)}
-                              placeholder={ONBOARDING_LABELS.FORM.BIO_PLACEHOLDER}
+                              placeholder={LABELS.ONBOARDING.FORM.BIO_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
                             />
                           </div>
@@ -224,7 +274,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       onClick={handleAddBranch}
                       className="px-4 py-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary transition-all text-xs font-bold flex items-center gap-1.5 bg-slate-50"
                     >
-                      <Plus size={14} /> {ONBOARDING_LABELS.ADD_BRANCH_BTN}
+                      <Plus size={14} /> {LABELS.ONBOARDING.ADD_BRANCH_BTN}
                     </button>
                   </div>
 
@@ -235,13 +285,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       onClick={() => setStep(step - 1)}
                       className="flex-1 py-3 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all text-xs md:text-sm"
                     >
-                      {ONBOARDING_LABELS.BACK_BTN}
+                      {LABELS.ONBOARDING.BACK_BTN}
                     </button>
                     <button
                       type="submit"
                       className="flex-[2] py-3 gradient-bg text-white rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all text-xs md:text-sm flex items-center justify-center gap-2"
                     >
-                      {ONBOARDING_LABELS.COMPLETE_BTN} <Compass size={18} />
+                      {LABELS.ONBOARDING.COMPLETE_BTN} <Compass size={18} />
                     </button>
                   </div>
                 </form>
@@ -314,7 +364,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
 
                 {/* Số bước đếm dưới modal */}
                 <div className="mt-10 text-xs text-gray-400 font-bold uppercase tracking-widest">
-                  {ONBOARDING_LABELS.STEP_INDICATOR(step + 1, totalSteps)}
+                  {LABELS.ONBOARDING.STEP_INDICATOR(step + 1, totalSteps)}
                 </div>
               </div>
             )}

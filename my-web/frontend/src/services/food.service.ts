@@ -1,8 +1,8 @@
 import { apiClient } from '@/lib/api-client';
 
 export const foodService = {
-  async getAllFoods(tag?: string) {
-    return apiClient.get('/foods', { params: tag ? { tag } : undefined }).catch(() => []);
+  async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
+    return apiClient.get('/foods', { params }).catch(() => []);
   },
 
   async getFeaturedToday() {
@@ -21,21 +21,39 @@ export const foodService = {
     return apiClient.get('/foods/recommended').catch(() => []);
   },
 
-  async getNearbyFoods(lat: number, lng: number, radius: number = 5) {
-    return apiClient.get('/foods/nearby', { params: { lat, lng, radius } }).catch(() => []);
+  async getNearbyFoods(lat: number, lng: number, radius: number = 5, city?: string, district?: string) {
+    return apiClient.get('/foods/nearby', { params: { lat, lng, radius, city, district } }).catch(() => []);
   },
 
   async getMyFoods() {
     return apiClient.get('/foods/my-foods').catch(() => []);
   },
 
-  async getRecentViews() {
-    return apiClient.get('/foods/recent-views').catch(() => []);
+  async getRecentViews(limit?: number) {
+    return apiClient.get('/foods/recent-views', { params: limit ? { limit } : undefined }).catch(() => []);
+  },
+
+  async trackView(id: number) {
+    try {
+      await apiClient.post(`/foods/${id}/view`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async createFood(data: any) {
     try {
       await apiClient.post('/foods', data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async createBulkFoods(data: any) {
+    try {
+      await apiClient.post('/foods/bulk', data);
       return true;
     } catch {
       return false;
@@ -62,9 +80,9 @@ export const foodService = {
 };
 
 export const aiService = {
-  async chat(message: string, lat?: number, lng?: number) {
+  async chat(message: string, lat?: number, lng?: number, city?: string, district?: string) {
     try {
-      return await apiClient.post('/ai/chat', { message, lat, lng });
+      return await apiClient.post('/ai/chat', { message, lat, lng, city, district });
     } catch {
       return { reply: '', suggestions: [] };
     }
@@ -73,7 +91,10 @@ export const aiService = {
 
 export const adminService = {
   async getAllUsers(role?: string) {
-    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch(() => []);
+    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch((err) => {
+      console.error('Lỗi getAllUsers:', err);
+      return [];
+    });
   },
 
   async deleteUser(id: number) {
@@ -86,7 +107,10 @@ export const adminService = {
   },
 
   async getAllFoods() {
-    return apiClient.get('/admin/all-foods').catch(() => []);
+    return apiClient.get('/admin/all-foods').catch((err) => {
+      console.error('Lỗi getAllFoods:', err);
+      return [];
+    });
   },
 
   async updateFood(id: number, data: any) {
@@ -124,14 +148,30 @@ export const adminService = {
     try {
       await apiClient.patch(`/admin/update-status/${userId}`, { status });
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to update user status', error);
       return false;
     }
+  },
+
+  async importMerchantsExcel(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post('/admin/import-merchants', formData);
   },
 
   async approveFood(id: number, status: string) {
     try {
       await apiClient.patch(`/foods/${id}/status`, { status });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async toggleWeeklyFeatured(id: number, value: boolean) {
+    try {
+      await apiClient.patch(`/admin/food/${id}/weekly-featured`, { value });
       return true;
     } catch {
       return false;
@@ -142,6 +182,10 @@ export const adminService = {
 export const restaurantService = {
   async getMyRestaurant() {
     return apiClient.get('/restaurants/my-restaurant').catch(() => null);
+  },
+
+  async getMyBranches() {
+    return apiClient.get('/restaurants/my-branches').catch(() => []);
   },
 
   async updateRestaurantStatus(isActive: boolean) {

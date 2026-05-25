@@ -26,19 +26,25 @@ class ApiClient {
       });
     }
 
+    const isFormData = options.body instanceof FormData;
+    const headers: Record<string, string> = { ...options.headers } as Record<string, string>;
+    
+    if (!isFormData && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     const config: RequestInit = {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include', // QUAN TRỌNG: Để trình duyệt gửi Cookie
+      headers,
+      credentials: 'include',
       ...options,
     };
 
     if (options.body && method !== 'GET') {
-      config.body = JSON.stringify(options.body);
-      console.log(`[ApiClient] ${method} ${endpoint} Payload:`, options.body);
+      config.body = isFormData ? (options.body as FormData) : JSON.stringify(options.body);
+      if (!isFormData) {
+        console.log(`[ApiClient] ${method} ${endpoint} Payload:`, options.body);
+      }
     }
 
     let response = await fetch(url.toString(), config);
@@ -59,6 +65,8 @@ class ApiClient {
             const { useAuthStore } = await import('@/store/useAuthStore');
             useAuthStore.getState().logout();
             window.location.href = '/login';
+            // Hang the promise to prevent throwing errors while redirecting
+            return new Promise(() => {});
           }
         }
       } catch (error) {

@@ -1,20 +1,60 @@
+/**
+ * Mục đích file này để làm gì: Component Header của trang cá nhân (Profile).
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị thông tin tổng quan của người dùng hoặc nhà hàng, bao gồm ảnh bìa, avatar, thông tin trạng thái hoạt động và các nút tương tác (Follow, Edit, Dashboard).
+ * Các chức năng đặc biệt: Tự động tính toán trạng thái "Đang mở cửa / Đóng cửa" dựa trên giờ hoạt động (openingHours) và trạng thái hiển thị (isActive).
+ */
 'use client';
 
 import React from 'react';
 import Image from 'next/image';
 import { Camera, Shield, Store, Grid, Edit3, MoreHorizontal, Clock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
 import { getValidImageUrl } from '@/utils/helpers';
 
+export interface ProfileHeaderData {
+  id: number;
+  name?: string;
+  role?: string;
+  isFollowing?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ProfileData {
+  _count?: {
+    followers?: number;
+    userFollowers?: number;
+    userFollowing?: number;
+    follows?: number;
+  };
+  restaurants?: Array<{
+    isActive?: boolean;
+    profile?: {
+      openingHours?: string;
+    };
+    _count?: {
+      followers?: number;
+    };
+  }>;
+  profile?: {
+    coverImage?: string;
+    avatar?: string;
+    bio?: string;
+  };
+  [key: string]: unknown;
+}
+
 interface ProfileHeaderProps {
-  user: any;
-  profile: any;
-  me: any;
+  user: ProfileHeaderData | null;
+  profile: ProfileData;
+  me: ProfileHeaderData | null;
   isFollowLoading: boolean;
   onEdit: () => void;
   onFollow: () => void;
+  onShowFollowers?: () => void;
+  onShowFollowing?: () => void;
 }
 
 // Helper to check operating status
@@ -50,7 +90,9 @@ export const ProfileHeader = ({
   me,
   isFollowLoading,
   onEdit,
-  onFollow
+  onFollow,
+  onShowFollowers,
+  onShowFollowing
 }: ProfileHeaderProps) => {
   const router = useRouter();
   const restaurant = profile?.restaurants?.[0];
@@ -65,7 +107,7 @@ export const ProfileHeader = ({
         {profile?.profile?.coverImage ? (
           <Image 
             src={getValidImageUrl(profile.profile.coverImage)} 
-            alt="Cover" 
+            alt={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER}
             fill 
             sizes="(max-width: 768px) 100vw, 100vw"
             className="object-cover" 
@@ -103,14 +145,14 @@ export const ProfileHeader = ({
         <div className="relative flex flex-col md:flex-row items-center gap-8 mb-10">
           {/* Avatar Section */}
           <div className="relative group -mt-24 md:-mt-32">
-            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
-              {profile?.profile?.avatar ? (
-                <Image src={getValidImageUrl(profile.profile.avatar)} alt="Avatar" fill sizes="(max-width: 768px) 160px, 192px" className="object-cover" />
-              ) : (
-                <div className="w-full h-full gradient-bg flex items-center justify-center text-white text-5xl font-bold">
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
+            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
+              <Avatar 
+                src={profile?.profile?.avatar} 
+                name={user?.name} 
+                size={192}
+                className="w-full h-full"
+                fallbackClassName="text-5xl"
+              />
             </div>
             {me?.id === user?.id && (
               <button 
@@ -129,9 +171,9 @@ export const ProfileHeader = ({
               {user?.role === 'ADMIN' ? (
                 <span className="flex items-center gap-1.5"><Shield size={18} className="text-primary" /> {LABELS.AUTH.ADMIN}</span>
               ) : (
-                <>
-                  {user?.role === 'RESTAURANT' ? (
-                    <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col gap-2">
+                  {user?.role === 'RESTAURANT' && (
+                    <div className="flex flex-wrap items-center gap-3 mb-1">
                       <span className="flex items-center gap-1.5"><Store size={18} className="text-primary" /> {LABELS.AUTH.RESTAURANT_ROLE}</span>
                       <span className="text-gray-300 dark:text-slate-700">|</span>
                       <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-slate-400">
@@ -140,20 +182,29 @@ export const ProfileHeader = ({
                       </span>
                       <span className="text-gray-300 dark:text-slate-700">|</span>
                       <span className="flex items-center gap-1.5 text-xs font-bold">
-                        <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                         <span className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
                           {isOpen ? LABELS.RESTAURANT.STATUS_OPEN : LABELS.RESTAURANT.STATUS_CLOSED}
                         </span>
                       </span>
                     </div>
-                  ) : (
-                    <>
-                      <span>{(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}</span>
-                      <span>•</span>
-                      <span>{(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}</span>
-                    </>
                   )}
-                </>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={onShowFollowers}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
+                    </button>
+                    <span>•</span>
+                    <button 
+                      onClick={onShowFollowing}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
             <p className="text-body text-gray-600 max-w-lg">
@@ -176,8 +227,8 @@ export const ProfileHeader = ({
                 <Button 
                   variant="primary" 
                   onClick={() => {
-                    if (me.role === 'ADMIN') router.push('/admin');
-                    else if (me.role === 'RESTAURANT') router.push('/restaurant-admin');
+                    if (me?.role === 'ADMIN') router.push('/admin');
+                    else if (me?.role === 'RESTAURANT') router.push('/restaurant-admin');
                     else router.push('/dashboard');
                   }}
                 >

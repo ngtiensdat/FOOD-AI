@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { FoodStatus } from '@prisma/client';
 
 export interface SearchResult {
   id: number;
@@ -23,6 +24,8 @@ export class VectorRepository {
     userLat?: number,
     userLng?: number,
     limit = 5,
+    city?: string,
+    district?: string,
   ): Promise<SearchResult[]> {
     const vectorStr = `[${vector.join(',')}]`;
 
@@ -43,8 +46,10 @@ export class VectorRepository {
       JOIN restaurants r ON f.restaurant_id = r.id
       WHERE f.is_active = true 
         AND r.is_active = true
-        AND f.status = 'APPROVED'
+        AND f.status = ${FoodStatus.APPROVED}
         AND f.embedding IS NOT NULL
+        AND (CAST(${city || null} AS text) IS NULL OR r.address ILIKE '%' || CAST(${city || null} AS text) || '%')
+        AND (CAST(${district || null} AS text) IS NULL OR r.address ILIKE '%' || CAST(${district || null} AS text) || '%')
       ORDER BY similarity DESC
       LIMIT ${limit}
     `;

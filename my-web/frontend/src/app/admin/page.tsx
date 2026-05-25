@@ -1,7 +1,12 @@
+/**
+ * @fileoverview frontend/src/app/admin/page.tsx
+ * @module AdminDashboard
+ * @description Trang điều phối (Orchestrator) chính của giao diện Admin. Lắp ráp các tính năng quản lý (User, Food, Category) và hoàn toàn không chứa logic nghiệp vụ, giao phó cho các Custom Hooks (`useAdminData`, `useAdminActions`).
+ */
 'use client';
 
 import React from 'react';
-import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, Menu } from 'lucide-react';
+import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,18 +16,19 @@ import { useAdminActions } from '@/hooks/useAdminActions'; // Logic được tá
 import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
-
 // Feature Components
 import { AdminTable } from '@/components/features/AdminTable';
 import { AdminFoodModal } from '@/components/features/AdminFoodModal';
+import { AdminImportExcelModal } from '@/components/features/AdminImportExcelModal';
+import { FileUp } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const adminData = useAdminData();
+  const [showImportModal, setShowImportModal] = React.useState(false);
 
   const {
     activeTab,
@@ -87,6 +93,16 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            {(activeTab === 'users' || activeTab === 'menu') && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => setShowImportModal(true)}
+              >
+                <FileUp className="w-4 h-4" />
+                {LABELS.ADMIN.IMPORT_EXCEL}
+              </Button>
+            )}
             <Input
               icon={Search}
               placeholder={LABELS.COMMON.SEARCH}
@@ -96,40 +112,46 @@ export default function AdminDashboard() {
             />
             {user && (
               <div className="flex items-center gap-3 relative">
-                <Link
-                  href="/profile"
-                  className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md hover:scale-110 transition-all flex items-center justify-center bg-gray-100"
-                >
-                  {user.avatar ? (
-                    <Image src={getValidImageUrl(user.avatar)} alt={user.name || ''} fill sizes="40px" className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full gradient-bg flex items-center justify-center text-white font-bold">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-
-                <Button
-                  variant="outline"
-                  className="w-10 h-10 p-0 rounded-xl"
+                <button
                   onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
+                  aria-label={LABELS.NAV.USER_MENU}
                 >
-                  <Menu size={24} />
-                </Button>
+                  <Avatar
+                    src={user.avatar}
+                    name={user.name}
+                    size={40}
+                    className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
+                  />
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
+                      showMenu ? 'rotate-180 text-primary' : ''
+                    }`} 
+                  />
+                </button>
 
                 {showMenu && (
-                  <UserDropdown
-                    user={user}
-                    onLogout={logout}
-                    onSettingsClick={() => { window.location.href = '/'; setShowMenu(false); }}
-                  />
+                  <>
+                    {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                      onClick={() => setShowMenu(false)} 
+                    />
+                    <UserDropdown
+                      user={user}
+                      onLogout={logout}
+                      onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
+                      onClose={() => setShowMenu(false)}
+                    />
+                  </>
                 )}
               </div>
             )}
           </div>
         </header>
 
-        <AdminTable 
+        <AdminTable
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
@@ -140,7 +162,7 @@ export default function AdminDashboard() {
 
       <AnimatePresence>
         {editingFood && (
-          <AdminFoodModal 
+          <AdminFoodModal
             editingFood={editingFood}
             editFormData={editFormData}
             setEditFormData={setEditFormData}
@@ -160,12 +182,21 @@ export default function AdminDashboard() {
       />
 
       <ConfirmModal
-        isOpen={deleteUserId !== null}
-        title={LABELS.ADMIN.CONFIRM.DELETE_USER}
-        message={LABELS.ADMIN.CONFIRM.DELETE_USER_DESC}
+        isOpen={!!deleteUserId}
+        title={LABELS.ADMIN.CONFIRM_DELETE_USER}
+        message={LABELS.ADMIN.DELETE_WARNING}
         onConfirm={actions.confirmDeleteUser}
         onCancel={() => setDeleteUserId(null)}
         variant="danger"
+      />
+
+      <AdminImportExcelModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => {
+          // Tải lại dữ liệu sau khi import
+          adminData.fetchData();
+        }}
       />
     </div>
   );

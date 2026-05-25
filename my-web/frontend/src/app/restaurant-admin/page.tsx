@@ -1,8 +1,14 @@
+/**
+ * Mục đích file này để làm gì: Trang Quản trị viên của Nhà hàng (Restaurant Admin Dashboard). Đóng vai trò Orchestrator quản lý toàn bộ các tính năng như Tổng quan, Danh mục, Thực đơn, Lịch sử AI.
+ * Các file khác hay file này có ý nghĩa như nào: Tách bạch hoàn toàn logic và giao diện. Toàn bộ logic được trừu tượng hóa vào `useRestaurantActions`. Các Component con (MenuTable, CategoryManager, UploadExcelModal) đảm nhận render chi tiết.
+ * Các chức năng đặc biệt: Toggle trạng thái nhà hàng trực tiếp trên Header, Upload Excel hàng loạt, Quản lý đa cơ sở, Gợi ý AI Insight.
+ * Các biến, hàm đặc biệt trong file: `useRestaurantActions` quản lý state toàn cục của Dashboard.
+ */
 'use client';
 
 import React from 'react';
 import { 
-  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Menu, HelpCircle
+  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, HelpCircle, FolderTree, ChevronDown, Check, X
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,11 +21,15 @@ import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 import { LIMITS } from '@/constants/limits.constant';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Avatar } from '@/components/base/Avatar';
 
 // Feature Components
 import { MenuTable } from '@/components/features/MenuTable';
 import { FoodFormModal } from '@/components/features/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
+import { CategoryManager } from '@/components/features/CategoryManager';
+import { UploadExcelModal } from '@/components/features/UploadExcelModal';
 
 export default function RestaurantDashboard() {
   const { user, logout } = useAuth();
@@ -36,17 +46,22 @@ export default function RestaurantDashboard() {
     setFormData,
     showMenu,
     setShowMenu,
+    myBranches,
     restaurant,
     isRestaurantActive,
     deleteConfirmId,
     setDeleteConfirmId,
+    fetchMyFoods,
     actions
   } = useRestaurantActions(user);
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
   return (
     <div className="admin-layout">
       <Sidebar brandIcon={Store} brandLabel={LABELS.RESTAURANT.MERCHANT_HUB}>
         <SidebarItem icon={BarChart3} label={LABELS.RESTAURANT.TABS.OVERVIEW} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+        <SidebarItem icon={FolderTree} label={LABELS.RESTAURANT.TABS.CATEGORIES} active={activeTab === 'categories'} onClick={() => setActiveTab('categories')} />
         <SidebarItem icon={Pizza} label={LABELS.RESTAURANT.TABS.MENU} active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
         <SidebarItem icon={Sparkles} label={LABELS.RESTAURANT.TABS.HISTORY} active={activeTab === 'ai-history'} onClick={() => setActiveTab('ai-history')} />
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
@@ -66,7 +81,14 @@ export default function RestaurantDashboard() {
           <div className="flex items-center gap-4">
             {/* Toggle Status Switch with premium light/dark animations */}
             <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 px-4 py-2 rounded-2xl shadow-sm">
-              <span className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isRestaurantActive ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-rose-500'}`} />
+              <Sparkles 
+                size={16} 
+                className={`transition-all duration-300 ${
+                  isRestaurantActive 
+                    ? 'text-amber-500 animate-pulse drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]' 
+                    : 'text-gray-300 dark:text-slate-650'
+                }`} 
+              />
               <span className="text-xs font-bold text-gray-700 dark:text-slate-300">
                 {isRestaurantActive ? LABELS.RESTAURANT.STATUS_OPEN : LABELS.RESTAURANT.STATUS_CLOSED}
               </span>
@@ -77,10 +99,16 @@ export default function RestaurantDashboard() {
                 }`}
               >
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
                     isRestaurantActive ? 'translate-x-6' : 'translate-x-0'
                   }`}
-                />
+                >
+                  {isRestaurantActive ? (
+                    <Check className="w-3 h-3 text-emerald-500 font-bold" />
+                  ) : (
+                    <X className="w-3 h-3 text-rose-500 font-bold" />
+                  )}
+                </div>
               </button>
 
               {/* Tooltip Help Icon */}
@@ -94,27 +122,62 @@ export default function RestaurantDashboard() {
             </div>
 
             {activeTab === 'menu' && (
-              <Button onClick={actions.handleOpenAdd}>
-                <Plus size={24} className="mr-2" /> {LABELS.RESTAURANT.ADD_FOOD}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setIsUploadModalOpen(true)} className="border-emerald-500 text-emerald-600 hover:bg-emerald-50">
+                  <Plus size={20} className="mr-2" /> {LABELS.RESTAURANT.UPLOAD_EXCEL.TITLE}
+                </Button>
+                <Button onClick={actions.handleOpenAdd}>
+                  <Plus size={24} className="mr-2" /> {LABELS.RESTAURANT.ADD_FOOD}
+                </Button>
+              </div>
+            )}
+
+            {restaurant?.id && (
+              <Button 
+                variant="outline" 
+                onClick={() => window.open(`/restaurant/${restaurant.id}`, '_blank')}
+                className="flex items-center gap-2 rounded-xl h-10 px-4 border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 transition-all shadow-sm"
+              >
+                <Store size={16} />
+                <span>{LABELS.RESTAURANT.VIEW_AS_GUEST}</span>
               </Button>
             )}
 
             {user && (
               <div className="flex items-center gap-3 relative ml-2">
-                <Button 
-                  variant="outline" 
-                  className="w-10 h-10 p-0 rounded-xl" 
+                <button
                   onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
+                  aria-label={LABELS.NAV.USER_MENU}
                 >
-                  <Menu size={24} />
-                </Button>
+                  <Avatar
+                    src={user.avatar}
+                    name={user.name}
+                    size={40}
+                    className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
+                  />
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
+                      showMenu ? 'rotate-180 text-primary' : ''
+                    }`} 
+                  />
+                </button>
 
                 {showMenu && (
-                  <UserDropdown 
-                    user={user} 
-                    onLogout={logout} 
-                    onSettingsClick={() => window.location.href = '/'} 
-                  />
+                  <>
+                    {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                      onClick={() => setShowMenu(false)} 
+                    />
+                    <UserDropdown 
+                      user={user} 
+                      onLogout={logout} 
+                      onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
+                      onClose={() => setShowMenu(false)}
+                    />
+                  </>
                 )}
               </div>
             )}
@@ -157,7 +220,7 @@ export default function RestaurantDashboard() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Ví dụ: 08:00 - 22:00"
+                        placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
                         defaultValue={restaurant?.profile?.openingHours || ''}
                         id="opening-hours-input"
                         className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-150 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
@@ -198,6 +261,10 @@ export default function RestaurantDashboard() {
             actions={actions}
           />
         )}
+
+        {activeTab === 'categories' && restaurant && (
+          <CategoryManager restaurantId={restaurant.id} />
+        )}
       </main>
 
       <AnimatePresence>
@@ -208,21 +275,35 @@ export default function RestaurantDashboard() {
             onClose={() => setIsAddingFood(false)} 
             editingFood={editingFood} 
             formData={formData} 
-            setFormData={setFormData} 
+            setFormData={setFormData as any} 
             onSubmit={actions.handleSubmit} 
+            myBranches={myBranches}
+            onSelectBranch={actions.handleSelectBranch}
           />
         )}
         {deleteConfirmId !== null && (
           <ConfirmModal
             key="delete-confirm-modal"
             isOpen={deleteConfirmId !== null}
-            title="Xác nhận xóa món ăn"
+            title={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM_TITLE}
             message={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM}
             onConfirm={actions.onConfirmDelete}
             onCancel={() => setDeleteConfirmId(null)}
             confirmText={LABELS.COMMON.DELETE}
             cancelText={LABELS.COMMON.CANCEL}
             variant="danger"
+          />
+        )}
+        {isUploadModalOpen && (
+          <UploadExcelModal
+            key="upload-excel-modal"
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            myBranches={myBranches}
+            onSuccess={() => {
+              setIsUploadModalOpen(false);
+              fetchMyFoods();
+            }}
           />
         )}
       </AnimatePresence>

@@ -57,10 +57,10 @@
 - **So that** thông tin cá nhân của tôi được bảo vệ và loại bỏ khỏi hệ thống.
 
 **Acceptance Criteria (AC):**
-- [ ] UI nút "Xóa tài khoản" nằm trong phần thiết lập Hồ sơ cá nhân.
-- [ ] Modal cảnh báo và yêu cầu nhập lại mật khẩu hiện tại để xác nhận xóa.
-- [ ] Thực hiện Soft Delete hoặc Hard Delete tài khoản và các dữ liệu liên quan ở Backend.
-- [ ] Hủy phiên đăng nhập hiện tại và điều hướng về trang chủ sau khi xóa thành công.
+- [x] UI nút "Xóa tài khoản" nằm trong phần thiết lập Hồ sơ cá nhân.
+- [x] Modal cảnh báo và yêu cầu nhập lại mật khẩu hiện tại để xác nhận xóa.
+- [x] Thực hiện Soft Delete hoặc Hard Delete tài khoản và các dữ liệu liên quan ở Backend.
+- [x] Hủy phiên đăng nhập hiện tại và điều hướng về trang chủ sau khi xóa thành công.
 
 ---
 

@@ -49,4 +49,9 @@ export class CreateFoodDto {
   @IsString()
   @IsOptional()
   mapUrl?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  categoryId?: number;
 }

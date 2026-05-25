@@ -72,8 +72,12 @@ export class FoodController {
 
   @Get('recent-views')
   @UseGuards(JwtAuthGuard)
-  getRecentViews(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getRecentFoods(user);
+  getRecentViews(
+    @GetUser() user: PrismaClient.User,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.foodService.getRecentFoods(user, parsedLimit);
   }
 
   @Post()
@@ -84,6 +88,16 @@ export class FoodController {
     @Body() createFoodDto: CreateFoodDto,
   ) {
     return this.foodService.createFood(user, createFoodDto);
+  }
+
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
+  createBulkFood(
+    @GetUser() user: PrismaClient.User,
+    @Body() bulkDto: import('./dto/bulk-create-food.dto').BulkCreateFoodDto,
+  ) {
+    return this.foodService.createBulk(user, bulkDto);
   }
 
   @Patch(':id')

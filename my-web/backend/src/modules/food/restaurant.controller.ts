@@ -19,6 +19,11 @@ export class RestaurantController {
     return this.foodService.getMyRestaurant(user);
   }
 
+  @Get('my-branches')
+  getMyBranches(@GetUser() user: PrismaClient.User) {
+    return this.foodService.getMyBranches(user);
+  }
+
   @Patch('my-restaurant/status')
   updateRestaurantStatus(
     @GetUser() user: PrismaClient.User,

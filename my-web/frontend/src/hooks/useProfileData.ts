@@ -3,6 +3,7 @@ import { authService } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { parseAddressString } from '@/utils/helpers';
 
 export const useProfileData = (targetId?: string | null) => {
   const { user: me, login: updateMe } = useAuth();
@@ -14,6 +15,16 @@ export const useProfileData = (targetId?: string | null) => {
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
+
+  // Modals States
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followersList, setFollowersList] = useState<any[]>([]);
+  const [followingList, setFollowingList] = useState<any>({ users: [], restaurants: [] });
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const [loadingFollowing, setLoadingFollowing] = useState(false);
+  const [errorFollowers, setErrorFollowers] = useState<string | null>(null);
+  const [errorFollowing, setErrorFollowing] = useState<string | null>(null);
 
   const fetchProfileData = useCallback(async (id: number, requesterId?: number) => {
     try {
@@ -32,20 +43,28 @@ export const useProfileData = (targetId?: string | null) => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProfileData(idToFetch, me?.id);
     }
+    
+    // Đóng modals tự động khi id profile mục tiêu thay đổi
+    setShowFollowersModal(false);
+    setShowFollowingModal(false);
   }, [targetId, me?.id, fetchProfileData]);
 
   useEffect(() => {
     if (profile) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEditData({
-        name: profile.name,
-        fullName: profile.profile?.fullName || '',
-        phone: profile.profile?.phone || '',
-        avatar: profile.profile?.avatar || '',
-        coverImage: profile.profile?.coverImage || '',
-        bio: profile.profile?.bio || '',
-        address: profile.profile?.address || '',
-        workAt: profile.profile?.workAt || '',
+      const parsedAddress = parseAddressString(profile.profile?.address);
+      Promise.resolve().then(() => {
+        setEditData({
+          name: profile.name,
+          fullName: profile.profile?.fullName || '',
+          phone: profile.profile?.phone || '',
+          avatar: profile.profile?.avatar || '',
+          coverImage: profile.profile?.coverImage || '',
+          bio: profile.profile?.bio || '',
+          city: parsedAddress.city || 'Hà Nội',
+          district: parsedAddress.district || '',
+          street: parsedAddress.street || '',
+          workAt: profile.profile?.workAt || '',
+        });
       });
     }
   }, [profile]);
@@ -54,12 +73,13 @@ export const useProfileData = (targetId?: string | null) => {
     if (!profile?.id) return;
     setLoading(true);
     try {
-      const { userId, id, ...payload } = editData;
+      const { userId, id, city, district, street, ...payload } = editData;
+      payload.address = `${street}, ${district}, ${city}`;
       await authService.updateProfile(payload);
       const newData = await fetchProfileData(profile.id, me?.id);
       
       if (me?.id === profile.id && newData) {
-        updateMe({ ...me, name: newData.name });
+        updateMe({ ...me, name: newData.name, avatar: newData.profile?.avatar || null });
       }
       
       setIsEditing(false);
@@ -90,6 +110,36 @@ export const useProfileData = (targetId?: string | null) => {
     }
   };
 
+  const openFollowersModal = async () => {
+    if (!profile) return;
+    setShowFollowersModal(true);
+    setLoadingFollowers(true);
+    setErrorFollowers(null);
+    try {
+      const data = await authService.getFollowers(profile.id);
+      setFollowersList(data || []);
+    } catch (err: any) {
+      setErrorFollowers(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
+    } finally {
+      setLoadingFollowers(false);
+    }
+  };
+
+  const openFollowingModal = async () => {
+    if (!profile) return;
+    setShowFollowingModal(true);
+    setLoadingFollowing(true);
+    setErrorFollowing(null);
+    try {
+      const data = await authService.getFollowing(profile.id);
+      setFollowingList(data || { users: [], restaurants: [] });
+    } catch (err: any) {
+      setErrorFollowing(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
+    } finally {
+      setLoadingFollowing(false);
+    }
+  };
+
   return {
     me,
     profile,
@@ -104,7 +154,16 @@ export const useProfileData = (targetId?: string | null) => {
     actions: {
       updateProfile,
       toggleFollow,
-      fetchProfileData
+      fetchProfileData,
+      openFollowersModal,
+      openFollowingModal,
+    },
+    modals: {
+      showFollowersModal, setShowFollowersModal,
+      showFollowingModal, setShowFollowingModal,
+      followersList, followingList,
+      loadingFollowers, loadingFollowing,
+      errorFollowers, errorFollowing,
     }
   };
 };

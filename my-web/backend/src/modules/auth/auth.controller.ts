@@ -3,8 +3,6 @@ import {
   Post,
   Body,
   Get,
-  Param,
-  Query,
   UseGuards,
   Res,
   Req,
@@ -16,7 +14,6 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 
@@ -51,17 +48,6 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
-  @Get('profile/:id')
-  async getProfile(
-    @Param('id') id: string,
-    @Query('requesterId') requesterId?: string,
-  ) {
-    return this.authService.getProfile(
-      parseInt(id),
-      requesterId ? parseInt(requesterId) : undefined,
-    );
-  }
-
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   async changePassword(
@@ -75,24 +61,6 @@ export class AuthController {
     );
   }
 
-  @Post('update-profile')
-  @UseGuards(JwtAuthGuard)
-  async updateProfile(
-    @GetUser('id') userId: number,
-    @Body() dto: UpdateProfileDto,
-  ) {
-    return this.authService.updateProfile(userId, dto);
-  }
-
-  @Post('toggle-follow-user')
-  @UseGuards(JwtAuthGuard)
-  async toggleFollowUser(
-    @GetUser('id') userId: number,
-    @Body() body: { followingId: number },
-  ) {
-    return this.authService.toggleFollow(userId, body.followingId);
-  }
-
   @Post('complete-onboarding')
   @UseGuards(JwtAuthGuard)
   async completeOnboarding(
@@ -102,25 +70,26 @@ export class AuthController {
     return this.authService.completeOnboarding(userId, dto);
   }
 
-  @Post('delete-account')
-  @UseGuards(JwtAuthGuard)
-  async deleteAccount(
-    @GetUser('id') userId: number,
-    @Body() body: { password?: string },
-  ) {
-    return this.authService.deleteAccount(userId, body.password);
-  }
-
   @Post('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const refreshToken = req.cookies['refreshToken'] as string | undefined;
-    if (!refreshToken) throw new UnauthorizedException('No refresh token');
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token');
+    }
+
     const result = await this.authService.refreshToken(refreshToken);
     this.setCookies(res, result.accessToken, result.refreshToken);
-    return { user: result.user };
+    return { accessToken: result.accessToken };
+  }
+
+  @Get('check-auth')
+  @UseGuards(JwtAuthGuard)
+  async checkAuth(@GetUser('id') userId: number) {
+    const user = await this.authService.getProfile(userId);
+    return { user };
   }
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
@@ -128,13 +97,14 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 15 * 60 * 1000, // 15 phút
     });
+
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
     });
   }
 }

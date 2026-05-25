@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component Table động dành cho Admin Panel, dùng chung để hiển thị danh sách User và danh sách Món ăn.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị giao diện danh sách, xử lý các thao tác mở/đóng danh sách chi nhánh (accordion) và gọi các hàm action tương ứng (approve, reject, edit, delete, feature).
+ * Các chức năng đặc biệt: Tự động gom nhóm các món ăn theo nhà hàng (isNewMerchant logic).
+ */
 'use client';
 
 import React, { useState } from 'react';
@@ -6,19 +11,35 @@ import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 
+export interface AdminTableItem {
+  id: number;
+  name: string;
+  email?: string;
+  price?: number;
+  createdAt: string;
+  status: string;
+  isFeaturedToday?: boolean;
+  isFeaturedWeekly?: boolean;
+  isAdminRecommended?: boolean;
+  restaurantId?: number;
+  restaurant?: { name: string };
+  [key: string]: unknown;
+}
+
 interface AdminTableProps {
   activeTab: string;
   foodSubTab?: 'system' | 'merchant';
   loading: boolean;
-  filteredData: any[];
+  filteredData: AdminTableItem[];
   actions: {
-    handleUpdateStatus: (id: any, status: string) => void;
-    handleUpdateFood: (id: any, data: any) => void;
-    handleRecommendFood: (id: any) => void;
-    handleDeleteFood: (id: any) => void;
-    handleDeleteUser: (id: any) => void;
-    openEditModal: (food: any) => void;
-    handleApproveFood?: (id: any, status: string) => void;
+    handleUpdateStatus: (id: number, status: string) => void;
+    handleUpdateFood: (id: number, data: Partial<AdminTableItem>) => void;
+    handleRecommendFood: (id: number, newValue: boolean) => void;
+    handleDeleteFood: (id: number) => void;
+    handleDeleteUser: (id: number) => void;
+    openEditModal: (food: AdminTableItem) => void;
+    handleApproveFood?: (id: number, status: string) => void;
+    handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
   };
 }
 
@@ -66,14 +87,14 @@ export const AdminTable = ({
           ) : filteredData.length === 0 ? (
             <tr><td colSpan={colSpan} className="px-8 py-12 text-center text-gray-400">{LABELS.ADMIN.TABLE.EMPTY}</td></tr>
           ) : (
-            filteredData.map((item: Record<string, unknown> & { id: number; name: string; email?: string; price?: number; createdAt: string; status: string; isFeaturedToday?: boolean; isAdminRecommended?: boolean; restaurantId?: number; restaurant?: { name: string } }, index: number) => {
+            filteredData.map((item, index: number) => {
               const prevItem = index > 0 ? filteredData[index - 1] : null;
               // So sánh theo restaurantId vì Prisma backend chỉ select { name: true } cho nested restaurant
               const isNewMerchant = isMerchantMenu && (!prevItem || prevItem.restaurantId !== item.restaurantId);
 
               let hasPending = false;
               if (isNewMerchant) {
-                hasPending = filteredData.some((f: any) => f.restaurantId === item.restaurantId && f.status === 'PENDING');
+                hasPending = filteredData.some((f) => f.restaurantId === item.restaurantId && f.status === 'PENDING');
               }
 
               return (
@@ -169,16 +190,28 @@ export const AdminTable = ({
                                   size="sm" 
                                   onClick={() => actions.handleUpdateFood(item.id, { isFeaturedToday: !item.isFeaturedToday })} 
                                   className={item.isFeaturedToday ? 'bg-orange-500 text-white' : ''}
-                                  aria-label={LABELS.RESTAURANT.TABLE.FEATURE}
+                                  aria-label={LABELS.ADMIN.TABLE.FEATURE_TODAY}
+                                  title={LABELS.ADMIN.TABLE.FEATURE_TODAY}
                                 >
                                   <Star size={18} fill={item.isFeaturedToday ? "white" : "none"} />
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  onClick={() => actions.handleRecommendFood(item.id)} 
+                                  onClick={() => actions.handleToggleWeeklyFeatured?.(item.id, !item.isFeaturedWeekly)} 
+                                  className={item.isFeaturedWeekly ? 'bg-purple-500 text-white' : ''}
+                                  aria-label={LABELS.ADMIN.TABLE.FEATURE_WEEKLY}
+                                  title={LABELS.ADMIN.TABLE.FEATURE_WEEKLY}
+                                >
+                                  <Sparkles size={18} fill={item.isFeaturedWeekly ? "white" : "none"} />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => actions.handleRecommendFood(item.id, !item.isAdminRecommended)} 
                                   className={item.isAdminRecommended ? 'bg-primary text-white' : ''}
-                                  aria-label={LABELS.RESTAURANT.TABLE.RECOMMEND}
+                                  aria-label={LABELS.ADMIN.TABLE.ADMIN_RECOMMEND}
+                                  title={LABELS.ADMIN.TABLE.ADMIN_RECOMMEND}
                                 >
                                   <Sparkles size={18} fill={item.isAdminRecommended ? "white" : "none"} />
                                 </Button>

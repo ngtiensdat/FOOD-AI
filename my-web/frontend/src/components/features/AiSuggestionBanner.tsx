@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này để làm gì: Component hiển thị banner "Gợi ý AI" nổi bật, dùng để thu hút người dùng.
+ * Các file khác hay file này có ý nghĩa như nào: Dùng ở các trang Dashboard/Profile để mời gọi người dùng xem các đề xuất cá nhân hoá.
+ * Các chức năng đặc biệt: Thiết kế Gradient, sử dụng chung hệ thống LABELS.
+ */
 'use client';
 
 import React from 'react';

@@ -1,7 +1,13 @@
+/**
+ * Mục đích file này để làm gì: Đây là trang Profile chính của người dùng, đóng vai trò Orchestrator lắp ráp các module giao diện (ProfileHeader, ProfileIntro, Modals).
+ * Các file khác hay file này có ý nghĩa như nào: Tách biệt hoàn toàn UI và logic, nhường toàn bộ xử lý state/gọi API cho hook `useProfileData`. Các Component con trong `features/` đảm nhận phần hiển thị chi tiết.
+ * Các chức năng đặc biệt: Bọc `Suspense` an toàn cho `useSearchParams` (chuẩn Next.js App Router). Quản lý render động nhiều Tab và Modal (Followers, Following, Edit Profile).
+ * Các biến, hàm đặc biệt trong file: `ProfileContent` (chứa logic bóc tách URL Params), Component `ProfilePage` (bọc ngoài Suspense).
+ */
 'use client';
 
 import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Info } from 'lucide-react';
 
@@ -10,13 +16,14 @@ import { useProfileData } from '@/hooks/useProfileData';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
-import Image from 'next/image';
-import { getValidImageUrl } from '@/utils/helpers';
+import { Avatar } from '@/components/base/Avatar';
 
 // Modular Feature Components
 import { ProfileHeader } from '@/components/features/ProfileHeader';
 import { ProfileIntro } from '@/components/features/ProfileIntro';
 import { EditProfileModal } from '@/components/features/EditProfileModal';
+import { FollowersModal } from '@/components/features/FollowersModal';
+import { FollowingModal } from '@/components/features/FollowingModal';
 
 function ProfileContent() {
   const searchParams = useSearchParams();
@@ -33,8 +40,11 @@ function ProfileContent() {
     setIsEditing,
     editData,
     setEditData,
-    actions
+    actions,
+    modals
   } = useProfileData(targetId);
+
+  const router = useRouter();
 
   if (!profile) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
@@ -53,10 +63,12 @@ function ProfileContent() {
         <ProfileHeader 
           user={user} 
           profile={profile} 
-          me={me} 
+          me={me as any} 
           isFollowLoading={isFollowLoading} 
           onEdit={() => setIsEditing(true)} 
           onFollow={actions.toggleFollow} 
+          onShowFollowers={actions.openFollowersModal}
+          onShowFollowing={actions.openFollowingModal}
         />
 
         <div className="flex items-center mt-6 border-b border-gray-100 dark:border-gray-200 bg-white dark:bg-gray-100 rounded-t-card px-4 md:px-8 transition-colors duration-300">
@@ -86,11 +98,7 @@ function ProfileContent() {
           <div className="md:col-span-7 space-y-6">
             <div className="card-container !p-6">
               <div className="flex gap-4 mb-4">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden gradient-bg flex items-center justify-center text-white font-bold">
-                  {profile.profile?.avatar ? (
-                    <Image src={getValidImageUrl(profile.profile.avatar)} alt={user.name} fill sizes="40px" className="object-cover" />
-                  ) : user.name?.charAt(0).toUpperCase()}
-                </div>
+                <Avatar src={profile.profile?.avatar} name={user.name} size={40} />
                 <button className="flex-1 bg-gray-50 hover:bg-gray-100 rounded-full px-6 py-2 text-left text-gray-500 transition-all text-small">
                   {LABELS.SETTINGS.PROFILE.POSTS.THINKING(user.name)}
                 </button>
@@ -116,6 +124,49 @@ function ProfileContent() {
             setEditData={setEditData} 
             loading={loading} 
             onSave={actions.updateProfile} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal Followers */}
+      <AnimatePresence>
+        {modals.showFollowersModal && (
+          <FollowersModal
+            isOpen={modals.showFollowersModal}
+            onClose={() => modals.setShowFollowersModal(false)}
+            loading={modals.loadingFollowers}
+            error={modals.errorFollowers}
+            followersList={modals.followersList}
+            onItemClick={(followerUser) => {
+              modals.setShowFollowersModal(false);
+              router.push(`/profile?id=${followerUser.id}`);
+            }}
+            title={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWERS_TITLE}
+            emptyLabel={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWERS_EMPTY}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal Following */}
+      <AnimatePresence>
+        {modals.showFollowingModal && (
+          <FollowingModal
+            isOpen={modals.showFollowingModal}
+            onClose={() => modals.setShowFollowingModal(false)}
+            loading={modals.loadingFollowing}
+            error={modals.errorFollowing}
+            users={modals.followingList.users}
+            restaurants={modals.followingList.restaurants}
+            onUserClick={(followingUser) => {
+              modals.setShowFollowingModal(false);
+              router.push(`/profile?id=${followingUser.id}`);
+            }}
+            onRestaurantClick={(restaurantItem) => {
+              modals.setShowFollowingModal(false);
+              router.push(`/restaurant/${restaurantItem.id}`);
+            }}
+            title={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWING_TITLE}
+            emptyLabel={LABELS.SETTINGS.PROFILE.MODALS.FOLLOWING_EMPTY}
           />
         )}
       </AnimatePresence>

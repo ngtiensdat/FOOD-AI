@@ -17,4 +17,29 @@ export const MESSAGES = {
   SYSTEM: {
     INTERNAL_SERVER_ERROR: 'Lỗi hệ thống, vui lòng thử lại sau',
   },
+  RESTAURANT: {
+    NOT_FOUND: 'Cơ sở kinh doanh không tồn tại',
+    PRIVATE_FOLLOW_LIST:
+      'Danh sách theo dõi của nhà hàng này đã được đặt ở chế độ riêng tư',
+    NOT_OWNER: 'Bạn chưa sở hữu cơ sở kinh doanh nào.',
+  },
+  USER: {
+    NOT_FOUND: 'Người dùng không tồn tại',
+    CANNOT_FOLLOW_SELF: 'Không thể tự theo dõi chính mình',
+  },
+  CATEGORY: {
+    NOT_FOUND: 'Category not found',
+    GROUP_NOT_FOUND: 'Category group not found',
+    HAS_FOODS: 'Có lỗi xảy ra (có thể danh mục đang có món ăn)',
+  },
+  FOOD: {
+    NOT_FOUND: 'Món ăn không tồn tại',
+    NO_EDIT_PERMISSION: 'Bạn không có quyền chỉnh sửa món ăn này',
+    NO_DELETE_PERMISSION: 'Bạn không có quyền xóa món ăn này',
+  },
+  ADMIN: {
+    FILE_REQUIRED: 'Vui lòng upload file Excel',
+    FILE_EMPTY_OR_INVALID: 'File Excel trống hoặc sai định dạng',
+    INVALID_STATUS: 'Trạng thái không hợp lệ',
+  },
 };

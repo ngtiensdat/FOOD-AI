@@ -8,8 +8,11 @@ import { ThrottlerExceptionFilter } from './common/filters/throttler-exception.f
 
 import { Request, Response, NextFunction } from 'express';
 
+import { appConfig } from './config/app.config';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = appConfig();
 
   app.use(cookieParser());
 
@@ -34,16 +37,12 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: [
-      process.env.FRONTEND_URL || 'http://localhost:3000',
-      'http://127.0.0.1:3000',
-    ],
+    origin: [config.frontendUrl, 'http://127.0.0.1:3000'],
     credentials: true,
   });
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${port} ---`);
+  await app.listen(config.port);
+  console.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
 bootstrap().catch((err) => {
   console.error('Error during bootstrap:', err);
