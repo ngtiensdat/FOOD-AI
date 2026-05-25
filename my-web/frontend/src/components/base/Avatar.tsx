@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { getValidImageUrl } from '@/utils/helpers';
 
 interface AvatarProps {
@@ -51,7 +51,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       style={isResponsiveSize ? undefined : { width: displaySize, height: displaySize }}
     >
       {hasValidImage && !hasError ? (
-        <Image
+        <SafeImage
           src={getValidImageUrl(src)}
           alt={name || 'Avatar'}
           fill

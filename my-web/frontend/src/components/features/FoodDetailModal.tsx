@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { X, MapPin, Navigation, Store, Clock, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/base/Button';
@@ -72,7 +72,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
         </button>
 
         <div className="w-full md:w-1/2 h-64 md:h-auto bg-gray-100 relative">
-          <Image
+          <SafeImage
             src={getValidImageUrl(food.image)}
             alt={food.name}
             fill

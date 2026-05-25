@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { Camera, Shield, Store, Grid, Edit3, MoreHorizontal, Clock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
@@ -105,7 +105,7 @@ export const ProfileHeader = ({
       {/* Cover Photo */}
       <div className="h-64 md:h-96 relative group cursor-pointer overflow-hidden">
         {profile?.profile?.coverImage ? (
-          <Image 
+          <SafeImage 
             src={getValidImageUrl(profile.profile.coverImage)} 
             alt={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER}
             fill 
