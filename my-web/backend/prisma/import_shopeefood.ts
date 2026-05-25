@@ -20,6 +20,15 @@ function cleanImageUrl(url: string | null | undefined): string | null {
 async function main() {
     console.log("Bắt đầu import dữ liệu...");
 
+    // Cập nhật tọa độ cho các món ăn đã import trước đó nhưng thiếu lat/lng
+    const updateCount = await prisma.$executeRaw`
+        UPDATE foods
+        SET lat = r.latitude, lng = r.longitude
+        FROM restaurants r
+        WHERE restaurant_id = r.id AND (foods.lat IS NULL OR foods.lng IS NULL)
+    `;
+    console.log(`📌 Đã đồng bộ tọa độ cho ${updateCount} món ăn từ chi nhánh sang.`);
+
     // Thư mục chứa các dataset (ví dụ: 09-dataset)
     const datasetDir = path.resolve(__dirname, '../../../documents/09-dataset');
     
@@ -182,6 +191,8 @@ async function main() {
                             categoryId: category.id,
                             status: 'APPROVED',
                             isActive: true,
+                            lat: restaurant.latitude,
+                            lng: restaurant.longitude,
                         }
                     });
                     totalFoods++;
