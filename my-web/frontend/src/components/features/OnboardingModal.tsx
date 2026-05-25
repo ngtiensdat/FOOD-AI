@@ -40,7 +40,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
-      
+
       <AnimatePresence mode="wait">
         {!isFinishing ? (
           <motion.div
@@ -51,17 +51,17 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
             className={`bg-white w-full ${isBranchStep ? 'max-w-2xl' : 'max-w-xl'} rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 p-8 md:p-10 transition-all duration-300`}
           >
             {onClose && (
-              <button 
+              <button
                 onClick={onClose}
                 className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 transition-colors z-20"
               >
                 <X size={24} />
               </button>
             )}
-            
+
             {/* Progress bar */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gray-100">
-              <motion.div 
+              <motion.div
                 className="h-full bg-gradient-to-r from-orange-400 to-primary"
                 initial={{ width: 0 }}
                 animate={{ width: `${((step + 1) / totalSteps) * 100}%` }}
@@ -88,7 +88,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                 <form onSubmit={handleBranchSubmit} className="space-y-4">
                   <div className="max-h-[300px] overflow-y-auto pr-1 space-y-4 scrollbar-thin scrollbar-thumb-slate-300">
                     {branches.map((branch, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 relative space-y-3"
                       >
@@ -281,7 +281,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       ))}
                     </div>
                   ) : (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="w-full space-y-4"
@@ -294,13 +294,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                         onChange={(e) => setOtherValue(e.target.value)}
                       />
                       <div className="flex gap-3">
-                        <button 
+                        <button
                           onClick={() => setShowOtherInput(false)}
                           className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all"
                         >
                           {LABELS.COMMON.BACK}
                         </button>
-                        <button 
+                        <button
                           onClick={handleOtherSubmit}
                           disabled={!otherValue.trim()}
                           className="flex-[2] py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -328,9 +328,9 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
           >
             {/* Background decor */}
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,107,0,0.05),transparent)] pointer-events-none" />
-            
+
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.1, 1],
                 rotate: [0, 5, -5, 0]
               }}
@@ -339,12 +339,12 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
             >
               <CheckCircle2 size={48} />
             </motion.div>
-            
+
             <h2 className="text-3xl font-bold text-gray-800 mb-4">{LABELS.CUSTOMER.ONBOARDING_SUCCESS}</h2>
             <p className="text-gray-500 mb-8 leading-relaxed">
               {LABELS.CUSTOMER.ONBOARDING_PREPARING}
             </p>
-            
+
             <div className="flex gap-2 justify-center">
               {[0, 1, 2].map((i) => (
                 <motion.div
