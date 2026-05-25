@@ -44,6 +44,7 @@ export const Input = ({
           suppressHydrationWarning
           className={`${inputStyles} ${className} ${isTextArea ? 'min-h-[100px]' : ''}`}
           {...props}
+          value={props.value === null ? '' : props.value}
         />
       </div>
       {error && <p className="text-red-500 text-xs mt-1 ml-1 font-bold">{error}</p>}

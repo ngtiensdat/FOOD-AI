@@ -228,7 +228,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             </label>
                             <input
                               type="url"
-                              value={branch.mapUrl}
+                              value={branch.mapUrl || ''}
                               onChange={(e) => handleBranchChange(index, 'mapUrl', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.MAP_URL_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
@@ -242,7 +242,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             </label>
                             <input
                               type="text"
-                              value={branch.openingHours}
+                              value={branch.openingHours || ''}
                               onChange={(e) => handleBranchChange(index, 'openingHours', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.HOURS_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
@@ -256,7 +256,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             </label>
                             <input
                               type="text"
-                              value={branch.bio}
+                              value={branch.bio || ''}
                               onChange={(e) => handleBranchChange(index, 'bio', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.BIO_PLACEHOLDER}
                               className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
