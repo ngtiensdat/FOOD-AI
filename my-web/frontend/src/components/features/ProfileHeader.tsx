@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
 
 export interface ProfileHeaderData {
-  id: number;
+  id?: number;
   name?: string;
   role?: string;
   isFollowing?: boolean;

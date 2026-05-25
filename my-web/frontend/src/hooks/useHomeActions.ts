@@ -46,8 +46,8 @@ export const useHomeActions = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const isOnboarded = (user as any).hasCompletedOnboarding === true || 
-                          (user as any).profile?.hasCompletedOnboarding === true;
+      const isOnboarded = user.hasCompletedOnboarding === true || 
+                          user.profile?.hasCompletedOnboarding === true;
       if (!isOnboarded) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowOnboarding(true);

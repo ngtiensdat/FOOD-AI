@@ -281,7 +281,7 @@ export default function RestaurantDashboard() {
             onClose={() => setIsAddingFood(false)} 
             editingFood={editingFood} 
             formData={formData} 
-            setFormData={setFormData as any} 
+            setFormData={(data) => setFormData(data as typeof formData)} 
             onSubmit={actions.handleSubmit} 
             myBranches={myBranches}
             onSelectBranch={actions.handleSelectBranch}

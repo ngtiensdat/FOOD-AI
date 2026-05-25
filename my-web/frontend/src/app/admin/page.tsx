@@ -82,7 +82,7 @@ export default function AdminDashboard() {
                 ].map(tab => (
                   <button
                     key={tab.id}
-                    onClick={() => setFoodSubTab(tab.id as any)}
+                    onClick={() => setFoodSubTab(tab.id as 'system' | 'merchant')}
                     className={`pb-2 border-b-2 transition-all ${foodSubTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                   >
                     {tab.label}

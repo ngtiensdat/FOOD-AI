@@ -43,7 +43,7 @@ function ExploreContent() {
     <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
       <Navbar activeTab={activeTab} setActiveTab={(tab: string) => {
         if (tab === 'home') router.push('/');
-        else setActiveTab(tab as any);
+        else setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings');
       }} />
 
       {/* Header Area */}
