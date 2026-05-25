@@ -47,6 +47,8 @@ export class AdminService {
       description?: string;
       image?: string;
       isActive?: boolean;
+      isFeaturedToday?: boolean;
+      isAdminRecommended?: boolean;
       lat?: string | number;
       lng?: string | number;
       address?: string;

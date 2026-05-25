@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { FoodCard } from './FoodCard';
 import { LABELS } from '@/constants/labels';
+import { getValidImageUrl } from '@/utils/helpers';
 
 interface AiResponseBoxProps {
   isLoading: boolean;
@@ -33,7 +34,7 @@ export const AiResponseBox = ({
           <div className="relative w-10 h-10">
             <Image src="/favicon.ico" alt="AI" fill sizes="40px" className="object-contain rounded-xl" />
           </div>
-          <span className="font-bold text-gray-800">Food AI Assistant</span>
+          <span className="font-bold text-gray-800">{LABELS.COMMON.AI_ASSISTANT_NAME}</span>
         </div>
 
         {isLoading ? (
@@ -56,7 +57,7 @@ export const AiResponseBox = ({
                   {suggestedFoods.map((food, idx) => (
                     <FoodCard 
                       key={idx} 
-                      food={food} 
+                      food={{ ...food, image: getValidImageUrl(food.image) }} 
                       onViewDetail={onViewDetail} 
                     />
                   ))}

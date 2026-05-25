@@ -70,6 +70,14 @@ export const useAdminData = () => {
     return false;
   };
 
+  const approveFood = async (id: number, status: string) => {
+    if (await adminService.approveFood(id, status)) {
+      await fetchData();
+      return true;
+    }
+    return false;
+  };
+
   return {
     pendingMerchants,
     allFoods,
@@ -80,6 +88,7 @@ export const useAdminData = () => {
     updateStatus,
     updateFood,
     deleteFood,
-    recommendFood
+    recommendFood,
+    approveFood
   };
 };

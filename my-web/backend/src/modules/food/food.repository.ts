@@ -17,7 +17,16 @@ export class FoodRepository {
         where,
         include: {
           restaurant: {
-            select: { id: true, name: true, address: true, ownerId: true },
+            select: {
+              id: true,
+              name: true,
+              address: true,
+              ownerId: true,
+              isActive: true,
+              profile: {
+                select: { openingHours: true },
+              },
+            },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -46,7 +55,14 @@ export class FoodRepository {
 
   async findRecentViews(userId: number, limit: number = 5) {
     return this.prisma.history.findMany({
-      where: { userId, foodId: { not: null } },
+      where: {
+        userId,
+        foodId: { not: null },
+        food: {
+          deletedAt: null,
+          isActive: true,
+        },
+      },
       include: {
         food: {
           include: {
@@ -65,7 +81,16 @@ export class FoodRepository {
       where: { id },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            ownerId: true,
+            isActive: true,
+            profile: {
+              select: { openingHours: true },
+            },
+          },
         },
       },
     });
@@ -93,7 +118,16 @@ export class FoodRepository {
       where: { id: { in: nearbyResults.map((r) => r.id) } },
       include: {
         restaurant: {
-          select: { name: true, address: true, ownerId: true },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            ownerId: true,
+            isActive: true,
+            profile: {
+              select: { openingHours: true },
+            },
+          },
         },
       },
     });
@@ -146,12 +180,35 @@ export class FoodRepository {
   async findRestaurantByOwnerId(ownerId: number) {
     return this.prisma.restaurant.findFirst({
       where: { ownerId },
+      include: {
+        profile: {
+          select: { openingHours: true, contactPhone: true },
+        },
+      },
     });
   }
 
   async findRestaurantById(id: number) {
     return this.prisma.restaurant.findUnique({
       where: { id },
+    });
+  }
+
+  async updateRestaurantStatus(id: number, isActive: boolean) {
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { isActive },
+    });
+  }
+
+  async updateRestaurantProfile(
+    restaurantId: number,
+    data: { openingHours?: string; contactPhone?: string },
+  ) {
+    return this.prisma.restaurantProfile.upsert({
+      where: { restaurantId },
+      create: { restaurantId, ...data },
+      update: data,
     });
   }
 }

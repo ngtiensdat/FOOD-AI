@@ -76,9 +76,35 @@ export const FoodFormModal = ({
               onChange={e => setFormData({ ...formData, description: e.target.value })} 
               className="md:col-span-2" 
             />
+            <Input 
+              label={LABELS.FORM.ADDRESS} 
+              value={formData.address} 
+              onChange={e => setFormData({ ...formData, address: e.target.value })} 
+              className="md:col-span-2" 
+            />
+            <Input 
+              label={LABELS.FORM.MAP_URL} 
+              value={formData.mapUrl} 
+              onChange={e => setFormData({ ...formData, mapUrl: e.target.value })} 
+              className="md:col-span-2" 
+            />
+            <Input 
+              label={LABELS.FORM.LAT} 
+              type="number"
+              step="any"
+              value={formData.lat} 
+              onChange={e => setFormData({ ...formData, lat: e.target.value })} 
+            />
+            <Input 
+              label={LABELS.FORM.LNG} 
+              type="number"
+              step="any"
+              value={formData.lng} 
+              onChange={e => setFormData({ ...formData, lng: e.target.value })} 
+            />
           </div>
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" fullWidth onClick={onClose}>
+            <Button type="button" variant="outline" fullWidth onClick={onClose}>
               {LABELS.COMMON.CANCEL}
             </Button>
             <Button type="submit" fullWidth>

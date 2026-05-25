@@ -37,7 +37,7 @@
 **Acceptance Criteria (AC):**
 - [x] Form thêm món ăn mới: Tên, Giá, Mô tả, Hình ảnh, Tags.
 - [x] Chỉnh sửa thông tin món ăn hiện có.
-- [ ] Xóa hoặc ẩn món ăn khỏi thực đơn (Soft delete).
+- [x] Xóa món ăn khỏi thực đơn.
 
 ### US-08: Công cụ quản trị hệ thống (Admin Tools)
 - **As a** Admin
@@ -48,3 +48,29 @@
 - [x] Xem danh sách và quản lý tất cả User (Customer/Merchant).
 - [x] Xem danh sách và quản lý tất cả món ăn (System Menu & Merchant Menu).
 - [x] Tính năng Recommend món ăn để đẩy lên các mục nổi bật.
+
+---
+
+## 3. Nâng cấp bổ sung (Enhancements)
+
+### US-08+: Cải thiện UX quản lý món ăn đối tác (Admin)
+- **As a** Admin
+- **I want** danh sách món ăn đối tác được phân nhóm theo tên Merchant và có thông báo trực quan khi cần phê duyệt
+- **So that** tôi có thể dễ dàng quản lý khi số lượng merchant và món ăn tăng lên.
+
+**Acceptance Criteria (AC):**
+- [x] Món ăn đối tác được nhóm theo tên Merchant, sắp xếp theo bảng chữ cái.
+- [x] Mỗi nhóm có thể Thu gọn/Mở rộng (Accordion), mặc định đóng.
+- [x] Badge "CẦN DUYỆT" nhấp nháy (pulse) hiển thị bên cạnh tên Merchant khi có món ở trạng thái PENDING.
+
+### US-08++: Chống crash & Hardening hệ thống
+- **As a** Admin/Merchant
+- **I want** hệ thống không bị crash khi dữ liệu đầu vào không hợp lệ
+- **So that** trải nghiệm sử dụng không bị gián đoạn.
+
+**Acceptance Criteria (AC):**
+- [x] URL ảnh không hợp lệ (ví dụ: `"a"`) được tự động thay bằng ảnh mặc định thay vì crash trang.
+- [x] Hàm `getValidImageUrl()` được tích hợp vào tất cả component hiển thị ảnh từ database.
+- [x] Nút Xóa món ăn/Xóa người dùng hiển thị Modal xác nhận (ConfirmModal) thay vì `window.confirm` thô sơ.
+- [x] Toàn bộ chuỗi hiển thị hardcode được chuyển vào `LABELS` constants.
+- [x] Tất cả thẻ `<img>` được thay bằng `next/image` theo chuẩn `.agent` rule.

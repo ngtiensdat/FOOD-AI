@@ -42,9 +42,9 @@ export default function RegisterPage() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
             <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
-              <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="48px" className="object-contain p-2" />
+              <Image src="/favicon.ico" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="48px" className="object-contain p-2" />
             </div>
-            <span className="text-3xl font-bold gradient-text">Food AI</span>
+            <span className="text-3xl font-bold gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
           </Link>
         </div>
 

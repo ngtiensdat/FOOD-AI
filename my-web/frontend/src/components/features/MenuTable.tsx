@@ -6,6 +6,7 @@ import { CheckCircle, Clock, XCircle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
+import { getValidImageUrl } from '@/utils/helpers';
 
 interface MenuTableProps {
   myFoods: any[];
@@ -36,7 +37,7 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
                 <div className="flex items-center gap-6">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
                     <Image 
-                      src={food.image || '/placeholder-food.jpg'} 
+                      src={getValidImageUrl(food.image)} 
                       alt={food.name} 
                       width={64}
                       height={64}
