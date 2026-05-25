@@ -215,18 +215,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
         </div>
       )}
 
-      {deleteConfirm && (
-        <ConfirmModal
-          isOpen={true}
-          title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_TITLE}
-          message={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_MESSAGE(deleteConfirm.type === 'group' ? 'nhóm' : 'phân loại')}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setDeleteConfirm(null)}
-          confirmText={LABELS.COMMON.DELETE}
-          cancelText={LABELS.COMMON.CANCEL}
-          variant="danger"
-        />
-      )}
+      <ConfirmModal
+        isOpen={deleteConfirm !== null}
+        title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_TITLE}
+        message={deleteConfirm ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CONFIRM_DELETE_MESSAGE(deleteConfirm.type === 'group' ? 'nhóm' : 'phân loại') : ''}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText={LABELS.COMMON.DELETE}
+        cancelText={LABELS.COMMON.CANCEL}
+        variant="danger"
+      />
     </div>
   );
 };

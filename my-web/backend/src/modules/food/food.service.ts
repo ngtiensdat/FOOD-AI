@@ -225,46 +225,38 @@ export class FoodService {
       }
     }
 
-    // Check if any fields actually changed
-    let hasChanges = false;
-    if (dto.name !== undefined && dto.name !== food.name) hasChanges = true;
-    if (dto.price !== undefined && dto.price !== food.price) hasChanges = true;
-    if (
-      dto.description !== undefined &&
-      dto.description !== (food.description ?? '')
-    )
-      hasChanges = true;
-    if (dto.image !== undefined && dto.image !== (food.image ?? ''))
-      hasChanges = true;
-    if (dto.address !== undefined && dto.address !== (food.address ?? ''))
-      hasChanges = true;
-    if (dto.mapUrl !== undefined && dto.mapUrl !== (food.mapUrl ?? ''))
-      hasChanges = true;
+    // Check if any fields actually changed (Generic Check - avoids manual comparison errors)
+    const keysToCheck = Object.keys(dto) as Array<keyof UpdateFoodDto>;
+    const hasChanges = keysToCheck.some((key) => {
+      const dtoValue = dto[key];
+      const dbValue = food[key];
 
-    if (dto.lat !== undefined && dto.lat !== null) {
-      if (food.lat === null || Number(dto.lat) !== Number(food.lat))
-        hasChanges = true;
-    } else if (dto.lat === null && food.lat !== null) {
-      hasChanges = true;
-    }
+      if (dtoValue === undefined) return false;
 
-    if (dto.lng !== undefined && dto.lng !== null) {
-      if (food.lng === null || Number(dto.lng) !== Number(food.lng))
-        hasChanges = true;
-    } else if (dto.lng === null && food.lng !== null) {
-      hasChanges = true;
-    }
-
-    if (dto.tags !== undefined) {
-      const currentTags = food.tags || [];
-      const newTags = dto.tags || [];
-      if (
-        currentTags.length !== newTags.length ||
-        !currentTags.every((t, i) => t === newTags[i])
-      ) {
-        hasChanges = true;
+      // Handle array comparison (e.g. tags)
+      if (Array.isArray(dtoValue) && Array.isArray(dbValue)) {
+        return (
+          dtoValue.length !== dbValue.length ||
+          !dtoValue.every((val, idx) => val === dbValue[idx])
+        );
       }
-    }
+
+      // Normalize empty comparison (null / undefined / empty string)
+      const normalizedDto =
+        dtoValue === null || dtoValue === undefined ? '' : dtoValue;
+      const normalizedDb =
+        dbValue === null || dbValue === undefined ? '' : dbValue;
+
+      // Handle numbers comparison (e.g. price, lat, lng)
+      if (
+        typeof normalizedDto === 'number' ||
+        typeof normalizedDb === 'number'
+      ) {
+        return Number(normalizedDto) !== Number(normalizedDb);
+      }
+
+      return normalizedDto !== normalizedDb;
+    });
 
     const data: Prisma.FoodUpdateInput = { ...dto };
     if (user.role === UserRole.RESTAURANT && hasChanges) {

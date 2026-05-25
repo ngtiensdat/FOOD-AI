@@ -28,3 +28,6 @@ Thumbs.db
 # IDE
 .vscode/
 ~$*.xlsx
+
+# Temporary Linter Log Files
+*eslint_errors*

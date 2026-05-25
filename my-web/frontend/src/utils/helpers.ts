@@ -82,3 +82,23 @@ export const isRestaurantCurrentlyOpen = (openingHours?: string, isActive?: bool
     return true;
   }
 };
+
+/**
+ * Kiểm tra định dạng và giá trị giờ mở cửa hợp lệ (HH:MM-HH:MM)
+ */
+export const isValidOpeningHours = (openingHours?: string | null): boolean => {
+  if (!openingHours || !openingHours.trim()) return true;
+  
+  const cleanHours = openingHours.replace(/\s+/g, '');
+  const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+  if (!match) return false;
+
+  const [, sh, sm, eh, em] = match;
+  const shNum = parseInt(sh, 10);
+  const smNum = parseInt(sm, 10);
+  const ehNum = parseInt(eh, 10);
+  const emNum = parseInt(em, 10);
+
+  return shNum <= 23 && smNum <= 59 && ehNum <= 23 && emNum <= 59;
+};
+

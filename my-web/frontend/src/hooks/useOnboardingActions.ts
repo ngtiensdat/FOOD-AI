@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from '@/store/useToastStore';
 import { CUSTOMER_QUESTIONS, RESTAURANT_QUESTIONS } from '@/configs/onboarding.config';
 import { LABELS } from '@/constants/labels';
+import { isValidOpeningHours } from '@/utils/helpers';
 
 interface UseOnboardingActionsProps {
   user: any;
@@ -138,18 +139,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       }
 
       if (b.openingHours && b.openingHours.trim()) {
-        const cleanHours = b.openingHours.replace(/\s+/g, '');
-        const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
-        if (!match) {
-          toast.error(LABELS.ONBOARDING.INVALID_HOURS_FORMAT(i + 1));
-          return;
-        }
-        const [, sh, sm, eh, em] = match;
-        const shNum = parseInt(sh, 10);
-        const smNum = parseInt(sm, 10);
-        const ehNum = parseInt(eh, 10);
-        const emNum = parseInt(em, 10);
-        if (shNum > 23 || smNum > 59 || ehNum > 23 || emNum > 59) {
+        if (!isValidOpeningHours(b.openingHours)) {
           toast.error(LABELS.ONBOARDING.INVALID_HOURS_FORMAT(i + 1));
           return;
         }

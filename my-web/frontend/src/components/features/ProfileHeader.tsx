@@ -12,7 +12,7 @@ import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
-import { getValidImageUrl } from '@/utils/helpers';
+import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
 
 export interface ProfileHeaderData {
   id: number;
@@ -57,32 +57,6 @@ interface ProfileHeaderProps {
   onShowFollowing?: () => void;
 }
 
-// Helper to check operating status
-const isRestaurantCurrentlyOpen = (openingHours?: string, isActive?: boolean) => {
-  if (isActive === false) return false;
-  if (!openingHours) return true;
-
-  try {
-    const cleanHours = openingHours.replace(/\s+/g, '');
-    const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
-    if (!match) return true;
-
-    const [, sh, sm, eh, em] = match;
-    const startMin = parseInt(sh, 10) * 60 + parseInt(sm, 10);
-    const endMin = parseInt(eh, 10) * 60 + parseInt(em, 10);
-
-    const now = new Date();
-    const currentMin = now.getHours() * 60 + now.getMinutes();
-
-    if (startMin <= endMin) {
-      return currentMin >= startMin && currentMin <= endMin;
-    } else {
-      return currentMin >= startMin || currentMin <= endMin;
-    }
-  } catch {
-    return true;
-  }
-};
 
 export const ProfileHeader = ({
   user,
