@@ -3,14 +3,44 @@
 import { useState } from 'react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
-import { adminService } from '@/services/food.service';
+import { adminService, FoodBatchUpdateInput } from '@/services/food.service';
+import { UserRole, UserStatus, User } from '@/types/user';
+import { AdminFoodItem } from '@/types/food';
+import { AdminTableItem } from '@/components/features/admin/AdminTable';
+import { AdminFoodFormData } from '@/components/features/admin/AdminFoodModal';
+
+export interface UpdateFoodPayload {
+  name?: string;
+  price?: string | number;
+  description?: string;
+  image?: string;
+  isActive?: boolean;
+  isFeaturedToday?: boolean;
+  isFeaturedWeekly?: boolean;
+  isAdminRecommended?: boolean;
+  tags?: string | string[];
+}
+
+export interface AdminData {
+  pendingMerchants: User[];
+  allFoods: AdminFoodItem[];
+  allUsers: User[];
+  loading: boolean;
+  fetchData: () => Promise<void>;
+  deleteUser: (_id: number) => Promise<boolean>;
+  updateStatus: (_userId: number, _status: string) => Promise<boolean>;
+  updateFood: (_foodId: number, _data: Partial<AdminFoodItem>) => Promise<boolean>;
+  deleteFood: (_id: number) => Promise<boolean>;
+  recommendFood: (_id: number) => Promise<boolean>;
+  approveFood: (_id: number, _status: string) => Promise<boolean>;
+}
 
 /**
  * Custom Hook: useAdminActions
  * Tách biệt logic xử lý trạng thái và hành động (Actions) của trang Admin.
  * Giúp tệp page.tsx chỉ tập trung vào việc hiển thị giao diện.
  */
-export const useAdminActions = (adminData: any) => {
+export const useAdminActions = (adminData: AdminData) => {
   const { 
     deleteUser, 
     updateStatus, 
@@ -26,9 +56,15 @@ export const useAdminActions = (adminData: any) => {
 
   // --- State Management ---
   const [activeTab, setActiveTab] = useState<'merchants' | 'users' | 'menu' | 'customers'>('merchants');
-  const [foodSubTab, setFoodSubTab] = useState<'system' | 'merchant'>('system');
-  const [editingFood, setEditingFood] = useState<any>(null);
-  const [editFormData, setEditFormData] = useState<any>({});
+  const [foodSubTab, setFoodSubTab] = useState<'system' | 'merchant'>('merchant');
+  const [editingFood, setEditingFood] = useState<AdminTableItem | null>(null);
+  const [editFormData, setEditFormData] = useState<AdminFoodFormData>({
+    name: '',
+    price: '',
+    tags: '',
+    image: '',
+    description: '',
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [deleteFoodId, setDeleteFoodId] = useState<number | null>(null);
@@ -57,22 +93,30 @@ export const useAdminActions = (adminData: any) => {
     }
   };
 
-  const handleUpdateFood = async (foodId: number, data: any) => {
+  const handleUpdateFood = async (
+    foodId: number, 
+    data: UpdateFoodPayload
+  ) => {
     // Xử lý chuyển đổi data (tags string -> array, price string -> float) trước khi gọi service
-    const processedData = { ...data };
-    if (data.price !== undefined) {
-      processedData.price = parseFloat(data.price);
-    }
-    if (data.tags !== undefined) {
-      processedData.tags = typeof data.tags === 'string' 
-        ? data.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
-        : data.tags;
-    }
+    const processedData: Partial<AdminFoodItem> = {
+      name: data.name,
+      price: data.price !== undefined ? (typeof data.price === 'string' ? parseFloat(data.price) : data.price) : undefined,
+      description: data.description as string | undefined,
+      image: data.image as string | undefined,
+      isActive: data.isActive as boolean | undefined,
+      isFeaturedToday: data.isFeaturedToday as boolean | undefined,
+      isAdminRecommended: data.isAdminRecommended as boolean | undefined,
+      tags: data.tags !== undefined 
+        ? (typeof data.tags === 'string' 
+            ? data.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
+            : data.tags)
+        : undefined,
+    };
 
     if (await updateFood(foodId, processedData)) {
       setEditingFood(null);
       if (data.isFeaturedToday !== undefined) {
-        toast.success(data.isFeaturedToday ? 'Đã Bật Nổi bật Ngày' : 'Đã Tắt Nổi bật Ngày');
+        toast.success(data.isFeaturedToday ? LABELS.ADMIN.FEATURE_TODAY_ON : LABELS.ADMIN.FEATURE_TODAY_OFF);
       } else {
         toast.success(LABELS.ADMIN.SAVE_SUCCESS);
       }
@@ -96,7 +140,7 @@ export const useAdminActions = (adminData: any) => {
 
   const handleRecommendFood = async (id: number, newValue: boolean) => {
     if (await recommendFood(id)) {
-      toast.success(newValue ? 'Đã Bật Gợi ý' : 'Đã Tắt Gợi ý');
+      toast.success(newValue ? LABELS.ADMIN.RECOMMEND_ON : LABELS.ADMIN.RECOMMEND_OFF);
       if (fetchData) fetchData();
     }
   };
@@ -108,48 +152,64 @@ export const useAdminActions = (adminData: any) => {
     }
   };
 
-  const openEditModal = (food: any) => {
+  const openEditModal = (food: AdminTableItem) => {
     setEditingFood(food);
     setEditFormData({ 
-      ...food, 
-      tags: food.tags?.join(', ') || '' 
+      name: food.name || '',
+      price: food.price !== undefined ? food.price.toString() : '',
+      tags: Array.isArray(food.tags) ? food.tags.join(', ') : '',
+      image: (food.image as string) || '',
+      description: (food.description as string) || '',
     });
   };
 
   // --- Logic Lọc dữ liệu (Data Filtering) ---
   const getFilteredData = () => {
-    let data: any[] = [];
+    let data: (AdminFoodItem | User)[] = [];
     if (activeTab === 'merchants') data = pendingMerchants;
     else if (activeTab === 'menu') {
       if (foodSubTab === 'system') {
-        data = allFoods.filter((f: any) => !f.restaurantId);
+        data = allFoods.filter((f: AdminFoodItem) => !f.restaurantId);
       } else {
-        data = allFoods.filter((f: any) => !!f.restaurantId);
+        data = allFoods.filter((f: AdminFoodItem) => !!f.restaurantId);
         // Sort by restaurant name for grouping
-        data.sort((a, b) => {
+        (data as AdminFoodItem[]).sort((a, b) => {
           const nameA = a.restaurant?.name || '';
           const nameB = b.restaurant?.name || '';
           return nameA.localeCompare(nameB);
         });
       }
     }
-    else if (activeTab === 'users') data = allUsers.filter((u: any) => u.role === 'RESTAURANT' && u.status === 'APPROVED');
-    else if (activeTab === 'customers') data = allUsers.filter((u: any) => u.role === 'CUSTOMER');
+    else if (activeTab === 'users') data = allUsers.filter((u: User) => u.role === UserRole.RESTAURANT && u.status === UserStatus.APPROVED);
+    else if (activeTab === 'customers') data = allUsers.filter((u: User) => u.role === UserRole.CUSTOMER);
 
-    return data.filter((item: any) =>
-      (item.name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.email?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.restaurant?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    return data.filter((item: AdminFoodItem | User) => {
+      const nameMatch = item.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const emailMatch = 'email' in item && (item as User).email?.toLowerCase().includes(searchQuery.toLowerCase());
+      const restaurantMatch = 'restaurant' in item && (item as AdminFoodItem).restaurant?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      return !!(nameMatch || emailMatch || restaurantMatch);
+    });
   };
 
   const handleToggleWeeklyFeatured = async (id: number, value: boolean) => {
     const success = await adminService.toggleWeeklyFeatured(id, value);
     if (success) {
-      toast.success(value ? 'Đã Bật Nổi bật Tuần' : 'Đã Tắt Nổi bật Tuần');
+      toast.success(value ? LABELS.ADMIN.FEATURE_WEEKLY_ON : LABELS.ADMIN.FEATURE_WEEKLY_OFF);
       if (fetchData) fetchData();
     } else {
-      toast.error('Cập nhật thất bại');
+      toast.error(LABELS.ADMIN.UPDATE_FAILED);
+    }
+  };
+
+  const handleBatchUpdate = async (updates: FoodBatchUpdateInput[]) => {
+    const success = await adminService.batchUpdateFoods(updates);
+    if (success) {
+      toast.success(LABELS.ADMIN.SAVE_SUCCESS);
+      if (fetchData) fetchData();
+      return true;
+    } else {
+      toast.error(LABELS.ADMIN.UPDATE_FAILED);
+      return false;
     }
   };
 
@@ -181,7 +241,8 @@ export const useAdminActions = (adminData: any) => {
       handleRecommendFood,
       handleApproveFood,
       openEditModal,
-      handleToggleWeeklyFeatured
+      handleToggleWeeklyFeatured,
+      handleBatchUpdate
     }
   };
 };

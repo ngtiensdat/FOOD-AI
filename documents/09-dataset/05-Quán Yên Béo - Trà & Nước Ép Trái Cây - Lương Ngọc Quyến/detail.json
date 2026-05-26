@@ -1,0 +1,613 @@
+{
+    "reply": {
+        "delivery_detail": {
+            "total_order": 0,
+            "rating": {
+                "total_review": 5,
+                "avg": 5.0,
+                "display_total_review": "5",
+                "app_link": "foody://foody.vn?action=reviewlist&id=1000086008"
+            },
+            "is_subscribe": false,
+            "is_favorite": false,
+            "city_id": 218,
+            "phones": [
+                "0971228396"
+            ],
+            "restaurant_id": 1000086008,
+            "is_now_delivery": true,
+            "restaurant_url": "quan-yen-beo-tra-nuoc-ep-trai-cay-luong-ngoc-quyen",
+            "logo_mms_img_id": "vn-11134513-7ra0g-maay2yagtf1n44",
+            "brand_id": 0,
+            "video": null,
+            "asap_is_available": false,
+            "contract_type": 1,
+            "id": 397579,
+            "location_url": "ha-noi",
+            "is_quality_merchant": false,
+            "available_times": [],
+            "banner_mms_img_id": "vn-11134513-7ra0g-m9nvvxvprk0q47",
+            "is_city_alert": false,
+            "categories": [
+                "Café/Dessert"
+            ],
+            "cuisines": [
+                "Món Việt"
+            ],
+            "service_type": 1,
+            "price_slash_discounts": [],
+            "delivery_fees": [],
+            "vat": null,
+            "confirm_language": null,
+            "is_in_category_whitelist": false,
+            "brand": null,
+            "limit_distance": 3000,
+            "delivery_categories": [
+                2586,
+                2541
+            ],
+            "user_favorite_count": 0,
+            "delivery": {
+                "avg_price": {
+                    "text": "34k",
+                    "format_text": {
+                        "resource_name": "avg_price_format",
+                        "resource_args": [
+                            "34k"
+                        ]
+                    },
+                    "value": 34278.0,
+                    "unit": "đ"
+                },
+                "merchant_limit_distance": -1,
+                "pickup_order_cutoff_minutes": 30,
+                "delivery_alert": {
+                    "message": {
+                        "message": "Quán sẽ mở cửa lại sớm, vui lòng trở lại sau"
+                    },
+                    "type": 1,
+                    "title": {
+                        "message": "Ngoài giờ phục vụ của quán"
+                    }
+                },
+                "is_self_pickup": false,
+                "prepare_duration": 25,
+                "payment_methods": [
+                    6,
+                    1,
+                    4,
+                    8
+                ],
+                "service_fee": {
+                    "text": "0.0%",
+                    "value": 0.0
+                },
+                "min_order_value": {
+                    "text": "20.000đ",
+                    "value": 20000.0,
+                    "unit": "đ"
+                },
+                "is_peak_mode": true,
+                "min_charge": "3.000đ",
+                "is_open": false,
+                "promotions": [
+                    {
+                        "discount_data": {
+                            "original_merchant_discount_value": 0,
+                            "discount_value_type": 2,
+                            "discount_on_type": 2,
+                            "partner_share": [
+                                {
+                                    "partner": 41,
+                                    "percent": 100
+                                },
+                                {
+                                    "partner": 1,
+                                    "percent": 0
+                                }
+                            ],
+                            "original_foody_discount_value": 30000,
+                            "merchant_discount_value": 0,
+                            "discount_value": 30000,
+                            "foody_discount_value": 100
+                        },
+                        "gen_source": 0,
+                        "order_condition": {
+                            "min_order_amount": 150000,
+                            "card_partner": {
+                                "daily_limit_per_card": 1,
+                                "bank_id": 60
+                            },
+                            "payment_method_ids": [
+                                4
+                            ],
+                            "order_type": 0,
+                            "shipping_method_ids": [
+                                1
+                            ]
+                        },
+                        "icon": "https://mms.img.susercontent.com/vn-11134513-7r98o-ltm6j1v3kah653",
+                        "is_check_airpay_new_user": false,
+                        "merchant_condition": {
+                            "merchant_type": 4,
+                            "foody_service_ids": [
+                                1,
+                                5,
+                                4
+                            ]
+                        },
+                        "discount_value_type": 2,
+                        "promotion_type": 2,
+                        "mms_img_id": "vn-11134513-7r98o-ltm6j1v3kah653",
+                        "purpose_id": 27,
+                        "merchant_type": 4,
+                        "peakmode_ids": null,
+                        "tag_infos": [
+                            {
+                                "color": "#f13233",
+                                "display_order": 0,
+                                "name": "Ưu đãi có hạn"
+                            }
+                        ],
+                        "min_order_value": "150.000đ",
+                        "promotion_id": 30569899,
+                        "id": 30569899,
+                        "promo_code": "HOMECRE30",
+                        "promotion_code_sub_type": 0,
+                        "title": {
+                            "message": "HOME CREDIT giảm 30.000đ trên giá món"
+                        },
+                        "max_discount_value": "30.000đ",
+                        "discount_on_type": 2,
+                        "browsing_icon": "https://mms.img.susercontent.com/vn-11134513-7r98o-ltm6j1v3kah653",
+                        "foody_discount_value": 100,
+                        "user_condition": {
+                            "is_check_airpay_new_user": false,
+                            "limit_per_user": [
+                                {
+                                    "max_usage_time": 1,
+                                    "period": 1
+                                }
+                            ],
+                            "is_check_recipient_phone": false
+                        },
+                        "card_partner": {
+                            "bank": {
+                                "id": 60,
+                                "name": "Home Credit - Partner Voucher"
+                            }
+                        },
+                        "shipping_methods": [
+                            1
+                        ],
+                        "foody_service_ids": [
+                            1,
+                            5,
+                            4
+                        ],
+                        "payment_option": [
+                            4
+                        ],
+                        "start_time": 1774544400,
+                        "limit_per_user": [
+                            {
+                                "max_usage_time": 1,
+                                "period": 1
+                            }
+                        ],
+                        "discount_type": 1,
+                        "display_type": 2,
+                        "apply_order": 100,
+                        "expired": "15/09/2026 23:59",
+                        "discount_amount": 30000,
+                        "min_order_amount": 150000,
+                        "discount": "30.000đ",
+                        "display_order": 100,
+                        "short_title": "HOME CREDIT giảm 30.000đ trên giá món",
+                        "partner_share": [
+                            {
+                                "partner": 41,
+                                "percent": 100
+                            },
+                            {
+                                "partner": 1,
+                                "percent": 0
+                            }
+                        ],
+                        "home_title": "Mã giảm 30k",
+                        "custom_condition": [
+                            {
+                                "content": "150.000đ",
+                                "label": "Đặt tối thiểu"
+                            },
+                            {
+                                "content": "27/03/2026-15/09/2026",
+                                "label": "Thời gian áp dụng giao hàng"
+                            },
+                            {
+                                "content": "Không áp dụng cho đơn hàng Tự đến lấy",
+                                "label": ""
+                            },
+                            {
+                                "content": "Áp dụng cho Quán Đối Tác",
+                                "label": ""
+                            },
+                            {
+                                "content": "15/09/2026 23:59",
+                                "label": "HSD"
+                            },
+                            {
+                                "content": "Visa/Master/JCB",
+                                "label": "Phương thức thanh toán"
+                            },
+                            {
+                                "content": "1 lần/ thẻ",
+                                "label": "Số lượng ưu đãi ngày"
+                            },
+                            {
+                                "content": "Home Credit - Partner Voucher",
+                                "label": "Loại ngân hàng"
+                            },
+                            {
+                                "content": "Số lượng ưu đãi có hạn",
+                                "label": ""
+                            },
+                            {
+                                "content": "1 lần/ khách hàng",
+                                "label": "Số lượng ưu đãi ngày"
+                            },
+                            {
+                                "content": "Đầu BIN áp dụng\nThẻ tín dụng: 492236",
+                                "label": ""
+                            }
+                        ],
+                        "end_time": 1789491599,
+                        "max_discount_amount": 30000,
+                        "display": {
+                            "promotion_title_en": "HOME CREDIT 30.000đ off on total dish",
+                            "brand_voucher_name": "",
+                            "show_position": [
+                                1,
+                                2,
+                                4
+                            ],
+                            "promotion_title": "HOME CREDIT giảm 30.000đ trên giá món",
+                            "custom_condition": [
+                                {
+                                    "status": 0,
+                                    "is_default": true,
+                                    "content_en": "30k",
+                                    "label": "Giảm giá",
+                                    "content": "30k",
+                                    "label_en": "Discount"
+                                },
+                                {
+                                    "status": 0,
+                                    "is_default": true,
+                                    "content_en": "HOMECRE30",
+                                    "label": "Mã",
+                                    "content": "HOMECRE30",
+                                    "label_en": "Code"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "150.000đ",
+                                    "label": "Đặt tối thiểu",
+                                    "content": "150.000đ",
+                                    "label_en": "Minimum order"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "27/03/2026-15/09/2026",
+                                    "label": "Thời gian áp dụng giao hàng",
+                                    "content": "27/03/2026-15/09/2026",
+                                    "label_en": "Applicable delivery time"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "Not apply for Pick-up order",
+                                    "label": "",
+                                    "content": "Không áp dụng cho đơn hàng Tự đến lấy",
+                                    "label_en": ""
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "Applied for Partner",
+                                    "label": "",
+                                    "content": "Áp dụng cho Quán Đối Tác",
+                                    "label_en": ""
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "15/09/2026 23:59",
+                                    "label": "HSD",
+                                    "content": "15/09/2026 23:59",
+                                    "label_en": "Expiry date"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "Visa/Master/JCB",
+                                    "label": "Phương thức thanh toán",
+                                    "content": "Visa/Master/JCB",
+                                    "label_en": "Payment method"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "1 times/ card",
+                                    "label": "Số lượng ưu đãi ngày",
+                                    "content": "1 lần/ thẻ",
+                                    "label_en": "Daily usage limit"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "Home Credit - Partner Voucher",
+                                    "label": "Loại ngân hàng",
+                                    "content": "Home Credit - Partner Voucher",
+                                    "label_en": "Payment bank"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "This promotion has limited offer",
+                                    "label": "",
+                                    "content": "Số lượng ưu đãi có hạn",
+                                    "label_en": ""
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": true,
+                                    "content_en": "1 times/ user",
+                                    "label": "Số lượng ưu đãi ngày",
+                                    "content": "1 lần/ khách hàng",
+                                    "label_en": "Daily usage limit"
+                                },
+                                {
+                                    "status": 1,
+                                    "is_default": false,
+                                    "content_en": "BIN : 492236",
+                                    "label": "",
+                                    "content": "Đầu BIN áp dụng\nThẻ tín dụng: 492236",
+                                    "label_en": ""
+                                }
+                            ],
+                            "microsite_title": "",
+                            "browse_list_tag": "Mã giảm 30k",
+                            "svip_promotion_title_en": "",
+                            "tags": [
+                                43
+                            ],
+                            "browse_list_tag_en": "Code 30k off",
+                            "microsite_title_en": "",
+                            "condition_text": "- Đặt tối thiểu 150.000đ\n- Thời gian áp dụng giao hàng 27/03/2026-15/09/2026\n- Không áp dụng cho đơn hàng Tự đến lấy\n- Áp dụng cho Quán Đối Tác\n- HSD 15/09/2026 23:59\n- Phương thức thanh toán Visa/Master/JCB\n- Số lượng ưu đãi ngày 1 lần/ thẻ\n- Loại ngân hàng Home Credit - Partner Voucher\n- Số lượng ưu đãi có hạn\n- Số lượng ưu đãi ngày 1 lần/ khách hàng\n- Đầu BIN áp dụng\nThẻ tín dụng: 492236\n",
+                            "icon_mms_img_id": "vn-11134512-7ra0g-m7bwllig6tkje3",
+                            "t_and_c": "",
+                            "svip_promotion_title": "",
+                            "condition_text_en": "- Minimum order 150.000đ\n- Applicable delivery time 27/03/2026-15/09/2026\n- Not apply for Pick-up order\n- Applied for Partner\n- Expiry date 15/09/2026 23:59\n- Payment method Visa/Master/JCB\n- Daily usage limit 1 times/ card\n- Payment bank Home Credit - Partner Voucher\n- This promotion has limited offer\n- Daily usage limit 1 times/ user\n- BIN : 492236\n",
+                            "use_button_uri": "/m/HOMECREDIT-SPF",
+                            "checkout_title": "Mã khuyến mãi",
+                            "is_split_voucher_wallet": false,
+                            "checkout_title_en": "Promotion code",
+                            "svip_icon_mms_img_id": ""
+                        }
+                    }
+                ],
+                "service_by": "ShopeeFood",
+                "has_contract": true,
+                "ship_types": [],
+                "setting_limit_distance": 3000,
+                "merchant_time": 25,
+                "is_only_self_pickup": false,
+                "time": {
+                    "available": [],
+                    "week_days": [],
+                    "not_available": []
+                },
+                "operating": {
+                    "status": 2,
+                    "busy_type": 1,
+                    "title": "Ngoài giờ phục vụ của quán",
+                    "color": "#D3D3D3",
+                    "text": {
+                        "resource_name": "delivery_restaurant_closed"
+                    },
+                    "message": "Quán sẽ mở cửa lại sớm, vui lòng trở lại sau"
+                },
+                "shipping_fee": {
+                    "text": {
+                        "resource_name": "delivery_shipping_fee",
+                        "resource_args": [
+                            "6.500đ"
+                        ]
+                    },
+                    "value": 6500.0,
+                    "is_increasing": 0,
+                    "rate": 1.0,
+                    "minimum_fee": "15.000đ",
+                    "unit": "đ"
+                },
+                "is_foody_delivery": true
+            },
+            "photos": [
+                {
+                    "width": 60,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss60x60!@crop_w60_h60_cT",
+                    "height": 60
+                },
+                {
+                    "width": 120,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss120x120!@crop_w120_h120_cT",
+                    "height": 120
+                },
+                {
+                    "width": 160,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss160x120!@crop_w160_h120_cT",
+                    "height": 120
+                },
+                {
+                    "width": 160,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss160x160!@crop_w160_h160_cT",
+                    "height": 160
+                },
+                {
+                    "width": 180,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss180x180!@crop_w180_h180_cT",
+                    "height": 180
+                },
+                {
+                    "width": 240,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss240x240!@crop_w240_h240_cT",
+                    "height": 240
+                },
+                {
+                    "width": 280,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss280x175!@crop_w280_h175_cT",
+                    "height": 175
+                },
+                {
+                    "width": 400,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss400x216!@crop_w400_h216_cT",
+                    "height": 216
+                },
+                {
+                    "width": 600,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss600x324!@crop_w600_h324_cT",
+                    "height": 324
+                },
+                {
+                    "width": 640,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss640x400!@crop_w640_h400_cT",
+                    "height": 400
+                },
+                {
+                    "width": 640,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss640x640!@crop_w640_h640_cT",
+                    "height": 640
+                },
+                {
+                    "width": 750,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss750x400!@crop_w750_h400_cT",
+                    "height": 400
+                },
+                {
+                    "width": 1242,
+                    "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss1242x600!@crop_w1242_h600_cT",
+                    "height": 600
+                }
+            ],
+            "is_display_cutlery": true,
+            "confirm_methods": {},
+            "address": "Khu Tập Thể Số 34, Ngõ 31 Lương Ngọc Quyến, P. Hoàng Liệt, Hoàng Mai, Hà Nội",
+            "price_range": {
+                "min_price": 0,
+                "max_price": 0
+            },
+            "foody_service_id": 1,
+            "min_order_value": {
+                "text": "20.000đ",
+                "value": 20000.0,
+                "unit": "đ"
+            },
+            "root_category_ids": [
+                2448,
+                2388
+            ],
+            "campaigns": [],
+            "name": "Quán Yên Béo - Trà & Nước Ép Trái Cây - Lương Ngọc Quyến",
+            "url": "https://shopeefood.vn/ha-noi/quan-yen-beo-tra-nuoc-ep-trai-cay-luong-ngoc-quyen",
+            "display_order": 0,
+            "delivery_id": 397579,
+            "district_id": 26,
+            "is_pickup": false,
+            "supporting_document_urls": {},
+            "short_description": "",
+            "url_rewrite_name": "quan-yen-beo-tra-nuoc-ep-trai-cay-luong-ngoc-quyen",
+            "parent_category_id": 2388,
+            "position": {
+                "latitude": 20.98412103,
+                "is_verified": false,
+                "longitude": 105.79589073
+            },
+            "name_en": "",
+            "res_photos": [
+                {
+                    "photos": [
+                        {
+                            "width": 60,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss60x60!@crop_w60_h60_cT",
+                            "height": 60
+                        },
+                        {
+                            "width": 120,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss120x120!@crop_w120_h120_cT",
+                            "height": 120
+                        },
+                        {
+                            "width": 160,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss160x120!@crop_w160_h120_cT",
+                            "height": 120
+                        },
+                        {
+                            "width": 160,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss160x160!@crop_w160_h160_cT",
+                            "height": 160
+                        },
+                        {
+                            "width": 180,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss180x180!@crop_w180_h180_cT",
+                            "height": 180
+                        },
+                        {
+                            "width": 240,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss240x240!@crop_w240_h240_cT",
+                            "height": 240
+                        },
+                        {
+                            "width": 280,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss280x175!@crop_w280_h175_cT",
+                            "height": 175
+                        },
+                        {
+                            "width": 400,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss400x216!@crop_w400_h216_cT",
+                            "height": 216
+                        },
+                        {
+                            "width": 600,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss600x324!@crop_w600_h324_cT",
+                            "height": 324
+                        },
+                        {
+                            "width": 640,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss640x400!@crop_w640_h400_cT",
+                            "height": 400
+                        },
+                        {
+                            "width": 640,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss640x640!@crop_w640_h640_cT",
+                            "height": 640
+                        },
+                        {
+                            "width": 750,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss750x400!@crop_w750_h400_cT",
+                            "height": 400
+                        },
+                        {
+                            "width": 1242,
+                            "value": "https://mms.img.susercontent.com/vn-11134513-7ra0g-m9nvvxvprk0q47@resize_ss1242x600!@crop_w1242_h600_cT",
+                            "height": 600
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "result": "success"
+}

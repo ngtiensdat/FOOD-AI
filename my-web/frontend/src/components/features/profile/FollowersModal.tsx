@@ -10,19 +10,9 @@ import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
+import { User } from '@/types/user';
 
-export interface FollowerItem {
-  id?: number;
-  name?: string;
-  email?: string;
-  role?: string;
-  profile?: {
-    fullName?: string;
-    avatar?: string;
-  };
-  user?: FollowerItem;
-  [key: string]: unknown;
-}
+export type FollowerItem = User & { user?: User };
 
 interface FollowersModalProps {
   isOpen: boolean;
@@ -30,7 +20,7 @@ interface FollowersModalProps {
   loading: boolean;
   error: string | null;
   followersList: FollowerItem[];
-  onItemClick: (item: FollowerItem) => void;
+  onItemClick: (item: User) => void;
   title?: string;
   emptyLabel?: string;
 }

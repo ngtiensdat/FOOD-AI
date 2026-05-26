@@ -33,6 +33,11 @@ export const LABELS = {
     AI_ASSISTANT_NAME: 'Food AI Assistant',
     USER: 'Người dùng',
     STORE: 'Cửa hàng',
+    PAGINATION: {
+      PREVIOUS: 'Trang trước',
+      NEXT: 'Trang sau',
+      JUMP_TO_PAGE: 'Nhảy nhanh đến trang',
+    },
   },
   AUTH: {
     LOGIN: 'Đăng nhập',
@@ -237,8 +242,17 @@ export const LABELS = {
     IMPORT_EXCEL: 'Import Excel',
     SYSTEM_FOOD: 'Món ăn hệ thống',
     MERCHANT_FOOD: 'Món ăn đối tác',
+    BATCH_SAVE: 'Lưu',
+    BATCH_CANCEL: 'Hủy',
     SAVE_SUCCESS: 'Cập nhật thành công!',
     DELETE_SUCCESS: 'Xóa thành công!',
+    FEATURE_TODAY_ON: 'Đã Bật Nổi bật Ngày',
+    FEATURE_TODAY_OFF: 'Đã Tắt Nổi bật Ngày',
+    FEATURE_WEEKLY_ON: 'Đã Bật Nổi bật Tuần',
+    FEATURE_WEEKLY_OFF: 'Đã Tắt Nổi bật Tuần',
+    RECOMMEND_ON: 'Đã Bật Gợi ý',
+    RECOMMEND_OFF: 'Đã Tắt Gợi ý',
+    UPDATE_FAILED: 'Cập nhật thất bại',
     DELETE_WARNING: 'Bạn có chắc chắn muốn xóa tài khoản này?',
     CONFIRM_DELETE_USER: 'Bạn có chắc chắn muốn xóa tài khoản này?',
     MODAL: {
@@ -261,6 +275,11 @@ export const LABELS = {
       FEATURE_TODAY: 'Món ngon hôm nay',
       FEATURE_WEEKLY: 'Món ngon tuần',
       ADMIN_RECOMMEND: 'Admin khuyên dùng',
+      SHOWING_FOODS: (count: number) => `Có ${count} món ăn`,
+      SHOWING_RESTAURANTS: (count: number) => `Có ${count} quán ăn`,
+      SHOWING_REQUESTS: (count: number) => `Có ${count} yêu cầu`,
+      SHOWING_ACCOUNTS: (count: number) => `Có ${count} tài khoản`,
+      DRAFT: 'Nháp',
     },
     CONFIRM: {
       DELETE_USER: 'Bạn có chắc chắn muốn xóa tài khoản này?',
@@ -508,6 +527,7 @@ export const LABELS = {
     ADMIN: {
       UPDATE_FAILED: 'Cập nhật thất bại',
       UPDATE_SUCCESS: 'Cập nhật thành công',
+      LOAD_ERROR: 'Lỗi lấy dữ liệu admin:',
     },
   },
   IMPORT_EXCEL: {

@@ -1,30 +1,64 @@
 'use client';
 
+// Mục đích file: Hook quản lý toàn bộ state và logic của luồng Onboarding.
+// Ý nghĩa: Tách biệt logic nhập liệu (sở thích, thông tin chi nhánh) khỏi component giao diện.
+// Các chức năng đặc biệt: Xử lý quy trình điền form từng bước, validate thông tin toạ độ và giờ mở cửa, thêm xoá chi nhánh động.
+// Các biến, hàm đặc biệt: OnboardingBranchState, handleBranchSubmit, handleAddBranch, finishOnboarding.
+
 import { useState } from 'react';
 import { toast } from '@/store/useToastStore';
 import { CUSTOMER_QUESTIONS, RESTAURANT_QUESTIONS } from '@/configs/onboarding.config';
 import { LABELS } from '@/constants/labels';
 import { isValidOpeningHours } from '@/utils/helpers';
+import { User, UserRole } from '@/types/user';
+
+const DEFAULT_CITY = 'Hà Nội';
+const OTHER_OPTION_KEY = 'other';
+
+export interface OnboardingBranchState {
+  name: string;
+  city: string;
+  district: string;
+  street: string;
+  latitude: number | string;
+  longitude: number | string;
+  mapUrl: string;
+  bio: string;
+  openingHours: string;
+}
+
+export interface OnboardingSubmitData {
+  preferences: Record<string, string>;
+  branches?: {
+    name: string;
+    address: string;
+    latitude: number | string;
+    longitude: number | string;
+    mapUrl: string;
+    bio: string;
+    openingHours: string;
+  }[];
+}
 
 interface UseOnboardingActionsProps {
-  user: any;
-  onComplete: (data: any) => void;
+  user: User;
+  onComplete: (data: OnboardingSubmitData) => void;
 }
 
 export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsProps) {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<any>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isFinishing, setIsFinishing] = useState(false);
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
 
-  const isRestaurant = user.role === 'RESTAURANT';
+  const isRestaurant = user.role === UserRole.RESTAURANT;
 
   // Khởi tạo các chi nhánh động của thương gia dựa trên dữ liệu mặc định tránh magic number
-  const [branches, setBranches] = useState<any[]>([
+  const [branches, setBranches] = useState<OnboardingBranchState[]>([
     {
       name: '',
-      city: 'Hà Nội',
+      city: DEFAULT_CITY,
       district: '',
       street: '',
       latitude: 0,
@@ -41,7 +75,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
   const currentQuestion = !isBranchStep ? questions[step] : null;
 
   const handleSelect = (value: string) => {
-    if (value === 'other') {
+    if (value === OTHER_OPTION_KEY) {
       setShowOtherInput(true);
       return;
     }
@@ -54,12 +88,12 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
 
   const handleOtherSubmit = () => {
     if (!otherValue.trim() || !currentQuestion) return;
-    const newAnswers = { ...answers, [currentQuestion.id]: `other:${otherValue}` };
+    const newAnswers = { ...answers, [currentQuestion.id]: `${OTHER_OPTION_KEY}:${otherValue}` };
     setAnswers(newAnswers);
     proceed(newAnswers);
   };
 
-  const proceed = (newAnswers: any) => {
+  const proceed = (newAnswers: Record<string, string>) => {
     setShowOtherInput(false);
     setOtherValue('');
     if (step < questions.length - 1) {
@@ -78,7 +112,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
       ...branches,
       {
         name: '',
-        city: 'Hà Nội',
+        city: DEFAULT_CITY,
         district: '',
         street: '',
         latitude: 0,
@@ -100,7 +134,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
     toast.success(LABELS.ONBOARDING.REMOVE_BRANCH_SUCCESS);
   };
 
-  const handleBranchChange = (index: number, field: string, value: any) => {
+  const handleBranchChange = (index: number, field: keyof OnboardingBranchState, value: string | number) => {
     const newBranches = [...branches];
     newBranches[index] = {
       ...newBranches[index],
@@ -157,7 +191,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
     finishOnboarding(answers, finalBranches);
   };
 
-  const finishOnboarding = async (finalAnswers: any, finalBranches?: any[]) => {
+  const finishOnboarding = async (finalAnswers: Record<string, string>, finalBranches?: OnboardingSubmitData['branches']) => {
     setIsFinishing(true);
     setTimeout(() => {
       onComplete({

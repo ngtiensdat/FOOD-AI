@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Utensils } from 'lucide-react';
-import { FoodCard, FoodCardData } from '@/components/features/FoodCard';
+import { FoodCard, FoodCardData } from '@/components/features/food/FoodCard';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 

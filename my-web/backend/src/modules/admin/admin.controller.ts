@@ -21,6 +21,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
 import { AdminUpdateFoodDto } from './dto/admin-update-food.dto';
+import { BatchUpdateFoodDto } from './dto/batch-update-food.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -87,5 +88,10 @@ export class AdminController {
       throw new BadRequestException('value must be boolean');
     }
     return this.adminService.toggleWeeklyFeatured(id, value);
+  }
+
+  @Patch('batch-update-foods')
+  batchUpdateFoods(@Body() body: BatchUpdateFoodDto) {
+    return this.adminService.batchUpdateFoods(body.updates);
   }
 }

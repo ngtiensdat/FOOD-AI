@@ -13,16 +13,9 @@ import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
+import { User } from '@/types/user';
 
-export interface ProfileHeaderData {
-  id?: number;
-  name?: string;
-  role?: string;
-  isFollowing?: boolean;
-  [key: string]: unknown;
-}
-
-export interface ProfileData {
+export type ProfileData = User & {
   _count?: {
     followers?: number;
     userFollowers?: number;
@@ -38,18 +31,12 @@ export interface ProfileData {
       followers?: number;
     };
   }>;
-  profile?: {
-    coverImage?: string;
-    avatar?: string;
-    bio?: string;
-  };
-  [key: string]: unknown;
-}
+};
 
 interface ProfileHeaderProps {
-  user: ProfileHeaderData | null;
+  user: User | null;
   profile: ProfileData;
-  me: ProfileHeaderData | null;
+  me: User | null;
   isFollowLoading: boolean;
   onEdit: () => void;
   onFollow: () => void;

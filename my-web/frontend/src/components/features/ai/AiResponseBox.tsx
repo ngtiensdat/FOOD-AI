@@ -8,7 +8,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { FoodCard } from './FoodCard';
+import { FoodCard } from '../food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
 

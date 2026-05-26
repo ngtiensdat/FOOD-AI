@@ -9,7 +9,7 @@ interface RequestOptions extends Omit<RequestInit, 'method'> {
 
 class ApiClient {
   private baseUrl: string;
-  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -50,29 +50,34 @@ class ApiClient {
     let response = await fetch(url.toString(), config);
 
     // Xử lý Refresh Token tự động nếu nhận lỗi 401
-    if (response.status === 401 && !endpoint.includes('/auth/refresh') && !this.isRefreshing) {
-      this.isRefreshing = true;
-      try {
-        const refreshRes = await fetch(`${this.baseUrl}/auth/refresh`, { 
+    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      if (!this.refreshPromise) {
+        this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, { 
             method: 'POST', 
             credentials: 'include' 
-        });
-        
-        if (refreshRes.ok) {
-          response = await fetch(url.toString(), config);
-        } else {
-          if (typeof window !== 'undefined') {
-            const { useAuthStore } = await import('@/store/useAuthStore');
-            useAuthStore.getState().logout();
-            window.location.href = '/login';
-            // Hang the promise to prevent throwing errors while redirecting
-            return new Promise(() => {});
-          }
+        })
+          .then((res) => res.ok)
+          .catch((error) => {
+            console.error('Refresh token error:', error);
+            return false;
+          })
+          .finally(() => {
+            this.refreshPromise = null;
+          });
+      }
+
+      const isRefreshed = await this.refreshPromise;
+      
+      if (isRefreshed) {
+        response = await fetch(url.toString(), config);
+      } else {
+        if (typeof window !== 'undefined') {
+          const { useAuthStore } = await import('@/store/useAuthStore');
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+          // Hang the promise to prevent throwing errors while redirecting
+          return new Promise(() => {});
         }
-      } catch (error) {
-        console.error('Refresh token error:', error);
-      } finally {
-        this.isRefreshing = false;
       }
     }
 

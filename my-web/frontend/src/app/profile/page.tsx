@@ -13,17 +13,18 @@ import { Info } from 'lucide-react';
 
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
+import { User } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 
 // Modular Feature Components
-import { ProfileHeader } from '@/components/features/ProfileHeader';
-import { ProfileIntro } from '@/components/features/ProfileIntro';
-import { EditProfileModal } from '@/components/features/EditProfileModal';
-import { FollowersModal } from '@/components/features/FollowersModal';
-import { FollowingModal } from '@/components/features/FollowingModal';
+import { ProfileHeader } from '@/components/features/profile/ProfileHeader';
+import { ProfileIntro } from '@/components/features/profile/ProfileIntro';
+import { EditProfileModal } from '@/components/features/profile/EditProfileModal';
+import { FollowersModal } from '@/components/features/profile/FollowersModal';
+import { FollowingModal } from '@/components/features/profile/FollowingModal';
 
 function ProfileContent() {
   const searchParams = useSearchParams();
@@ -63,7 +64,7 @@ function ProfileContent() {
         <ProfileHeader 
           user={user} 
           profile={profile} 
-          me={me} 
+          me={me as User | null} 
           isFollowLoading={isFollowLoading} 
           onEdit={() => setIsEditing(true)} 
           onFollow={actions.toggleFollow} 
@@ -92,7 +93,7 @@ function ProfileContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
           <div className="md:col-span-5 space-y-6">
-            <ProfileIntro profile={profile} user={user} me={me} onEdit={() => setIsEditing(true)} />
+            <ProfileIntro profile={profile} user={user} me={me as User | null} onEdit={() => setIsEditing(true)} />
           </div>
 
           <div className="md:col-span-7 space-y-6">
@@ -137,7 +138,7 @@ function ProfileContent() {
             loading={modals.loadingFollowers}
             error={modals.errorFollowers}
             followersList={modals.followersList}
-            onItemClick={(followerUser) => {
+            onItemClick={(followerUser: any) => {
               modals.setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
@@ -157,11 +158,11 @@ function ProfileContent() {
             error={modals.errorFollowing}
             users={modals.followingList.users}
             restaurants={modals.followingList.restaurants}
-            onUserClick={(followingUser) => {
+            onUserClick={(followingUser: any) => {
               modals.setShowFollowingModal(false);
               router.push(`/profile?id=${followingUser.id}`);
             }}
-            onRestaurantClick={(restaurantItem) => {
+            onRestaurantClick={(restaurantItem: any) => {
               modals.setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}

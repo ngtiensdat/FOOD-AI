@@ -20,9 +20,9 @@ import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
 // Feature Components
-import { AdminTable } from '@/components/features/AdminTable';
-import { AdminFoodModal } from '@/components/features/AdminFoodModal';
-import { AdminImportExcelModal } from '@/components/features/AdminImportExcelModal';
+import { AdminTable, AdminTableItem } from '@/components/features/admin/AdminTable';
+import { AdminFoodModal } from '@/components/features/admin/AdminFoodModal';
+import { AdminImportExcelModal } from '@/components/features/admin/AdminImportExcelModal';
 import { FileUp } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -77,8 +77,8 @@ export default function AdminDashboard() {
             {activeTab === 'menu' && (
               <div className="flex gap-6 mt-4 text-small font-bold">
                 {[
-                  { id: 'system', label: LABELS.ADMIN.SYSTEM_FOOD },
-                  { id: 'merchant', label: LABELS.ADMIN.MERCHANT_FOOD }
+                  { id: 'merchant', label: LABELS.ADMIN.MERCHANT_FOOD },
+                  { id: 'system', label: LABELS.ADMIN.SYSTEM_FOOD }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
-          filteredData={filteredData}
+          filteredData={filteredData as unknown as AdminTableItem[]}
           actions={actions}
         />
       </main>

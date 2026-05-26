@@ -1,26 +1,47 @@
+// Mục đích file: Hook quản lý tải và thao tác dữ liệu hồ sơ cá nhân, bao gồm cập nhật thông tin và theo dõi (follow).
+// Ý nghĩa: Đóng gói logic liên quan đến user profile, giúp các component như ProfilePage và FollowModal sạch sẽ hơn.
+// Các chức năng đặc biệt: Tự động khởi tạo dữ liệu form (editData) khi có profile, xử lý logic đóng/mở modal follow.
+// Các biến, hàm đặc biệt: ProfileEditState, ApiError, fetchProfileData, updateProfile, toggleFollow.
+
 import { useState, useEffect, useCallback } from 'react';
 import { authService } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { parseAddressString } from '@/utils/helpers';
+import { User, UpdateProfileData } from '@/types/user';
+
+export interface ProfileEditState extends Omit<UpdateProfileData, 'id' | 'userId'> {
+  name?: string;
+  city?: string;
+  district?: string;
+  street?: string;
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
 
 export const useProfileData = (targetId?: string | null) => {
   const { user: me, login: updateMe } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   
   // UI States
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<any>({});
+  const [editData, setEditData] = useState<ProfileEditState>({});
 
   // Modals States
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followersList, setFollowersList] = useState<any[]>([]);
-  const [followingList, setFollowingList] = useState<any>({ users: [], restaurants: [] });
+  const [followersList, setFollowersList] = useState<User[]>([]);
+  const [followingList, setFollowingList] = useState<{ users: User[], restaurants: User[] }>({ users: [], restaurants: [] });
   const [loadingFollowers, setLoadingFollowers] = useState(false);
   const [loadingFollowing, setLoadingFollowing] = useState(false);
   const [errorFollowers, setErrorFollowers] = useState<string | null>(null);
@@ -73,9 +94,12 @@ export const useProfileData = (targetId?: string | null) => {
     if (!profile?.id) return;
     setLoading(true);
     try {
-      const { userId, id, city, district, street, ...payload } = editData;
-      payload.address = `${street}, ${district}, ${city}`;
-      await authService.updateProfile(payload);
+      const { city, district, street, ...payload } = editData;
+      const updatePayload: UpdateProfileData = {
+        ...payload,
+        address: `${street}, ${district}, ${city}`
+      };
+      await authService.updateProfile(updatePayload);
       const newData = await fetchProfileData(profile.id, me?.id);
       
       if (me?.id === profile.id && newData) {
@@ -118,7 +142,8 @@ export const useProfileData = (targetId?: string | null) => {
     try {
       const data = await authService.getFollowers(profile.id);
       setFollowersList(data || []);
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as ApiError;
       setErrorFollowers(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
     } finally {
       setLoadingFollowers(false);
@@ -133,7 +158,8 @@ export const useProfileData = (targetId?: string | null) => {
     try {
       const data = await authService.getFollowing(profile.id);
       setFollowingList(data || { users: [], restaurants: [] });
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as ApiError;
       setErrorFollowing(err.response?.data?.message || LABELS.SETTINGS.PROFILE.MODALS.PRIVATE_LIST_ERROR);
     } finally {
       setLoadingFollowing(false);

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
-import { UserRole, UserStatus, Prisma } from '@prisma/client';
+import { UserRole, UserStatus, Prisma, Food } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { MerchantImportService } from './merchant-import.service';
 
@@ -98,5 +98,34 @@ export class AdminService {
       where: { id },
       data: { isFeaturedWeekly: value },
     });
+  }
+
+  async batchUpdateFoods(
+    updates: {
+      id: number;
+      isFeaturedToday?: boolean;
+      isFeaturedWeekly?: boolean;
+      isAdminRecommended?: boolean;
+    }[],
+  ) {
+    const results = await this.prisma.$transaction(async (tx) => {
+      const updatedFoods: Food[] = [];
+      for (const update of updates) {
+        const { id, ...data } = update;
+        const updated = await tx.food.update({
+          where: { id },
+          data,
+        });
+        updatedFoods.push(updated);
+      }
+      return updatedFoods;
+    });
+
+    // Cập nhật embedding món ăn trong background sau khi transaction đã commit thành công
+    for (const food of results) {
+      void this.aiService.updateFoodEmbedding(food.id);
+    }
+
+    return results;
   }
 }

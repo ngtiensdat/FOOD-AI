@@ -92,6 +92,10 @@ git commit -m "refactor: tách user logic ra service layer"
 > [!NOTE]
 > Bạn có thể viết bằng **Tiếng Việt**. Tránh viết chung chung như "update", "fix bug" — phải nói rõ sửa gì.
 
+> [!CAUTION]
+> **QUY TẮC DÀNH CHO TRỢ LÝ AI (AGENT RULE):**
+> Trợ lý AI tuyệt đối **KHÔNG ĐƯỢC TỰ Ý** chạy lệnh `git add .` hoặc `git commit` trừ khi người dùng đưa ra yêu cầu trực tiếp rõ ràng. Mọi lệnh commit và add phải do người dùng tự thực hiện thủ công hoặc phê duyệt trực tiếp trước khi chạy để kiểm soát chất lượng.
+
 ### Bước 4 — Push lên remote (1-2 lần/ngày)
 ```bash
 git push origin feature/refactor-code-structure
@@ -171,10 +175,11 @@ Trước khi kết thúc ngày làm việc, hãy dành 1 phút để check:
 
 ---
 
-## TL;DR — 5 Quy tắc "Sống Còn"
+## TL;DR — 6 Quy tắc "Sống Còn"
 
 1. **Backup branch** trước khi refactor: `backup/before-refactor-<ngày>`.
 2. **Không bao giờ commit thẳng vào `main`**: Luôn làm trên `feature/<tên>`.
 3. **Commit message phải có prefix**: `refactor:`, `feat:`, `fix:`, ...
 4. **Push lên remote 1-2 lần/ngày**: Để luôn có bản backup trên GitHub.
 5. **PR merge vào `develop`**: Không merge thẳng vào `main`, phải chờ Kevin review.
+6. **Không tự ý AI tự động Git:** Trợ lý AI tuyệt đối không tự ý thực hiện `git add .` hoặc `git commit` nếu người dùng không yêu cầu trực tiếp rõ ràng.

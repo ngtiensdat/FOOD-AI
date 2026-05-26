@@ -89,6 +89,13 @@ export const aiService = {
   }
 };
 
+export interface FoodBatchUpdateInput {
+  id: number;
+  isFeaturedToday?: boolean;
+  isFeaturedWeekly?: boolean;
+  isAdminRecommended?: boolean;
+}
+
 export const adminService = {
   async getAllUsers(role?: string) {
     return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch((err) => {
@@ -116,6 +123,15 @@ export const adminService = {
   async updateFood(id: number, data: any) {
     try {
       await apiClient.patch(`/admin/update-food/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async batchUpdateFoods(updates: FoodBatchUpdateInput[]) {
+    try {
+      await apiClient.patch('/admin/batch-update-foods', { updates });
       return true;
     } catch {
       return false;

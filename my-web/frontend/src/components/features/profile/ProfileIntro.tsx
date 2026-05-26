@@ -9,26 +9,14 @@ import React from 'react';
 import { Briefcase, MapPin, Mail, Calendar } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { User } from '@/types/user';
 
-export interface ProfileIntroUserData {
-  id?: number | string;
-  email?: string;
-  [key: string]: unknown;
-}
-
-export interface ProfileIntroData {
-  createdAt?: Date | string;
-  profile?: {
-    workAt?: string;
-    address?: string;
-  };
-  [key: string]: unknown;
-}
+export type ProfileIntroData = User & { createdAt?: Date | string };
 
 interface ProfileIntroProps {
   profile: ProfileIntroData | null;
-  user: ProfileIntroUserData | null;
-  me: ProfileIntroUserData | null;
+  user: User | null;
+  me: User | null;
   onEdit: () => void;
 }
 

@@ -11,8 +11,8 @@ import { Search, ArrowLeft, ShoppingBag, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Services & Components
-import { FoodCard } from '@/components/features/FoodCard';
-import { FoodDetailModal } from '@/components/features/FoodDetailModal';
+import { FoodCard } from '@/components/features/food/FoodCard';
+import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { Button } from '@/components/base/Button';

@@ -102,3 +102,31 @@ export const isValidOpeningHours = (openingHours?: string | null): boolean => {
   return shNum <= 23 && smNum <= 59 && ehNum <= 23 && emNum <= 59;
 };
 
+/**
+ * Trả về mảng số trang hiển thị dạng thu gọn có dấu ba chấm (...)
+ * Ví dụ: [1, '...', 4, 5, 6, '...', 100]
+ */
+export const getPaginationRange = (currentPage: number, totalPages: number, maxVisible = 5): number[] => {
+  const pages: number[] = [];
+
+  if (totalPages <= maxVisible) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+  }
+
+  return pages;
+};
+
+

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole, UserStatus, FoodStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
@@ -24,8 +24,8 @@ async function main() {
       email: 'admin@gmail.com',
       name: 'Quản trị viên tối cao',
       password: adminPassword,
-      role: 'ADMIN',
-      status: 'APPROVED',
+      role: UserRole.ADMIN,
+      status: UserStatus.APPROVED,
       isEmailVerified: true,
       profile: {
         create: {
@@ -46,8 +46,8 @@ async function main() {
       email: 'merchant@gmail.com',
       name: 'Chủ quán ăn ngon',
       password: merchantPassword,
-      role: 'RESTAURANT',
-      status: 'APPROVED',
+      role: UserRole.RESTAURANT,
+      status: UserStatus.APPROVED,
       isEmailVerified: true,
       profile: {
         create: {
@@ -87,7 +87,7 @@ async function main() {
       tags: ["Ngũ cốc", "Kiểu Pháp"],
       isAdminRecommended: true,
       isFeaturedToday: true,
-      status: 'APPROVED' as const
+      status: FoodStatus.APPROVED
     },
     {
       name: "Phở Bò Gia Truyền",
@@ -99,7 +99,7 @@ async function main() {
       tags: ["Phở", "Bò"],
       isAdminRecommended: true,
       isFeaturedWeekly: true,
-      status: 'APPROVED' as const
+      status: FoodStatus.APPROVED
     },
     {
       name: "Cơm Tấm Sườn Bì",
@@ -110,7 +110,7 @@ async function main() {
       lng: 105.744,
       tags: ["Cơm Tấm"],
       isFeaturedToday: true,
-      status: 'APPROVED' as const
+      status: FoodStatus.APPROVED
     }
   ];
 

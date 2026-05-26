@@ -366,7 +366,12 @@ export class FoodService {
   }
 
   async approveFood(id: number, status: FoodStatus) {
-    return this.repository.update(id, { status });
+    return this.repository.update(id, {
+      status,
+      isAdminRecommended: false,
+      isFeaturedToday: false,
+      isFeaturedWeekly: false,
+    });
   }
   async getMyRestaurant(user: User) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);

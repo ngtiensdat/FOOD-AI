@@ -286,24 +286,32 @@ QUY TẮC PHẢN HỒI:
   }
 
   async updateFoodEmbedding(foodId: number) {
-    const food = await this.prisma.food.findUnique({
-      where: { id: foodId },
-      include: { restaurant: true },
-    });
-    if (!food) return;
-    const textToEmbed = `Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || 'Không có mô tả'}.`;
-    const embedding = await this.getEmbedding(textToEmbed);
-    await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+    try {
+      const food = await this.prisma.food.findUnique({
+        where: { id: foodId },
+        include: { restaurant: true },
+      });
+      if (!food) return;
+      const textToEmbed = `Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || 'Không có mô tả'}.`;
+      const embedding = await this.getEmbedding(textToEmbed);
+      await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+    } catch (error) {
+      console.error('LỖI CẬP NHẬT EMBEDDING MÓN ĂN:', error);
+    }
   }
 
   async updateUserEmbedding(userId: number) {
-    const profile = await this.prisma.userProfile.findUnique({
-      where: { userId },
-    });
-    if (!profile || !profile.preferences) return;
-    const prefs = profile.preferences as Record<string, string>;
-    const textToEmbed = `Người dùng thích ${prefs.cuisine || 'đa dạng'}. Ngân sách ${prefs.budget || 'linh hoạt'}.`;
-    const embedding = await this.getEmbedding(textToEmbed);
-    await this.vectorRepository.updateUserEmbedding(userId, embedding);
+    try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { userId },
+      });
+      if (!profile || !profile.preferences) return;
+      const prefs = profile.preferences as Record<string, string>;
+      const textToEmbed = `Người dùng thích ${prefs.cuisine || 'đa dạng'}. Ngân sách ${prefs.budget || 'linh hoạt'}.`;
+      const embedding = await this.getEmbedding(textToEmbed);
+      await this.vectorRepository.updateUserEmbedding(userId, embedding);
+    } catch (error) {
+      console.error('LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG:', error);
+    }
   }
 }

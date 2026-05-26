@@ -10,36 +10,18 @@ import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
+import { User } from '@/types/user';
 
-export interface FollowingUser {
-  id: number;
-  name?: string;
-  role?: string;
-  profile?: {
-    fullName?: string;
-    avatar?: string;
-  };
-  [key: string]: unknown;
-}
-
-export interface FollowingRestaurant {
-  id: number;
-  name?: string;
-  address?: string;
-  profile?: {
-    coverImage?: string;
-  };
-  [key: string]: unknown;
-}
+export type FollowingRestaurant = User & { address?: string };
 
 interface FollowingModalProps {
   isOpen: boolean;
   onClose: () => void;
   loading: boolean;
   error: string | null;
-  users?: FollowingUser[];
+  users?: User[];
   restaurants?: FollowingRestaurant[];
-  onUserClick?: (user: FollowingUser) => void;
+  onUserClick?: (user: User) => void;
   onRestaurantClick?: (restaurant: FollowingRestaurant) => void;
   title?: string;
   emptyLabel?: string;

@@ -12,25 +12,13 @@ import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
-
-export interface EditProfileData {
-  name: string;
-  phone: string;
-  avatar: string;
-  coverImage: string;
-  bio: string;
-  city: string;
-  district: string;
-  street: string;
-  workAt: string;
-  [key: string]: unknown;
-}
+import { ProfileEditState } from '@/hooks/useProfileData';
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editData: EditProfileData;
-  setEditData: (data: EditProfileData) => void;
+  editData: ProfileEditState;
+  setEditData: (data: ProfileEditState) => void;
   loading: boolean;
   onSave: () => void;
 }
@@ -64,12 +52,12 @@ export const EditProfileModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.NAME} 
-              value={editData.name} 
+              value={editData.name || ''} 
               onChange={e => setEditData({...editData, name: e.target.value})} 
             />
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.PHONE} 
-              value={editData.phone} 
+              value={editData.phone || ''} 
               onChange={e => setEditData({...editData, phone: e.target.value})} 
             />
           </div>
@@ -77,12 +65,12 @@ export const EditProfileModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.AVATAR} 
-              value={editData.avatar} 
+              value={editData.avatar || ''} 
               onChange={e => setEditData({...editData, avatar: e.target.value})} 
             />
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER} 
-              value={editData.coverImage} 
+              value={editData.coverImage || ''} 
               onChange={e => setEditData({...editData, coverImage: e.target.value})} 
             />
           </div>
@@ -90,7 +78,7 @@ export const EditProfileModal = ({
           <Input 
             label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.BIO} 
             isTextArea 
-            value={editData.bio} 
+            value={editData.bio || ''} 
             onChange={e => setEditData({...editData, bio: e.target.value})} 
           />
 
@@ -153,7 +141,7 @@ export const EditProfileModal = ({
             <Input 
               label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.WORK} 
               placeholder={LABELS.FORM.PLACEHOLDERS.WORK} 
-              value={editData.workAt} 
+              value={editData.workAt || ''} 
               onChange={e => setEditData({...editData, workAt: e.target.value})} 
               className="md:col-span-2"
             />
