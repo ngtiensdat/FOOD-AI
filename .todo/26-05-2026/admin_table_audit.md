@@ -77,12 +77,12 @@ Dựa trên bộ quy chuẩn của dự án trong `.agent/rule/` và `.check-pro
 
 Để đưa chất lượng tệp tin này lên thang điểm **9-10/10**, cần triển khai refactor theo thứ tự sau:
 
-1.  **Bước 1: Làm sạch các chuỗi Hardcode còn sót lại**
-    Thay thế các chuỗi `'Nháp'`, `'Hiển thị ...'` và các giá trị trạng thái tĩnh `'APPROVED'`, `'PENDING'` sang sử dụng hằng số `LABELS` và Enum `UserStatus` đã import.
-2.  **Bước 2: Tối ưu hiệu năng bằng useMemo & useCallback**
-    Chuyển đổi logic gom nhóm dữ liệu (IIFE) sang `useMemo` và bọc các hàm thay đổi state của bảng bằng `useCallback`.
-3.  **Bước 3: Chia tách Component lớn (Modularization)**
-    Tách cấu trúc bảng thành các thư mục con hoặc các component nhỏ riêng biệt để tăng tính tái sử dụng và dễ viết Unit Test cho từng phần.
+- [x] **Bước 1: Làm sạch các chuỗi Hardcode còn sót lại**
+  Thay thế các chuỗi `'Nháp'`, `'Hiển thị ...'` và các giá trị trạng thái tĩnh `'APPROVED'`, `'PENDING'` sang sử dụng hằng số `LABELS` và Enum `UserStatus` đã import. *(Đã hoàn thành)*
+- [x] **Bước 2: Tối ưu hiệu năng bằng useMemo & useCallback**
+  Chuyển đổi logic gom nhóm dữ liệu (IIFE) sang `useMemo` và bọc các hàm thay đổi state của bảng bằng `useCallback`. *(Đã hoàn thành)*
+- [x] **Bước 3: Chia tách Component lớn (Modularization)**
+  Tách cấu trúc bảng thành các thư mục con hoặc các component nhỏ riêng biệt để tăng tính tái sử dụng và dễ viết Unit Test cho từng phần. *(Đã hoàn thành)*
 
 ### 4. Technical Debt (Pending Refactor)
 - **`useRestaurantActions.ts`**: Cần loại bỏ 6 kiểu `any` và dọn dẹp biến rác.
