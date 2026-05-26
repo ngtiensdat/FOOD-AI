@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > **CHỈ THỊ CHO TRỢ LÝ AI (AGENT INSTRUCTION):**
 > Khi người dùng gửi hoặc tham chiếu tệp tin này (ví dụ: `@TRIGGER_GIT_AUDIT.md`), bạn (AI) phải lập tức dừng các tác vụ khác và thực hiện quy trình kiểm tra chất lượng mã nguồn nghiêm ngặt dưới đây đối với các tệp tin đang được chỉnh sửa (staged hoặc unstaged) trước khi người dùng đẩy code lên Git.
-
+> Tuyệt đối không tự ý add . hay commit , chỉ được gợi ý là sẽ commit gì
 ---
 
 ## Các Bước AI Cần Thực Hiện
