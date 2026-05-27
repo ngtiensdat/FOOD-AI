@@ -45,12 +45,13 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm' # Tự động tối ưu cache node_modules dựa trên package-lock.json
-          cache-dependency-path: ./my-web/backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 📦 Install Dependencies
         run: |
           npm pkg delete scripts.prepare || true
           npm install
+        working-directory: .
 
       - name: 🛠️ Generate Prisma Client
         run: npx prisma generate
@@ -101,7 +102,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: ./my-web/frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       # Tối ưu riêng cho Next.js: Cache thư mục build .next/cache để tăng tốc các lần build sau
       - name: ⚡ Next.js Cache Build
@@ -116,6 +117,7 @@ jobs:
         run: |
           npm pkg delete scripts.prepare || true
           npm install
+        working-directory: .
 
       - name: 🔒 Security Scan (npm audit)
         run: npm audit --audit-level=high || echo "Vulnerabilities found but continuing"
