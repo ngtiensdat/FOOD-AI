@@ -46,10 +46,10 @@ jobs:
           node-version: '22'
 
       - name: 📦 Install Dependencies
-        run: npm install
+        run: |
+          npm pkg delete scripts.prepare
+          npm install
         working-directory: .
-        env:
-          HUSKY: 0
 
       - name: 🛠️ Generate Prisma Client
         run: npx prisma generate
@@ -100,10 +100,10 @@ jobs:
           node-version: '22'
 
       - name: 📦 Install Dependencies
-        run: npm install
+        run: |
+          npm pkg delete scripts.prepare
+          npm install
         working-directory: .
-        env:
-          HUSKY: 0
 
       - name: 🔒 Security Scan (npm audit)
         run: npm audit --audit-level=high || echo "Vulnerabilities found but continuing"
