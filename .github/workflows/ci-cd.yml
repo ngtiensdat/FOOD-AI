@@ -150,6 +150,12 @@ jobs:
             }
 
       - name: 🏗️ Build Project
-        run: npm run build
+        run: |
+          # Tự động kiểm tra và cài đặt nóng gói binary Linux nếu bị thiếu trong workspace
+          if [ ! -d "node_modules/lightningcss-linux-x64-gnu" ] && [ ! -d "../../node_modules/lightningcss-linux-x64-gnu" ]; then
+            echo "⚠️ Không tìm thấy binary cho Linux. Tiến hành cài đặt nóng gói lightningcss-linux-x64-gnu..."
+            npm install --no-save lightningcss-linux-x64-gnu@1.32.0
+          fi
+          npm run build
         env:
           CI: false
