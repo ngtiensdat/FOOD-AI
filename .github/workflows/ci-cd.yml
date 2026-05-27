@@ -21,7 +21,7 @@ name: CI/CD Pipeline (FOOD AI)
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "main", "develop" ]
 
