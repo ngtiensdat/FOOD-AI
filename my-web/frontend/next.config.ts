@@ -13,10 +13,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname, "../../"),
   },
-  // @ts-expect-error - Bỏ qua lỗi type do version Next.js hiện tại không export đầy đủ type này
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
