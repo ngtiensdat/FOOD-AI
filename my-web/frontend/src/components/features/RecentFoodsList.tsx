@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { ChevronRight } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
@@ -62,7 +62,7 @@ export const RecentFoodsList = ({ items, onViewDetail, title, onSeeMore }: Recen
               className="flex items-center gap-4 group cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all"
             >
               <div className="relative w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0 shadow-sm">
-                <Image 
+                <SafeImage 
                   src={getValidImageUrl(food.image)} 
                   alt={food.name} 
                   fill

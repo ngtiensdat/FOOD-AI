@@ -9,6 +9,14 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+function cleanImageUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.includes('susercontent.com') && url.includes('@')) {
+        return url.split('@')[0];
+    }
+    return url;
+}
+
 async function main() {
     console.log("Bắt đầu import dữ liệu...");
 
@@ -95,7 +103,8 @@ async function main() {
         });
 
         // Lấy ảnh to nhất làm cover
-        const coverImage = deliveryDetail.photos && deliveryDetail.photos.length > 0 ? deliveryDetail.photos[deliveryDetail.photos.length - 1].value : null;
+        const coverImageRaw = deliveryDetail.photos && deliveryDetail.photos.length > 0 ? deliveryDetail.photos[deliveryDetail.photos.length - 1].value : null;
+        const coverImage = cleanImageUrl(coverImageRaw);
 
         if (!restaurant) {
             restaurant = await prisma.restaurant.create({
@@ -154,7 +163,8 @@ async function main() {
 
             // Tạo Foods
             for (const dish of categoryData.dishes) {
-                const imageUrl = dish.photos && dish.photos.length > 0 ? dish.photos[0].value : null;
+                const imageUrlRaw = dish.photos && dish.photos.length > 0 ? dish.photos[0].value : null;
+                const imageUrl = cleanImageUrl(imageUrlRaw);
                 
                 // Kiểm tra xem món ăn đã tồn tại chưa để tránh trùng lặp nếu chạy 2 lần
                 let food = await prisma.food.findFirst({

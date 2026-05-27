@@ -7,18 +7,31 @@ export const generateId = (): string => {
 };
 
 /**
+ * Clean image URL (e.g. remove ShopeeFood CDN resize filters to get HD quality)
+ */
+export const cleanImageUrl = (url?: string | null): string => {
+  if (!url) return '';
+  if (url.includes('susercontent.com') && url.includes('@')) {
+    return url.split('@')[0];
+  }
+  return url;
+};
+
+/**
  * Validate image URL for Next/Image to prevent crashes from invalid URLs like 'a'
  */
 export const getValidImageUrl = (url?: string | null): string => {
-  if (!url) return '/placeholder-food.jpg';
+  if (!url) return '/placeholder-food.svg';
+  
+  const cleanedUrl = cleanImageUrl(url);
   
   const isValid = 
-    url.startsWith('http://') || 
-    url.startsWith('https://') || 
-    url.startsWith('/') || 
-    url.startsWith('data:');
+    cleanedUrl.startsWith('http://') || 
+    cleanedUrl.startsWith('https://') || 
+    cleanedUrl.startsWith('/') || 
+    cleanedUrl.startsWith('data:');
     
-  return isValid ? url : '/placeholder-food.jpg';
+  return isValid ? cleanedUrl : '/placeholder-food.svg';
 };
 
 /**

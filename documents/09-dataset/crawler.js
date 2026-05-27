@@ -30,6 +30,14 @@ const HEADERS = {
 // Hàm tạo thời gian nghỉ giữa các lần lấy dữ liệu (tránh bị block IP)
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+function cleanImageUrl(url) {
+  if (!url) return null;
+  if (url.includes('susercontent.com') && url.includes('@')) {
+    return url.split('@')[0];
+  }
+  return url;
+}
+
 // 1. Lấy thông tin cơ bản của quán (Tên, Địa chỉ, Tọa độ)
 async function getRestaurantInfo(restaurantId) {
     try {
@@ -90,7 +98,7 @@ async function main() {
                     price: dish.price ? dish.price.value : 0,
                     description: dish.description,
                     // ShopeeFood lưu ảnh trong mảng photos
-                    image: dish.photos && dish.photos.length > 0 ? dish.photos[0].value : null
+                    image: dish.photos && dish.photos.length > 0 ? cleanImageUrl(dish.photos[0].value) : null
                 }))
             }))
         };

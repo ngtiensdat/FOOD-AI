@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { CheckCircle, Clock, XCircle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
@@ -50,7 +50,7 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
               <td className="px-8 py-6">
                 <div className="flex items-center gap-6">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <Image 
+                    <SafeImage 
                       src={getValidImageUrl(food.image)} 
                       alt={food.name} 
                       width={64}

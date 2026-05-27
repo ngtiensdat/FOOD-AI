@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { ShoppingBag, Navigation, Heart } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
@@ -43,7 +43,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
     >
       <div className="relative h-48 sm:h-56 w-full overflow-hidden">
         {food.image ? (
-          <Image 
+          <SafeImage 
             src={getValidImageUrl(food.image)} 
             alt={food.name} 
             fill 
