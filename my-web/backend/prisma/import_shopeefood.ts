@@ -17,6 +17,59 @@ function cleanImageUrl(url: string | null | undefined): string | null {
     return url;
 }
 
+const KNOWN_LOCATIONS = {
+    'Hà Nội': [
+        'Ba Đình', 'Hoàn Kiếm', 'Tây Hồ', 'Long Biên', 'Cầu Giấy', 'Đống Đa',
+        'Hai Bà Trưng', 'Hoàng Mai', 'Thanh Xuân', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông'
+    ],
+    'Hồ Chí Minh': [
+        'Quận 1', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7', 'Quận 8',
+        'Quận 10', 'Quận 11', 'Quận 12', 'Bình Thạnh', 'Tân Bình', 'Tân Phú',
+        'Gò Vấp', 'Phú Nhuận', 'Thủ Đức'
+    ]
+};
+
+function parseLocation(address: string) {
+    let city = 'Hà Nội'; // default
+    let district = null;
+
+    if (!address) return { city, district };
+
+    const parts = address.split(',').map(p => p.trim());
+    if (parts.length < 2) return { city, district };
+
+    const rawCity = parts[parts.length - 1];
+    const rawDistrict = parts[parts.length - 2];
+
+    // Loại bỏ các tiền tố để lấy tên lõi
+    const cleanDistrict = rawDistrict.replace(/^(Quận|Q\.|Huyện|H\.|Thị xã|TX\.|Thành phố|TP\.)\s*/i, '').trim();
+
+    // 1. Kiểm tra đối chiếu với danh sách KNOWN_LOCATIONS
+    for (const [knownCity, knownDistricts] of Object.entries(KNOWN_LOCATIONS)) {
+        if (rawCity.toLowerCase().includes(knownCity.toLowerCase()) || 
+           (knownCity === 'Hồ Chí Minh' && rawCity.toUpperCase().includes('HCM'))) {
+            city = knownCity;
+            
+            // Tìm xem district lõi có khớp với danh sách quận của thành phố này không
+            const matchedDistrict = knownDistricts.find(d => 
+                cleanDistrict.toLowerCase() === d.toLowerCase() || 
+                rawDistrict.toLowerCase() === d.toLowerCase() ||
+                cleanDistrict.toLowerCase().includes(d.toLowerCase())
+            );
+            
+            district = matchedDistrict || cleanDistrict; // Ưu tiên tên chuẩn, nếu không thì dùng tên lõi
+            return { city, district };
+        }
+    }
+
+    // 2. Fallback nếu không thuộc các thành phố trên
+    if (rawCity.includes('Hà Nội')) city = 'Hà Nội';
+    else if (rawCity.includes('Hồ Chí Minh') || rawCity.includes('HCM')) city = 'Hồ Chí Minh';
+    
+    district = cleanDistrict;
+    return { city, district };
+}
+
 async function main() {
     console.log("Bắt đầu import dữ liệu...");
 
@@ -115,11 +168,15 @@ async function main() {
         const coverImageRaw = deliveryDetail.photos && deliveryDetail.photos.length > 0 ? deliveryDetail.photos[deliveryDetail.photos.length - 1].value : null;
         const coverImage = cleanImageUrl(coverImageRaw);
 
+        const locationData = parseLocation(deliveryDetail.address);
+
         if (!restaurant) {
             restaurant = await prisma.restaurant.create({
                 data: {
                     name: deliveryDetail.name,
                     address: deliveryDetail.address,
+                    city: locationData.city,
+                    district: locationData.district,
                     latitude: deliveryDetail.position.latitude,
                     longitude: deliveryDetail.position.longitude,
                     ownerId: owner.id,
@@ -191,6 +248,8 @@ async function main() {
                             categoryId: category.id,
                             status: 'APPROVED',
                             isActive: true,
+                            city: locationData.city,
+                            district: locationData.district,
                             lat: restaurant.latitude,
                             lng: restaurant.longitude,
                         }

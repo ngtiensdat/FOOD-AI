@@ -5,22 +5,25 @@ import { foodService, restaurantService } from '@/services/food.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { isValidOpeningHours } from '@/utils/helpers';
+import { User } from '@/types/user';
+import { Food } from '@/types/food';
+import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 
 /**
  * Custom Hook: useRestaurantActions
  * Quản lý logic và trạng thái cho Merchant Hub (Trang chủ nhà hàng).
  */
-export const useRestaurantActions = (user: any) => {
-  const [myFoods, setMyFoods] = useState<any[]>([]);
+export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
+  const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
-  const [editingFood, setEditingFood] = useState<any>(null);
+  const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);
 
-  const [restaurant, setRestaurant] = useState<any>(null);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantActive, setIsRestaurantActive] = useState<boolean>(true);
-  const [myBranches, setMyBranches] = useState<any[]>([]);
+  const [myBranches, setMyBranches] = useState<Restaurant[]>([]);
 
   const [formData, setFormData] = useState({
     name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: ''
@@ -42,7 +45,7 @@ export const useRestaurantActions = (user: any) => {
       const res = await restaurantService.getMyRestaurant();
       if (res) {
         setRestaurant(res);
-        setIsRestaurantActive(res.isActive);
+        setIsRestaurantActive(!!res.isActive);
       }
     } catch (error) {
       console.error('Lỗi khi tải thông tin cửa hàng:', error);
@@ -93,6 +96,18 @@ export const useRestaurantActions = (user: any) => {
     }
   };
 
+  const updateRestaurantProfile = async (data: UpdateRestaurantInput) => {
+    const ok = await restaurantService.updateRestaurantProfile(data);
+    if (ok) {
+      toast.success(LABELS.SETTINGS.PROFILE.SAVE_SUCCESS);
+      await fetchRestaurant();
+      return true;
+    } else {
+      toast.error(LABELS.COMMON.ERROR);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -121,7 +136,7 @@ export const useRestaurantActions = (user: any) => {
     setIsAddingFood(true);
   };
 
-  const handleOpenEdit = (food: any) => {
+  const handleOpenEdit = (food: Food) => {
     setEditingFood(food);
     setFormData({
       name: food.name,
@@ -130,7 +145,7 @@ export const useRestaurantActions = (user: any) => {
       image: food.image || '',
       tags: food.tags?.join(', ') || '',
       address: food.address || '',
-      mapUrl: food.mapUrl || food.map_url || '',
+      mapUrl: food.mapUrl || '',
       lat: food.lat?.toString() || '',
       lng: food.lng?.toString() || '',
       restaurantId: food.restaurantId?.toString() || '',
@@ -237,6 +252,7 @@ export const useRestaurantActions = (user: any) => {
       handleSubmit,
       toggleRestaurantStatus,
       updateProfileHours,
+      updateRestaurantProfile,
       handleSelectBranch
     }
   };

@@ -125,6 +125,7 @@ function ProfileContent() {
             setEditData={setEditData} 
             loading={loading} 
             onSave={actions.updateProfile} 
+            role={me?.role}
           />
         )}
       </AnimatePresence>

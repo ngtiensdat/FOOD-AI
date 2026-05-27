@@ -1,4 +1,11 @@
+/**
+ * Mục đích file này: Định nghĩa các dịch vụ API giao tiếp với Backend liên quan đến Thức ăn (Food), Quản trị (Admin) và Cửa hàng (Restaurant).
+ * Các file khác liên quan: Được gọi bởi các Hook nghiệp vụ (như useExploreActions, useRestaurantActions) để giao tiếp dữ liệu.
+ * Chức năng đặc biệt: getPublicRestaurants, updateRestaurantProfile, và các API tương tác món ăn công khai.
+ */
 import { apiClient } from '@/lib/api-client';
+import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
+import { Food, CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
   async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
@@ -42,7 +49,7 @@ export const foodService = {
     }
   },
 
-  async createFood(data: any) {
+  async createFood(data: CreateFoodInput): Promise<boolean> {
     try {
       await apiClient.post('/foods', data);
       return true;
@@ -51,7 +58,7 @@ export const foodService = {
     }
   },
 
-  async createBulkFoods(data: any) {
+  async createBulkFoods(data: CreateBulkFoodsInput): Promise<boolean> {
     try {
       await apiClient.post('/foods/bulk', data);
       return true;
@@ -60,7 +67,7 @@ export const foodService = {
     }
   },
 
-  async updateFood(id: number, data: any) {
+  async updateFood(id: number, data: UpdateFoodInput): Promise<boolean> {
     try {
       await apiClient.patch(`/foods/${id}`, data);
       return true;
@@ -69,7 +76,7 @@ export const foodService = {
     }
   },
 
-  async deleteFood(id: number) {
+  async deleteFood(id: number): Promise<boolean> {
     try {
       await apiClient.delete(`/foods/${id}`);
       return true;
@@ -120,7 +127,7 @@ export const adminService = {
     });
   },
 
-  async updateFood(id: number, data: any) {
+  async updateFood(id: number, data: UpdateFoodInput): Promise<boolean> {
     try {
       await apiClient.patch(`/admin/update-food/${id}`, data);
       return true;
@@ -213,13 +220,26 @@ export const restaurantService = {
     }
   },
 
-  async updateRestaurantProfile(data: { openingHours?: string; contactPhone?: string }) {
+  async updateRestaurantProfile(data: UpdateRestaurantInput): Promise<boolean> {
     try {
       await apiClient.patch('/restaurants/my-restaurant/profile', data);
       return true;
     } catch {
       return false;
     }
+  },
+
+  async getPublicRestaurants(params?: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ data: Restaurant[]; total: number }> {
+    return apiClient
+      .get('/restaurants', { params })
+      .catch(() => ({ data: [], total: 0 }));
   }
 };
 

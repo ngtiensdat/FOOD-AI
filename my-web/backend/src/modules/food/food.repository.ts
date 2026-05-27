@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, FoodStatus } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
+import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
 
 export interface NearbyResult {
   id: number;
@@ -211,9 +212,7 @@ export class FoodRepository {
     return this.prisma.restaurant.findFirst({
       where: { ownerId },
       include: {
-        profile: {
-          select: { openingHours: true, contactPhone: true },
-        },
+        profile: true,
       },
     });
   }
@@ -349,14 +348,166 @@ export class FoodRepository {
     });
   }
 
-  async updateRestaurantProfile(
+  async updateRestaurantProfileTransaction(
     restaurantId: number,
-    data: { openingHours?: string; contactPhone?: string },
+    ownerId: number,
+    dto: UpdateRestaurantProfileDto,
   ) {
-    return this.prisma.restaurantProfile.upsert({
-      where: { restaurantId },
-      create: { restaurantId, ...data },
-      update: data,
+    const {
+      name,
+      address,
+      city,
+      district,
+      description,
+      mapUrl,
+      logo,
+      coverImage,
+      bio,
+      contactEmail,
+      contactPhone,
+      openingHours,
+      syncWithPersonalAvatar,
+      syncWithPersonalCover,
+    } = dto;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Cập nhật bảng Restaurant
+      await tx.restaurant.update({
+        where: { id: restaurantId },
+        data: {
+          name,
+          address,
+          city,
+          district,
+          description,
+          mapUrl,
+        },
+      });
+
+      // 2. Cập nhật bảng RestaurantProfile
+      const profileData = {
+        logo,
+        coverImage,
+        bio,
+        contactEmail,
+        contactPhone,
+        openingHours,
+      };
+
+      await tx.restaurantProfile.upsert({
+        where: { restaurantId },
+        create: {
+          restaurantId,
+          ...profileData,
+        },
+        update: profileData,
+      });
+
+      // 3. Đồng bộ hai chiều sang UserProfile nếu có cờ sync
+      if (syncWithPersonalAvatar && logo) {
+        await tx.userProfile.update({
+          where: { userId: ownerId },
+          data: { avatar: logo },
+        });
+      }
+
+      if (syncWithPersonalCover && coverImage) {
+        await tx.userProfile.update({
+          where: { userId: ownerId },
+          data: { coverImage },
+        });
+      }
+
+      // Trả về dữ liệu cập nhật hoàn chỉnh
+      return tx.restaurant.findUnique({
+        where: { id: restaurantId },
+        include: { profile: true },
+      });
     });
+  }
+
+  async findManyPublicRestaurants(filters: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
+    const { search, city, district, tag, page = 1, pageSize = 10 } = filters;
+
+    const where: Prisma.RestaurantWhereInput = {
+      isActive: true,
+    };
+
+    const andFilters: Prisma.RestaurantWhereInput[] = [];
+
+    if (search) {
+      andFilters.push({
+        name: { contains: search, mode: 'insensitive' },
+      });
+    }
+
+    if (city) {
+      andFilters.push({
+        city: { equals: city, mode: 'insensitive' },
+      });
+    }
+
+    if (district) {
+      andFilters.push({
+        district: { equals: district, mode: 'insensitive' },
+      });
+    }
+
+    if (tag) {
+      andFilters.push({
+        foods: {
+          some: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+            tags: {
+              has: tag,
+            },
+          },
+        },
+      });
+    }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.restaurant.findMany({
+        where,
+        include: {
+          profile: true,
+          foods: {
+            where: {
+              isActive: true,
+              status: FoodStatus.APPROVED,
+            },
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              image: true,
+              tags: true,
+            },
+            take: 5,
+          },
+          _count: {
+            select: { followers: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.restaurant.count({ where }),
+    ]);
+
+    return { restaurants: data, total };
   }
 }

@@ -23,6 +23,25 @@ import * as PrismaClient from '@prisma/client';
 export class RestaurantPublicController {
   constructor(private readonly foodService: FoodService) {}
 
+  @Get()
+  getPublicRestaurants(
+    @Query('search') search?: string,
+    @Query('city') city?: string,
+    @Query('district') district?: string,
+    @Query('tag') tag?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.foodService.getPublicRestaurants({
+      search,
+      city,
+      district,
+      tag,
+      page: page ? parseInt(page, 10) : 1,
+      pageSize: pageSize ? parseInt(pageSize, 10) : 10,
+    });
+  }
+
   @Get(':id/public')
   @UseGuards(JwtAuthOptionalGuard)
   getPublicRestaurant(

@@ -43,10 +43,6 @@ export class RestaurantController {
     @GetUser() user: PrismaClient.User,
     @Body() dto: UpdateRestaurantProfileDto,
   ) {
-    return this.foodService.updateMyRestaurantProfile(
-      user,
-      dto.openingHours,
-      dto.contactPhone,
-    );
+    return this.foodService.updateMyRestaurantProfile(user, dto);
   }
 }

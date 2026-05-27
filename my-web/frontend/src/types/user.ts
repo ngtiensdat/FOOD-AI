@@ -1,3 +1,7 @@
+/**
+ * Mục đích file này: Khai báo định nghĩa các kiểu dữ liệu (Types) và Enums liên quan đến thực thể Người dùng (User), Hồ sơ cá nhân (UserProfile) và phân quyền (Roles).
+ * Các file liên quan: Được sử dụng rộng rãi trên toàn bộ frontend để phục vụ việc xác định kiểu và ép kiểu dữ liệu an toàn (Type Safety).
+ */
 export enum UserRole {
   CUSTOMER = 'CUSTOMER',
   RESTAURANT = 'RESTAURANT',
@@ -47,6 +51,8 @@ export interface UpdateProfileData {
   bio?: string;
   address?: string;
   workAt?: string;
+  syncWithRestaurantLogo?: boolean;
+  syncWithRestaurantCover?: boolean;
 }
 
 export interface OnboardingData {

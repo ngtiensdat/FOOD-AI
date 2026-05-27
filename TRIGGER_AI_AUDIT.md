@@ -3,7 +3,13 @@
 > [!IMPORTANT]
 > **CHỈ THỊ CHO TRỢ LÝ AI (AGENT INSTRUCTION):**
 > Khi người dùng gửi hoặc tham chiếu tệp tin này, bạn (AI) phải dừng tất cả các công việc khác lại và tiến hành một đợt kiểm toán (Audit) toàn diện {toàn bộ dự án hoặc 1 phần nào đó được yêu cầu} theo đúng các bước dưới đây. Không được bỏ qua bất kỳ bước nào.
-
+>Những lỗi vi phạm cần check kỹ từng file: 
+- Vi phạm nghiêm trọng phân tách Logic
+- Vi phạm Nguyên lý Đơn trách nhiệm
+- Mất an toàn kiểu dữ liệu
+- Sử dụng Magic Values & Vi phạm Design System
+- Vi phạm khả năng tiếp cận
+- Hardcode dữ liệu 
 ---
 
 ## Quy Trình Rà Soát 5 Bước Của AI

@@ -13,14 +13,9 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 
-export interface MenuFoodItem {
-  id: number;
-  name: string;
-  image?: string;
-  price?: number;
-  status?: 'APPROVED' | 'PENDING' | 'REJECTED' | string;
-  [key: string]: unknown;
-}
+import { Food } from '@/types/food';
+
+export type MenuFoodItem = Food;
 
 interface MenuTableProps {
   myFoods: MenuFoodItem[];

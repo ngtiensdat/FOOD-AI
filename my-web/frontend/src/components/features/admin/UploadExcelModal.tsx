@@ -12,6 +12,7 @@ import { toast } from '@/store/useToastStore';
 import { usePublicCategories } from '@/hooks/usePublicCategories';
 import { LABELS } from '@/constants/labels';
 import { EXCEL_SAMPLE_DATA } from '@/constants/excel.constant';
+import { Restaurant } from '@/types/restaurant';
 
 interface CategoryFlat {
   id: number;
@@ -22,7 +23,7 @@ interface CategoryFlat {
 interface UploadExcelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  myBranches: { id: number; name: string;[key: string]: unknown }[];
+  myBranches: Restaurant[];
   onSuccess: () => void;
 }
 
@@ -199,7 +200,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:border-primary transition-all text-sm font-semibold dark:text-white"
               >
                 <option value="" disabled hidden>{LABELS.RESTAURANT.UPLOAD_EXCEL.SELECT_BRANCH}</option>
-                {myBranches.map((branch: any) => (
+                {myBranches.map((branch) => (
                   <option key={branch.id} value={branch.id}>{branch.name}</option>
                 ))}
               </select>

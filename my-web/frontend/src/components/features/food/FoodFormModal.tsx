@@ -12,6 +12,8 @@ import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { usePublicCategories } from '@/hooks/usePublicCategories';
+import { Food } from '@/types/food';
+import { Restaurant } from '@/types/restaurant';
 
 export interface FoodFormData {
   id?: number;
@@ -29,20 +31,14 @@ export interface FoodFormData {
   [key: string]: unknown;
 }
 
-export interface BranchData {
-  id: number;
-  name: string;
-  [key: string]: unknown;
-}
-
 interface FoodFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editingFood: FoodFormData | null;
+  editingFood: Food | null;
   formData: FoodFormData;
   setFormData: (data: FoodFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
-  myBranches: BranchData[];
+  myBranches: Restaurant[];
   onSelectBranch: (branchId: number) => void;
 }
 
