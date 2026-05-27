@@ -156,6 +156,10 @@ jobs:
             echo "⚠️ Không tìm thấy binary cho Linux. Tiến hành cài đặt nóng gói lightningcss-linux-x64-gnu..."
             npm install --no-save lightningcss-linux-x64-gnu@1.32.0
           fi
+          if [ ! -d "node_modules/@tailwindcss/oxide-linux-x64-gnu" ] && [ ! -d "../../node_modules/@tailwindcss/oxide-linux-x64-gnu" ]; then
+            echo "⚠️ Không tìm thấy binary cho Linux. Tiến hành cài đặt nóng gói @tailwindcss/oxide-linux-x64-gnu..."
+            npm install --no-save @tailwindcss/oxide-linux-x64-gnu@4.2.4
+          fi
           npm run build
         env:
           CI: false
