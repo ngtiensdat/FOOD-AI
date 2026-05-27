@@ -134,7 +134,7 @@ export const SettingsSection = ({
             <button
               key={tab.id}
               onClick={async () => {
-                setSettingsTab(tab.id as any);
+                setSettingsTab(tab.id as 'profile' | 'security' | 'verification');
                 if (tab.id === 'verification') fetchUserProfile();
                 if (tab.id === 'profile' && user?.id) {
                   setIsLoading(true);

@@ -33,13 +33,11 @@ export const ConfirmModal = ({
   cancelText = LABELS.COMMON.CANCEL,
   variant = 'danger'
 }: ConfirmModalProps) => {
-  if (!isOpen) return null;
-
   const getIcon = () => {
     switch (variant) {
       case 'danger':
         return (
-          <div className="mx-auto flex h-12 h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
             <Trash2 className="h-6 w-6" />
           </div>
         );
@@ -58,7 +56,7 @@ export const ConfirmModal = ({
     }
   };
 
-  const getConfirmButtonVariant = () => {
+  const getConfirmButtonVariant = (): 'red' | 'primary' => {
     switch (variant) {
       case 'danger':
         return 'red';
@@ -69,45 +67,47 @@ export const ConfirmModal = ({
 
   return (
     <AnimatePresence>
-      <div className="modal-backdrop z-50">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className="modal-card max-w-md w-full p-6 text-center bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800"
-        >
-          <div className="mb-4">
-            {getIcon()}
-          </div>
-          
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
-            {title}
-          </h3>
-          
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 px-2">
-            {message}
-          </p>
+      {isOpen && (
+        <div className="modal-backdrop z-50">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="modal-card max-w-md w-full p-6 text-center bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800"
+          >
+            <div className="mb-4">
+              {getIcon()}
+            </div>
+            
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
+              {title}
+            </h3>
+            
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 px-2">
+              {message}
+            </p>
 
-          <div className="flex gap-3 justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              className="px-5 py-2 rounded-lg border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-            >
-              {cancelText}
-            </Button>
-            <Button
-              type="button"
-              variant={getConfirmButtonVariant()}
-              onClick={onConfirm}
-              className="px-5 py-2 rounded-lg transition"
-            >
-              {confirmText}
-            </Button>
-          </div>
-        </motion.div>
-      </div>
+            <div className="flex gap-3 justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="px-5 py-2 rounded-lg border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              >
+                {cancelText}
+              </Button>
+              <Button
+                type="button"
+                variant={getConfirmButtonVariant()}
+                onClick={onConfirm}
+                className="px-5 py-2 rounded-lg transition"
+              >
+                {confirmText}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </AnimatePresence>
   );
 };

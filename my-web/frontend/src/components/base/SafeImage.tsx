@@ -10,7 +10,7 @@ const WHITELISTED_DOMAINS = [
   "cafefcdn.com",
 ];
 
-const isWhitelisted = (src: any): boolean => {
+const isWhitelisted = (src: unknown): boolean => {
   if (typeof src !== "string") return false;
   if (src.startsWith("/") || src.startsWith("data:") || src.startsWith("blob:")) {
     return true;
@@ -24,7 +24,7 @@ const isWhitelisted = (src: any): boolean => {
 };
 
 export interface SafeImageProps extends Omit<ImageProps, "src"> {
-  src?: string | null | any;
+  src?: string | null;
   fallbackSrc?: string;
 }
 

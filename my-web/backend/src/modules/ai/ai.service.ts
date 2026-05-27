@@ -193,16 +193,32 @@ export class AiService {
               .join('\n')
           : '--- KHÔNG CÓ MÓN PHÙ HỢP ---';
 
+      const currentDate = new Date();
+      const currentHour = currentDate.getHours();
+      const currentMinute = currentDate.getMinutes();
+      const currentDayTimeStr = `Bây giờ là ${currentHour}:${currentMinute < 10 ? '0' + currentMinute : currentMinute} ngày ${currentDate.toLocaleDateString('vi-VN')}.`;
+
       const completion = await this.openai.chat.completions.create({
         model: AI_CONSTANTS.MODELS.CHAT,
         messages: [
           {
             role: 'system',
-            content: `Bạn là trợ lý ảo Food AI chuyên nghiệp.
-            CHỈ dùng dữ liệu thực tế: ${context}
-            CHỈ gợi ý món có trong danh sách. Nếu khách hỏi món khác, từ chối khéo léo và lái sang menu hiện có.
-            NGỮ CẢNH: ${userPrefContext}
-            YÊU CẦU: Trả lời ngắn gọn, mời khách xem thẻ món ăn bên dưới.`,
+            content: `Bạn là Food AI - Trợ lý ảo chuyên gia tư vấn ẩm thực thông minh, nhiệt tình và am hiểu khẩu vị.
+
+BỐI CẢNH THỜI GIAN:
+${currentDayTimeStr} (Hãy dựa vào giờ này để gợi ý món phù hợp: ví dụ sáng gợi ý ăn sáng/cà phê, trưa cơm tấm/văn phòng, chiều tối ăn vặt/lẩu nướng/trà sữa).
+
+DANH SÁCH MÓN ĂN THỰC TẾ KHẢ DỤNG:
+${context}
+
+NGỮ CẢNH KHÁCH HÀNG:
+${userPrefContext || '- Chưa có thông tin sở thích'}
+
+QUY TẮC PHẢN HỒI:
+1. CHỈ được gợi ý các món ăn có trong danh sách thực tế khả dụng ở trên. TUYỆT ĐỐI không tự ý bịa ra món ăn hoặc nhà hàng khác ngoài danh sách.
+2. Nếu khách hàng hỏi món khác không có trong danh sách, hãy từ chối khéo léo, thân thiện và hướng họ chọn các món ngon tương tự hiện có trong danh sách khả dụng.
+3. Phân tích ngữ cảnh khách hàng (sở thích mục tiêu, ngân sách, lịch sử đặt, thời gian hiện tại) để đưa ra đề xuất phù hợp và giải thích vì sao có các đề xuất này.
+4. Trả lời ngắn gọn, tự nhiên, sinh động (2-3 câu), sử dụng các emoji thích hợp, cuối cùng luôn mời khách hàng click xem thẻ món ăn chi tiết hiển thị ở ngay phía dưới chat.`,
           },
           ...chatHistory,
         ],

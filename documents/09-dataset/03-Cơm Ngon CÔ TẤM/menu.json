@@ -1,0 +1,2130 @@
+{
+    "reply": {
+        "menu_infos": [
+            {
+                "dish_type_id": -1,
+                "display_order": -1000,
+                "dish_type_name": "Món Đang Giảm",
+                "dishes": [
+                    {
+                        "total_order": 3,
+                        "display_total_order": "3",
+                        "discount_price": {
+                            "text": "64.000đ",
+                            "value": 64000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286212203,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "85.000đ",
+                            "value": 85000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-820l4-mjnps48nebcza1",
+                        "is_deleted": false,
+                        "name": "Cơm thịt chưng + Canh",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    },
+                    {
+                        "total_order": 0,
+                        "display_total_order": "0",
+                        "discount_price": {
+                            "text": "64.000đ",
+                            "value": 64000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286212199,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "85.000đ",
+                            "value": 85000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-820l4-mjnpr8ax534070",
+                        "is_deleted": false,
+                        "name": "Cơm gà viên chiên + Canh",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    },
+                    {
+                        "total_order": 2,
+                        "display_total_order": "2",
+                        "discount_price": {
+                            "text": "72.000đ",
+                            "value": 72000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286211884,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "95.000đ",
+                            "value": 95000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-820l4-mjnpnhzo2e4gd7",
+                        "is_deleted": false,
+                        "name": "Cơm gà viên chiên + Canh + Trứng",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    },
+                    {
+                        "total_order": 0,
+                        "display_total_order": "0",
+                        "discount_price": {
+                            "text": "88.000đ",
+                            "value": 88000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286209159,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "115.000đ",
+                            "value": 115000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-820l4-mjnpgvtrygoy0b",
+                        "is_deleted": false,
+                        "name": "Cơm gà viên chiên + Canh + Trứng + Nước",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    },
+                    {
+                        "total_order": 6,
+                        "display_total_order": "6",
+                        "discount_price": {
+                            "text": "44.000đ",
+                            "value": 44000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286212215,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "75.000đ",
+                            "value": 75000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-81ztc-mnl6km1c69z894",
+                        "is_deleted": false,
+                        "name": "Cơm thịt chưng + Trà hoa",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    },
+                    {
+                        "total_order": 0,
+                        "display_total_order": "0",
+                        "discount_price": {
+                            "text": "44.000đ",
+                            "value": 44000.0,
+                            "unit": "đ"
+                        },
+                        "is_searchable": false,
+                        "discount_remaining_quantity": 1,
+                        "id": 286212232,
+                        "total_like": "0",
+                        "is_group_discount_item": true,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "price": {
+                            "text": "75.000đ",
+                            "value": 75000.0,
+                            "unit": "đ"
+                        },
+                        "is_active": true,
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "is_available": true,
+                        "properties": [],
+                        "mms_image": "vn-11134517-820l4-mjnpupz1xlhj9d",
+                        "is_deleted": false,
+                        "name": "Cơm gà viên chiên + Trà hoa",
+                        "display_order": 0,
+                        "limit_type": 3,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "options": [],
+                        "quantity": 0
+                    }
+                ],
+                "is_group_discount": true
+            },
+            {
+                "dish_type_id": 16478464,
+                "dish_type_name": "CƠM CÔ TẤM - NGON NO NÊ",
+                "dishes": [
+                    {
+                        "total_order": 3,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "3",
+                        "price": {
+                            "text": "85.000đ",
+                            "unit": "đ",
+                            "value": 85000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnps48nebcza1@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "64.000đ",
+                            "unit": "đ",
+                            "value": 64000.0
+                        },
+                        "id": 286212203,
+                        "mms_image": "vn-11134517-820l4-mjnps48nebcza1",
+                        "name": "Cơm thịt chưng + Canh"
+                    },
+                    {
+                        "total_order": 2,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "2",
+                        "price": {
+                            "text": "60.000đ",
+                            "unit": "đ",
+                            "value": 60000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpq5a03y8600@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286212196,
+                        "mms_image": "vn-11134517-820l4-mjnpq5a03y8600",
+                        "name": "Cơm gà nhỏ + Canh + Trứng"
+                    },
+                    {
+                        "total_order": 0,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "0",
+                        "price": {
+                            "text": "85.000đ",
+                            "unit": "đ",
+                            "value": 85000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpr8ax534070@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "64.000đ",
+                            "unit": "đ",
+                            "value": 64000.0
+                        },
+                        "id": 286212199,
+                        "mms_image": "vn-11134517-820l4-mjnpr8ax534070",
+                        "name": "Cơm gà viên chiên + Canh"
+                    }
+                ]
+            },
+            {
+                "dish_type_id": 16478466,
+                "dish_type_name": "CƠM CÔ TẤM - SUÂT LỚN",
+                "dishes": [
+                    {
+                        "total_order": 50,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "50+",
+                        "price": {
+                            "text": "75.000đ",
+                            "unit": "đ",
+                            "value": 75000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpjo7a9udj0f@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286209406,
+                        "mms_image": "vn-11134517-820l4-mjnpjo7a9udj0f",
+                        "name": "Cơm gà lớn + Canh + Trứng"
+                    },
+                    {
+                        "total_order": 7,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "7",
+                        "price": {
+                            "text": "75.000đ",
+                            "unit": "đ",
+                            "value": 75000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpkkl4kt1c1a@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286209426,
+                        "mms_image": "vn-11134517-820l4-mjnpkkl4kt1c1a",
+                        "name": "Cơm sườn + Canh + Trứng"
+                    },
+                    {
+                        "total_order": 2,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "2",
+                        "price": {
+                            "text": "95.000đ",
+                            "unit": "đ",
+                            "value": 95000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpnhzo2e4gd7@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "72.000đ",
+                            "unit": "đ",
+                            "value": 72000.0
+                        },
+                        "id": 286211884,
+                        "mms_image": "vn-11134517-820l4-mjnpnhzo2e4gd7",
+                        "name": "Cơm gà viên chiên + Canh + Trứng"
+                    }
+                ]
+            },
+            {
+                "dish_type_id": 16478467,
+                "dish_type_name": "CƠM CÔ TẤM - ƯU ĐÃI 2026",
+                "dishes": [
+                    {
+                        "total_order": 10,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "10+",
+                        "price": {
+                            "text": "88.000đ",
+                            "unit": "đ",
+                            "value": 88000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpis0ayeiod8@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286209242,
+                        "mms_image": "vn-11134517-820l4-mjnpis0ayeiod8",
+                        "name": "Cơm gà lớn + Canh + Trứng + Nước"
+                    },
+                    {
+                        "total_order": 3,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "3",
+                        "price": {
+                            "text": "90.000đ",
+                            "unit": "đ",
+                            "value": 90000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpfqcn3im9b7@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286209213,
+                        "mms_image": "vn-11134517-820l4-mjnpfqcn3im9b7",
+                        "name": "Cơm sườn + Canh + Trứng + Nước"
+                    },
+                    {
+                        "total_order": 0,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "0",
+                        "price": {
+                            "text": "115.000đ",
+                            "unit": "đ",
+                            "value": 115000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpgvtrygoy0b@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "88.000đ",
+                            "unit": "đ",
+                            "value": 88000.0
+                        },
+                        "id": 286209159,
+                        "mms_image": "vn-11134517-820l4-mjnpgvtrygoy0b",
+                        "name": "Cơm gà viên chiên + Canh + Trứng + Nước"
+                    }
+                ]
+            },
+            {
+                "dish_type_id": 16478460,
+                "dish_type_name": "MÓN ĂN THÊM",
+                "dishes": [
+                    {
+                        "total_order": 100,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "100+",
+                        "price": {
+                            "text": "25.000đ",
+                            "unit": "đ",
+                            "value": 25000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "10+",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-7ras8-m3py4jko9pz0af@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 15428338,
+                        "mms_image": "vn-11134517-7ras8-m3py4jko9pz0af",
+                        "name": "Pizza Mini 5cm vị Bò băm"
+                    },
+                    {
+                        "total_order": 1,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "1",
+                        "price": {
+                            "text": "15.000đ",
+                            "unit": "đ",
+                            "value": 15000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpvg3ct8g773@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286212245,
+                        "mms_image": "vn-11134517-820l4-mjnpvg3ct8g773",
+                        "name": "Cơm trắng ăn thêm"
+                    },
+                    {
+                        "total_order": 0,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "0",
+                        "price": {
+                            "text": "25.000đ",
+                            "unit": "đ",
+                            "value": 25000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwg63y4u96e@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286212252,
+                        "mms_image": "vn-11134517-820l4-mjnpwg63y4u96e",
+                        "name": "Trứng ốp (2 trứng)"
+                    },
+                    {
+                        "total_order": 0,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "0",
+                        "price": {
+                            "text": "55.000đ",
+                            "unit": "đ",
+                            "value": 55000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpwyhaaups51@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "quantity": 0,
+                        "id": 286212255,
+                        "mms_image": "vn-11134517-820l4-mjnpwyhaaups51",
+                        "name": "Gà viên chiên Hàn Quốc"
+                    }
+                ]
+            },
+            {
+                "dish_type_id": 16478461,
+                "dish_type_name": "CƠM CÔ TẤM - FLASH SALE",
+                "dishes": [
+                    {
+                        "total_order": 6,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "6",
+                        "price": {
+                            "text": "75.000đ",
+                            "unit": "đ",
+                            "value": 75000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-81ztc-mnl6km1c69z894@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "44.000đ",
+                            "unit": "đ",
+                            "value": 44000.0
+                        },
+                        "id": 286212215,
+                        "mms_image": "vn-11134517-81ztc-mnl6km1c69z894",
+                        "name": "Cơm thịt chưng + Trà hoa"
+                    },
+                    {
+                        "total_order": 0,
+                        "is_deleted": false,
+                        "description": "Cơm ngon CÔ TẤM® biết ơn quý khách đã đặt hàng. Quán có chính sách MIỄN PHÍ đổi trả. Hãy nhận xét món giúp quán và nhận ngay 1 voucher 30K nhé. Cảm ơn b rất nhiều",
+                        "display_total_order": "0",
+                        "price": {
+                            "text": "75.000đ",
+                            "unit": "đ",
+                            "value": 75000.0
+                        },
+                        "is_active": true,
+                        "display_order": 0,
+                        "total_like": "0",
+                        "properties": [],
+                        "photos": [
+                            {
+                                "width": 120,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss120x120!@crop_w120_h120_cT",
+                                "height": 120
+                            },
+                            {
+                                "width": 180,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss180x180!@crop_w180_h180_cT",
+                                "height": 180
+                            },
+                            {
+                                "width": 400,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss400x400!@crop_w400_h400_cT",
+                                "height": 400
+                            },
+                            {
+                                "width": 560,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss560x560!@crop_w560_h560_cT",
+                                "height": 560
+                            },
+                            {
+                                "width": 750,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss750x750!@crop_w750_h750_cT",
+                                "height": 750
+                            },
+                            {
+                                "width": 1242,
+                                "value": "https://mms.img.susercontent.com/vn-11134517-820l4-mjnpupz1xlhj9d@resize_ss1242x1242!@crop_w1242_h1242_cT",
+                                "height": 1242
+                            }
+                        ],
+                        "limit_type": 3,
+                        "options": [],
+                        "is_available": true,
+                        "is_group_discount_item": true,
+                        "time": {
+                            "available": [],
+                            "week_days": [
+                                {
+                                    "start": "00:00",
+                                    "week_day": 1,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 2,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 3,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 4,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 5,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 6,
+                                    "end": "23:59"
+                                },
+                                {
+                                    "start": "00:00",
+                                    "week_day": 7,
+                                    "end": "23:59"
+                                }
+                            ],
+                            "not_available": []
+                        },
+                        "discount_remaining_quantity": 1,
+                        "quantity": 0,
+                        "discount_price": {
+                            "text": "44.000đ",
+                            "unit": "đ",
+                            "value": 44000.0
+                        },
+                        "id": 286212232,
+                        "mms_image": "vn-11134517-820l4-mjnpupz1xlhj9d",
+                        "name": "Cơm gà viên chiên + Trà hoa"
+                    }
+                ]
+            }
+        ]
+    },
+    "result": "success"
+}

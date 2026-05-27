@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { foodService, restaurantService } from '@/services/food.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { isValidOpeningHours } from '@/utils/helpers';
 
 /**
  * Custom Hook: useRestaurantActions
@@ -77,18 +78,7 @@ export const useRestaurantActions = (user: any) => {
 
   const updateProfileHours = async (openingHours: string) => {
     if (openingHours && openingHours.trim()) {
-      const cleanHours = openingHours.replace(/\s+/g, '');
-      const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
-      if (!match) {
-        toast.error(LABELS.RESTAURANT.HOURS_FORMAT_ERROR);
-        return;
-      }
-      const [, sh, sm, eh, em] = match;
-      const shNum = parseInt(sh, 10);
-      const smNum = parseInt(sm, 10);
-      const ehNum = parseInt(eh, 10);
-      const emNum = parseInt(em, 10);
-      if (shNum > 23 || smNum > 59 || ehNum > 23 || emNum > 59) {
+      if (!isValidOpeningHours(openingHours)) {
         toast.error(LABELS.RESTAURANT.HOURS_FORMAT_ERROR);
         return;
       }
