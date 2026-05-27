@@ -1,9 +1,16 @@
+// Mục đích: Cung cấp dịch vụ xác thực và quản lý tài khoản người dùng (đăng ký, đăng nhập, đổi mật khẩu, onboarding và xóa tài khoản).
+// File quan hệ: Gọi UserRepository, JwtService, AiService, PrismaService, sử dụng BcryptHelper và được gọi bởi AuthController, JwtStrategy.
+// Chức năng đặc biệt: Phát hành Access Token & Refresh Token, Onboarding đa chi nhánh với transaction, hard delete tài khoản và dọn dẹp các mối quan hệ (followers, favorites, restaurants...) an toàn.
+// Kiến thức/Design Pattern: Security Best Practices (Bcrypt hashing, HTTP-Only Cookie tokens), SOLID (Single Responsibility, Dependency Inversion), Transaction Pattern, Logging Pattern (NestJS Logger).
+// Các biến, hàm đặc biệt: register(), login(), getProfile(), completeOnboarding(), changePassword(), deleteAccount(), refreshToken(), generateToken().
+
 import {
   Injectable,
   BadRequestException,
   ConflictException,
   UnauthorizedException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
@@ -26,6 +33,8 @@ import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
@@ -68,20 +77,18 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    console.log(`[AuthService] Attempting login for: ${dto.email}`);
+    this.logger.log(`Attempting login for: ${dto.email}`);
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
-      console.warn(`[AuthService] User not found: ${dto.email}`);
-      throw new NotFoundException(
-        'Tài khoản này chưa được đăng ký trên hệ thống.',
-      );
+      this.logger.warn(`User not found: ${dto.email}`);
+      throw new NotFoundException(MESSAGES.AUTH.NOT_REGISTERED);
     }
 
     if (user.status === UserStatus.PENDING) {
-      throw new UnauthorizedException('Tài khoản đang chờ phê duyệt');
+      throw new UnauthorizedException(MESSAGES.AUTH.PENDING_APPROVAL);
     }
     if (user.status === UserStatus.REJECTED) {
-      throw new UnauthorizedException('Tài khoản đã bị từ chối');
+      throw new UnauthorizedException(MESSAGES.AUTH.ACCOUNT_REJECTED);
     }
 
     const isPasswordValid = await BcryptHelper.compare(
@@ -89,17 +96,17 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
-      console.warn(`[AuthService] Invalid password for: ${dto.email}`);
+      this.logger.warn(`Invalid password for: ${dto.email}`);
       throw new UnauthorizedException(MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
-    console.log(`[AuthService] Login successful: ${dto.email}`);
+    this.logger.log(`Login successful: ${dto.email}`);
     return this.generateToken(user);
   }
 
   async getProfile(targetId: number, requesterId?: number) {
     const user = await this.userRepository.findById(targetId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+    if (!user) throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
 
     let isFollowing = false;
     if (requesterId) {
@@ -120,14 +127,12 @@ export class AuthService {
 
   async completeOnboarding(userId: number, dto: CompleteOnboardingDto) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+    if (!user) throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
 
     if (user.role === UserRole.RESTAURANT) {
       const branches = dto.branches;
       if (!branches || branches.length === 0) {
-        throw new BadRequestException(
-          'Thương gia bắt buộc phải đăng ký ít nhất 1 cơ sở.',
-        );
+        throw new BadRequestException(MESSAGES.AUTH.MERCHANT_BRANCH_REQUIRED);
       }
 
       // Sử dụng Database Transaction để đảm bảo tính toàn vẹn dữ liệu
@@ -205,17 +210,17 @@ export class AuthService {
 
   async changePassword(userId: number, oldPass?: string, newPass?: string) {
     if (!newPass) {
-      throw new BadRequestException('Mật khẩu mới không được để trống');
+      throw new BadRequestException(MESSAGES.AUTH.NEW_PASSWORD_REQUIRED);
     }
 
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+    if (!user) throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
 
     // Nếu có mật khẩu cũ thì phải kiểm tra (trường hợp user đã có mật khẩu)
     if (user.password && oldPass) {
       const isValid = await BcryptHelper.compare(oldPass, user.password);
       if (!isValid)
-        throw new UnauthorizedException('Mật khẩu cũ không chính xác');
+        throw new UnauthorizedException(MESSAGES.AUTH.OLD_PASSWORD_INCORRECT);
     }
 
     const hashedPassword = await BcryptHelper.hash(newPass, 10);
@@ -226,20 +231,16 @@ export class AuthService {
   async deleteAccount(userId: number, password?: string) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundException('Người dùng không tồn tại');
+      throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
     if (!password) {
-      throw new BadRequestException(
-        'Vui lòng cung cấp mật khẩu để xác nhận xóa tài khoản',
-      );
+      throw new BadRequestException(MESSAGES.AUTH.PASSWORD_CONFIRM_REQUIRED);
     }
 
     const isPasswordValid = await BcryptHelper.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        'Mật khẩu không chính xác. Không thể xóa tài khoản',
-      );
+      throw new UnauthorizedException(MESSAGES.AUTH.PASSWORD_INCORRECT_DELETE);
     }
 
     // Thực hiện hard delete thông tin người dùng trong Database thông qua transaction
@@ -310,12 +311,12 @@ export class AuthService {
       const user = await this.userRepository.findById(Number(payload.sub));
 
       if (!user || user.refreshToken !== token) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException(MESSAGES.AUTH.INVALID_TOKEN);
       }
 
       return this.generateToken(user);
     } catch {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException(MESSAGES.AUTH.INVALID_TOKEN);
     }
   }
 

@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa các API cửa ngõ cho đối tác nhà hàng (Restaurant/Merchant) để tự quản trị thông tin nhà hàng và các chi nhánh của mình.
+// File quan hệ: Nhận request từ Client, gọi FoodService để xử lý nghiệp vụ, được bảo vệ nghiêm ngặt bởi JwtAuthGuard và RolesGuard(UserRole.RESTAURANT).
+// Chức năng đặc biệt: Cho phép lấy thông tin cửa hàng hiện tại, lấy thông tin tất cả chi nhánh, cập nhật trạng thái đóng/mở cửa, và cập nhật thông tin hồ sơ nhà hàng (giờ mở cửa, số điện thoại liên lạc).
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, Guard Pattern, Decorator Pattern.
+// Các biến, hàm đặc biệt: getMyRestaurant(), getMyBranches(), updateRestaurantStatus(), updateRestaurantProfile().
+
 import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
 import { FoodService } from './food.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';

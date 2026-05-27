@@ -1,9 +1,16 @@
+// Mục đích: Cung cấp dịch vụ bóc tách và nhập dữ liệu đối tác thương gia (Merchant) cùng danh sách món ăn từ file Excel vào cơ sở dữ liệu.
+// File quan hệ: Được gọi bởi AdminService và sử dụng PrismaService để tương tác DB, AiService để tạo vector embedding cho món ăn.
+// Chức năng đặc biệt: Đọc file Excel, gom nhóm các món ăn theo email của chủ nhà hàng, tự động tạo tài khoản, nhà hàng và các món ăn đi kèm trong một Database Transaction duy nhất để bảo đảm an toàn dữ liệu.
+// Kiến thức/Design Pattern: Áp dụng nguyên tắc SOLID (Single Responsibility - Class chỉ xử lý logic import Excel, Open/Closed - cấu trúc Excel headers mở rộng dễ dàng) và Database Transaction Pattern để đảm bảo tính toàn vẹn dữ liệu.
+// Các biến, hàm đặc biệt: ExcelMerchantRow, MerchantFood, MerchantGroup (Interfaces); importFromExcel(), parseExcelBuffer(), groupMerchantsByEmail(), saveMerchantsToDatabase().
+
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AiService } from '../ai/ai.service';
 import * as xlsx from 'xlsx';
 import * as bcrypt from 'bcrypt';
 import { UserRole, UserStatus, FoodStatus } from '@prisma/client';
+import { MESSAGES } from '../../common/constants/messages.constant';
 
 export const EXCEL_HEADERS = {
   EMAIL: 'Email',
@@ -30,6 +37,30 @@ export const DEFAULT_VALUES = {
   LONGITUDE: 0,
 };
 
+export interface ExcelMerchantRow {
+  [key: string]: string | number | undefined;
+}
+
+export interface MerchantFood {
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  tags: string[];
+}
+
+export interface MerchantGroup {
+  email: string;
+  password: string;
+  ownerName: string;
+  restaurantName: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  mapUrl: string;
+  foods: MerchantFood[];
+}
+
 @Injectable()
 export class MerchantImportService {
   constructor(
@@ -41,25 +72,29 @@ export class MerchantImportService {
     const rows = this.parseExcelBuffer(buffer);
 
     if (!rows || rows.length === 0) {
-      throw new BadRequestException('File Excel trống hoặc sai định dạng');
+      throw new BadRequestException(MESSAGES.ADMIN.FILE_EMPTY_OR_INVALID);
     }
 
     const merchantsMap = this.groupMerchantsByEmail(rows);
     return this.saveMerchantsToDatabase(merchantsMap);
   }
 
-  private parseExcelBuffer(buffer: Buffer): any[] {
+  private parseExcelBuffer(buffer: Buffer): ExcelMerchantRow[] {
     const workbook = xlsx.read(buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     return xlsx.utils.sheet_to_json(sheet);
   }
 
-  private groupMerchantsByEmail(rows: any[]) {
-    const merchantsMap = new Map<string, any>();
+  private groupMerchantsByEmail(
+    rows: ExcelMerchantRow[],
+  ): Map<string, MerchantGroup> {
+    const merchantsMap = new Map<string, MerchantGroup>();
 
     for (const row of rows) {
-      const email = row[EXCEL_HEADERS.EMAIL];
+      const email = row[EXCEL_HEADERS.EMAIL]
+        ? String(row[EXCEL_HEADERS.EMAIL])
+        : undefined;
       if (!email) continue;
 
       if (!merchantsMap.has(email)) {
@@ -68,40 +103,59 @@ export class MerchantImportService {
           password: row[EXCEL_HEADERS.PASSWORD]
             ? String(row[EXCEL_HEADERS.PASSWORD])
             : DEFAULT_VALUES.PASSWORD,
-          ownerName: row[EXCEL_HEADERS.OWNER_NAME] || DEFAULT_VALUES.OWNER_NAME,
-          restaurantName:
-            row[EXCEL_HEADERS.RESTAURANT_NAME] ||
-            DEFAULT_VALUES.RESTAURANT_NAME,
-          address: row[EXCEL_HEADERS.ADDRESS] || DEFAULT_VALUES.ADDRESS,
-          latitude:
-            parseFloat(row[EXCEL_HEADERS.LATITUDE]) || DEFAULT_VALUES.LATITUDE,
-          longitude:
-            parseFloat(row[EXCEL_HEADERS.LONGITUDE]) ||
-            DEFAULT_VALUES.LONGITUDE,
-          mapUrl: row[EXCEL_HEADERS.MAP_URL] || '',
+          ownerName: row[EXCEL_HEADERS.OWNER_NAME]
+            ? String(row[EXCEL_HEADERS.OWNER_NAME])
+            : DEFAULT_VALUES.OWNER_NAME,
+          restaurantName: row[EXCEL_HEADERS.RESTAURANT_NAME]
+            ? String(row[EXCEL_HEADERS.RESTAURANT_NAME])
+            : DEFAULT_VALUES.RESTAURANT_NAME,
+          address: row[EXCEL_HEADERS.ADDRESS]
+            ? String(row[EXCEL_HEADERS.ADDRESS])
+            : DEFAULT_VALUES.ADDRESS,
+          latitude: row[EXCEL_HEADERS.LATITUDE]
+            ? parseFloat(String(row[EXCEL_HEADERS.LATITUDE]))
+            : DEFAULT_VALUES.LATITUDE,
+          longitude: row[EXCEL_HEADERS.LONGITUDE]
+            ? parseFloat(String(row[EXCEL_HEADERS.LONGITUDE]))
+            : DEFAULT_VALUES.LONGITUDE,
+          mapUrl: row[EXCEL_HEADERS.MAP_URL]
+            ? String(row[EXCEL_HEADERS.MAP_URL])
+            : '',
           foods: [],
         });
       }
 
-      if (row[EXCEL_HEADERS.FOOD_NAME] && row[EXCEL_HEADERS.FOOD_PRICE]) {
-        merchantsMap.get(email).foods.push({
-          name: row[EXCEL_HEADERS.FOOD_NAME],
-          price: parseFloat(row[EXCEL_HEADERS.FOOD_PRICE]),
-          description: row[EXCEL_HEADERS.FOOD_DESC] || '',
-          image: row[EXCEL_HEADERS.FOOD_IMAGE] || '',
-          tags: row[EXCEL_HEADERS.FOOD_TAGS]
-            ? String(row[EXCEL_HEADERS.FOOD_TAGS])
-                .split(',')
-                .map((t) => t.trim())
-            : [],
-        });
+      const foodName = row[EXCEL_HEADERS.FOOD_NAME];
+      const foodPrice = row[EXCEL_HEADERS.FOOD_PRICE];
+
+      if (foodName && foodPrice) {
+        const group = merchantsMap.get(email);
+        if (group) {
+          group.foods.push({
+            name: String(foodName),
+            price: parseFloat(String(foodPrice)),
+            description: row[EXCEL_HEADERS.FOOD_DESC]
+              ? String(row[EXCEL_HEADERS.FOOD_DESC])
+              : '',
+            image: row[EXCEL_HEADERS.FOOD_IMAGE]
+              ? String(row[EXCEL_HEADERS.FOOD_IMAGE])
+              : '',
+            tags: row[EXCEL_HEADERS.FOOD_TAGS]
+              ? String(row[EXCEL_HEADERS.FOOD_TAGS])
+                  .split(',')
+                  .map((t) => t.trim())
+              : [],
+          });
+        }
       }
     }
 
     return merchantsMap;
   }
 
-  private async saveMerchantsToDatabase(merchantsMap: Map<string, any>) {
+  private async saveMerchantsToDatabase(
+    merchantsMap: Map<string, MerchantGroup>,
+  ) {
     let createdCount = 0;
     let appendedCount = 0;
     const createdFoodIds: number[] = [];

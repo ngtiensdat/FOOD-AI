@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa các API cửa ngõ cho việc quản lý, tìm kiếm và thao tác với các món ăn (Food) của cả khách hàng, thương gia và quản trị viên.
+// File quan hệ: Nhận request từ Client, gọi FoodService để xử lý nghiệp vụ, được bảo vệ bằng các Guards phân quyền.
+// Chức năng đặc biệt: Tìm kiếm món ăn thông thường, tìm kiếm món ăn xung quanh địa lý, lọc món ăn hôm nay/tuần nổi bật, xem danh sách món ăn của merchant hiện tại, track lịch sử xem món ăn và CRUD món ăn đơn lẻ hoặc hàng loạt.
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, Guard Pattern (JwtAuthGuard, RolesGuard), Decorator Pattern.
+// Các biến, hàm đặc biệt: getAllFoods(), getFeaturedToday(), getFeaturedWeekly(), getRecommendedFoods(), getNearbyFoods(), getMerchantFoods(), searchFoods(), trackView(), getRecentViews(), createFood(), createBulkFood(), updateFood(), deleteFood(), toggleRecommendFood(), approveFood().
+
 import {
   Controller,
   Get,

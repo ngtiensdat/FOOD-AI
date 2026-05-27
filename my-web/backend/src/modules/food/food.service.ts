@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ quản lý thực đơn món ăn (Food) và các hành vi tương tác liên quan đến nhà hàng (Theo dõi, hồ sơ nhà hàng).
+// File quan hệ: Gọi FoodRepository, AiService và được gọi bởi FoodController, RestaurantController, RestaurantPublicController.
+// Chức năng đặc biệt: Xử lý tìm kiếm món ăn lân cận, bộ lọc theo thẻ (tags) và địa phương (thành phố, quận), CRUD món ăn (gán quyền sở hữu tương ứng, chống IDOR), tạo hàng loạt (bulk create) món ăn có trigger cập nhật vector embedding tương ứng trong background.
+// Kiến thức/Design Pattern: Service Layer Pattern, SOLID (Single Responsibility - Điều phối logic thực đơn, Dependency Inversion), Ownership Check (IDOR protection), Background Processing Pattern.
+// Các biến, hàm đặc biệt: getAllFoods(), trackView(), getRecentFoods(), getNearbyFoods(), getFeaturedToday(), getFeaturedWeekly(), getRecommended(), getMerchantFoods(), search(), createFood(), createBulk(), updateFood(), deleteFood(), toggleRecommend(), approveFood(), getRestaurant(), updateRestaurantProfile(), getRestaurantFollowers(), followRestaurant(), unfollowRestaurant(), checkFollowStatus(), getFollowingCount().
+
 import {
   Injectable,
   ForbiddenException,
@@ -137,9 +143,7 @@ export class FoodService {
     if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
 
     if (user.role === UserRole.RESTAURANT && restaurant.ownerId !== user.id) {
-      throw new ForbiddenException(
-        'Bạn không có quyền đăng món ăn vào cơ sở này.',
-      );
+      throw new ForbiddenException(MESSAGES.FOOD.NO_POST_PERMISSION);
     }
 
     // 2. Tự động sao chép thông tin địa chỉ từ chi nhánh (Onboarding) sang món ăn

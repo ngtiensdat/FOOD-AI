@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ quản lý danh mục món ăn (Category) cho nhà hàng, bao gồm việc thêm, sửa, xóa, và tìm kiếm danh mục theo nhóm.
+// File quan hệ: Gọi CategoryRepository, CategoryGroupRepository và được gọi bởi CategoryController.
+// Chức năng đặc biệt: Xác thực quyền sở hữu danh mục và danh mục cha (Parent Category) liên quan đến cùng một nhóm danh mục và cùng chủ nhà hàng trước khi tạo hoặc chỉnh sửa.
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, SOLID, Ownership Verification (chống IDOR).
+// Các biến, hàm đặc biệt: getRestaurantId(), create(), findAllByGroupId(), update(), delete().
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategoryRepository } from '../repositories/category.repository';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/category.dto';

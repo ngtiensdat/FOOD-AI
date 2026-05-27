@@ -1,7 +1,7 @@
 /**
  * SCRIPT TIỆN ÍCH DỌN DẸP DỮ LIỆU SHOPEEFOOD
  * 
- * Mục đích: Xóa sạch dữ liệu mẫu của 3 quán ăn ShopeeFood (Kim Oanh, Maxi Burger, Cô Tấm)
+ * Mục đích: Xóa sạch dữ liệu mẫu 
  * và toàn bộ món ăn, danh mục liên quan ra khỏi cơ sở dữ liệu để chuẩn bị cho việc import mới.
  * 
  * Cách chạy: npx tsx prisma/delete_shopeefood_data.ts
@@ -16,9 +16,9 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    console.log("❌ Đang tiến hành xóa dữ liệu của 3 dataset ShopeeFood...");
+    console.log("❌ Đang tiến hành xóa dữ liệu của dataset ShopeeFood...");
 
-    const emails = ['merchant01@gmail.com', 'merchant02@gmail.com', 'merchant03@gmail.com'];
+    const emails = ['merchant01@gmail.com', 'merchant02@gmail.com', 'merchant03@gmail.com']; //thêm dc
 
     // Lấy thông tin các merchant và quán ăn trước khi xóa để log
     const merchants = await prisma.user.findMany({
@@ -49,11 +49,11 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Lỗi khi xóa dữ liệu:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-    await pool.end();
-  });
+    .catch((e) => {
+        console.error("❌ Lỗi khi xóa dữ liệu:", e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+        await pool.end();
+    });

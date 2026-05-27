@@ -24,6 +24,7 @@ Nếu 10/10 thì thực hiện ngay comment mà không cần hỏi lại
 // Mục đích file này để làm gì
 // Các file khác hay file này có ý nghĩa như nào
 // Các chức năng đặc biệt 
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file
 // Các biến, hàm đặc biệt trong file
 ```
 

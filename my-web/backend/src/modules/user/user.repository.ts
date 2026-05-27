@@ -1,6 +1,12 @@
+// Mục đích: Cung cấp các thao tác truy vấn cơ sở dữ liệu trực tiếp liên quan đến bảng người dùng (User), hồ sơ cá nhân (UserProfile) và quan hệ theo dõi (UserFollow) qua Prisma.
+// File quan hệ: Gọi PrismaService, sử dụng các kiểu dữ liệu từ @prisma/client và được gọi bởi UserRepository, UserService, AuthService.
+// Chức năng đặc biệt: CRUD cơ bản người dùng và hồ sơ cá nhân (upsertProfile), tìm kiếm theo vai trò, quản trị phê duyệt merchant (findPendingUsers), và hỗ trợ các thao tác thiết lập follow/unfollow người dùng.
+// Kiến thức/Design Pattern: Repository Pattern (tách biệt logic truy xuất dữ liệu), Dependency Injection.
+// Các biến, hàm đặc biệt: findByEmail(), findById(), create(), update(), updateRefreshToken(), findWithFollow(), follow(), unfollow(), upsertProfile(), findPendingUsers(), updateRestaurantsStatus(), findAllUsers(), hardDeleteUser().
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -98,8 +104,8 @@ export class UserRepository {
   async findPendingUsers() {
     return this.prisma.user.findMany({
       where: {
-        role: 'RESTAURANT',
-        status: 'PENDING',
+        role: UserRole.RESTAURANT,
+        status: UserStatus.PENDING,
       },
       select: {
         id: true,

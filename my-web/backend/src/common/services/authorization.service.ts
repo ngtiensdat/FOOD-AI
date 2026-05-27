@@ -1,3 +1,8 @@
+// Mục đích: Cung cấp các hàm kiểm tra quyền hạn (Authorization) mức độ chuyên sâu (Resource Ownership).
+// Ý nghĩa: Tránh lỗi IDOR (Insecure Direct Object Reference) bằng cách kiểm tra user có phải chủ sở hữu tài nguyên không.
+// Chức năng đặc biệt: Tách biệt logic kiểm tra quyền sở hữu khỏi Controller và Repository.
+// Kiến thức/Design Pattern: Service Pattern, Separation of Concerns (SOLID - Tách logic phân quyền khỏi logic nghiệp vụ chính).
+// Biến/hàm đặc biệt: Hàm checkFoodOwnership và checkRestaurantOwnership xử lý logic owner vs admin.
 import {
   Injectable,
   ForbiddenException,
@@ -5,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { UserRole } from '@prisma/client';
+import { MESSAGES } from '../constants/messages.constant';
 
 @Injectable()
 export class AuthorizationService {
@@ -30,21 +36,17 @@ export class AuthorizationService {
     });
 
     if (!food) {
-      throw new NotFoundException('Món ăn không tồn tại');
+      throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
     }
 
     // Nếu là món hệ thống (không thuộc nhà hàng nào)
     if (!food.restaurantId) {
-      throw new ForbiddenException(
-        'Bạn không có quyền quản lý món ăn hệ thống',
-      );
+      throw new ForbiddenException(MESSAGES.FOOD.NO_SYSTEM_MANAGE);
     }
 
     // Kiểm tra ownerId của nhà hàng chứa món ăn này
     if (food.restaurant?.ownerId !== userId) {
-      throw new ForbiddenException(
-        'Bạn không sở hữu món ăn này hoặc nhà hàng chứa món này',
-      );
+      throw new ForbiddenException(MESSAGES.FOOD.NOT_OWNER_OF_FOOD);
     }
 
     return true;
@@ -66,11 +68,11 @@ export class AuthorizationService {
     });
 
     if (!restaurant) {
-      throw new NotFoundException('Nhà hàng không tồn tại');
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
     }
 
     if (restaurant.ownerId !== userId) {
-      throw new ForbiddenException('Bạn không phải chủ sở hữu nhà hàng này');
+      throw new ForbiddenException(MESSAGES.RESTAURANT.NOT_OWNER_OF_THIS);
     }
 
     return true;
