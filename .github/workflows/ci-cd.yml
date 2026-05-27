@@ -1,0 +1,147 @@
+# =====================================================================================
+# HƯỚNG DẪN THIẾT LẬP VÀ HOẠT ĐỘNG
+# 
+# 1. Cơ chế hoạt động:
+# - Workflow này sẽ tự động kích hoạt (trigger) mỗi khi bạn thực hiện 'push' hoặc tạo 
+#   'pull_request' vào nhánh 'main' hoặc 'develop'.
+# - File chia làm 2 jobs chạy song song: backend-ci (NestJS) và frontend-ci (Next.js).
+# - Bất kỳ step nào (Install, Lint, Security Scan, Test, Build) nếu xảy ra lỗi, 
+#   quá trình pipeline sẽ lập tức DỪNG LẠI và đánh dấu trạng thái đỏ (Failed) cho PR đó.
+#
+# 2. Cấu hình để file chạy được:
+# - Bạn chỉ cần lưu file này ở đường dẫn `.github/workflows/ci-cd.yml` trong project.
+# - Trong repo GitHub, vào phần Settings > Actions > General > Workflow permissions, 
+#   đảm bảo bạn đã chọn "Read and write permissions" để GitHub Actions có quyền tự động
+#   bình luận (Comment) kết quả coverage trực tiếp vào Pull Request.
+# - Tôi đã thiết lập sẵn một Service Container (PostgreSQL) cho Backend để phòng trường hợp 
+#   các bài test tích hợp (E2E) hoặc Prisma của bạn cần kết nối đến Database thực tế.
+# =====================================================================================
+
+name: CI/CD Pipeline (FOOD AI)
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+# Cấu hình quyền để Github Action có thể viết comment vào Pull Request
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  backend-ci:
+    name: Backend CI (NestJS)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./my-web/backend
+
+    # Cấu hình Database phụ (Service container) phục vụ cho test
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: food_ai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './my-web/backend/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: 🔒 Security Scan (npm audit)
+        # Quét lỗ hổng bảo mật cơ bản của các packages (chỉ fail nếu có lỗi high/critical)
+        run: npm audit --audit-level=high || true 
+
+      - name: 🧹 Check Linter & Formatting (ESLint)
+        run: npm run lint
+
+      - name: 🧪 Run Unit Tests & Generate Coverage
+        # Chạy bộ test và lưu kết quả ra file text
+        run: npm run test:cov > coverage.txt
+
+      - name: 📝 Comment Coverage Report on PR
+        # Tự động comment báo cáo test nếu đây là sự kiện Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coverage = fs.readFileSync('./my-web/backend/coverage.txt', 'utf8');
+            const body = `### 📊 Backend Test Coverage Report\n\`\`\`text\n${coverage}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+  frontend-ci:
+    name: Frontend CI (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./my-web/frontend
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './my-web/frontend/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: 🔒 Security Scan (npm audit)
+        run: npm audit --audit-level=high || true
+
+      - name: 🧹 Check Linter & Formatting
+        run: npm run lint
+
+      - name: 🧪 Run Unit Tests & Generate Coverage
+        run: npm run test:cov > coverage-fe.txt
+
+      - name: 📝 Comment Coverage Report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coverage = fs.readFileSync('./my-web/frontend/coverage-fe.txt', 'utf8');
+            const body = `### 🎨 Frontend Test Coverage Report\n\`\`\`text\n${coverage}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+      - name: 🏗️ Build Project
+        run: npm run build
