@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { LABELS } from "@/constants/labels";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,10 +15,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { LABELS } from "@/constants/labels";
-
 export const metadata: Metadata = {
-  title: LABELS.COMMON.APP_TITLE
+  title: LABELS.COMMON.APP_TITLE,
+  icons: {
+    icon: '/logo.png'
+  }
 }
 
 export default function RootLayout({

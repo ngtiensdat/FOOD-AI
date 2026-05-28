@@ -23,12 +23,12 @@ describe('Frontend Helpers', () => {
 
   describe('getValidImageUrl', () => {
     it('should return placeholder for empty url', () => {
-      expect(getValidImageUrl(null)).toBe('/placeholder-food.svg');
-      expect(getValidImageUrl('')).toBe('/placeholder-food.svg');
+      expect(getValidImageUrl(null)).toBe('/placeholder-food.png');
+      expect(getValidImageUrl('')).toBe('/placeholder-food.png');
     });
 
     it('should return placeholder for invalid url format', () => {
-      expect(getValidImageUrl('invalid-url')).toBe('/placeholder-food.svg');
+      expect(getValidImageUrl('invalid-url')).toBe('/placeholder-food.png');
     });
 
     it('should return valid urls', () => {

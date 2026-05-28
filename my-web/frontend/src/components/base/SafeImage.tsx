@@ -36,7 +36,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   height,
   className,
   style,
-  fallbackSrc = "/placeholder-food.svg",
+  fallbackSrc = "/placeholder-food.png",
   priority,
   onError,
   ...props

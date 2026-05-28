@@ -51,7 +51,7 @@ export const AiResponseBox = ({
         <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
         <div className="flex items-center gap-3 mb-4">
           <div className="relative w-10 h-10">
-            <SafeImage src="/logo.svg" alt="AI" fill className="object-contain rounded-xl" />
+            <SafeImage src="/logo.png" alt="AI" fill className="object-contain rounded-xl" />
           </div>
           <span className="font-bold text-gray-800">{LABELS.COMMON.AI_ASSISTANT_NAME}</span>
         </div>

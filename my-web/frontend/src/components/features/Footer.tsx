@@ -11,7 +11,7 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
         <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="relative w-8 h-8">
-            <SafeImage src="/logo.svg" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain" />
+            <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain" />
           </div>
           <span className="text-xl font-bold gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
         </Link>

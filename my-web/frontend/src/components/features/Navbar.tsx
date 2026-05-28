@@ -7,7 +7,6 @@
 import { ThemeToggle } from '@/components/base/ThemeToggle';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,7 +60,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50 dark:border-slate-900">
       <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
         <div className="relative w-10 h-10">
-          <SafeImage src="/logo.svg" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain" />
+          <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain" />
         </div>
         <span className="text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
       </Link>

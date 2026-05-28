@@ -20,7 +20,7 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 import { LIMITS } from '@/constants/limits.constant';
-import Image from 'next/image';
+import { SafeImage } from '@/components/base/SafeImage';
 import Link from 'next/link';
 import { Avatar } from '@/components/base/Avatar';
 
@@ -197,7 +197,7 @@ export default function RestaurantDashboard() {
                 {myFoods.slice(0, LIMITS.RECENT_VIEWS_DASHBOARD).map((food, i) => (
                   <div key={i} className="flex items-center gap-6 p-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 rounded-2xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-800">
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                      <Image
+                      <SafeImage
                         src={getValidImageUrl(food.image)}
                         className="object-cover"
                         alt={food.name || LABELS.COMMON.UNKNOWN}
