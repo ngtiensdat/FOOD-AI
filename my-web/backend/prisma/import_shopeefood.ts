@@ -31,7 +31,7 @@ const KNOWN_LOCATIONS = {
 
 function parseLocation(address: string) {
     let city = 'Hà Nội'; // default
-    let district = null;
+    let district: string | null = null;
 
     if (!address) return { city, district };
 

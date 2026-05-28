@@ -172,6 +172,71 @@ export class FoodRepository {
       );
   }
 
+  async findNearbyRestaurants(lat: number, lng: number, radius: number) {
+    // 1. Tính toán Bounding Box để lọc thô
+    const latDelta = radius / 111.045;
+    const lngDelta = radius / (111.045 * Math.cos((lat * Math.PI) / 180));
+
+    const minLat = lat - latDelta;
+    const maxLat = lat + latDelta;
+    const minLng = lng - lngDelta;
+    const maxLng = lng + lngDelta;
+
+    // 2. Lọc thô bằng Bounding Box trước, sau đó tính khoảng cách bằng Haversine
+    const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
+      SELECT r.id, 
+        (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) AS distance
+      FROM restaurants r
+      WHERE r.is_active = true 
+        AND r.deleted_at IS NULL
+        AND r.latitude BETWEEN ${minLat} AND ${maxLat}
+        AND r.longitude BETWEEN ${minLng} AND ${maxLng}
+        AND (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) <= ${radius}
+      ORDER BY distance ASC
+      LIMIT ${LIMITS.DEFAULT_NEARBY_PAGINATION}
+    `;
+
+    if (nearbyResults.length === 0) return [];
+
+    const restaurants = await this.prisma.restaurant.findMany({
+      where: { id: { in: nearbyResults.map((r) => r.id) } },
+      include: {
+        profile: true,
+        foods: {
+          where: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+          },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+            tags: true,
+          },
+          take: 5,
+        },
+        _count: {
+          select: { followers: true },
+        },
+      },
+    });
+
+    return restaurants
+      .map((r) => {
+        const row = nearbyResults.find((res) => res.id === r.id);
+        const distanceValue = row ? row.distance : 0;
+        return {
+          ...r,
+          distance: distanceValue,
+        };
+      })
+      .sort(
+        (a: { distance: number }, b: { distance: number }) =>
+          a.distance - b.distance,
+      );
+  }
+
   async create(data: Prisma.FoodUncheckedCreateInput) {
     return this.prisma.food.create({ data });
   }

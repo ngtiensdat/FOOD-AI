@@ -19,6 +19,7 @@ import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
+import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 @Injectable()
 export class FoodService {
@@ -134,6 +135,16 @@ export class FoodService {
     }
 
     return foods;
+  }
+
+  async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
+    const { lat, lng, radius } = query;
+    if (lat === undefined || lng === undefined) return [];
+    return this.repository.findNearbyRestaurants(
+      lat,
+      lng,
+      radius || LIMITS.DEFAULT_NEARBY_RADIUS,
+    );
   }
 
   async createFood(user: User, dto: CreateFoodDto) {

@@ -494,7 +494,7 @@ export const LABELS = {
     }
   },
   HOME: {
-    NEARBY_TITLE: "Món ngon Quanh đây",
+    NEARBY_TITLE: "Quán ngon Quanh đây",
     NEARBY_SUBTITLE: "Khám phá các món ăn hấp dẫn ngay tại vị trí của bạn",
     TODAY_TITLE: "Món ngon Nổi bật hôm nay",
     TODAY_SUBTITLE: "Những lựa chọn tuyệt vời được tuyển chọn trong ngày",

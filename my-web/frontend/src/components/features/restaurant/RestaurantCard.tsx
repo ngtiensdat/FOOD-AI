@@ -16,8 +16,9 @@ interface RestaurantCardProps {
 }
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
-  const { id, name, city, district, profile, foods = [], _count } = restaurant;
+  const { id, name, city, district, profile, foods = [], _count, distance } = restaurant;
   const followersCount = _count?.followers ?? 0;
+
 
   // Thu thập các tag món ăn độc bản phục vụ kết xuất danh mục tiêu biểu
   const typicalTags = Array.from(
@@ -93,10 +94,14 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
           {/* Địa điểm & Thẻ món ăn */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 truncate max-w-[50%]">
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 truncate max-w-[60%]">
               <MapPin size={12} className="text-primary shrink-0" />
-              <span className="truncate">{district || city || LABELS.RESTAURANT.CARD_LABELS.DEFAULT_LOCATION}</span>
+              <span className="truncate">
+                {distance !== undefined && distance !== null ? `${distance.toFixed(1)} km • ` : ''}
+                {district || city || LABELS.RESTAURANT.CARD_LABELS.DEFAULT_LOCATION}
+              </span>
             </div>
+
 
             {/* Tags tiêu biểu */}
             <div className="flex gap-1.5 overflow-hidden">

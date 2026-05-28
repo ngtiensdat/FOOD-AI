@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import * as PrismaClient from '@prisma/client';
+import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 @Controller('restaurants')
 export class RestaurantPublicController {
@@ -40,6 +41,12 @@ export class RestaurantPublicController {
       page: page ? parseInt(page, 10) : 1,
       pageSize: pageSize ? parseInt(pageSize, 10) : 10,
     });
+  }
+
+  @Get('nearby')
+  @UseGuards(JwtAuthOptionalGuard)
+  getNearbyRestaurants(@Query() query: RestaurantNearbyQueryDto) {
+    return this.foodService.getNearbyRestaurants(query);
   }
 
   @Get(':id/public')

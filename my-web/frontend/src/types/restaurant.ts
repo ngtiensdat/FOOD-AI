@@ -25,7 +25,9 @@ export interface Restaurant {
     followers: number;
   };
   isActive?: boolean;
+  distance?: number;
 }
+
 
 export interface UpdateRestaurantInput {
   name?: string;
