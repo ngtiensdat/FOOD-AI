@@ -57,7 +57,7 @@ export const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   const router = useRouter();
   const restaurant = profile?.restaurants?.[0];
-  const isOpen = restaurant 
+  const isOpen = restaurant
     ? isRestaurantCurrentlyOpen(restaurant.profile?.openingHours, restaurant.isActive)
     : true;
 
@@ -66,19 +66,19 @@ export const ProfileHeader = ({
       {/* Cover Photo */}
       <div className="h-64 md:h-96 relative group cursor-pointer overflow-hidden">
         {profile?.profile?.coverImage ? (
-          <SafeImage 
-            src={getValidImageUrl(profile.profile.coverImage)} 
+          <SafeImage
+            src={getValidImageUrl(profile.profile.coverImage)}
             alt={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER}
-            fill 
+            fill
             sizes="(max-width: 768px) 100vw, 100vw"
-            className="object-cover" 
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full gradient-bg" />
         )}
         {me?.id === user?.id && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm z-10"
             onClick={onEdit}
           >
@@ -95,8 +95,8 @@ export const ProfileHeader = ({
             <div>
               <p className="font-bold text-sm">{LABELS.RESTAURANT.CLOSED_WARNING_TITLE}</p>
               <p className="text-xs opacity-90 leading-relaxed mt-0.5">
-                {restaurant.isActive === false 
-                  ? LABELS.RESTAURANT.CLOSED_BY_MERCHANT 
+                {restaurant.isActive === false
+                  ? LABELS.RESTAURANT.CLOSED_BY_MERCHANT
                   : LABELS.RESTAURANT.CLOSED_OUTSIDE_HOURS(restaurant.profile?.openingHours || LABELS.RESTAURANT.NOT_SET)}
               </p>
             </div>
@@ -107,16 +107,16 @@ export const ProfileHeader = ({
           {/* Avatar Section */}
           <div className="relative group -mt-24 md:-mt-32">
             <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
-              <Avatar 
-                src={profile?.profile?.avatar} 
-                name={user?.name} 
+              <Avatar
+                src={profile?.profile?.avatar}
+                name={user?.name}
                 size={192}
                 className="w-full h-full"
                 fallbackClassName="text-5xl"
               />
             </div>
             {me?.id === user?.id && (
-              <button 
+              <button
                 onClick={onEdit}
                 className="absolute bottom-2 right-2 p-2 bg-gray-100 rounded-full border-2 border-white hover:bg-gray-200 transition-all z-10"
                 aria-label={LABELS.COMMON.EDIT}
@@ -151,14 +151,14 @@ export const ProfileHeader = ({
                     </div>
                   )}
                   <div className="flex items-center gap-3">
-                    <button 
+                    <button
                       onClick={onShowFollowers}
                       className="hover:text-primary transition-colors cursor-pointer"
                     >
                       {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
                     </button>
                     <span>•</span>
-                    <button 
+                    <button
                       onClick={onShowFollowing}
                       className="hover:text-primary transition-colors cursor-pointer"
                     >
@@ -175,7 +175,7 @@ export const ProfileHeader = ({
 
           <div className="flex flex-wrap justify-center gap-3">
             {me?.id !== user?.id && user?.role !== 'ADMIN' && me?.role !== 'ADMIN' ? (
-              <Button 
+              <Button
                 variant={user?.isFollowing ? 'secondary' : 'primary'}
                 onClick={onFollow}
                 loading={isFollowLoading}
@@ -185,8 +185,8 @@ export const ProfileHeader = ({
               </Button>
             ) : me?.id === user?.id ? (
               <>
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={() => {
                     if (me?.role === 'ADMIN') router.push('/admin');
                     else if (me?.role === 'RESTAURANT') router.push('/restaurant-admin');

@@ -145,7 +145,7 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
 
   const handleBranchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Ràng buộc tính hợp lệ của dữ liệu
     for (let i = 0; i < branches.length; i++) {
       const b = branches[i];
@@ -153,20 +153,20 @@ export function useOnboardingActions({ user, onComplete }: UseOnboardingActionsP
         toast.error(LABELS.ONBOARDING.REQUIRED_BRANCH_FIELDS(i + 1));
         return;
       }
-      
+
       const lat = Number(b.latitude);
       const lng = Number(b.longitude);
-      
+
       if (isNaN(lat) || isNaN(lng)) {
         toast.error(LABELS.ONBOARDING.INVALID_COORDINATES(i + 1));
         return;
       }
-      
+
       if (lat < -90 || lat > 90) {
         toast.error(LABELS.ONBOARDING.INVALID_LATITUDE(i + 1));
         return;
       }
-      
+
       if (lng < -180 || lng > 180) {
         toast.error(LABELS.ONBOARDING.INVALID_LONGITUDE(i + 1));
         return;

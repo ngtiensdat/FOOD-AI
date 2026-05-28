@@ -13,18 +13,17 @@ import { Info } from 'lucide-react';
 
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
-import { User } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 
 // Modular Feature Components
-import { ProfileHeader } from '@/components/features/profile/ProfileHeader';
-import { ProfileIntro } from '@/components/features/profile/ProfileIntro';
-import { EditProfileModal } from '@/components/features/profile/EditProfileModal';
-import { FollowersModal } from '@/components/features/profile/FollowersModal';
-import { FollowingModal } from '@/components/features/profile/FollowingModal';
+import { ProfileHeader } from '@/components/features/ProfileHeader';
+import { ProfileIntro } from '@/components/features/ProfileIntro';
+import { EditProfileModal } from '@/components/features/EditProfileModal';
+import { FollowersModal } from '@/components/features/FollowersModal';
+import { FollowingModal } from '@/components/features/FollowingModal';
 
 function ProfileContent() {
   const searchParams = useSearchParams();
@@ -58,16 +57,16 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
-      <Navbar activeTab="profile" setActiveTab={() => {}} />
+      <Navbar activeTab="profile" setActiveTab={() => { }} />
 
       <div className="max-w-5xl mx-auto pt-24 pb-20 px-4 md:px-6">
-        <ProfileHeader 
-          user={user} 
-          profile={profile} 
-          me={me as User | null} 
-          isFollowLoading={isFollowLoading} 
-          onEdit={() => setIsEditing(true)} 
-          onFollow={actions.toggleFollow} 
+        <ProfileHeader
+          user={user}
+          profile={profile}
+          me={me as any}
+          isFollowLoading={isFollowLoading}
+          onEdit={() => setIsEditing(true)}
+          onFollow={actions.toggleFollow}
           onShowFollowers={actions.openFollowersModal}
           onShowFollowing={actions.openFollowingModal}
         />
@@ -82,9 +81,8 @@ function ProfileContent() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 md:px-8 py-4 font-bold text-small transition-all border-b-4 ${
-                activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:bg-gray-50'
-              }`}
+              className={`px-4 md:px-8 py-4 font-bold text-small transition-all border-b-4 ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:bg-gray-50'
+                }`}
             >
               {tab.label}
             </button>
@@ -93,7 +91,7 @@ function ProfileContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
           <div className="md:col-span-5 space-y-6">
-            <ProfileIntro profile={profile} user={user} me={me as User | null} onEdit={() => setIsEditing(true)} />
+            <ProfileIntro profile={profile} user={user} me={me} onEdit={() => setIsEditing(true)} />
           </div>
 
           <div className="md:col-span-7 space-y-6">
@@ -107,9 +105,9 @@ function ProfileContent() {
             </div>
 
             <div className="card-container !p-12 text-center border-2 border-dashed !border-gray-100">
-               <Info size={48} className="mx-auto text-gray-200 mb-4" />
-               <h3 className="text-lg font-bold text-gray-400">{LABELS.SETTINGS.PROFILE.POSTS.EMPTY_TITLE}</h3>
-               <p className="text-gray-400 text-small">{LABELS.SETTINGS.PROFILE.POSTS.EMPTY_DESC}</p>
+              <Info size={48} className="mx-auto text-gray-200 mb-4" />
+              <h3 className="text-lg font-bold text-gray-400">{LABELS.SETTINGS.PROFILE.POSTS.EMPTY_TITLE}</h3>
+              <p className="text-gray-400 text-small">{LABELS.SETTINGS.PROFILE.POSTS.EMPTY_DESC}</p>
             </div>
           </div>
         </div>
@@ -117,14 +115,14 @@ function ProfileContent() {
 
       <AnimatePresence>
         {isEditing && (
-          <EditProfileModal 
+          <EditProfileModal
             key="edit-profile-modal"
-            isOpen={isEditing} 
-            onClose={() => setIsEditing(false)} 
-            editData={editData} 
-            setEditData={setEditData} 
-            loading={loading} 
-            onSave={actions.updateProfile} 
+            isOpen={isEditing}
+            onClose={() => setIsEditing(false)}
+            editData={editData}
+            setEditData={setEditData}
+            loading={loading}
+            onSave={actions.updateProfile}
           />
         )}
       </AnimatePresence>
@@ -138,7 +136,7 @@ function ProfileContent() {
             loading={modals.loadingFollowers}
             error={modals.errorFollowers}
             followersList={modals.followersList}
-            onItemClick={(followerUser: any) => {
+            onItemClick={(followerUser) => {
               modals.setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
@@ -158,11 +156,11 @@ function ProfileContent() {
             error={modals.errorFollowing}
             users={modals.followingList.users}
             restaurants={modals.followingList.restaurants}
-            onUserClick={(followingUser: any) => {
+            onUserClick={(followingUser) => {
               modals.setShowFollowingModal(false);
               router.push(`/profile?id=${followingUser.id}`);
             }}
-            onRestaurantClick={(restaurantItem: any) => {
+            onRestaurantClick={(restaurantItem) => {
               modals.setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}

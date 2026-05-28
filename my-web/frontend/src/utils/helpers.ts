@@ -22,15 +22,15 @@ export const cleanImageUrl = (url?: string | null): string => {
  */
 export const getValidImageUrl = (url?: string | null): string => {
   if (!url) return '/placeholder-food.svg';
-  
+
   const cleanedUrl = cleanImageUrl(url);
-  
-  const isValid = 
-    cleanedUrl.startsWith('http://') || 
-    cleanedUrl.startsWith('https://') || 
-    cleanedUrl.startsWith('/') || 
+
+  const isValid =
+    cleanedUrl.startsWith('http://') ||
+    cleanedUrl.startsWith('https://') ||
+    cleanedUrl.startsWith('/') ||
     cleanedUrl.startsWith('data:');
-    
+
   return isValid ? cleanedUrl : '/placeholder-food.svg';
 };
 
@@ -88,7 +88,7 @@ export const isRestaurantCurrentlyOpen = (openingHours?: string, isActive?: bool
  */
 export const isValidOpeningHours = (openingHours?: string | null): boolean => {
   if (!openingHours || !openingHours.trim()) return true;
-  
+
   const cleanHours = openingHours.replace(/\s+/g, '');
   const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
   if (!match) return false;
