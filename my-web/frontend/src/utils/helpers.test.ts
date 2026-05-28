@@ -19,6 +19,10 @@ describe('Frontend Helpers', () => {
       const url = 'https://images.unsplash.com/photo-123';
       expect(cleanImageUrl(url)).toBe(url);
     });
+
+    it('should not modify URLs containing @ if they are not Shopee CDNs', () => {
+      expect(cleanImageUrl('https://example.com/user@name/avatar.jpg')).toBe('https://example.com/user@name/avatar.jpg');
+    });
   });
 
   describe('getValidImageUrl', () => {
@@ -29,6 +33,11 @@ describe('Frontend Helpers', () => {
 
     it('should return placeholder for invalid url format', () => {
       expect(getValidImageUrl('invalid-url')).toBe('/placeholder-food.png');
+    });
+
+    it('should return placeholder for stringified "null" or "undefined" values', () => {
+      expect(getValidImageUrl("null")).toBe('/placeholder-food.png');
+      expect(getValidImageUrl("undefined")).toBe('/placeholder-food.png');
     });
 
     it('should return valid urls', () => {
@@ -64,6 +73,15 @@ describe('Frontend Helpers', () => {
         city: ''
       });
     });
+
+    it('should trim messy whitespaces and parse correctly', () => {
+      const result = parseAddressString(" 123 Street  ,   District 1  , Ho Chi Minh   ");
+      expect(result).toEqual({
+        street: '123 Street',
+        district: 'District 1',
+        city: 'Ho Chi Minh'
+      });
+    });
   });
 
   describe('isValidOpeningHours', () => {
@@ -77,6 +95,50 @@ describe('Frontend Helpers', () => {
       expect(isValidOpeningHours('25:00 - 22:00')).toBe(false);
       expect(isValidOpeningHours('08:60 - 22:00')).toBe(false);
       expect(isValidOpeningHours('invalid')).toBe(false);
+    });
+  });
+
+  describe('isRestaurantCurrentlyOpen', () => {
+    it('should return false if restaurant is manually deactivated', () => {
+      expect(isRestaurantCurrentlyOpen('08:00-22:00', false)).toBe(false);
+    });
+
+    it('should return true if no opening hours are specified (default open)', () => {
+      expect(isRestaurantCurrentlyOpen(undefined, true)).toBe(true);
+    });
+
+    it('should check if current time is within standard operating hours', () => {
+      const mockDate = new Date();
+      mockDate.setHours(12, 0, 0);
+      const originalDate = Date;
+      global.Date = class extends originalDate {
+        constructor() {
+          super();
+          return mockDate;
+        }
+      } as unknown as typeof Date;
+
+      expect(isRestaurantCurrentlyOpen('08:00-22:00', true)).toBe(true);
+      expect(isRestaurantCurrentlyOpen('14:00-22:00', true)).toBe(false);
+
+      global.Date = originalDate;
+    });
+
+    it('should check operating hours that span over midnight', () => {
+      const mockDate = new Date();
+      mockDate.setHours(1, 0, 0);
+      const originalDate = Date;
+      global.Date = class extends originalDate {
+        constructor() {
+          super();
+          return mockDate;
+        }
+      } as unknown as typeof Date;
+
+      expect(isRestaurantCurrentlyOpen('22:00-06:00', true)).toBe(true);
+      expect(isRestaurantCurrentlyOpen('08:00-22:00', true)).toBe(false);
+
+      global.Date = originalDate;
     });
   });
 });
