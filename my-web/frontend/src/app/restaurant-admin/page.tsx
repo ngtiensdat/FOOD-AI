@@ -25,11 +25,11 @@ import Link from 'next/link';
 import { Avatar } from '@/components/base/Avatar';
 
 // Feature Components
-import { MenuTable } from '@/components/features/MenuTable';
-import { FoodFormModal } from '@/components/features/FoodFormModal';
+import { MenuTable } from '@/components/features/restaurant/MenuTable';
+import { FoodFormModal } from '@/components/features/food/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
-import { CategoryManager } from '@/components/features/CategoryManager';
-import { UploadExcelModal } from '@/components/features/UploadExcelModal';
+import { CategoryManager } from '@/components/features/restaurant/CategoryManager';
+import { UploadExcelModal } from '@/components/features/admin/UploadExcelModal';
 
 export default function RestaurantDashboard() {
   const { user, logout } = useAuth();
