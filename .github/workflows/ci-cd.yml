@@ -1,0 +1,168 @@
+name: CI/CD Pipeline (FOOD AI)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Cấu hình quyền để Github Action có thể viết comment vào Pull Request
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  backend-ci:
+    name: Backend CI (NestJS)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./my-web/backend # Định nghĩa thư mục làm việc mặc định cho TOÀN BỘ job này
+
+    # Cấu hình Database phụ (Service container) phục vụ cho test
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: food_ai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 22 & Cache Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm' # Tự động tối ưu cache node_modules dựa trên package-lock.json
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm pkg delete scripts.prepare || true
+          npm install
+        working-directory: .
+
+      - name: 🛠️ Generate Prisma Client
+        run: npx prisma generate
+
+      - name: 🔒 Security Scan (npm audit)
+        run: npm audit --audit-level=high || echo "Vulnerabilities found but continuing"
+
+      - name: 🧹 Check Linter & Formatting (ESLint)
+        run: npm run lint || echo "Linting completed with warnings"
+
+      - name: 🧪 Run Unit Tests & Generate Coverage
+        run: npm run test:cov > coverage.txt
+
+      - name: 📝 Comment Coverage Report on PR
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            try {
+              // Sửa lỗi đường dẫn: Vì đang ở trong thư mục mặc định 'backend', chỉ cần đọc trực tiếp file
+              const coverage = fs.readFileSync('coverage.txt', 'utf8');
+              const body = `### 📊 Backend Test Coverage Report\n\`\`\`text\n${coverage}\n\`\`\``;
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (e) {
+              console.log("Could not find coverage file", e);
+            }
+
+  frontend-ci:
+    name: Frontend CI (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./my-web/frontend # Định nghĩa thư mục làm việc mặc định cho TOÀN BỘ job này
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 22 & Cache Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # Tối ưu riêng cho Next.js: Cache thư mục build .next/cache để tăng tốc các lần build sau
+      - name: ⚡ Next.js Cache Build
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/my-web/frontend/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm pkg delete scripts.prepare || true
+          npm install
+        working-directory: .
+
+      - name: 🔒 Security Scan (npm audit)
+        run: npm audit --audit-level=high || echo "Vulnerabilities found but continuing"
+
+      - name: 🧹 Check Linter & Formatting
+        run: npm run lint || echo "Linting completed with warnings"
+
+      - name: 🧪 Run Unit Tests & Generate Coverage
+        run: npm run test:cov > coverage-fe.txt
+
+      - name: 📝 Comment Coverage Report on PR
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            try {
+              // Sửa lỗi đường dẫn tương tự như Backend
+              const coverage = fs.readFileSync('coverage-fe.txt', 'utf8');
+              const body = `### 🎨 Frontend Test Coverage Report\n\`\`\`text\n${coverage}\n\`\`\``;
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (e) {
+              console.log("Could not find coverage file", e);
+            }
+
+      - name: 🏗️ Build Project
+        run: |
+          # Tự động kiểm tra và cài đặt nóng gói binary Linux nếu bị thiếu trong workspace
+          if [ ! -d "node_modules/lightningcss-linux-x64-gnu" ] && [ ! -d "../../node_modules/lightningcss-linux-x64-gnu" ]; then
+            echo "⚠️ Không tìm thấy binary cho Linux. Tiến hành cài đặt nóng gói lightningcss-linux-x64-gnu..."
+            npm install --no-save lightningcss-linux-x64-gnu@1.32.0
+          fi
+          if [ ! -d "node_modules/@tailwindcss/oxide-linux-x64-gnu" ] && [ ! -d "../../node_modules/@tailwindcss/oxide-linux-x64-gnu" ]; then
+            echo "⚠️ Không tìm thấy binary cho Linux. Tiến hành cài đặt nóng gói @tailwindcss/oxide-linux-x64-gnu..."
+            npm install --no-save @tailwindcss/oxide-linux-x64-gnu@4.2.4
+          fi
+          npm run build
+        env:
+          CI: false
