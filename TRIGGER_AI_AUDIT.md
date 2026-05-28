@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **CHỈ THỊ CHO TRỢ LÝ AI (AGENT INSTRUCTION):**
-> Khi người dùng gửi hoặc tham chiếu tệp tin này, bạn (AI) phải dừng tất cả các công việc khác lại và tiến hành một đợt kiểm toán (Audit) toàn diện dự án FOOD AI theo đúng các bước dưới đây. Không được bỏ qua bất kỳ bước nào.
+> Khi người dùng gửi hoặc tham chiếu tệp tin này, bạn (AI) phải dừng tất cả các công việc khác lại và tiến hành một đợt kiểm toán (Audit) toàn diện {toàn bộ dự án hoặc 1 phần nào đó được yêu cầu} theo đúng các bước dưới đây. Không được bỏ qua bất kỳ bước nào.
 
 ---
 

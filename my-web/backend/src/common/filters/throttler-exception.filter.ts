@@ -1,3 +1,8 @@
+// Mục đích: Bắt các lỗi do hệ thống giới hạn tần suất (Rate Limiting/Throttler) ném ra.
+// Ý nghĩa: Format lại lỗi 429 Too Many Requests theo cấu trúc JSON chuẩn của toàn dự án thay vì text/html mặc định.
+// Chức năng đặc biệt: Trích xuất thông báo lỗi động từ exception để thông báo chi tiết cho người dùng.
+// Kiến thức/Design Pattern: Exception Filter Pattern, OCP (Mở rộng khả năng xử lý lỗi mà không sửa core).
+// Biến/hàm đặc biệt: @Catch(ThrottlerException) để chỉ bắt đúng loại lỗi này.
 import {
   ExceptionFilter,
   Catch,

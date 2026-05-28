@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp các thao tác tương tác trực tiếp với cơ sở dữ liệu Postgres sử dụng PGVector để lưu trữ và tìm kiếm vector embedding cho món ăn và người dùng.
+// File quan hệ: Gọi PrismaService, sử dụng các kiểu từ @prisma/client, và được gọi bởi AiService.
+// Chức năng đặc biệt: Thực hiện tìm kiếm hỗn hợp (Hybrid Search) bằng cách kết hợp tương đồng cosine ngữ nghĩa vector (0.8), khoảng cách địa lý (0.1), và các điểm thưởng AdminRecommend, Featured (0.05 mỗi loại) trong một raw query SQL duy nhất để xếp hạng tối ưu.
+// Kiến thức/Design Pattern: Hybrid Vector Search, Repository Pattern, PostgreSQL raw query execution, pgvector operations (<=> operator).
+// Các biến, hàm đặc biệt: SearchResult (Interface); hybridSearch(), updateFoodEmbedding(), updateUserEmbedding().
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { FoodStatus } from '@prisma/client';

@@ -1,3 +1,9 @@
+// Mục đích: Khai báo module xác thực (AuthModule), cấu hình JwtModule bất đồng bộ và cung cấp các dịch vụ liên quan đến phân quyền và xác thực.
+// File quan hệ: Import PrismaModule, AiModule, UserModule, JwtModule; cung cấp AuthController, AuthService, JwtStrategy, RolesGuard, AuthorizationService; export AuthService, JwtStrategy, RolesGuard, AuthorizationService.
+// Chức năng đặc biệt: Đăng ký JwtModule không đồng bộ sử dụng cấu hình JWT Secret và Jwt Access Expiration từ appConfig.
+// Kiến thức/Design Pattern: NestJS Module Pattern, Dependency Injection, Configuration Pattern.
+// Các biến, hàm đặc biệt: Class AuthModule.
+
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';

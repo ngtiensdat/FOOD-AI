@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp các phương thức tương tác trực tiếp với cơ sở dữ liệu để thực hiện các nghiệp vụ của thực đơn món ăn (Food) qua Prisma.
+// File quan hệ: Gọi PrismaService, sử dụng các kiểu dữ liệu của @prisma/client và được gọi bởi FoodService, AdminService.
+// Chức năng đặc biệt: Thực hiện phân trang danh sách món ăn, ghi nhận lịch sử xem món ăn, lấy danh sách xem gần nhất, tìm kiếm món ăn lân cận dựa trên khoảng cách địa lý (Point distance raw query) sử dụng tọa độ.
+// Kiến thức/Design Pattern: Repository Pattern, Geographic Querying (point distance <->), Dependency Injection, Pagination.
+// Các biến, hàm đặc biệt: NearbyResult (Interface); findAll(), trackView(), findRecentViews(), findById(), findNearby(), findFeaturedToday(), findFeaturedWeekly(), findRecommended(), findMerchantFoods(), search(), create(), createBulk(), update(), delete(), toggleRecommend(), updateStatus().
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, FoodStatus } from '@prisma/client';

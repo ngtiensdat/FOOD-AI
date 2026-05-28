@@ -1,3 +1,8 @@
+// Mục đích: Chặn (Intercept) mọi response trước khi trả về cho client để định dạng lại chuẩn.
+// Ý nghĩa: Đảm bảo mọi API (dù trả về obj hay mảng) đều được bọc trong { success, data, meta }.
+// Chức năng đặc biệt: Tự động phân tích và tạo wrapper response nếu dữ liệu chưa có format.
+// Kiến thức/Design Pattern: Interceptor Pattern, Middleware/Pipe, RxJS (map). Tuân thủ Open/Closed Principle (SOLID).
+// Biến/hàm đặc biệt: Hàm intercept() dùng toán tử map của rxjs để mutate luồng dữ liệu trả về.
 import {
   Injectable,
   NestInterceptor,

@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa các API cửa ngõ cho đối tác nhà hàng (Restaurant/Merchant) quản lý nhóm danh mục món ăn (Category Group).
+// File quan hệ: Nhận request từ Client, gọi CategoryGroupService để xử lý nghiệp vụ, được bảo vệ nghiêm ngặt bởi JwtAuthGuard và RolesGuard(UserRole.RESTAURANT).
+// Chức năng đặc biệt: Tự động trích xuất restaurantId (ID của nhà hàng tương ứng của thương gia) từ thông tin người dùng được đăng nhập trong JWT.
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, Decorator Pattern (@GetUser, @Roles), Guard Pattern.
+// Các biến, hàm đặc biệt: create(), findAll(), update(), delete().
+
 import {
   Controller,
   Post,

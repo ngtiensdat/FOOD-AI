@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa các API cửa ngõ xác thực người dùng (đăng nhập, đăng ký, đăng xuất, đổi mật khẩu, onboard chi nhánh, và refresh token).
+// File quan hệ: Nhận request từ Client, gọi AuthService để xử lý nghiệp vụ, sử dụng Cookie và các Guards để bảo mật thông tin.
+// Chức năng đặc biệt: Tự động lưu Access Token và Refresh Token vào HTTP-Only Cookies có thuộc tính bảo mật phù hợp môi trường (production/development).
+// Kiến thức/Design Pattern: Single Responsibility (chỉ xử lý routing, cookies và validate đầu vào), Dependency Injection, Guard Pattern (JwtAuthGuard, CustomThrottlerGuard).
+// Các biến, hàm đặc biệt: register(), login(), logout(), changePassword(), completeOnboarding(), refresh(), checkAuth(), setCookies().
+
 import {
   Controller,
   Post,
@@ -16,6 +22,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
+import { MESSAGES } from '../../common/constants/messages.constant';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +37,7 @@ export class AuthController {
     this.setCookies(res, result.accessToken, result.refreshToken);
     return { user: result.user };
   }
+
   @UseGuards(CustomThrottlerGuard)
   @Post('login')
   async login(
@@ -77,7 +85,7 @@ export class AuthController {
   ) {
     const refreshToken = req.cookies['refreshToken'] as string | undefined;
     if (!refreshToken) {
-      throw new UnauthorizedException('No refresh token');
+      throw new UnauthorizedException(MESSAGES.AUTH.NO_REFRESH_TOKEN);
     }
 
     const result = await this.authService.refreshToken(refreshToken);

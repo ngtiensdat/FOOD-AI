@@ -1,11 +1,14 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+// Mục đích: Lọc và gom toàn bộ các lỗi (Exception) văng ra trong ứng dụng.
+// Ý nghĩa: Đảm bảo mọi lỗi đều được trả về client dưới cùng một format JSON thống nhất, tránh rò rỉ mã lỗi hệ thống.
+// Chức năng đặc biệt: Nhận diện lỗi từ HttpException hoặc Error thường để trích xuất thông báo lỗi phù hợp.
+// Kiến thức/Design Pattern: Exception Filter Pattern, Dependency Inversion (cung cấp lớp middleware xử lý).
+// Biến/hàm đặc biệt: Hàm catch() chuyển đổi context sang HTTP và ép kiểu Response/Request của Express.
+import { ExceptionFilter, Catch, ArgumentsHost } from '@nestjs/common';
+
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { Response, Request } from 'express';
+import { MESSAGES } from '../constants/messages.constant';
+import { ErrorCodes } from '../constants/error-codes.constant';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -19,8 +22,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string | string[] = 'Internal server error';
-    let errorCode = 'INTERNAL_SERVER_ERROR';
+    let message: string | string[] = MESSAGES.SYSTEM.INTERNAL_SERVER_ERROR;
+    let errorCode = ErrorCodes.INTERNAL_SERVER_ERROR as string;
 
     if (exception instanceof HttpException) {
       const responseBody = exception.getResponse();

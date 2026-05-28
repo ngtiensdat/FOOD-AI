@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa DTO cho việc đăng ký tài khoản người dùng mới (bao gồm khách hàng và đối tác thương gia).
+// File quan hệ: Được sử dụng làm kiểu dữ liệu đầu vào trong AuthController.register() và AuthService.register().
+// Chức năng đặc biệt: Xác thực định dạng email, độ dài mật khẩu (tối thiểu 8 ký tự), kiểm tra vai trò người dùng thuộc UserRole enum (Prisma) và tài liệu pháp lý tùy chọn cho nhà hàng.
+// Kiến thức/Design Pattern: DTO Pattern, Validation Pattern, Separation of Concerns.
+// Các biến, hàm đặc biệt: email, password, name, role, legalDocuments.
+
 import {
   IsEmail,
   IsString,

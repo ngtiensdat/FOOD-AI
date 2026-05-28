@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ quản lý thông tin hồ sơ và các quan hệ xã hội của người dùng (lấy hồ sơ, cập nhật thông tin cá nhân/sở thích, toggle follow).
+// File quan hệ: Gọi UserRepository, PrismaService và được gọi bởi UserController, AuthService.
+// Chức năng đặc biệt: Hỗ trợ quyền riêng tư (ẩn/hiện danh sách followers/following qua preferences), gộp dữ liệu sở thích (preferences JSON), và ngăn chặn tự theo dõi chính mình.
+// Kiến thức/Design Pattern: Service Layer Pattern, SOLID (Single Responsibility, Dependency Inversion), Privacy Controls, Ownership Verification.
+// Các biến, hàm đặc biệt: getProfile(), updateProfile(), getFollowers(), getFollowing(), toggleFollow().
+
 import {
   Injectable,
   NotFoundException,
@@ -70,7 +76,7 @@ export class UserService {
       await this.userRepository.update(userId, { name: data.name });
     }
 
-    return { message: 'Cập nhật thành công' };
+    return { message: MESSAGES.USER.UPDATE_SUCCESS };
   }
 
   async getFollowers(targetId: number, requesterId?: number) {
@@ -82,9 +88,7 @@ export class UserService {
         showFollowList?: boolean;
       } | null;
       if (preferences?.showFollowList === false && requesterId !== targetId) {
-        throw new ForbiddenException(
-          'Danh sách người theo dõi của người dùng này đã được ẩn.',
-        );
+        throw new ForbiddenException(MESSAGES.USER.FOLLOWERS_HIDDEN);
       }
     }
 
@@ -119,9 +123,7 @@ export class UserService {
         showFollowList?: boolean;
       } | null;
       if (preferences?.showFollowList === false && requesterId !== targetId) {
-        throw new ForbiddenException(
-          'Danh sách đang theo dõi của người dùng này đã được ẩn.',
-        );
+        throw new ForbiddenException(MESSAGES.USER.FOLLOWING_HIDDEN);
       }
     }
 
