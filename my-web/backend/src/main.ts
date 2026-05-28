@@ -32,12 +32,31 @@ async function bootstrap() {
 
   // Thêm logger đơn giản để kiểm tra request có đến được server không
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log(
+      `[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`,
+    );
     next();
   });
 
   app.enableCors({
-    origin: [config.frontendUrl, 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      const allowedOrigins = [config.frontendUrl, 'http://127.0.0.1:3000'];
+
+      // Cho phép localhost, 127.0.0.1 và các dải IP cục bộ trong môi trường dev
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
+        /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
+        /^http:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+(:\d+)?$/.test(origin)
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
     credentials: true,
   });
 

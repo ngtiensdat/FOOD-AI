@@ -120,9 +120,10 @@ export class FoodRepository {
     const maxLng = lng + lngDelta;
 
     // 2. Lọc thô bằng Bounding Box trước, sau đó mới tính khoảng cách chính xác bằng Haversine
+    // Sử dụng LEAST/GREATEST để giới hạn đầu vào của acos trong khoảng [-1, 1], tránh lỗi chính xác số thực làm đổ vỡ truy vấn
     const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
       SELECT f.id, 
-        (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) AS distance
+        (6371 * acos(LEAST(GREATEST(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)), -1.0), 1.0))) AS distance
       FROM foods f
       JOIN restaurants r ON f.restaurant_id = r.id
       WHERE f.is_active = true 
@@ -132,7 +133,7 @@ export class FoodRepository {
         AND f.lng IS NOT NULL
         AND f.lat BETWEEN ${minLat} AND ${maxLat}
         AND f.lng BETWEEN ${minLng} AND ${maxLng}
-        AND (6371 * acos(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)))) <= ${radius}
+        AND (6371 * acos(LEAST(GREATEST(cos(radians(${lat})) * cos(radians(f.lat)) * cos(radians(f.lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(f.lat)), -1.0), 1.0))) <= ${radius}
       ORDER BY distance ASC
       LIMIT ${LIMITS.DEFAULT_NEARBY_PAGINATION}
     `;
@@ -183,15 +184,16 @@ export class FoodRepository {
     const maxLng = lng + lngDelta;
 
     // 2. Lọc thô bằng Bounding Box trước, sau đó tính khoảng cách bằng Haversine
+    // Sử dụng LEAST/GREATEST để giới hạn đầu vào của acos trong khoảng [-1, 1], tránh lỗi chính xác số thực làm đổ vỡ truy vấn
     const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
       SELECT r.id, 
-        (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) AS distance
+        (6371 * acos(LEAST(GREATEST(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)), -1.0), 1.0))) AS distance
       FROM restaurants r
       WHERE r.is_active = true 
         AND r.deleted_at IS NULL
         AND r.latitude BETWEEN ${minLat} AND ${maxLat}
         AND r.longitude BETWEEN ${minLng} AND ${maxLng}
-        AND (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) <= ${radius}
+        AND (6371 * acos(LEAST(GREATEST(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)), -1.0), 1.0))) <= ${radius}
       ORDER BY distance ASC
       LIMIT ${LIMITS.DEFAULT_NEARBY_PAGINATION}
     `;

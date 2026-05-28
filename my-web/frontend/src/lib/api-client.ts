@@ -47,6 +47,7 @@ class ApiClient {
       }
     }
 
+    console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
     let response = await fetch(url.toString(), config);
 
     // Xử lý Refresh Token tự động nếu nhận lỗi 401
