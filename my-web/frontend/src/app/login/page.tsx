@@ -41,7 +41,7 @@ export default function LoginPage() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
             <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
-              <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain p-2" />
+              <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="48px" className="object-contain p-2" />
             </div>
             <span className="text-3xl font-bold gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
           </Link>
