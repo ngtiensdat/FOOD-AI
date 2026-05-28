@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, FoodStatus } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
+import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
 
 export interface NearbyResult {
   id: number;
@@ -171,6 +172,71 @@ export class FoodRepository {
       );
   }
 
+  async findNearbyRestaurants(lat: number, lng: number, radius: number) {
+    // 1. Tính toán Bounding Box để lọc thô
+    const latDelta = radius / 111.045;
+    const lngDelta = radius / (111.045 * Math.cos((lat * Math.PI) / 180));
+
+    const minLat = lat - latDelta;
+    const maxLat = lat + latDelta;
+    const minLng = lng - lngDelta;
+    const maxLng = lng + lngDelta;
+
+    // 2. Lọc thô bằng Bounding Box trước, sau đó tính khoảng cách bằng Haversine
+    const nearbyResults = await this.prisma.$queryRaw<NearbyResult[]>`
+      SELECT r.id, 
+        (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) AS distance
+      FROM restaurants r
+      WHERE r.is_active = true 
+        AND r.deleted_at IS NULL
+        AND r.latitude BETWEEN ${minLat} AND ${maxLat}
+        AND r.longitude BETWEEN ${minLng} AND ${maxLng}
+        AND (6371 * acos(cos(radians(${lat})) * cos(radians(r.latitude)) * cos(radians(r.longitude) - radians(${lng})) + sin(radians(${lat})) * sin(radians(r.latitude)))) <= ${radius}
+      ORDER BY distance ASC
+      LIMIT ${LIMITS.DEFAULT_NEARBY_PAGINATION}
+    `;
+
+    if (nearbyResults.length === 0) return [];
+
+    const restaurants = await this.prisma.restaurant.findMany({
+      where: { id: { in: nearbyResults.map((r) => r.id) } },
+      include: {
+        profile: true,
+        foods: {
+          where: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+          },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+            tags: true,
+          },
+          take: 5,
+        },
+        _count: {
+          select: { followers: true },
+        },
+      },
+    });
+
+    return restaurants
+      .map((r) => {
+        const row = nearbyResults.find((res) => res.id === r.id);
+        const distanceValue = row ? row.distance : 0;
+        return {
+          ...r,
+          distance: distanceValue,
+        };
+      })
+      .sort(
+        (a: { distance: number }, b: { distance: number }) =>
+          a.distance - b.distance,
+      );
+  }
+
   async create(data: Prisma.FoodUncheckedCreateInput) {
     return this.prisma.food.create({ data });
   }
@@ -211,9 +277,7 @@ export class FoodRepository {
     return this.prisma.restaurant.findFirst({
       where: { ownerId },
       include: {
-        profile: {
-          select: { openingHours: true, contactPhone: true },
-        },
+        profile: true,
       },
     });
   }
@@ -349,14 +413,166 @@ export class FoodRepository {
     });
   }
 
-  async updateRestaurantProfile(
+  async updateRestaurantProfileTransaction(
     restaurantId: number,
-    data: { openingHours?: string; contactPhone?: string },
+    ownerId: number,
+    dto: UpdateRestaurantProfileDto,
   ) {
-    return this.prisma.restaurantProfile.upsert({
-      where: { restaurantId },
-      create: { restaurantId, ...data },
-      update: data,
+    const {
+      name,
+      address,
+      city,
+      district,
+      description,
+      mapUrl,
+      logo,
+      coverImage,
+      bio,
+      contactEmail,
+      contactPhone,
+      openingHours,
+      syncWithPersonalAvatar,
+      syncWithPersonalCover,
+    } = dto;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Cập nhật bảng Restaurant
+      await tx.restaurant.update({
+        where: { id: restaurantId },
+        data: {
+          name,
+          address,
+          city,
+          district,
+          description,
+          mapUrl,
+        },
+      });
+
+      // 2. Cập nhật bảng RestaurantProfile
+      const profileData = {
+        logo,
+        coverImage,
+        bio,
+        contactEmail,
+        contactPhone,
+        openingHours,
+      };
+
+      await tx.restaurantProfile.upsert({
+        where: { restaurantId },
+        create: {
+          restaurantId,
+          ...profileData,
+        },
+        update: profileData,
+      });
+
+      // 3. Đồng bộ hai chiều sang UserProfile nếu có cờ sync
+      if (syncWithPersonalAvatar && logo) {
+        await tx.userProfile.update({
+          where: { userId: ownerId },
+          data: { avatar: logo },
+        });
+      }
+
+      if (syncWithPersonalCover && coverImage) {
+        await tx.userProfile.update({
+          where: { userId: ownerId },
+          data: { coverImage },
+        });
+      }
+
+      // Trả về dữ liệu cập nhật hoàn chỉnh
+      return tx.restaurant.findUnique({
+        where: { id: restaurantId },
+        include: { profile: true },
+      });
     });
+  }
+
+  async findManyPublicRestaurants(filters: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
+    const { search, city, district, tag, page = 1, pageSize = 10 } = filters;
+
+    const where: Prisma.RestaurantWhereInput = {
+      isActive: true,
+    };
+
+    const andFilters: Prisma.RestaurantWhereInput[] = [];
+
+    if (search) {
+      andFilters.push({
+        name: { contains: search, mode: 'insensitive' },
+      });
+    }
+
+    if (city) {
+      andFilters.push({
+        city: { equals: city, mode: 'insensitive' },
+      });
+    }
+
+    if (district) {
+      andFilters.push({
+        district: { equals: district, mode: 'insensitive' },
+      });
+    }
+
+    if (tag) {
+      andFilters.push({
+        foods: {
+          some: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+            tags: {
+              has: tag,
+            },
+          },
+        },
+      });
+    }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.restaurant.findMany({
+        where,
+        include: {
+          profile: true,
+          foods: {
+            where: {
+              isActive: true,
+              status: FoodStatus.APPROVED,
+            },
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              image: true,
+              tags: true,
+            },
+            take: 5,
+          },
+          _count: {
+            select: { followers: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.restaurant.count({ where }),
+    ]);
+
+    return { restaurants: data, total };
   }
 }

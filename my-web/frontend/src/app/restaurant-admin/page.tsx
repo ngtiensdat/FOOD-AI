@@ -30,6 +30,7 @@ import { FoodFormModal } from '@/components/features/food/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { CategoryManager } from '@/components/features/restaurant/CategoryManager';
 import { UploadExcelModal } from '@/components/features/admin/UploadExcelModal';
+import { EditRestaurantModal } from '@/components/features/restaurant/EditRestaurantModal';
 
 export default function RestaurantDashboard() {
   const { user, logout } = useAuth();
@@ -56,6 +57,14 @@ export default function RestaurantDashboard() {
   } = useRestaurantActions(user);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [openingHoursText, setOpeningHoursText] = React.useState('');
+
+  React.useEffect(() => {
+    if (restaurant?.profile?.openingHours) {
+      setOpeningHoursText(restaurant.profile.openingHours);
+    }
+  }, [restaurant]);
 
   return (
     <div className="admin-layout">
@@ -237,6 +246,17 @@ export default function RestaurantDashboard() {
                       <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{restaurant.profile.contactPhone}</span>
                     </div>
                   )}
+                  <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4">
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="rounded-xl flex items-center justify-center gap-2 border-gray-200 text-gray-700 dark:text-slate-300 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900"
+                    >
+                      <Store size={16} />
+                      <span>{LABELS.COMMON.EDIT} cửa hàng</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -300,6 +320,14 @@ export default function RestaurantDashboard() {
               setIsUploadModalOpen(false);
               fetchMyFoods();
             }}
+          />
+        )}
+        {isEditModalOpen && (
+          <EditRestaurantModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            restaurant={restaurant}
+            onSave={actions.updateRestaurantProfile}
           />
         )}
       </AnimatePresence>

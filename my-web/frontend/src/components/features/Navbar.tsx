@@ -35,15 +35,13 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   }, []);
 
   const handleTabClick = (tabId: string) => {
-    if (pathname === '/') {
+    if (tabId === 'explore') {
+      router.push('/explore');
+    } else if (pathname === '/') {
       setActiveTab(tabId);
     } else {
       if (tabId === 'home') {
         router.push('/');
-      } else if (tabId === 'explore') {
-        if (pathname !== '/explore') {
-          router.push('/explore');
-        }
       } else {
         router.push(`/?tab=${tabId}`);
       }

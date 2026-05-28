@@ -67,6 +67,8 @@ model Restaurant {
   id             Int                @id @default(autoincrement())
   name           String
   address        String
+  city           String?            // <-- Tỉnh/Thành phố phục vụ lọc chính xác
+  district       String?            // <-- Quận/Huyện phục vụ lọc chính xác
   latitude       Float
   longitude      Float
   description    String?
@@ -90,6 +92,7 @@ model Restaurant {
 
 model RestaurantProfile {
   restaurantId Int        @id @map("restaurant_id")
+  logo         String?    // <-- Logo/Avatar của quán ăn
   coverImage   String?    @map("cover_image")
   bio          String?
   openingHours String?    @map("opening_hours")
@@ -117,6 +120,8 @@ model Food {
   lat                Float?
   lng                Float?
   address            String?
+  city               String?                // <-- Tỉnh/Thành phố phục vụ lọc chính xác
+  district           String?                // <-- Quận/Huyện phục vụ lọc chính xác
   mapUrl             String?                @map("map_url")
   restaurantId       Int?                   @map("restaurant_id")
   embedding          Unsupported("vector")?

@@ -18,6 +18,8 @@ import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
+import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
+import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 @Injectable()
 export class FoodService {
@@ -133,6 +135,16 @@ export class FoodService {
     }
 
     return foods;
+  }
+
+  async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
+    const { lat, lng, radius } = query;
+    if (lat === undefined || lng === undefined) return [];
+    return this.repository.findNearbyRestaurants(
+      lat,
+      lng,
+      radius || LIMITS.DEFAULT_NEARBY_RADIUS,
+    );
   }
 
   async createFood(user: User, dto: CreateFoodDto) {
@@ -403,19 +415,16 @@ export class FoodService {
     return this.repository.updateRestaurantStatus(restaurant.id, isActive);
   }
 
-  async updateMyRestaurantProfile(
-    user: User,
-    openingHours?: string,
-    contactPhone?: string,
-  ) {
+  async updateMyRestaurantProfile(user: User, dto: UpdateRestaurantProfileDto) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
       throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
-    return this.repository.updateRestaurantProfile(restaurant.id, {
-      openingHours,
-      contactPhone,
-    });
+    return this.repository.updateRestaurantProfileTransaction(
+      restaurant.id,
+      user.id,
+      dto,
+    );
   }
 
   async getPublicRestaurant(id: number, requestingUser?: User) {
@@ -549,5 +558,16 @@ export class FoodService {
       await this.repository.followRestaurant(userId, restaurantId);
       return { followed: true };
     }
+  }
+
+  async getPublicRestaurants(filters: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
+    return this.repository.findManyPublicRestaurants(filters);
   }
 }

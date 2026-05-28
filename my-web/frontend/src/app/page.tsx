@@ -18,7 +18,9 @@ import { Navbar } from '@/components/features/Navbar';
 import { Hero } from '@/components/features/Hero';
 import { CategorySection } from '@/components/features/food/CategorySection';
 import { FoodCard } from '@/components/features/food/FoodCard';
+import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
 import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
+
 import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { SettingsSection } from '@/components/features/SettingsSection';
 import { Footer } from '@/components/features/Footer';
@@ -53,18 +55,20 @@ export default function Home() {
     handleDeleteAccount
   } = useHomeActions();
 
-  const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
+  const { nearbyRestaurants, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
 
   // Danh sách các slider hiển thị trên trang chủ
   const sliderSections = [
     {
       id: 'nearby',
-      data: nearbyFoods,
+      data: nearbyRestaurants,
       title: LABELS.HOME.NEARBY_TITLE,
       subtitle: LABELS.HOME.NEARBY_SUBTITLE,
       icon: <MapPin className="text-blue-500" size={32} />,
-      bg: 'blue' as const
+      bg: 'blue' as const,
+      isRestaurant: true
     },
+
     {
       id: 'recommended',
       data: recommendedFoods,
@@ -134,12 +138,18 @@ export default function Home() {
                 icon={section.icon}
                 bg={section.bg}
               >
-                {section.data.map((food, i) => (
-                  <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
-                ))}
+                {section.isRestaurant
+                  ? section.data.map((restaurant, i) => (
+                      <RestaurantCard key={i} restaurant={restaurant} />
+                    ))
+                  : section.data.map((food, i) => (
+                      <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                    ))
+                }
               </Slider>
             )
           ))}
+
         </>
       ) : activeTab === 'settings' ? (
         <SettingsSection

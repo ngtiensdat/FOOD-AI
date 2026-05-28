@@ -118,12 +118,13 @@ function ProfileContent() {
         {isEditing && (
           <EditProfileModal
             key="edit-profile-modal"
-            isOpen={isEditing}
-            onClose={() => setIsEditing(false)}
-            editData={editData}
-            setEditData={setEditData}
-            loading={loading}
-            onSave={actions.updateProfile}
+            isOpen={isEditing} 
+            onClose={() => setIsEditing(false)} 
+            editData={editData} 
+            setEditData={setEditData} 
+            loading={loading} 
+            onSave={actions.updateProfile} 
+            role={me?.role}
           />
         )}
       </AnimatePresence>

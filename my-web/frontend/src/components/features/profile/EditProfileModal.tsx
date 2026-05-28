@@ -21,6 +21,7 @@ interface EditProfileModalProps {
   setEditData: (data: ProfileEditState) => void;
   loading: boolean;
   onSave: () => void;
+  role?: string;
 }
 
 export const EditProfileModal = ({
@@ -29,7 +30,8 @@ export const EditProfileModal = ({
   editData,
   setEditData,
   loading,
-  onSave
+  onSave,
+  role
 }: EditProfileModalProps) => {
   if (!isOpen) return null;
 
@@ -43,7 +45,11 @@ export const EditProfileModal = ({
       >
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <h3 className="text-xl font-bold">{LABELS.SETTINGS.PROFILE.EDIT_MODAL.TITLE}</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+          <button 
+            onClick={onClose} 
+            aria-label="Đóng cài đặt cá nhân"
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
             <X size={20} />
           </button>
         </div>
@@ -75,6 +81,34 @@ export const EditProfileModal = ({
             />
           </div>
 
+          {role === 'RESTAURANT' && (
+            <div className="bg-orange-50/50 dark:bg-slate-800/40 border border-orange-100 dark:border-slate-800 p-4 rounded-card space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                {LABELS.SETTINGS.PROFILE.EDIT_MODAL.MERCHANT_SYNC}
+              </h4>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <label className="flex items-center gap-2.5 cursor-pointer text-small font-semibold text-gray-700 dark:text-slate-300 hover:text-primary transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={editData.syncWithRestaurantLogo || false}
+                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantLogo: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <span>{LABELS.SETTINGS.PROFILE.EDIT_MODAL.SYNC_AVATAR}</span>
+                </label>
+                <label className="flex items-center gap-2.5 cursor-pointer text-small font-semibold text-gray-700 dark:text-slate-300 hover:text-primary transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={editData.syncWithRestaurantCover || false}
+                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantCover: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <span>{LABELS.SETTINGS.PROFILE.EDIT_MODAL.SYNC_COVER}</span>
+                </label>
+              </div>
+            </div>
+          )}
+
           <Input 
             label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.BIO} 
             isTextArea 
@@ -97,7 +131,7 @@ export const EditProfileModal = ({
                     district: ''
                   });
                 }}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+                className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
               >
                 {LOCATION_DATA.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -115,7 +149,7 @@ export const EditProfileModal = ({
               <select
                 value={editData.district || ''}
                 onChange={(e) => setEditData({ ...editData, district: e.target.value })}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+                className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
               >
                 <option value="" disabled hidden>
                   {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
