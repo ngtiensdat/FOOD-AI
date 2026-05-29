@@ -67,13 +67,20 @@ export const useRestaurantProfile = () => {
     if (!restaurantId) return;
     setLoadingFoods(true);
     try {
-      const res: any = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page);
-      if (res.data) {
-        setFoodsData(prev => append ? [...prev, ...res.data] : res.data);
-        setHasMoreFoods(res.meta.hasNextPage);
+      const pageSize = 8;
+      const res: any = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page, pageSize);
+      if (res && Array.isArray(res.items)) {
+        setFoodsData(prev => append ? [...prev, ...res.items] : res.items);
+        const hasNext = (res.page * res.pageSize) < res.total;
+        setHasMoreFoods(hasNext);
+      } else {
+        setFoodsData([]);
+        setHasMoreFoods(false);
       }
     } catch (err) {
       console.error('Lỗi khi tải món ăn:', err);
+      setFoodsData([]);
+      setHasMoreFoods(false);
     } finally {
       setLoadingFoods(false);
     }

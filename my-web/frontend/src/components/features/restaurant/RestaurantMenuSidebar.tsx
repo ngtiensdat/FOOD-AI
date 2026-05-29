@@ -26,6 +26,7 @@ interface RestaurantMenuSidebarProps {
   setSelectedCategoryId: (id: number | null) => void;
   expandedCategories: Record<number, boolean>;
   setExpandedCategories: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
+  activeCategoryId?: number | null;
 }
 
 export const RestaurantMenuSidebar = ({
@@ -34,6 +35,7 @@ export const RestaurantMenuSidebar = ({
   setSelectedCategoryId,
   expandedCategories,
   setExpandedCategories,
+  activeCategoryId,
 }: RestaurantMenuSidebarProps) => {
   const toggleCategory = (id: number) => {
     setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
@@ -44,14 +46,22 @@ export const RestaurantMenuSidebar = ({
       <div className={`space-y-1 ${level > 0 ? 'ml-4 border-l border-gray-100 dark:border-slate-800 pl-2 mt-1' : ''}`}>
         {cats.map(cat => {
           const hasChildren = cat.children && cat.children.length > 0;
-          const isSelected = selectedCategoryId === cat.id;
+          // Highlight based on selectedCategoryId if active, else fallback to activeCategoryId (Scrollspy)
+          const isSelected = selectedCategoryId !== null 
+            ? selectedCategoryId === cat.id 
+            : activeCategoryId === cat.id;
           const isExpanded = expandedCategories[cat.id];
           return (
             <div key={cat.id}>
               <div 
                 className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20 text-primary font-bold' : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300'}`}
                 onClick={() => {
-                  setSelectedCategoryId(cat.id);
+                  const section = document.getElementById(`category-sec-${cat.id}`);
+                  if (section && selectedCategoryId === null) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    setSelectedCategoryId(cat.id);
+                  }
                   if (hasChildren && !isExpanded) toggleCategory(cat.id);
                 }}
               >
@@ -63,6 +73,7 @@ export const RestaurantMenuSidebar = ({
                       toggleCategory(cat.id);
                     }}
                     className="p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md"
+                    aria-label={isExpanded ? 'Thu gọn danh mục' : 'Mở rộng danh mục'}
                   >
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </button>

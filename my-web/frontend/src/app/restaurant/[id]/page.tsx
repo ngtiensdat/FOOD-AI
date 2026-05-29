@@ -28,8 +28,9 @@ import { RestaurantFoodGrid } from '@/components/features/restaurant/RestaurantF
 export default function RestaurantProfilePage() {
   const router = useRouter();
 
-  // Local state for expanded categories
+  // Local state for expanded categories & Scrollspy active category
   const [expandedCategories, setExpandedCategories] = React.useState<Record<number, boolean>>({});
+  const [activeCategoryId, setActiveCategoryId] = React.useState<number | null>(null);
 
   const {
     restaurantData,
@@ -73,6 +74,41 @@ export default function RestaurantProfilePage() {
     isAuthenticated,
     user,
   } = useRestaurantProfile();
+
+  // Scrollspy logic
+  React.useEffect(() => {
+    if (activeTab !== 'menu' || selectedCategoryId !== null) {
+      setActiveCategoryId(null);
+      return;
+    }
+
+    const sections = document.querySelectorAll('.category-section');
+    if (sections.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-100px 0px -60% 0px',
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const catIdAttr = entry.target.getAttribute('data-category-id');
+          if (catIdAttr) {
+            const catId = catIdAttr === 'uncategorized' ? null : Number(catIdAttr);
+            setActiveCategoryId(catId);
+          }
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, [activeTab, selectedCategoryId, foodsData]);
 
   if (loading) {
     return (
@@ -153,6 +189,7 @@ export default function RestaurantProfilePage() {
               setSelectedCategoryId={setSelectedCategoryId}
               expandedCategories={expandedCategories}
               setExpandedCategories={setExpandedCategories}
+              activeCategoryId={activeCategoryId}
             />
             <RestaurantFoodGrid 
               foodsData={foodsData}
@@ -161,6 +198,8 @@ export default function RestaurantProfilePage() {
               restaurantData={restaurantData}
               handleLoadMoreFoods={handleLoadMoreFoods}
               setSelectedFood={setSelectedFood}
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
             />
           </div>
         ) : (

@@ -555,6 +555,8 @@ export const LABELS = {
     REVIEWS: 'Xem các bài đánh giá',
     ADD_FAVORITE: 'Thêm vào yêu thích',
     VIEW_DETAIL: 'Xem chi tiết',
+    NO_DESCRIPTION: 'Không có mô tả',
+    UNCATEGORIZED: 'Chưa phân loại',
     SYSTEM: 'Hệ thống',
   },
   UI_MESSAGES: {

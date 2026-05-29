@@ -480,7 +480,7 @@ export class FoodService {
     restaurantId: number,
     categoryId?: number,
     page: number = 1,
-    pageSize: number = 5,
+    pageSize: number = 8,
   ) {
     const where: Prisma.FoodWhereInput = {
       restaurantId,

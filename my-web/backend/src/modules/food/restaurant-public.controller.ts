@@ -64,11 +64,13 @@ export class RestaurantPublicController {
     @Param('id', ParseIntPipe) id: number,
     @Query('categoryId') categoryId?: string,
     @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
     return this.foodService.getPublicRestaurantFoods(
       id,
       categoryId ? parseInt(categoryId, 10) : undefined,
       page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : undefined,
     );
   }
 

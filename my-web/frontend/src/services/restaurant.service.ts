@@ -12,9 +12,9 @@ export const restaurantService = {
   },
 
 
-  async getPublicRestaurantFoods(restaurantId: number, categoryId?: number, page: number = 1) {
+  async getPublicRestaurantFoods(restaurantId: number, categoryId?: number, page: number = 1, pageSize: number = 8) {
     return apiClient.get(`/restaurants/${restaurantId}/foods`, {
-      params: { categoryId, page }
+      params: { categoryId, page, pageSize }
     });
   },
 
