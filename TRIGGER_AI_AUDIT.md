@@ -10,6 +10,7 @@
 - Sử dụng Magic Values & Vi phạm Design System
 - Vi phạm khả năng tiếp cận
 - Hardcode dữ liệu 
+- Thiếu hoặc sai lệch Context
 ---
 
 ## Quy Trình Rà Soát 5 Bước Của AI
