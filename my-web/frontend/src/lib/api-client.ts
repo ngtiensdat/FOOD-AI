@@ -49,6 +49,7 @@ class ApiClient {
 
     console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
     let response = await fetch(url.toString(), config);
+    console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
     // Xử lý Refresh Token tự động nếu nhận lỗi 401
     if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
@@ -84,6 +85,7 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+      console.error(`[ApiClient] Request failed for ${endpoint}:`, errorData);
       
       // Lấy message từ mảng errors của Backend
       let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -95,6 +97,7 @@ class ApiClient {
     }
 
     const result = await response.json();
+    console.log(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
     
     // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
     if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {

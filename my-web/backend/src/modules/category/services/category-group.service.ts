@@ -16,15 +16,17 @@ import {
 } from '../dto/category-group.dto';
 import { MESSAGES } from '../../../common/constants/messages.constant';
 import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class CategoryGroupService {
-  constructor(private readonly categoryGroupRepo: CategoryGroupRepository) {}
+  constructor(
+    private readonly categoryGroupRepo: CategoryGroupRepository,
+    private readonly prisma: PrismaService,
+  ) {}
 
   private async getRestaurantId(userId: number): Promise<number> {
-    const restaurant = await this.categoryGroupRepo[
-      'prisma'
-    ].restaurant.findFirst({
+    const restaurant = await this.prisma.restaurant.findFirst({
       where: { ownerId: userId },
       orderBy: { id: 'asc' },
     });
@@ -34,7 +36,6 @@ export class CategoryGroupService {
 
   async create(userId: number, dto: CreateCategoryGroupDto) {
     const restaurantId = await this.getRestaurantId(userId);
-    const prisma = this.categoryGroupRepo['prisma'];
     try {
       // Tạo Group trước
       const group = await this.categoryGroupRepo.create({
@@ -44,7 +45,7 @@ export class CategoryGroupService {
       });
 
       // Tự động tạo 1 Category gốc cùng tên để người dùng có thể gán món ăn ngay
-      await prisma.category.create({
+      await this.prisma.category.create({
         data: {
           name: dto.name,
           order: 0,

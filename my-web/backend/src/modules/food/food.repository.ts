@@ -577,4 +577,21 @@ export class FoodRepository {
 
     return { restaurants: data, total };
   }
+
+  async findManyFoodsWithPagination(
+    where: Prisma.FoodWhereInput,
+    skip: number,
+    take: number,
+  ) {
+    const [data, total] = await Promise.all([
+      this.prisma.food.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.food.count({ where }),
+    ]);
+    return { data, total };
+  }
 }

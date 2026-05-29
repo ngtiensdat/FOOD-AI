@@ -33,7 +33,10 @@ export const foodService = {
   },
 
   async getMyFoods() {
-    return apiClient.get('/foods/my-foods').catch(() => []);
+    return apiClient.get('/foods/my-foods').catch((err) => {
+      console.error('Error fetching my foods:', err);
+      return [];
+    });
   },
 
   async getRecentViews(limit?: number) {
@@ -204,11 +207,17 @@ export const adminService = {
 
 export const restaurantService = {
   async getMyRestaurant() {
-    return apiClient.get('/restaurants/my-restaurant').catch(() => null);
+    return apiClient.get('/restaurants/my-restaurant').catch((err) => {
+      console.error('Error fetching my restaurant:', err);
+      return null;
+    });
   },
 
   async getMyBranches() {
-    return apiClient.get('/restaurants/my-branches').catch(() => []);
+    return apiClient.get('/restaurants/my-branches').catch((err) => {
+      console.error('Error fetching my branches:', err);
+      return [];
+    });
   },
 
   async updateRestaurantStatus(isActive: boolean) {

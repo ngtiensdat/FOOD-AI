@@ -492,15 +492,11 @@ export class FoodService {
       where.categoryId = categoryId;
     }
 
-    const [data, total] = await Promise.all([
-      this.repository['prisma'].food.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.repository['prisma'].food.count({ where }),
-    ]);
+    const { data, total } = await this.repository.findManyFoodsWithPagination(
+      where,
+      (page - 1) * pageSize,
+      pageSize,
+    );
 
     return {
       items: data,

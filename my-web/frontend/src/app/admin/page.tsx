@@ -27,6 +27,31 @@ import { FileUp } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
+
+  // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải ADMIN
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authData = localStorage.getItem('auth-storage');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          const loggedInUser = parsed?.state?.user;
+          if (!loggedInUser) {
+            window.location.href = '/login';
+            return;
+          }
+          if (loggedInUser.role !== 'ADMIN') {
+            window.location.href = '/';
+          }
+        } catch {
+          window.location.href = '/login';
+        }
+      } else {
+        window.location.href = '/login';
+      }
+    }
+  }, []);
+
   const adminData = useAdminData();
   const [showImportModal, setShowImportModal] = React.useState(false);
 
