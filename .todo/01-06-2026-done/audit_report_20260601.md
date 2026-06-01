@@ -27,7 +27,7 @@ Bản báo cáo này thực thi đồng thời hai quy trình kiểm toán độ
 * **Header Comments (JSDoc)**: **[Đạt]** Đã bổ sung khối bình luận JSDoc giải thích mục đích, quan hệ và các biến đặc biệt ở đầu tất cả các file mới và sửa đổi lớn bao gồm:
   - Custom Hook: [useSettings.ts](file:///e:/FOOD_AI_code/my-web/frontend/src/hooks/useSettings.ts)
   - UI Subcomponents: [DangerZoneSection.tsx](file:///e:/FOOD_AI_code/my-web/frontend/src/components/features/profile/DangerZoneSection.tsx), [ProfileSettingsTab.tsx](file:///e:/FOOD_AI_code/my-web/frontend/src/components/features/profile/ProfileSettingsTab.tsx), [SecuritySettingsTab.tsx](file:///e:/FOOD_AI_code/my-web/frontend/src/components/features/profile/SecuritySettingsTab.tsx), [VerificationSettingsTab.tsx](file:///e:/FOOD_AI_code/my-web/frontend/src/components/features/profile/VerificationSettingsTab.tsx).
-  - Backend DTO: [change-password.dto.ts](file:///e:/FOOD_AI_code/my-web/backend/src/modules/auth/dto/change-password.dto.ts)
+  - Backend DTO & Spec: [change-password.dto.ts](file:///e:/FOOD_AI_code/my-web/backend/src/modules/auth/dto/change-password.dto.ts), [category.service.spec.ts](file:///e:/FOOD_AI_code/my-web/backend/src/modules/category/services/category.service.spec.ts)
 * **Thông điệp Commit đề xuất**: **[Hợp lệ]**
   - Định dạng Conventional Commits: `refactor(settings): tái cấu trúc trang cài đặt tài khoản và chuẩn hóa backend logger`
 
