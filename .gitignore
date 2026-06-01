@@ -30,4 +30,4 @@ Thumbs.db
 ~$*.xlsx
 
 # Temporary Linter Log Files
-*eslint_errors*
+*eslint_errors*

@@ -1,10 +1,17 @@
+// Mục đích: Cung cấp dịch vụ quản trị hệ thống, xử lý trạng thái người dùng (phê duyệt/từ chối thương gia), quản lý món ăn và điều phối import dữ liệu.
+// File quan hệ: Gọi UserRepository, FoodRepository, AiService, MerchantImportService, PrismaService và được gọi bởi AdminController.
+// Chức năng đặc biệt: Cập nhật trạng thái người dùng kéo theo cập nhật trạng thái chi nhánh nhà hàng (nếu là thương gia), quản lý bật/tắt Weekly Featured cho món ăn, cập nhật món ăn hàng loạt (batch update) có cập nhật vector embedding tương ứng trong background.
+// Kiến thức/Design Pattern: Dependency Injection, SOLID (Single Responsibility - Điều phối quản trị hệ thống, Dependency Inversion), và Transaction Pattern cho batch update.
+// Các biến, hàm đặc biệt: getPendingUsers(), updateUserStatus(), getAllFoods(), updateFood(), getAllUsers(), deleteUser(), deleteFood(), importMerchantsFromExcel(), toggleWeeklyFeatured(), batchUpdateFoods().
+
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
-import { UserRole, UserStatus, Prisma } from '@prisma/client';
+import { UserRole, UserStatus, Prisma, Food } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { MerchantImportService } from './merchant-import.service';
+import { MESSAGES } from '../../common/constants/messages.constant';
 
 @Injectable()
 export class AdminService {
@@ -22,7 +29,7 @@ export class AdminService {
 
   async updateUserStatus(id: number, status: string) {
     if (status !== UserStatus.APPROVED && status !== UserStatus.REJECTED) {
-      throw new UnauthorizedException('Trạng thái không hợp lệ');
+      throw new UnauthorizedException(MESSAGES.ADMIN.INVALID_STATUS);
     }
 
     const updatedUser = await this.userRepository.update(id, {
@@ -98,5 +105,34 @@ export class AdminService {
       where: { id },
       data: { isFeaturedWeekly: value },
     });
+  }
+
+  async batchUpdateFoods(
+    updates: {
+      id: number;
+      isFeaturedToday?: boolean;
+      isFeaturedWeekly?: boolean;
+      isAdminRecommended?: boolean;
+    }[],
+  ) {
+    const results = await this.prisma.$transaction(async (tx) => {
+      const updatedFoods: Food[] = [];
+      for (const update of updates) {
+        const { id, ...data } = update;
+        const updated = await tx.food.update({
+          where: { id },
+          data,
+        });
+        updatedFoods.push(updated);
+      }
+      return updatedFoods;
+    });
+
+    // Cập nhật embedding món ăn trong background sau khi transaction đã commit thành công
+    for (const food of results) {
+      void this.aiService.updateFoodEmbedding(food.id);
+    }
+
+    return results;
   }
 }

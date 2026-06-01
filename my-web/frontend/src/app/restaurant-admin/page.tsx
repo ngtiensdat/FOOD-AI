@@ -7,7 +7,7 @@
 'use client';
 
 import React from 'react';
-import { 
+import {
   Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, HelpCircle, FolderTree, ChevronDown, Check, X
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
@@ -20,20 +20,45 @@ import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 import { LIMITS } from '@/constants/limits.constant';
-import SafeImage from '@/components/base/SafeImage';
+import { SafeImage } from '@/components/base/SafeImage';
 import Link from 'next/link';
 import { Avatar } from '@/components/base/Avatar';
 
 // Feature Components
-import { MenuTable } from '@/components/features/MenuTable';
-import { FoodFormModal } from '@/components/features/FoodFormModal';
+import { MenuTable } from '@/components/features/restaurant/MenuTable';
+import { FoodFormModal } from '@/components/features/food/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
-import { CategoryManager } from '@/components/features/CategoryManager';
-import { UploadExcelModal } from '@/components/features/UploadExcelModal';
+import { CategoryManager } from '@/components/features/restaurant/CategoryManager';
+import { UploadExcelModal } from '@/components/features/admin/UploadExcelModal';
+import { EditRestaurantModal } from '@/components/features/restaurant/EditRestaurantModal';
 
 export default function RestaurantDashboard() {
   const { user, logout } = useAuth();
-  
+
+  // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải RESTAURANT / ADMIN
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authData = localStorage.getItem('auth-storage');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          const loggedInUser = parsed?.state?.user;
+          if (!loggedInUser) {
+            window.location.href = '/login';
+            return;
+          }
+          if (loggedInUser.role !== 'RESTAURANT' && loggedInUser.role !== 'ADMIN') {
+            window.location.href = '/';
+          }
+        } catch {
+          window.location.href = '/login';
+        }
+      } else {
+        window.location.href = '/login';
+      }
+    }
+  }, []);
+
   const {
     myFoods,
     loading,
@@ -56,6 +81,7 @@ export default function RestaurantDashboard() {
   } = useRestaurantActions(user);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [openingHoursText, setOpeningHoursText] = React.useState('');
 
   React.useEffect(() => {
@@ -78,9 +104,9 @@ export default function RestaurantDashboard() {
         <header className="mb-12 flex justify-between items-center">
           <div>
             <h2 className="text-h1 !text-4xl text-gray-900 dark:text-white">
-              {activeTab === 'overview' ? LABELS.RESTAURANT.DASHBOARD_TITLE : 
-               activeTab === 'menu' ? LABELS.RESTAURANT.MENU_MANAGEMENT : 
-               LABELS.RESTAURANT.AI_HISTORY}
+              {activeTab === 'overview' ? LABELS.RESTAURANT.DASHBOARD_TITLE :
+                activeTab === 'menu' ? LABELS.RESTAURANT.MENU_MANAGEMENT :
+                  LABELS.RESTAURANT.AI_HISTORY}
             </h2>
             <p className="text-body text-gray-500 dark:text-slate-400 mt-1">{LABELS.RESTAURANT.SUBTITLE}</p>
           </div>
@@ -88,27 +114,24 @@ export default function RestaurantDashboard() {
           <div className="flex items-center gap-4">
             {/* Toggle Status Switch with premium light/dark animations */}
             <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 px-4 py-2 rounded-2xl shadow-sm">
-              <Sparkles 
-                size={16} 
-                className={`transition-all duration-300 ${
-                  isRestaurantActive 
-                    ? 'text-amber-500 animate-pulse drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]' 
-                    : 'text-gray-300 dark:text-slate-650'
-                }`} 
+              <Sparkles
+                size={16}
+                className={`transition-all duration-300 ${isRestaurantActive
+                  ? 'text-amber-500 animate-pulse drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]'
+                  : 'text-gray-300 dark:text-slate-650'
+                  }`}
               />
               <span className="text-xs font-bold text-gray-700 dark:text-slate-300">
                 {isRestaurantActive ? LABELS.RESTAURANT.STATUS_OPEN : LABELS.RESTAURANT.STATUS_CLOSED}
               </span>
               <button
                 onClick={actions.toggleRestaurantStatus}
-                className={`w-12 h-6 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${
-                  isRestaurantActive ? 'bg-primary dark:bg-orange-600' : 'bg-gray-200 dark:bg-slate-850'
-                }`}
+                className={`w-12 h-6 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${isRestaurantActive ? 'bg-primary dark:bg-orange-600' : 'bg-gray-200 dark:bg-slate-850'
+                  }`}
               >
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
-                    isRestaurantActive ? 'translate-x-6' : 'translate-x-0'
-                  }`}
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${isRestaurantActive ? 'translate-x-6' : 'translate-x-0'
+                    }`}
                 >
                   {isRestaurantActive ? (
                     <Check className="w-3 h-3 text-emerald-500 font-bold" />
@@ -140,8 +163,8 @@ export default function RestaurantDashboard() {
             )}
 
             {restaurant?.id && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => window.open(`/restaurant/${restaurant.id}`, '_blank')}
                 className="flex items-center gap-2 rounded-xl h-10 px-4 border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 transition-all shadow-sm"
               >
@@ -163,24 +186,23 @@ export default function RestaurantDashboard() {
                     size={40}
                     className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
                   />
-                  <ChevronDown 
-                    size={16} 
-                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
-                      showMenu ? 'rotate-180 text-primary' : ''
-                    }`} 
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
+                      }`}
                   />
                 </button>
 
                 {showMenu && (
                   <>
                     {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
-                    <div 
-                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
-                      onClick={() => setShowMenu(false)} 
+                    <div
+                      className="fixed inset-0 z-40 bg-transparent cursor-default"
+                      onClick={() => setShowMenu(false)}
                     />
-                    <UserDropdown 
-                      user={user} 
-                      onLogout={logout} 
+                    <UserDropdown
+                      user={user}
+                      onLogout={logout}
                       onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
                       onClose={() => setShowMenu(false)}
                     />
@@ -199,9 +221,9 @@ export default function RestaurantDashboard() {
                 {myFoods.slice(0, LIMITS.RECENT_VIEWS_DASHBOARD).map((food, i) => (
                   <div key={i} className="flex items-center gap-6 p-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 rounded-2xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-800">
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                      <SafeImage 
-                        src={getValidImageUrl(food.image)} 
-                        className="object-cover" 
+                      <SafeImage
+                        src={getValidImageUrl(food.image)}
+                        className="object-cover"
                         alt={food.name || LABELS.COMMON.UNKNOWN}
                         fill
                         sizes="64px"
@@ -217,7 +239,7 @@ export default function RestaurantDashboard() {
                 {myFoods.length === 0 && <p className="text-center text-gray-400 py-8">{LABELS.RESTAURANT.NO_FOOD}</p>}
               </div>
             </div>
-            
+
             <div className="space-y-8">
               <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
                 <h3 className="text-h3 text-gray-800 dark:text-slate-100 mb-6">{LABELS.RESTAURANT.SETTINGS_TITLE}</h3>
@@ -228,13 +250,14 @@ export default function RestaurantDashboard() {
                       <input
                         type="text"
                         placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
-                        value={openingHoursText}
-                        onChange={(e) => setOpeningHoursText(e.target.value)}
+                        defaultValue={restaurant?.profile?.openingHours || ''}
+                        id="opening-hours-input"
                         className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-150 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
                       />
                       <Button
                         onClick={() => {
-                          actions.updateProfileHours(openingHoursText);
+                          const val = (document.getElementById('opening-hours-input') as HTMLInputElement)?.value;
+                          actions.updateProfileHours(val);
                         }}
                       >
                         {LABELS.RESTAURANT.SAVE}
@@ -247,6 +270,17 @@ export default function RestaurantDashboard() {
                       <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{restaurant.profile.contactPhone}</span>
                     </div>
                   )}
+                  <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4">
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="rounded-xl flex items-center justify-center gap-2 border-gray-200 text-gray-700 dark:text-slate-300 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900"
+                    >
+                      <Store size={16} />
+                      <span>{LABELS.COMMON.EDIT} cửa hàng</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -261,9 +295,9 @@ export default function RestaurantDashboard() {
         )}
 
         {activeTab === 'menu' && (
-          <MenuTable 
-            myFoods={myFoods} 
-            loading={loading} 
+          <MenuTable
+            myFoods={myFoods}
+            loading={loading}
             actions={actions}
           />
         )}
@@ -275,29 +309,31 @@ export default function RestaurantDashboard() {
 
       <AnimatePresence>
         {isAddingFood && (
-          <FoodFormModal 
+          <FoodFormModal
             key="food-form-modal"
-            isOpen={isAddingFood} 
-            onClose={() => setIsAddingFood(false)} 
-            editingFood={editingFood} 
-            formData={formData} 
-            setFormData={(data) => setFormData(data as typeof formData)} 
-            onSubmit={actions.handleSubmit} 
+            isOpen={isAddingFood}
+            onClose={() => setIsAddingFood(false)}
+            editingFood={editingFood}
+            formData={formData}
+            setFormData={setFormData as any}
+            onSubmit={actions.handleSubmit}
             myBranches={myBranches}
             onSelectBranch={actions.handleSelectBranch}
           />
         )}
-        <ConfirmModal
-          key="delete-confirm-modal"
-          isOpen={deleteConfirmId !== null}
-          title={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM_TITLE}
-          message={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM}
-          onConfirm={actions.onConfirmDelete}
-          onCancel={() => setDeleteConfirmId(null)}
-          confirmText={LABELS.COMMON.DELETE}
-          cancelText={LABELS.COMMON.CANCEL}
-          variant="danger"
-        />
+        {deleteConfirmId !== null && (
+          <ConfirmModal
+            key="delete-confirm-modal"
+            isOpen={deleteConfirmId !== null}
+            title={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM_TITLE}
+            message={LABELS.RESTAURANT.DELETE_FOOD_CONFIRM}
+            onConfirm={actions.onConfirmDelete}
+            onCancel={() => setDeleteConfirmId(null)}
+            confirmText={LABELS.COMMON.DELETE}
+            cancelText={LABELS.COMMON.CANCEL}
+            variant="danger"
+          />
+        )}
         {isUploadModalOpen && (
           <UploadExcelModal
             key="upload-excel-modal"
@@ -308,6 +344,14 @@ export default function RestaurantDashboard() {
               setIsUploadModalOpen(false);
               fetchMyFoods();
             }}
+          />
+        )}
+        {isEditModalOpen && (
+          <EditRestaurantModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            restaurant={restaurant}
+            onSave={actions.updateRestaurantProfile}
           />
         )}
       </AnimatePresence>

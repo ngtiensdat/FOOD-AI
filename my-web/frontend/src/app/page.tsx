@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, MapPin, Star } from 'lucide-react';
+import { User } from '@/types/user';
 
 // Hooks
 import { useHomeData } from '@/hooks/useHomeData';
@@ -15,9 +16,11 @@ import { Placeholder } from '@/components/base/Placeholder';
 // Feature Components
 import { Navbar } from '@/components/features/Navbar';
 import { Hero } from '@/components/features/Hero';
-import { CategorySection } from '@/components/features/CategorySection';
-import { FoodCard } from '@/components/features/FoodCard';
-import { FoodDetailModal } from '@/components/features/FoodDetailModal';
+import { CategorySection } from '@/components/features/food/CategorySection';
+import { FoodCard } from '@/components/features/food/FoodCard';
+import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
+import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
+
 import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { SettingsSection } from '@/components/features/SettingsSection';
 import { Footer } from '@/components/features/Footer';
@@ -52,18 +55,20 @@ export default function Home() {
     handleDeleteAccount
   } = useHomeActions();
 
-  const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
+  const { nearbyRestaurants, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
 
   // Danh sách các slider hiển thị trên trang chủ
   const sliderSections = [
     {
       id: 'nearby',
-      data: nearbyFoods,
+      data: nearbyRestaurants,
       title: LABELS.HOME.NEARBY_TITLE,
       subtitle: LABELS.HOME.NEARBY_SUBTITLE,
       icon: <MapPin className="text-blue-500" size={32} />,
-      bg: 'blue' as const
+      bg: 'blue' as const,
+      isRestaurant: true
     },
+
     {
       id: 'recommended',
       data: recommendedFoods,
@@ -120,7 +125,7 @@ export default function Home() {
           />
 
           <CategorySection
-            handleCategoryClick={(cat) => router.push(`/explore?tag=${encodeURIComponent(cat)}`)}
+            handleCategoryClick={(cat: string) => router.push(`/explore?tag=${encodeURIComponent(cat)}`)}
             selectedCategory={null}
           />
 
@@ -133,12 +138,18 @@ export default function Home() {
                 icon={section.icon}
                 bg={section.bg}
               >
-                {section.data.map((food, i) => (
-                  <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
-                ))}
+                {section.isRestaurant
+                  ? section.data.map((restaurant, i) => (
+                      <RestaurantCard key={i} restaurant={restaurant} />
+                    ))
+                  : section.data.map((food, i) => (
+                      <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                    ))
+                }
               </Slider>
             )
           ))}
+
         </>
       ) : activeTab === 'settings' ? (
         <SettingsSection
@@ -158,7 +169,7 @@ export default function Home() {
 
       {/* Modal hiện onboarding khi user chưa cập nhật sở thích, chỉ hiện 1 lần trong lần đầu tiên login*/}
       {showOnboarding && user && (
-        <OnboardingModal user={user} onComplete={handleOnboardingComplete} />
+        <OnboardingModal user={user as User} onComplete={handleOnboardingComplete} />
       )}
 
       <Footer />

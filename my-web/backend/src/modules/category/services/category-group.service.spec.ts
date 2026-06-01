@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoryGroupService } from './category-group.service';
 import { CategoryGroupRepository } from '../repositories/category-group.repository';
+import { PrismaService } from '../../../database/prisma.service';
 
 describe('CategoryGroupService', () => {
   let service: CategoryGroupService;
@@ -11,6 +12,10 @@ describe('CategoryGroupService', () => {
         CategoryGroupService,
         {
           provide: CategoryGroupRepository,
+          useValue: {},
+        },
+        {
+          provide: PrismaService,
           useValue: {},
         },
       ],

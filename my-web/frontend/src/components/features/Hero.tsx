@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Sparkles, Send, Smile, DollarSign, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
-import { AiResponseBox, AiSuggestedFood } from './AiResponseBox';
+import { AiResponseBox, AiSuggestedFood } from './ai/AiResponseBox';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
 

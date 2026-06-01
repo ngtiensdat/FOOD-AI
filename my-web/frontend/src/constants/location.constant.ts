@@ -63,3 +63,9 @@ export const DEFAULT_COORDINATES = {
   },
 };
 
+export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  'Hà Nội': DEFAULT_COORDINATES.HANOI,
+  'Hồ Chí Minh': DEFAULT_COORDINATES.HCM,
+};
+
+

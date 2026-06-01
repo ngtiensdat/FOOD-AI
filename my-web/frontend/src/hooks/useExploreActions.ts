@@ -1,72 +1,108 @@
+/**
+ * Mục đích file này: Hook quản lý trạng thái tải và tìm kiếm danh sách các nhà hàng công khai trên trang Khám Phá (/explore).
+ * Các file liên quan: Được gọi bởi ExplorePage component.
+ * Chức năng đặc biệt: Tự động tải dữ liệu nhà hàng công khai dựa trên tag danh mục, thành phố, quận/huyện và từ khóa tìm kiếm (đã được debounce).
+ */
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { foodService } from '@/services/food.service';
-import { useAuth } from '@/hooks/useAuth';
+import { restaurantService } from '@/services/food.service';
 import { LOCATION_DATA } from '@/constants/location.constant';
+import { Restaurant } from '@/types/restaurant';
+
+interface ExploreResponse {
+  restaurants?: Restaurant[];
+  data?: Restaurant[];
+  total?: number;
+}
 
 export const useExploreActions = () => {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag') || '';
-  const { isAuthenticated } = useAuth();
 
-  const [foods, setFoods] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFood, setSelectedFood] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('explore');
   const [selectedCity, setSelectedCity] = useState(LOCATION_DATA[0]?.value || 'Hà Nội');
   const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const handleCityChange = (city: string) => {
     setSelectedCity(city);
     setSelectedDistrict('');
+    setCurrentPage(1);
   };
 
+  const handleDistrictChange = (district: string) => {
+    setSelectedDistrict(district);
+    setCurrentPage(1);
+  };
+
+  // Reset page to 1 when filters change
   useEffect(() => {
-    const fetchFoods = async () => {
+    setCurrentPage(1);
+  }, [tag, selectedCity, selectedDistrict, searchQuery]);
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
       setLoading(true);
       try {
-        const data = await foodService.getAllFoods({
-          tag,
+        const res = await restaurantService.getPublicRestaurants({
+          tag: tag || undefined,
           city: selectedCity,
           district: selectedDistrict || undefined,
+          search: searchQuery || undefined,
+          page: currentPage,
+          pageSize: 6,
         });
-        setFoods(data);
+        
+        // Nhận diện kiểu dữ liệu an toàn để tương thích với cấu trúc của backend
+        const response = res as unknown as ExploreResponse | Restaurant[];
+
+        if (response && !Array.isArray(response) && Array.isArray(response.restaurants)) {
+          setRestaurants(response.restaurants);
+          setTotalPages(Math.ceil((response.total || 0) / 6));
+        } else if (Array.isArray(response)) {
+          setRestaurants(response);
+          setTotalPages(1);
+        } else if (response && !Array.isArray(response) && Array.isArray(response.data)) {
+          setRestaurants(response.data);
+          setTotalPages(Math.ceil((response.total || 0) / 6));
+        } else {
+          setRestaurants([]);
+          setTotalPages(1);
+        }
       } catch (error) {
-        console.error('Lỗi lấy dữ liệu món ăn:', error);
+        console.error('Lỗi lấy dữ liệu nhà hàng:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchFoods();
-  }, [tag, selectedCity, selectedDistrict]);
 
-  useEffect(() => {
-    if (selectedFood?.id && isAuthenticated) {
-      foodService.trackView(selectedFood.id);
-    }
-  }, [selectedFood?.id, isAuthenticated]);
+    const timer = setTimeout(() => {
+      fetchRestaurants();
+    }, 300);
 
-  const filteredFoods = foods.filter(food =>
-    food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (food.restaurant?.name || food.restaurantName || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    return () => clearTimeout(timer);
+  }, [tag, selectedCity, selectedDistrict, searchQuery, currentPage]);
 
   return {
     tag,
     loading,
     searchQuery,
     setSearchQuery,
-    selectedFood,
-    setSelectedFood,
     activeTab,
     setActiveTab,
-    filteredFoods,
+    restaurants,
     selectedCity,
     selectedDistrict,
     setSelectedCity: handleCityChange,
-    setSelectedDistrict,
+    setSelectedDistrict: handleDistrictChange,
+    currentPage,
+    setCurrentPage,
+    totalPages,
   };
 };

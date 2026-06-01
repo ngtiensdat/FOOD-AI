@@ -13,17 +13,17 @@ import { AnimatePresence } from 'framer-motion';
 
 // Services, Hooks & Components
 import { useRestaurantProfile } from '@/hooks/useRestaurantProfile';
-import { FoodDetailModal } from '@/components/features/FoodDetailModal';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
-import { FollowersModal } from '@/components/features/FollowersModal';
-import { FollowingModal } from '@/components/features/FollowingModal';
-import { RestaurantHeaderCard } from '@/components/features/RestaurantHeaderCard';
-import { RestaurantInfoTab } from '@/components/features/RestaurantInfoTab';
-import { RestaurantMenuSidebar } from '@/components/features/RestaurantMenuSidebar';
-import { RestaurantFoodGrid } from '@/components/features/RestaurantFoodGrid';
+import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
+import { FollowersModal } from '@/components/features/profile/FollowersModal';
+import { FollowingModal } from '@/components/features/profile/FollowingModal';
+import { RestaurantHeaderCard } from '@/components/features/restaurant/RestaurantHeaderCard';
+import { RestaurantInfoTab } from '@/components/features/restaurant/RestaurantInfoTab';
+import { RestaurantMenuSidebar } from '@/components/features/restaurant/RestaurantMenuSidebar';
+import { RestaurantFoodGrid } from '@/components/features/restaurant/RestaurantFoodGrid';
 
 export default function RestaurantProfilePage() {
   const router = useRouter();
@@ -182,7 +182,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowers}
             error={errorFollowers}
             followersList={followersList}
-            onItemClick={(followerUser) => {
+            onItemClick={(followerUser: any) => {
               setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
@@ -199,7 +199,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowing}
             error={errorFollowing}
             restaurants={followingList.map((item) => item.restaurant)}
-            onRestaurantClick={(restaurantItem) => {
+            onRestaurantClick={(restaurantItem: any) => {
               setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}

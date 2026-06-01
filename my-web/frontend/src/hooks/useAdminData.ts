@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminService } from '@/services/food.service';
+import { User } from '@/types/user';
+import { AdminFoodItem } from '@/types/food';
+import { LABELS } from '@/constants/labels';
 
 export const useAdminData = () => {
-  const [pendingMerchants, setPendingMerchants] = useState<any[]>([]);
-  const [allFoods, setAllFoods] = useState<any[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [pendingMerchants, setPendingMerchants] = useState<User[]>([]);
+  const [allFoods, setAllFoods] = useState<AdminFoodItem[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -19,7 +22,7 @@ export const useAdminData = () => {
       setAllUsers(users);
       setPendingMerchants(pending);
     } catch (error) {
-      console.error('Lỗi lấy dữ liệu admin:', error);
+      console.error(LABELS.UI_MESSAGES.ADMIN.LOAD_ERROR, error);
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,7 @@ export const useAdminData = () => {
     return false;
   };
 
-  const updateFood = async (foodId: number, data: any) => {
+  const updateFood = async (foodId: number, data: Partial<AdminFoodItem>) => {
     if (await adminService.updateFood(foodId, data)) {
       await fetchData();
       return true;

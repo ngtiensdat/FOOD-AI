@@ -9,7 +9,7 @@ interface RequestOptions extends Omit<RequestInit, 'method'> {
 
 class ApiClient {
   private baseUrl: string;
-  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -47,37 +47,45 @@ class ApiClient {
       }
     }
 
+    console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
     let response = await fetch(url.toString(), config);
+    console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
     // Xử lý Refresh Token tự động nếu nhận lỗi 401
-    if (response.status === 401 && !endpoint.includes('/auth/refresh') && !this.isRefreshing) {
-      this.isRefreshing = true;
-      try {
-        const refreshRes = await fetch(`${this.baseUrl}/auth/refresh`, { 
+    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      if (!this.refreshPromise) {
+        this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, { 
             method: 'POST', 
             credentials: 'include' 
-        });
-        
-        if (refreshRes.ok) {
-          response = await fetch(url.toString(), config);
-        } else {
-          if (typeof window !== 'undefined') {
-            const { useAuthStore } = await import('@/store/useAuthStore');
-            useAuthStore.getState().logout();
-            window.location.href = '/login';
-            // Hang the promise to prevent throwing errors while redirecting
-            return new Promise(() => {});
-          }
+        })
+          .then((res) => res.ok)
+          .catch((error) => {
+            console.error('Refresh token error:', error);
+            return false;
+          })
+          .finally(() => {
+            this.refreshPromise = null;
+          });
+      }
+
+      const isRefreshed = await this.refreshPromise;
+      
+      if (isRefreshed) {
+        response = await fetch(url.toString(), config);
+      } else {
+        if (typeof window !== 'undefined') {
+          const { useAuthStore } = await import('@/store/useAuthStore');
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+          // Hang the promise to prevent throwing errors while redirecting
+          return new Promise(() => {});
         }
-      } catch (error) {
-        console.error('Refresh token error:', error);
-      } finally {
-        this.isRefreshing = false;
       }
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+      console.error(`[ApiClient] Request failed for ${endpoint}:`, errorData);
       
       // Lấy message từ mảng errors của Backend
       let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -89,6 +97,7 @@ class ApiClient {
     }
 
     const result = await response.json();
+    console.log(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
     
     // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
     if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {

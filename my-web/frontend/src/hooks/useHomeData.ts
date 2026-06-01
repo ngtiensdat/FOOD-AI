@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import { foodService } from '@/services/food.service';
+import { restaurantService } from '@/services/restaurant.service';
 import { LIMITS } from '@/constants/limits.constant';
-import { DEFAULT_COORDINATES } from '@/constants/location.constant';
+import { DEFAULT_COORDINATES, CITY_COORDINATES } from '@/constants/location.constant';
+
+
 
 export const useHomeData = (city?: string, district?: string) => {
   const [realFoods, setRealFoods] = useState<any[]>([]);
   const [featuredToday, setFeaturedToday] = useState<any[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<any[]>([]);
   const [recommendedFoods, setRecommendedFoods] = useState<any[]>([]);
-  const [nearbyFoods, setNearbyFoods] = useState<any[]>([]);
+  const [nearbyRestaurants, setNearbyRestaurants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,12 +51,15 @@ export const useHomeData = (city?: string, district?: string) => {
 
         const fetchNearbyWithFallback = async (lat: number, lng: number) => {
           try {
-            const nearby = await foodService.getNearbyFoods(lat, lng, LIMITS.NEARBY_FOODS_RADIUS);
-            setNearbyFoods(nearby);
+            const nearby = await restaurantService.getNearbyRestaurants(lat, lng, LIMITS.NEARBY_FOODS_RADIUS);
+            setNearbyRestaurants(nearby);
           } catch (err) {
-            console.error('Lỗi lấy món ăn quanh đây:', err);
+            console.error('Lỗi lấy quán ăn quanh đây:', err);
           }
         };
+
+
+        const fallbackCoords = (city && CITY_COORDINATES[city]) || DEFAULT_COORDINATES.HANOI;
 
         if (typeof window !== 'undefined' && "geolocation" in navigator) {
           navigator.geolocation.getCurrentPosition(
@@ -62,13 +69,7 @@ export const useHomeData = (city?: string, district?: string) => {
             },
             async (error) => {
               console.warn('Lỗi định vị GPS, dùng vị trí mặc định:', error.message);
-              const defaultLat = city === 'Hồ Chí Minh'
-                ? DEFAULT_COORDINATES.HCM.lat
-                : DEFAULT_COORDINATES.HANOI.lat;
-              const defaultLng = city === 'Hồ Chí Minh'
-                ? DEFAULT_COORDINATES.HCM.lng
-                : DEFAULT_COORDINATES.HANOI.lng;
-              await fetchNearbyWithFallback(defaultLat, defaultLng);
+              await fetchNearbyWithFallback(fallbackCoords.lat, fallbackCoords.lng);
             },
             {
               timeout: LIMITS.GEOLOCATION_TIMEOUT,
@@ -77,14 +78,9 @@ export const useHomeData = (city?: string, district?: string) => {
             }
           );
         } else {
-          const defaultLat = city === 'Hồ Chí Minh'
-            ? DEFAULT_COORDINATES.HCM.lat
-            : DEFAULT_COORDINATES.HANOI.lat;
-          const defaultLng = city === 'Hồ Chí Minh'
-            ? DEFAULT_COORDINATES.HCM.lng
-            : DEFAULT_COORDINATES.HANOI.lng;
-          await fetchNearbyWithFallback(defaultLat, defaultLng);
+          await fetchNearbyWithFallback(fallbackCoords.lat, fallbackCoords.lng);
         }
+
       } catch (err) {
         console.error('Lỗi kết nối API:', err);
       } finally {
@@ -99,7 +95,8 @@ export const useHomeData = (city?: string, district?: string) => {
     featuredToday,
     featuredWeekly,
     recommendedFoods,
-    nearbyFoods,
+    nearbyRestaurants,
     isLoading
   };
 };
+

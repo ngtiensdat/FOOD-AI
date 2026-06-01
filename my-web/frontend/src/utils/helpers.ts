@@ -1,4 +1,15 @@
 /**
+ * Mục đích file này để làm gì: Module tiện ích (Utility Module) chứa các hàm bổ trợ dùng chung ở Frontend của dự án FOOD AI.
+ * Các file khác hay file này có ý nghĩa như nào: Cung cấp các hàm chuẩn hóa, xử lý chuỗi và thời gian, tách biệt hoàn toàn logic tính toán khỏi giao diện UI để tăng khả năng bảo trì và hỗ trợ viết unit test độc lập (helpers.test.ts).
+ * Các chức năng đặc biệt:
+ *   - generateId: Tạo mã định danh tạm thời ngẫu nhiên ngắn cho Toast, key trong danh sách UI.
+ *   - cleanImageUrl: Chuẩn hóa đường dẫn hình ảnh CDN từ ShopeeFood (xóa tham số nén) để lấy ảnh chất lượng HD.
+ *   - getValidImageUrl: Xác thực địa chỉ hình ảnh, chống lỗi crash Next.js Image và tự động fallback sang ảnh PNG '/placeholder-food.png' nếu đường dẫn lỗi.
+ *   - parseAddressString: Phân tích địa chỉ dài thành 3 phần (Tỉnh/Thành phố, Quận/Huyện, Địa chỉ chi tiết) để hỗ trợ bộ lọc định vị.
+ *   - isRestaurantCurrentlyOpen: Kiểm tra xem nhà hàng có đang mở cửa tại thời điểm hiện tại của hệ thống hay không dựa vào cấu hình chuỗi giờ.
+ *   - isValidOpeningHours: Kiểm tra định dạng hợp lệ của chuỗi giờ đóng/mở cửa.
+ */
+/**
  * Tạo một chuỗi ID ngẫu nhiên ngắn
  * Dùng cho các thành phần UI tạm thời như Toast, Item trong list...
  */
@@ -21,17 +32,17 @@ export const cleanImageUrl = (url?: string | null): string => {
  * Validate image URL for Next/Image to prevent crashes from invalid URLs like 'a'
  */
 export const getValidImageUrl = (url?: string | null): string => {
-  if (!url) return '/placeholder-food.svg';
-  
+  if (!url) return '/placeholder-food.png';
+
   const cleanedUrl = cleanImageUrl(url);
-  
-  const isValid = 
-    cleanedUrl.startsWith('http://') || 
-    cleanedUrl.startsWith('https://') || 
-    cleanedUrl.startsWith('/') || 
+
+  const isValid =
+    cleanedUrl.startsWith('http://') ||
+    cleanedUrl.startsWith('https://') ||
+    cleanedUrl.startsWith('/') ||
     cleanedUrl.startsWith('data:');
-    
-  return isValid ? cleanedUrl : '/placeholder-food.svg';
+
+  return isValid ? cleanedUrl : '/placeholder-food.png';
 };
 
 /**
@@ -88,7 +99,7 @@ export const isRestaurantCurrentlyOpen = (openingHours?: string, isActive?: bool
  */
 export const isValidOpeningHours = (openingHours?: string | null): boolean => {
   if (!openingHours || !openingHours.trim()) return true;
-  
+
   const cleanHours = openingHours.replace(/\s+/g, '');
   const match = cleanHours.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
   if (!match) return false;
@@ -101,4 +112,32 @@ export const isValidOpeningHours = (openingHours?: string | null): boolean => {
 
   return shNum <= 23 && smNum <= 59 && ehNum <= 23 && emNum <= 59;
 };
+
+/**
+ * Trả về mảng số trang hiển thị dạng thu gọn có dấu ba chấm (...)
+ * Ví dụ: [1, '...', 4, 5, 6, '...', 100]
+ */
+export const getPaginationRange = (currentPage: number, totalPages: number, maxVisible = 5): number[] => {
+  const pages: number[] = [];
+
+  if (totalPages <= maxVisible) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+  }
+
+  return pages;
+};
+
 

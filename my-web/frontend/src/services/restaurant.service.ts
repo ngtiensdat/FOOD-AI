@@ -1,9 +1,16 @@
 import { apiClient } from '@/lib/api-client';
 
 export const restaurantService = {
+  async getNearbyRestaurants(lat: number, lng: number, radius?: number) {
+    return apiClient.get('/restaurants/nearby', {
+      params: { lat, lng, radius }
+    });
+  },
+
   async getPublicProfile(restaurantId: number) {
     return apiClient.get(`/restaurants/${restaurantId}/public`);
   },
+
 
   async getPublicRestaurantFoods(restaurantId: number, categoryId?: number, page: number = 1) {
     return apiClient.get(`/restaurants/${restaurantId}/foods`, {

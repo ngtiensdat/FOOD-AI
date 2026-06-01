@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ chatbot trí tuệ nhân tạo (AI) tư vấn ẩm thực dựa trên mô hình của OpenAI và tìm kiếm vector (RAG).
+// File quan hệ: Gọi PrismaService, VectorRepository, OpenAI API, sử dụng hằng số LIMITS, AI_CONSTANTS, và được gọi bởi AiController, AdminService, FoodService.
+// Chức năng đặc biệt: Tạo vector embedding cho món ăn và người dùng, thực hiện hybrid search (kết hợp thuộc tính địa lý và tương đồng ngữ nghĩa), xây dựng bối cảnh sở thích người dùng (RAG) để chatbot phản hồi cá nhân hóa.
+// Kiến thức/Design Pattern: Retrieval-Augmented Generation (RAG) Pattern, Caching Pattern (lưu cache vector embedding tránh gọi API trùng lặp), Rate Limiting, Dependency Injection.
+// Các biến, hàm đặc biệt: getEmbedding(), chat(), getChatContext(), clearChatContext(), updateFoodEmbedding(), updateUserEmbedding().
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import OpenAI from 'openai';
@@ -204,21 +210,21 @@ export class AiService {
           {
             role: 'system',
             content: `Bạn là Food AI - Trợ lý ảo chuyên gia tư vấn ẩm thực thông minh, nhiệt tình và am hiểu khẩu vị.
-
-BỐI CẢNH THỜI GIAN:
-${currentDayTimeStr} (Hãy dựa vào giờ này để gợi ý món phù hợp: ví dụ sáng gợi ý ăn sáng/cà phê, trưa cơm tấm/văn phòng, chiều tối ăn vặt/lẩu nướng/trà sữa).
-
-DANH SÁCH MÓN ĂN THỰC TẾ KHẢ DỤNG:
-${context}
-
-NGỮ CẢNH KHÁCH HÀNG:
-${userPrefContext || '- Chưa có thông tin sở thích'}
-
-QUY TẮC PHẢN HỒI:
-1. CHỈ được gợi ý các món ăn có trong danh sách thực tế khả dụng ở trên. TUYỆT ĐỐI không tự ý bịa ra món ăn hoặc nhà hàng khác ngoài danh sách.
-2. Nếu khách hàng hỏi món khác không có trong danh sách, hãy từ chối khéo léo, thân thiện và hướng họ chọn các món ngon tương tự hiện có trong danh sách khả dụng.
-3. Phân tích ngữ cảnh khách hàng (sở thích mục tiêu, ngân sách, lịch sử đặt, thời gian hiện tại) để đưa ra đề xuất phù hợp và giải thích vì sao có các đề xuất này.
-4. Trả lời ngắn gọn, tự nhiên, sinh động (2-3 câu), sử dụng các emoji thích hợp, cuối cùng luôn mời khách hàng click xem thẻ món ăn chi tiết hiển thị ở ngay phía dưới chat.`,
+ 
+ BỐI CẢNH THỜI GIAN:
+ ${currentDayTimeStr} (Hãy dựa vào giờ này để gợi ý món phù hợp: ví dụ sáng gợi ý ăn sáng/cà phê, trưa cơm tấm/văn phòng, chiều tối ăn vặt/lẩu nướng/trà sữa).
+ 
+ DANH SÁCH MÓN ĂN THỰC TẾ KHẢ DỤNG:
+ ${context}
+ 
+ NGỮ CẢNH KHÁCH HÀNG:
+ ${userPrefContext || '- Chưa có thông tin sở thích'}
+ 
+ QUY TẮC PHẢN HỒI:
+ 1. CHỈ được gợi ý các món ăn có trong danh sách thực tế khả dụng ở trên. TUYỆT ĐỐI không tự ý bịa ra món ăn hoặc nhà hàng khác ngoài danh sách.
+ 2. Nếu khách hàng hỏi món khác không có trong danh sách, hãy từ chối khéo léo, thân thiện và hướng họ chọn các món ngon tương tự hiện có trong danh sách khả dụng.
+ 3. Phân tích ngữ cảnh khách hàng (sở thích mục tiêu, ngân sách, lịch sử đặt, thời gian hiện tại) để đưa ra đề xuất phù hợp và giải thích vì sao có các đề xuất này.
+ 4. Trả lời ngắn gọn, tự nhiên, sinh động (2-3 câu), sử dụng các emoji thích hợp, cuối cùng luôn mời khách hàng click xem thẻ món ăn chi tiết hiển thị ở ngay phía dưới chat.`,
           },
           ...chatHistory,
         ],
@@ -286,24 +292,32 @@ QUY TẮC PHẢN HỒI:
   }
 
   async updateFoodEmbedding(foodId: number) {
-    const food = await this.prisma.food.findUnique({
-      where: { id: foodId },
-      include: { restaurant: true },
-    });
-    if (!food) return;
-    const textToEmbed = `Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || 'Không có mô tả'}.`;
-    const embedding = await this.getEmbedding(textToEmbed);
-    await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+    try {
+      const food = await this.prisma.food.findUnique({
+        where: { id: foodId },
+        include: { restaurant: true },
+      });
+      if (!food) return;
+      const textToEmbed = `Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || 'Không có mô tả'}.`;
+      const embedding = await this.getEmbedding(textToEmbed);
+      await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+    } catch (error) {
+      console.error('LỖI CẬP NHẬT EMBEDDING MÓN ĂN:', error);
+    }
   }
 
   async updateUserEmbedding(userId: number) {
-    const profile = await this.prisma.userProfile.findUnique({
-      where: { userId },
-    });
-    if (!profile || !profile.preferences) return;
-    const prefs = profile.preferences as Record<string, string>;
-    const textToEmbed = `Người dùng thích ${prefs.cuisine || 'đa dạng'}. Ngân sách ${prefs.budget || 'linh hoạt'}.`;
-    const embedding = await this.getEmbedding(textToEmbed);
-    await this.vectorRepository.updateUserEmbedding(userId, embedding);
+    try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { userId },
+      });
+      if (!profile || !profile.preferences) return;
+      const prefs = profile.preferences as Record<string, string>;
+      const textToEmbed = `Người dùng thích ${prefs.cuisine || 'đa dạng'}. Ngân sách ${prefs.budget || 'linh hoạt'}.`;
+      const embedding = await this.getEmbedding(textToEmbed);
+      await this.vectorRepository.updateUserEmbedding(userId, embedding);
+    } catch (error) {
+      console.error('LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG:', error);
+    }
   }
 }

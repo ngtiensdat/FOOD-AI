@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ quản lý nhóm danh mục món ăn (Category Group) cho nhà hàng, bao gồm thêm, sửa, xóa, và bóc tách cấu trúc thực đơn.
+// File quan hệ: Gọi CategoryGroupRepository, tương tác DB qua Prisma và được gọi bởi CategoryGroupController, PublicCategoryController.
+// Chức năng đặc biệt: Tự động tra cứu restaurantId liên quan đến userId của chủ nhà hàng; tự động tạo một danh mục con gốc cùng tên khi tạo nhóm danh mục mới.
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, SOLID, Error Handling (bắt mã lỗi P2002 từ Prisma để phản hồi trực quan).
+// Các biến, hàm đặc biệt: getRestaurantId(), create(), findAllByRestaurantId(), getPublicHierarchy(), update(), delete().
+
 import {
   Injectable,
   NotFoundException,
@@ -10,15 +16,17 @@ import {
 } from '../dto/category-group.dto';
 import { MESSAGES } from '../../../common/constants/messages.constant';
 import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class CategoryGroupService {
-  constructor(private readonly categoryGroupRepo: CategoryGroupRepository) {}
+  constructor(
+    private readonly categoryGroupRepo: CategoryGroupRepository,
+    private readonly prisma: PrismaService,
+  ) {}
 
   private async getRestaurantId(userId: number): Promise<number> {
-    const restaurant = await this.categoryGroupRepo[
-      'prisma'
-    ].restaurant.findFirst({
+    const restaurant = await this.prisma.restaurant.findFirst({
       where: { ownerId: userId },
       orderBy: { id: 'asc' },
     });
@@ -28,7 +36,6 @@ export class CategoryGroupService {
 
   async create(userId: number, dto: CreateCategoryGroupDto) {
     const restaurantId = await this.getRestaurantId(userId);
-    const prisma = this.categoryGroupRepo['prisma'];
     try {
       // Tạo Group trước
       const group = await this.categoryGroupRepo.create({
@@ -38,7 +45,7 @@ export class CategoryGroupService {
       });
 
       // Tự động tạo 1 Category gốc cùng tên để người dùng có thể gán món ăn ngay
-      await prisma.category.create({
+      await this.prisma.category.create({
         data: {
           name: dto.name,
           order: 0,

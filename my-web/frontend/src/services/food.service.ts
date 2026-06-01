@@ -1,4 +1,11 @@
+/**
+ * Mục đích file này: Định nghĩa các dịch vụ API giao tiếp với Backend liên quan đến Thức ăn (Food), Quản trị (Admin) và Cửa hàng (Restaurant).
+ * Các file khác liên quan: Được gọi bởi các Hook nghiệp vụ (như useExploreActions, useRestaurantActions) để giao tiếp dữ liệu.
+ * Chức năng đặc biệt: getPublicRestaurants, updateRestaurantProfile, và các API tương tác món ăn công khai.
+ */
 import { apiClient } from '@/lib/api-client';
+import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
+import { Food, CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
   async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
@@ -26,7 +33,10 @@ export const foodService = {
   },
 
   async getMyFoods() {
-    return apiClient.get('/foods/my-foods').catch(() => []);
+    return apiClient.get('/foods/my-foods').catch((err) => {
+      console.error('Error fetching my foods:', err);
+      return [];
+    });
   },
 
   async getRecentViews(limit?: number) {
@@ -42,7 +52,7 @@ export const foodService = {
     }
   },
 
-  async createFood(data: any) {
+  async createFood(data: CreateFoodInput): Promise<boolean> {
     try {
       await apiClient.post('/foods', data);
       return true;
@@ -51,7 +61,7 @@ export const foodService = {
     }
   },
 
-  async createBulkFoods(data: any) {
+  async createBulkFoods(data: CreateBulkFoodsInput): Promise<boolean> {
     try {
       await apiClient.post('/foods/bulk', data);
       return true;
@@ -60,7 +70,7 @@ export const foodService = {
     }
   },
 
-  async updateFood(id: number, data: any) {
+  async updateFood(id: number, data: UpdateFoodInput): Promise<boolean> {
     try {
       await apiClient.patch(`/foods/${id}`, data);
       return true;
@@ -69,7 +79,7 @@ export const foodService = {
     }
   },
 
-  async deleteFood(id: number) {
+  async deleteFood(id: number): Promise<boolean> {
     try {
       await apiClient.delete(`/foods/${id}`);
       return true;
@@ -88,6 +98,13 @@ export const aiService = {
     }
   }
 };
+
+export interface FoodBatchUpdateInput {
+  id: number;
+  isFeaturedToday?: boolean;
+  isFeaturedWeekly?: boolean;
+  isAdminRecommended?: boolean;
+}
 
 export const adminService = {
   async getAllUsers(role?: string) {
@@ -113,9 +130,18 @@ export const adminService = {
     });
   },
 
-  async updateFood(id: number, data: any) {
+  async updateFood(id: number, data: UpdateFoodInput): Promise<boolean> {
     try {
       await apiClient.patch(`/admin/update-food/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async batchUpdateFoods(updates: FoodBatchUpdateInput[]) {
+    try {
+      await apiClient.patch('/admin/batch-update-foods', { updates });
       return true;
     } catch {
       return false;
@@ -181,11 +207,17 @@ export const adminService = {
 
 export const restaurantService = {
   async getMyRestaurant() {
-    return apiClient.get('/restaurants/my-restaurant').catch(() => null);
+    return apiClient.get('/restaurants/my-restaurant').catch((err) => {
+      console.error('Error fetching my restaurant:', err);
+      return null;
+    });
   },
 
   async getMyBranches() {
-    return apiClient.get('/restaurants/my-branches').catch(() => []);
+    return apiClient.get('/restaurants/my-branches').catch((err) => {
+      console.error('Error fetching my branches:', err);
+      return [];
+    });
   },
 
   async updateRestaurantStatus(isActive: boolean) {
@@ -197,13 +229,26 @@ export const restaurantService = {
     }
   },
 
-  async updateRestaurantProfile(data: { openingHours?: string; contactPhone?: string }) {
+  async updateRestaurantProfile(data: UpdateRestaurantInput): Promise<boolean> {
     try {
       await apiClient.patch('/restaurants/my-restaurant/profile', data);
       return true;
     } catch {
       return false;
     }
+  },
+
+  async getPublicRestaurants(params?: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ data: Restaurant[]; total: number }> {
+    return apiClient
+      .get('/restaurants', { params })
+      .catch(() => ({ data: [], total: 0 }));
   }
 };
 

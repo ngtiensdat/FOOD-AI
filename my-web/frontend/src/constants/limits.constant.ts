@@ -27,7 +27,7 @@ export const LIMITS = {
   /**
    * Bán kính mặc định để quét món ăn quanh đây (km)
    */
-  NEARBY_FOODS_RADIUS: 20,
+  NEARBY_FOODS_RADIUS: 5,
 
   /**
    * Thời gian tự động ẩn thông báo Toast (ms)

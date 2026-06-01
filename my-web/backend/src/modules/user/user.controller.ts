@@ -1,3 +1,9 @@
+// Mục đích: Định nghĩa các API cửa ngõ cho việc quản lý tài khoản người dùng, xem và cập nhật hồ sơ, theo dõi/hủy theo dõi người dùng khác.
+// File quan hệ: Nhận request từ Client, gọi UserService để xử lý nghiệp vụ và áp dụng các Guards để xác thực và phân quyền (JwtAuthGuard, JwtAuthOptionalGuard).
+// Chức năng đặc biệt: Cho phép xem hồ sơ công khai, cập nhật thông tin cá nhân (UpdateProfileDto), lấy danh sách người theo dõi và đang theo dõi của một người dùng, toggle theo dõi người dùng khác.
+// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, Guard Pattern, Decorator Pattern.
+// Các biến, hàm đặc biệt: getProfile(), updateProfile(), toggleFollowUser(), getFollowers(), getFollowing().
+
 import {
   Controller,
   Get,

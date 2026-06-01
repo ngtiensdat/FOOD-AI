@@ -1,3 +1,9 @@
+// Mục đích: Cung cấp dịch vụ quản lý thực đơn món ăn (Food) và các hành vi tương tác liên quan đến nhà hàng (Theo dõi, hồ sơ nhà hàng).
+// File quan hệ: Gọi FoodRepository, AiService và được gọi bởi FoodController, RestaurantController, RestaurantPublicController.
+// Chức năng đặc biệt: Xử lý tìm kiếm món ăn lân cận, bộ lọc theo thẻ (tags) và địa phương (thành phố, quận), CRUD món ăn (gán quyền sở hữu tương ứng, chống IDOR), tạo hàng loạt (bulk create) món ăn có trigger cập nhật vector embedding tương ứng trong background.
+// Kiến thức/Design Pattern: Service Layer Pattern, SOLID (Single Responsibility - Điều phối logic thực đơn, Dependency Inversion), Ownership Check (IDOR protection), Background Processing Pattern.
+// Các biến, hàm đặc biệt: getAllFoods(), trackView(), getRecentFoods(), getNearbyFoods(), getFeaturedToday(), getFeaturedWeekly(), getRecommended(), getMerchantFoods(), search(), createFood(), createBulk(), updateFood(), deleteFood(), toggleRecommend(), approveFood(), getRestaurant(), updateRestaurantProfile(), getRestaurantFollowers(), followRestaurant(), unfollowRestaurant(), checkFollowStatus(), getFollowingCount().
+
 import {
   Injectable,
   ForbiddenException,
@@ -12,6 +18,8 @@ import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
+import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
+import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 @Injectable()
 export class FoodService {
@@ -129,6 +137,16 @@ export class FoodService {
     return foods;
   }
 
+  async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
+    const { lat, lng, radius } = query;
+    if (lat === undefined || lng === undefined) return [];
+    return this.repository.findNearbyRestaurants(
+      lat,
+      lng,
+      radius || LIMITS.DEFAULT_NEARBY_RADIUS,
+    );
+  }
+
   async createFood(user: User, dto: CreateFoodDto) {
     // 1. Kiểm tra xem cơ sở (Restaurant) được chọn có thuộc quyền sở hữu của Merchant không
     const restaurant = await this.repository.findRestaurantById(
@@ -137,9 +155,7 @@ export class FoodService {
     if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
 
     if (user.role === UserRole.RESTAURANT && restaurant.ownerId !== user.id) {
-      throw new ForbiddenException(
-        'Bạn không có quyền đăng món ăn vào cơ sở này.',
-      );
+      throw new ForbiddenException(MESSAGES.FOOD.NO_POST_PERMISSION);
     }
 
     // 2. Tự động sao chép thông tin địa chỉ từ chi nhánh (Onboarding) sang món ăn
@@ -366,7 +382,12 @@ export class FoodService {
   }
 
   async approveFood(id: number, status: FoodStatus) {
-    return this.repository.update(id, { status });
+    return this.repository.update(id, {
+      status,
+      isAdminRecommended: false,
+      isFeaturedToday: false,
+      isFeaturedWeekly: false,
+    });
   }
   async getMyRestaurant(user: User) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
@@ -394,19 +415,16 @@ export class FoodService {
     return this.repository.updateRestaurantStatus(restaurant.id, isActive);
   }
 
-  async updateMyRestaurantProfile(
-    user: User,
-    openingHours?: string,
-    contactPhone?: string,
-  ) {
+  async updateMyRestaurantProfile(user: User, dto: UpdateRestaurantProfileDto) {
     const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
     if (!restaurant) {
       throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
     }
-    return this.repository.updateRestaurantProfile(restaurant.id, {
-      openingHours,
-      contactPhone,
-    });
+    return this.repository.updateRestaurantProfileTransaction(
+      restaurant.id,
+      user.id,
+      dto,
+    );
   }
 
   async getPublicRestaurant(id: number, requestingUser?: User) {
@@ -474,15 +492,11 @@ export class FoodService {
       where.categoryId = categoryId;
     }
 
-    const [data, total] = await Promise.all([
-      this.repository['prisma'].food.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.repository['prisma'].food.count({ where }),
-    ]);
+    const { data, total } = await this.repository.findManyFoodsWithPagination(
+      where,
+      (page - 1) * pageSize,
+      pageSize,
+    );
 
     return {
       items: data,
@@ -540,5 +554,16 @@ export class FoodService {
       await this.repository.followRestaurant(userId, restaurantId);
       return { followed: true };
     }
+  }
+
+  async getPublicRestaurants(filters: {
+    search?: string;
+    city?: string;
+    district?: string;
+    tag?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
+    return this.repository.findManyPublicRestaurants(filters);
   }
 }

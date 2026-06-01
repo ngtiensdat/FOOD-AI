@@ -9,12 +9,13 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CheckCircle2, X, Plus, Trash2, MapPin, Compass } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
-import { useOnboardingActions } from '@/hooks/useOnboardingActions';
+import { useOnboardingActions, OnboardingSubmitData } from '@/hooks/useOnboardingActions';
 import { LOCATION_DATA } from '@/constants/location.constant';
+import { User } from '@/types/user';
 
 interface OnboardingModalProps {
-  user: Record<string, unknown>;
-  onComplete: (data: Record<string, unknown>) => void;
+  user: User;
+  onComplete: (data: OnboardingSubmitData) => void;
   show?: boolean; // Cho phép force show từ Dashboard
   onClose?: () => void; // Cho phép đóng khi đang ở Dashboard
   title?: string;

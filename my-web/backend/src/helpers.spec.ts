@@ -29,9 +29,9 @@ describe('Unit Tests: Frontend Utility Helpers', () => {
 
   describe('getValidImageUrl()', () => {
     it('should return default fallback placeholder for empty or invalid inputs', () => {
-      expect(getValidImageUrl(null)).toBe('/placeholder-food.svg');
-      expect(getValidImageUrl(undefined)).toBe('/placeholder-food.svg');
-      expect(getValidImageUrl('abc')).toBe('/placeholder-food.svg');
+      expect(getValidImageUrl(null)).toBe('/placeholder-food.png');
+      expect(getValidImageUrl(undefined)).toBe('/placeholder-food.png');
+      expect(getValidImageUrl('abc')).toBe('/placeholder-food.png');
     });
 
     it('should return valid relative, external, or data URLs', () => {

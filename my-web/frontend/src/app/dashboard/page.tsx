@@ -15,11 +15,11 @@ import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
 import { UserDropdown } from '@/components/features/UserDropdown';
 import { Avatar } from '@/components/base/Avatar';
-import { AiSuggestionBanner } from '@/components/features/AiSuggestionBanner';
-import { UserProfileDetail } from '@/components/features/UserProfileDetail';
-import { RecentFoodsList } from '@/components/features/RecentFoodsList';
-import { FoodDetailModal } from '@/components/features/FoodDetailModal';
-import { FoodCard } from '@/components/features/FoodCard';
+import { AiSuggestionBanner } from '@/components/features/ai/AiSuggestionBanner';
+import { UserProfileDetail } from '@/components/features/profile/UserProfileDetail';
+import { RecentFoodsList } from '@/components/features/food/RecentFoodsList';
+import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
+import { FoodCard } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 
