@@ -6,7 +6,6 @@ import { toast } from '@/store/useToastStore';
 import { adminService, FoodBatchUpdateInput } from '@/services/food.service';
 import { UserRole, UserStatus, User } from '@/types/user';
 import { AdminFoodItem } from '@/types/food';
-import { AdminTableItem } from '@/components/features/admin/AdminTable';
 import { AdminFoodFormData } from '@/components/features/admin/AdminFoodModal';
 
 export interface UpdateFoodPayload {
@@ -57,7 +56,7 @@ export const useAdminActions = (adminData: AdminData) => {
   // --- State Management ---
   const [activeTab, setActiveTab] = useState<'merchants' | 'users' | 'menu' | 'customers'>('merchants');
   const [foodSubTab, setFoodSubTab] = useState<'system' | 'merchant'>('merchant');
-  const [editingFood, setEditingFood] = useState<AdminTableItem | null>(null);
+  const [editingFood, setEditingFood] = useState<AdminFoodItem | null>(null);
   const [editFormData, setEditFormData] = useState<AdminFoodFormData>({
     name: '',
     price: '',
@@ -152,7 +151,7 @@ export const useAdminActions = (adminData: AdminData) => {
     }
   };
 
-  const openEditModal = (food: AdminTableItem) => {
+  const openEditModal = (food: AdminFoodItem) => {
     setEditingFood(food);
     setEditFormData({ 
       name: food.name || '',

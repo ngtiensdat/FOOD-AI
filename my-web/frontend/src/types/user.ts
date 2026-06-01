@@ -40,6 +40,8 @@ export interface User {
   isFollowing?: boolean;
   hasCompletedOnboarding?: boolean;
   avatar?: string;
+  createdAt?: string;
+  legalDocs?: string;
 }
 
 export interface UpdateProfileData {

@@ -6,7 +6,8 @@
 // Các biến, hàm đặc biệt: AdminTable (component chính), AdminTableItem (kiểu dữ liệu).
 
 import React from 'react';
-import { UserStatus } from '@/types/user';
+import { User } from '@/types/user';
+import { AdminFoodItem } from '@/types/food';
 import { FoodBatchUpdateInput } from '@/services/food.service';
 import { UpdateFoodPayload } from '@/hooks/useAdminActions';
 import { LABELS } from '@/constants/labels';
@@ -15,33 +16,18 @@ import { AdminUserTable } from './AdminUserTable';
 import { AdminSystemFoodTable } from './AdminSystemFoodTable';
 import { AdminMerchantFoodTable } from './AdminMerchantFoodTable';
 
-export interface AdminTableItem {
-  id: number;
-  name: string;
-  email?: string;
-  price?: number;
-  createdAt?: string;
-  status: UserStatus | string;
-  isFeaturedToday?: boolean;
-  isFeaturedWeekly?: boolean;
-  isAdminRecommended?: boolean;
-  restaurantId?: number | null;
-  restaurant?: { name: string; id?: number } | null;
-  [key: string]: unknown;
-}
-
 interface AdminTableProps {
   activeTab: string;
   foodSubTab?: 'system' | 'merchant';
   loading: boolean;
-  filteredData: AdminTableItem[];
+  filteredData: any[];
   actions: {
     handleUpdateStatus: (id: number, status: string) => void;
     handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
     handleRecommendFood: (id: number, newValue: boolean) => void;
     handleDeleteFood: (id: number) => void;
     handleDeleteUser: (id: number) => void;
-    openEditModal: (food: AdminTableItem) => void;
+    openEditModal: (food: any) => void;
     handleApproveFood?: (id: number, status: string) => void;
     handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
     handleBatchUpdate?: (updates: FoodBatchUpdateInput[]) => Promise<boolean>;
@@ -55,20 +41,10 @@ export const AdminTable = ({
   filteredData,
   actions,
 }: AdminTableProps) => {
-  if (loading) {
-    const isMerchantMenu = activeTab === 'menu' && foodSubTab === 'merchant';
-    const colSpan = isMerchantMenu ? 5 : 4;
+  if (loading && filteredData.length === 0) {
     return (
-      <div className="card-container overflow-hidden">
-        <table className="w-full text-left">
-          <tbody className="text-body">
-            <tr>
-              <td colSpan={colSpan} className="px-8 py-12 text-center text-gray-400">
-                {LABELS.COMMON.LOADING}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="card-container p-12 text-center text-gray-400 font-bold bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        {LABELS.COMMON.LOADING}
       </div>
     );
   }
@@ -76,7 +52,7 @@ export const AdminTable = ({
   if (activeTab === 'merchants') {
     return (
       <AdminMerchantApprovalTable
-        filteredData={filteredData}
+        filteredData={filteredData as User[]}
         actions={actions}
       />
     );
@@ -85,7 +61,7 @@ export const AdminTable = ({
   if (activeTab === 'users' || activeTab === 'customers') {
     return (
       <AdminUserTable
-        filteredData={filteredData}
+        filteredData={filteredData as User[]}
         actions={actions}
       />
     );
@@ -95,14 +71,14 @@ export const AdminTable = ({
     if (foodSubTab === 'system') {
       return (
         <AdminSystemFoodTable
-          filteredData={filteredData}
+          filteredData={filteredData as AdminFoodItem[]}
           actions={actions}
         />
       );
     } else {
       return (
         <AdminMerchantFoodTable
-          filteredData={filteredData}
+          filteredData={filteredData as AdminFoodItem[]}
           actions={actions}
         />
       );

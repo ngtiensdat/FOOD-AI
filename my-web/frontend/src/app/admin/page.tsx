@@ -20,7 +20,7 @@ import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
 // Feature Components
-import { AdminTable, AdminTableItem } from '@/components/features/admin/AdminTable';
+import { AdminTable } from '@/components/features/admin/AdminTable';
 import { AdminFoodModal } from '@/components/features/admin/AdminFoodModal';
 import { AdminImportExcelModal } from '@/components/features/admin/AdminImportExcelModal';
 import { FileUp } from 'lucide-react';
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
-          filteredData={filteredData as unknown as AdminTableItem[]}
+          filteredData={filteredData}
           actions={actions}
         />
       </main>

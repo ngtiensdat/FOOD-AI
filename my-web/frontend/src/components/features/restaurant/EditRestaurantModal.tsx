@@ -4,10 +4,11 @@
  * @description Modal chỉnh sửa thông tin nhà hàng toàn diện cho Merchant, tích hợp bộ chọn địa điểm động, cờ đồng bộ ảnh cá nhân, và live preview.
  **/
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Store } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
+import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { LABELS } from '@/constants/labels';
 import { useEditRestaurant } from '@/hooks/useEditRestaurant';
 import { RestaurantLivePreview } from './RestaurantLivePreview';
@@ -64,10 +65,18 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
     handleSubmit,
   } = useEditRestaurant({ restaurant, isOpen, onSave, onClose });
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md overflow-y-auto">
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md overflow-y-auto">
       <div className="bg-white dark:bg-slate-900 rounded-card w-full max-w-4xl shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-800 transition-all duration-300 flex flex-col md:flex-row h-[90vh] max-h-[750px]">
         
         {/* Left Column: Real-time Live Preview Panel */}
@@ -108,7 +117,7 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
           )}
 
           {/* Form Content */}
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
+          <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-between">
             {/* Tabs Navigation */}
             <div className="flex gap-2 mb-6 border-b border-gray-50 dark:border-slate-800 pb-3">
               {(['info', 'images', 'contact'] as const).map((tab) => (
@@ -198,5 +207,20 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
 
       </div>
     </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={LABELS.RESTAURANT.EDIT_MODAL.CONFIRM_TITLE}
+        message={LABELS.RESTAURANT.EDIT_MODAL.CONFIRM_DESC}
+        confirmText={LABELS.COMMON.SAVE}
+        cancelText={LABELS.COMMON.CANCEL}
+        onConfirm={() => {
+          setShowConfirm(false);
+          handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+        }}
+        onCancel={() => setShowConfirm(false)}
+        variant="info"
+      />
+    </>
   );
 };
