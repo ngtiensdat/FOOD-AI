@@ -60,7 +60,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
 
         {/* Gợi ý Tag */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
-          <span className="text-small text-gray-400 dark:text-gray-550 font-bold mr-2 self-center">{LABELS.EXPLORE.SUGGESTED_TAGS}</span>
+          <span className="text-small text-gray-400 dark:text-gray-400 font-bold mr-2 self-center">{LABELS.EXPLORE.SUGGESTED_TAGS}</span>
           {SUGGESTED_TAGS.map(t => (
             <button
               suppressHydrationWarning

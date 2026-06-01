@@ -28,7 +28,7 @@ export function MiniFoodCard({ food, onViewDetail }: MiniFoodCardProps) {
       className="flex items-center gap-4 p-3 bg-white dark:bg-slate-950 hover:bg-orange-50/30 dark:hover:bg-slate-900/30 border border-gray-100 dark:border-slate-800 rounded-2xl cursor-pointer transition-all duration-350 shadow-sm hover:shadow-md group focus:outline-none focus:ring-2 focus:ring-primary"
     >
       {/* Ảnh món ăn nhỏ 3x3 cm (80px x 80px) */}
-      <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-55 dark:bg-slate-800 border border-gray-50 dark:border-slate-800">
+      <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-slate-800 border border-gray-50 dark:border-slate-800">
         {food.image ? (
           <SafeImage 
             src={getValidImageUrl(food.image)} 

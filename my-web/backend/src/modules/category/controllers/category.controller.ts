@@ -31,42 +31,36 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
-  async create(
-    @GetUser('id') restaurantId: number,
-    @Body() dto: CreateCategoryDto,
-  ) {
-    const data = await this.categoryService.create(restaurantId, dto);
+  async create(@GetUser('id') userId: number, @Body() dto: CreateCategoryDto) {
+    const data = await this.categoryService.create(userId, dto);
     return { data };
   }
 
   @Get()
   async findAll(
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
     @Query('groupId', ParseIntPipe) groupId: number,
   ) {
-    const data = await this.categoryService.findAllByGroupId(
-      groupId,
-      restaurantId,
-    );
+    const data = await this.categoryService.findAllByGroupId(groupId, userId);
     return { data };
   }
 
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
     @Body() dto: UpdateCategoryDto,
   ) {
-    const data = await this.categoryService.update(id, restaurantId, dto);
+    const data = await this.categoryService.update(id, userId, dto);
     return { data };
   }
 
   @Delete(':id')
   async delete(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
   ) {
-    const data = await this.categoryService.delete(id, restaurantId);
+    const data = await this.categoryService.delete(id, userId);
     return { data };
   }
 }
