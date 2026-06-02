@@ -63,6 +63,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   const useNextImage = isWhitelisted(imgSrc);
 
   if (useNextImage) {
+    const isLocal = imgSrc.startsWith("/") || imgSrc.startsWith("data:") || imgSrc.startsWith("blob:");
     return (
       <Image
         src={imgSrc}
@@ -74,6 +75,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
         style={style}
         priority={priority}
         onError={handleError}
+        unoptimized={isLocal || props.unoptimized}
         {...props}
       />
     );

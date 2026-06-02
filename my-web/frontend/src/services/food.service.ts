@@ -90,11 +90,84 @@ export const foodService = {
 };
 
 export const aiService = {
-  async chat(message: string, lat?: number, lng?: number, city?: string, district?: string) {
+  async chat(
+    message: string,
+    lat?: number,
+    lng?: number,
+    city?: string,
+    district?: string,
+    temperature?: number,
+    isRaining?: boolean,
+    conversationId?: number
+  ) {
     try {
-      return await apiClient.post('/ai/chat', { message, lat, lng, city, district });
+      const response = await apiClient.post('/ai/chat', {
+        message,
+        lat,
+        lng,
+        city,
+        district,
+        temperature,
+        isRaining,
+        conversationId,
+      });
+      return response.data || response;
     } catch {
       return { reply: '', suggestions: [] };
+    }
+  },
+
+  async getConversations() {
+    try {
+      const response = await apiClient.get('/ai/conversations');
+      return response.data || response;
+    } catch {
+      return [];
+    }
+  },
+
+  async createConversation() {
+    try {
+      const response = await apiClient.post('/ai/conversations');
+      return response.data || response;
+    } catch {
+      return null;
+    }
+  },
+
+  async getConversationDetail(id: number) {
+    try {
+      const response = await apiClient.get(`/ai/conversations/${id}`);
+      return response.data || response;
+    } catch {
+      return null;
+    }
+  },
+
+  async deleteConversation(id: number) {
+    try {
+      await apiClient.delete(`/ai/conversations/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async getContext() {
+    try {
+      const response = await apiClient.get('/ai/context');
+      return response.data || response;
+    } catch {
+      return null;
+    }
+  },
+
+  async clearContext() {
+    try {
+      await apiClient.delete('/ai/context');
+      return true;
+    } catch {
+      return false;
     }
   }
 };

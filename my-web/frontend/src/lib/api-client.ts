@@ -47,64 +47,85 @@ class ApiClient {
       }
     }
 
-    console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
-    let response = await fetch(url.toString(), config);
-    console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
+    try {
+      console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
+      let response = await fetch(url.toString(), config);
+      console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
-    // Xử lý Refresh Token tự động nếu nhận lỗi 401
-    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
-      if (!this.refreshPromise) {
-        this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, { 
-            method: 'POST', 
-            credentials: 'include' 
-        })
-          .then((res) => res.ok)
-          .catch((error) => {
-            console.error('Refresh token error:', error);
-            return false;
+      // Xử lý Refresh Token tự động nếu nhận lỗi 401
+      if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+        if (!this.refreshPromise) {
+          this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, { 
+              method: 'POST', 
+              credentials: 'include' 
           })
-          .finally(() => {
-            this.refreshPromise = null;
-          });
-      }
+            .then((res) => res.ok)
+            .catch((error) => {
+              console.error('Refresh token error:', error);
+              return false;
+            })
+            .finally(() => {
+              this.refreshPromise = null;
+            });
+        }
 
-      const isRefreshed = await this.refreshPromise;
-      
-      if (isRefreshed) {
-        response = await fetch(url.toString(), config);
-      } else {
-        if (typeof window !== 'undefined') {
-          const { useAuthStore } = await import('@/store/useAuthStore');
-          useAuthStore.getState().logout();
-          window.location.href = '/login';
-          // Hang the promise to prevent throwing errors while redirecting
-          return new Promise(() => {});
+        const isRefreshed = await this.refreshPromise;
+        
+        if (isRefreshed) {
+          response = await fetch(url.toString(), config);
+        } else {
+          if (typeof window !== 'undefined') {
+            const { useAuthStore } = await import('@/store/useAuthStore');
+            useAuthStore.getState().logout();
+            window.location.href = '/login';
+            // Hang the promise to prevent throwing errors while redirecting
+            return new Promise(() => {});
+          }
         }
       }
-    }
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-      console.error(`[ApiClient] Request failed for ${endpoint}:`, errorData);
-      
-      // Lấy message từ mảng errors của Backend
-      let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
-      if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-        errorMessage = errorData.errors[0].message;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+        console.error(`[ApiClient] Request failed for ${endpoint}:`, errorData);
+        
+        console.error("Request failed details", {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          message: errorData?.message,
+          errors: errorData?.errors
+        });
+
+        // Lấy message từ mảng errors của Backend
+        let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+        if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+          errorMessage = errorData.errors[0].message;
+        }
+        
+        throw new Error(errorMessage);
       }
+
+      const result = await response.json();
+      console.log(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
       
-      throw new Error(errorMessage);
-    }
+      // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
+      if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {
+        return result.data;
+      }
 
-    const result = await response.json();
-    console.log(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
-    
-    // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
-    if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {
-      return result.data;
+      return result;
+    } catch (error: any) {
+      console.error("Request failed", {
+        endpoint,
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        response: error?.response?.data || error?.message,
+        status: error?.status || 'network_error'
+      });
+      throw error;
     }
-
-    return result;
   }
 
   async get(endpoint: string, options?: RequestOptions) {

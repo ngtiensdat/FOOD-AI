@@ -514,6 +514,9 @@ export const LABELS = {
     TITLE_START: 'Bạn muốn ăn gì',
     TITLE_HIGHLIGHT: 'hôm nay?',
     DESCRIPTION: 'Hãy kể cho AI nghe về tâm trạng, ngân sách hoặc sở thích của bạn. Chúng tôi sẽ gợi ý món ăn hoàn hảo nhất ngay gần bạn.',
+    BG_ALT: 'Hình nền trang chủ',
+    OPEN_AI_TOOLTIP: 'Bật trợ lý AI',
+    SEARCH_PLACEHOLDER: 'Hôm nay bạn muốn ăn gì? (Ví dụ: Thèm bún chả gần đây, Tìm trà sữa dưới 50k...)',
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',
@@ -732,5 +735,72 @@ export const LABELS = {
       SPICY: 'cay',
       HEALTHY: 'healthy'
     }
+  },
+  AI_CHAT: {
+    SIDEBAR: {
+      NEW_CHAT: 'Đoạn chat mới',
+      RECENT: 'Gần đây',
+      NO_CHAT: 'Chưa có đoạn chat nào',
+      CLOSE_SIDEBAR: 'Đóng sidebar',
+      DELETE_CHAT: 'Xóa đoạn chat',
+      CUSTOMER: 'Khách hàng',
+      FREE_PLAN: 'Free Plan',
+      REFRESH_LIST: 'Làm mới danh sách',
+    },
+    HEADER: {
+      OPEN_SIDEBAR: 'Mở sidebar',
+      SIMULATE_CONTEXT: 'Giả lập ngữ cảnh',
+      COLLAPSE_CHAT: 'Thu gọn khung chat',
+      ACTIVE: 'Đang hoạt động',
+    },
+    CONFIG: {
+      WEATHER_TITLE: 'Mô phỏng Thời tiết',
+      TEMPERATURE: 'Nhiệt độ',
+      STATUS: 'Trạng thái',
+      RAINY: 'Trời mưa 🌧️',
+      DRY: 'Trời khô ráo ☀️',
+      LOCATION_TITLE: 'Tọa độ giả lập',
+      GPS_COORDS: 'Tọa độ GPS',
+      UPDATE_GPS: 'Cập nhật GPS hiện tại',
+      TIPS_TITLE: '💡 Mẹo kiểm thử ngữ cảnh:',
+      TIP_1: '1. Chọn **Trời mưa** hoặc **Lười di chuyển** (nói *"lười đi"*), AI sẽ ưu tiên các món siêu gần.',
+      TIP_2: '2. Chỉnh nhiệt độ **>33°C**, AI sẽ gợi ý đồ giải nhiệt (trà sữa, chè, kem).',
+      WEATHER_TEMP_LIMITS: {
+        MIN: 15,
+        MAX: 42,
+      },
+      GPS_DEFAULTS: {
+        LAT: 10.7769,
+        LNG: 106.7009,
+      },
+      CITY_DEFAULTS: {
+        NAME: 'TP. Hồ Chí Minh',
+      }
+    },
+    FEED: {
+      WELCOME: 'Xin chào! Tôi có thể giúp gì cho bạn hôm nay?',
+      WELCOME_SUB: 'Hãy hỏi tôi bất kỳ điều gì (Ví dụ: "Hôm nay ăn gì ngon", "Tôi muốn tìm quán bún chả gần đây",...)',
+      SUGGESTION: 'Gợi ý cho bạn:',
+      SEND_MESSAGE: 'Gửi tin nhắn',
+    },
+    INPUT: {
+      PLACEHOLDER: 'Hỏi trợ lý ẩm thực AI...',
+      SEND: 'Gửi',
+      SEARCH: 'Trò chuyện ngay!'
+    },
+    CONFIRM: {
+      DELETE_CHAT: 'Bạn có chắc chắn muốn xóa đoạn hội thoại này không?',
+      EMPTY_CHAT_WARNING: 'Bạn đã có một đoạn chat mới chưa sử dụng.',
+      ERROR_FALLBACK: 'Xin lỗi, tôi gặp chút trục trặc hệ thống.',
+    },
+    TOAST: {
+      GPS_SUCCESS: 'Đã cập nhật tọa độ từ GPS của thiết bị.',
+      GPS_ERROR: 'Không thể lấy tọa độ GPS từ trình duyệt.',
+      GPS_NOT_SUPPORTED: 'Trình duyệt không hỗ trợ GPS.',
+      LOAD_HISTORY_ERROR: 'Lỗi tải lịch sử cuộc hội thoại:',
+      SEND_FIRST_ERROR: 'Lỗi gửi tin nhắn đầu tiên:',
+      GPS_WARN: 'Không lấy được GPS thực tế, dùng GPS giả lập mặc định:',
+    }
   }
 };
+
