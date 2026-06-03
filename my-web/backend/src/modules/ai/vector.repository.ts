@@ -70,7 +70,7 @@ export class VectorRepository {
           AND (
             CAST(${categoryFilter} AS text) = 'ALL' OR
             (CAST(${categoryFilter} AS text) = 'DRINK' AND c.name ILIKE '%uống%') OR
-            (CAST(${categoryFilter} AS text) = 'FOOD' AND c.name NOT ILIKE '%uống%')
+            (CAST(${categoryFilter} AS text) = 'FOOD' AND (c.name IS NULL OR c.name NOT ILIKE '%uống%'))
           )
       )
       SELECT id, name, price, description, image, tags, "restaurantName", address, lat, lng, "categoryName", "embeddingSimilarity", "distance_km",

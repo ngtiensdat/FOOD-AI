@@ -1,15 +1,22 @@
+/**
+ * Mục đích: Service quản lý việc tìm kiếm vector tương đồng món ăn và chấm điểm, lọc các đề xuất phù hợp nhất.
+ * File quan hệ: Kết hợp FoodRetrievalService và RerankingService.
+ */
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { VectorRepository, SearchResult } from '../vector.repository';
+import { SearchResult } from '../vector.repository';
 import { RerankingService } from './reranking.service';
+import { FoodRetrievalService } from './food-retrieval.service';
 import { DialogueState } from '../interfaces/dialogue-state.interface';
 import { AI_PARAMETERS } from '../constants/ai-parameters.constant';
+import { FoodIntent } from '../constants/food-intent.enum';
 
 @Injectable()
 export class RecommendationService {
   constructor(
-    private readonly vectorRepository: VectorRepository,
     private readonly rerankingService: RerankingService,
+    private readonly retrievalService: FoodRetrievalService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -25,45 +32,43 @@ export class RecommendationService {
     city?: string,
     district?: string,
     weather?: { temperature: number; isRaining: boolean },
+    message?: string,
+    intent?: FoodIntent,
+    needs?: Record<string, number>,
+    feedbackProfile?: {
+      likedFoods: string[];
+      likedCategories: string[];
+      dislikedFoods: string[];
+      dislikedCategories: string[];
+    },
   ): Promise<{ foods: SearchResult[]; shouldRecommend: boolean }> {
-    const dbDistrict =
-      district && district !== 'Vị trí GPS hiện tại' ? district : undefined;
-    const dbCity = city ? city : undefined;
-
-    // 1. Thực hiện Hybrid Search tìm candidates
-    let rawFoods = await this.vectorRepository.hybridSearch(
+    // 1. Retrieve candidates (uses relational fallback inside if vector results are empty)
+    const rawFoods = await this.retrievalService.retrieveCandidates(
       userVector,
       userLat,
       userLng,
-      30,
-      dbCity,
-      dbDistrict,
+      city,
+      district,
       state.slots.category || 'ALL',
+      null, // maxDistanceKm
+      intent,
+      state,
     );
 
-    // Fallback tìm kiếm toàn quốc nếu không có món phù hợp tại địa phương
-    if (rawFoods.length === 0 && (dbCity || dbDistrict)) {
-      rawFoods = await this.vectorRepository.hybridSearch(
-        userVector,
-        userLat,
-        userLng,
-        30,
-        undefined,
-        undefined,
-        state.slots.category || 'ALL',
-      );
-    }
-
-    // 2. Chạy Reranking
+    // 2. Run Context Reranking (passing intent, needs, and feedbackProfile parameters)
     const reRanked = this.rerankingService.contextReranking(
       rawFoods,
       state,
       userLat,
       userLng,
       weather,
+      message,
+      intent,
+      needs,
+      feedbackProfile,
     );
 
-    // 3. Đánh giá tính tương thích của món ăn theo cấu hình tập trung
+    // 3. Evaluate eligibility thresholds
     const thresholds = this.getParam('thresholds', AI_PARAMETERS.THRESHOLDS);
     const minThreshold = thresholds.minSimilarity;
     const directThreshold = thresholds.directMatch;
@@ -94,20 +99,56 @@ export class RecommendationService {
       return nameLower.includes(cuisine) || catNameLower.includes(cuisine);
     });
 
-    // Quyết định đề xuất món ăn
-    const shouldRecommend = matchedFoods.length > 0 || hasDirectIntentMatch;
+    // Check if the user query is a general recommendation request
+    const hasCuisine = !!state.slots.cuisineType;
+    const isGeneralRec =
+      !hasCuisine && message && this.isGeneralRecommendationIntent(message);
 
+    let shouldRecommend = false;
     let foods: SearchResult[] = [];
-    if (shouldRecommend) {
-      foods = matchedFoods;
-      if (foods.length === 0 && reRanked.length > 0) {
-        foods = reRanked.slice(0, 3);
+
+    // If intent is FIND_NEARBY and we got candidates, we definitely want to recommend them sorted by proximity
+    if (intent === FoodIntent.FIND_NEARBY) {
+      shouldRecommend = reRanked.length > 0;
+      foods = reRanked.slice(0, 3);
+    } else if (hasCuisine) {
+      shouldRecommend = matchedFoods.length > 0 || hasDirectIntentMatch;
+      if (shouldRecommend) {
+        foods = matchedFoods;
+        if (foods.length === 0 && reRanked.length > 0) {
+          foods = reRanked.slice(0, 3);
+        }
       }
+    } else if (isGeneralRec) {
+      shouldRecommend = true;
+      foods = reRanked.slice(0, 3);
     }
 
     return {
       foods,
       shouldRecommend,
     };
+  }
+
+  private isGeneralRecommendationIntent(message: string): boolean {
+    const msg = message.toLowerCase();
+    const keywords = [
+      'ăn gì',
+      'uống gì',
+      'món gì',
+      'gợi ý',
+      'đề xuất',
+      'ngon',
+      'recommend',
+      'suggest',
+      'đói',
+      'thèm',
+      'quán nào',
+      'món nào',
+      'chọn hộ',
+      'chọn giúp',
+      'tư vấn',
+    ];
+    return keywords.some((kw) => msg.includes(kw));
   }
 }

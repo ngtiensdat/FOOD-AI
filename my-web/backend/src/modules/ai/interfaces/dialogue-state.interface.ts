@@ -1,3 +1,8 @@
+/**
+ * Mục đích: Định nghĩa interface mô tả DialogueState lưu trữ thông tin bối cảnh hội thoại chat hiện tại.
+ * File quan hệ: Được sử dụng bởi DialogueStateManagerService và các Prompt Builder.
+ */
+
 export interface DialogueState {
   title?: string;
   slots: {
@@ -7,6 +12,7 @@ export interface DialogueState {
     companion?: 'SINGLE' | 'FAMILY' | 'DATE' | 'FRIENDS';
     mobility?: 'LAZY' | 'NORMAL' | 'EXPLORE';
     emotion?: 'TIRED' | 'REWARD' | 'STRESSED' | 'NORMAL';
+    allergies?: string[]; // chất dị ứng như: đậu phộng, hải sản...
   };
   current_stage: 'COLLECTING' | 'RECOMMENDED' | 'FEEDBACK';
   rejected_food_ids: number[];
@@ -21,6 +27,12 @@ export interface PromptResponse {
   reply: string;
   suggestedFoodIds?: number[];
   quickReplies?: Array<{ label: string; text: string }>;
+  assessment?: {
+    mainNeed: string;
+    secondaryNeeds: string[];
+    confidence: number;
+    explanation: string;
+  };
 }
 
 export type SlotExtractionResult = Partial<DialogueState['slots']>;

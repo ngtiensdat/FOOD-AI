@@ -10,11 +10,16 @@ import { aiService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 
+import { useAuth } from '@/hooks/useAuth';
+
+import { FoodCardData } from '@/components/features/food/FoodCard';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'ai';
   content: string;
-  suggestions?: any[];
+  suggestions?: FoodCardData[];
+  isAuthPrompt?: boolean;
 }
 
 interface UseAiChatParams {
@@ -22,7 +27,28 @@ interface UseAiChatParams {
   onResetChat?: () => void;
 }
 
+interface DBConversationItem {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+interface DBMessage {
+  id: number | string;
+  role: string;
+  content: string;
+}
+
+// Bộ nhớ đệm ngoài hook để chống gửi trùng lặp do React Strict Mode hoặc Remount
+const sentInitialMessages = new Set<string>();
+
 export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
+  const { isAuthenticated } = useAuth();
+
+  if (!initialMessage && sentInitialMessages.size > 0) {
+    sentInitialMessages.clear();
+  }
+
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (initialMessage) {
       return [{ id: 'user-init', role: 'user', content: initialMessage }];
@@ -69,60 +95,102 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     scrollToBottom('smooth');
   }, [messages, isLoading]);
 
-  const loadConversations = async () => {
+  const loadConversations = async (overrideActiveId?: number | null) => {
     const list = await aiService.getConversations();
-    setConversations(list);
-    return list;
+    const currentActiveId = overrideActiveId !== undefined ? overrideActiveId : activeConversationId;
+    const updatedList = list.map((c: DBConversationItem) => {
+      if (
+        c.id === currentActiveId &&
+        c.title === LABELS.AI_CHAT.SIDEBAR.NEW_CHAT &&
+        initialMessage
+      ) {
+        const tempTitle = initialMessage.length > 25 ? `${initialMessage.substring(0, 22)}...` : initialMessage;
+        return { ...c, title: tempTitle };
+      }
+      return c;
+    });
+    setConversations(updatedList);
+    return updatedList;
   };
 
   // Load danh sách cuộc trò chuyện khi component mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      const initialMsgs: ChatMessage[] = [];
+      if (initialMessage) {
+        initialMsgs.push({ id: 'user-init', role: 'user', content: initialMessage });
+      }
+      initialMsgs.push({
+        id: 'auth-required',
+        role: 'ai',
+        content: LABELS.CUSTOMER.AI_LOGIN_REQUIRED,
+        isAuthPrompt: true
+      });
+      setMessages(initialMsgs);
+      setIsLoading(false);
+      return;
+    }
+
+    let active = true;
     async function initChats() {
       setIsLoading(true);
       
       if (initialMessage) {
         // Nếu người dùng bắt đầu từ thanh Hero, tạo một cuộc hội thoại mới tinh để tách biệt hoàn toàn bối cảnh
         const newConv = await aiService.createConversation();
-        if (newConv) {
+        if (newConv && active) {
           setActiveConversationId(newConv.id);
-          await loadConversations();
+          await loadConversations(newConv.id);
         }
       } else {
         const list = await loadConversations();
-        if (list.length > 0) {
-          // Tự động chọn cuộc hội thoại đầu tiên gần nhất
-          setActiveConversationId(list[0].id);
-        } else {
-          // Tự động tạo cuộc trò chuyện mới tinh nếu chưa có
-          const newConv = await aiService.createConversation();
-          if (newConv) {
-            setActiveConversationId(newConv.id);
-            await loadConversations();
+        if (active) {
+          if (list.length > 0) {
+            // Tự động chọn cuộc hội thoại đầu tiên gần nhất
+            setActiveConversationId(list[0].id);
+          } else {
+            // Tự động tạo cuộc trò chuyện mới tinh nếu chưa có
+            const newConv = await aiService.createConversation();
+            if (newConv && active) {
+              setActiveConversationId(newConv.id);
+              await loadConversations(newConv.id);
+            }
           }
         }
       }
-      setIsLoading(false);
+      if (active) {
+        setIsLoading(false);
+      }
     }
     initChats();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [initialMessage, isAuthenticated]);
 
   // Tải chi tiết lịch sử tin nhắn của cuộc trò chuyện hiện tại
   useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
     async function loadConvHistory() {
       if (!activeConversationId) return;
       
       // Nếu có activeInitialMessage và chưa gửi, ta giữ nguyên state messages là [{ id: 'user-init', ... }] để nó tự động gửi
       if (activeInitialMessage && !hasSentInitial.current) {
-        setIsHistoryLoaded(true);
+        if (active) {
+          setIsHistoryLoaded(true);
+        }
         return;
       }
 
-      setIsLoading(true);
+      if (active) {
+        setIsLoading(true);
+      }
       try {
         const detail = await aiService.getConversationDetail(activeConversationId);
-        if (detail) {
+        if (detail && active) {
           if (detail.messages) {
-            const mapped: ChatMessage[] = detail.messages.map((m: any) => ({
+            const mapped: ChatMessage[] = detail.messages.map((m: DBMessage) => ({
               id: String(m.id),
               role: m.role === 'USER' ? 'user' : 'ai',
               content: m.content,
@@ -141,15 +209,22 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
             setMessages([]);
           }
         }
-        setQuickReplies([]);
+        if (active) {
+          setQuickReplies([]);
+        }
       } catch (err) {
         console.error(LABELS.AI_CHAT.TOAST.LOAD_HISTORY_ERROR, err);
       } finally {
-        setIsHistoryLoaded(true);
-        setIsLoading(false);
+        if (active) {
+          setIsHistoryLoaded(true);
+          setIsLoading(false);
+        }
       }
     }
     loadConvHistory();
+    return () => {
+      active = false;
+    };
   }, [activeConversationId]);
 
   // Tự động lấy tọa độ GPS thật của trình duyệt khi component mount
@@ -214,12 +289,26 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
 
   // Tự động gửi initialMessage lên API khi lịch sử đã load xong
   useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
     async function sendInitial() {
       if (isHistoryLoaded && activeInitialMessage && !hasSentInitial.current && activeConversationId) {
+        // Kiểm tra chống trùng lặp ở mức module
+        const dedupeKey = `${activeConversationId}-${activeInitialMessage}`;
+        if (sentInitialMessages.has(dedupeKey)) {
+          if (active) {
+            setActiveInitialMessage(undefined);
+          }
+          return;
+        }
+        sentInitialMessages.add(dedupeKey);
+
         hasSentInitial.current = true;
         const msgToSend = activeInitialMessage;
-        setActiveInitialMessage(undefined); // Xóa ngay để tránh gửi lại khi đổi chat hoặc tạo mới
-        setIsLoading(true);
+        if (active) {
+          setActiveInitialMessage(undefined); // Xóa ngay để tránh gửi lại khi đổi chat hoặc tạo mới
+          setIsLoading(true);
+        }
         try {
           const currentLat = useGps ? lat : undefined;
           const currentLng = useGps ? lng : undefined;
@@ -235,30 +324,38 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
             activeConversationId
           );
 
-          // Thêm phản hồi của AI
-          const aiMsgId = `ai-${Date.now()}`;
-          setMessages(prev => [
-            ...prev,
-            { 
-              id: aiMsgId, 
-              role: 'ai', 
-              content: response.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
-              suggestions: response.suggestions || []
-            }
-          ]);
-          setQuickReplies(response.quickReplies || []);
+          if (active) {
+            // Thêm phản hồi của AI
+            const aiMsgId = `ai-${Date.now()}`;
+            setMessages(prev => [
+              ...prev,
+              { 
+                id: aiMsgId, 
+                role: 'ai', 
+                content: response.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
+                suggestions: response.suggestions || []
+              }
+            ]);
+            setQuickReplies(response.quickReplies || []);
 
-          // Tải lại danh sách hội thoại để cập nhật tiêu đề cuộc trò chuyện
-          await loadConversations();
+            // Tải lại danh sách hội thoại để cập nhật tiêu đề cuộc trò chuyện
+            await loadConversations();
+          }
         } catch (err) {
           console.error(LABELS.AI_CHAT.TOAST.SEND_FIRST_ERROR, err);
         } finally {
-          setIsLoading(false);
+          if (active) {
+            setIsLoading(false);
+          }
         }
       }
     }
     sendInitial();
-  }, [isHistoryLoaded, activeInitialMessage, lat, lng, city, district, temperature, isRaining, useGps, activeConversationId]);
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHistoryLoaded, activeConversationId]);
 
   // Xử lý gửi tin nhắn từ form
   const handleSend = async (e: React.FormEvent) => {
@@ -339,7 +436,40 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     }
   };
 
+  const handleFeedback = async (foodId: number, type: 'LIKE' | 'DISLIKE') => {
+    if (!activeConversationId) return;
+
+    try {
+      const success = await aiService.submitFeedback(activeConversationId, foodId, type);
+      if (success) {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.suggestions) {
+              const updatedSuggestions = msg.suggestions.map((s) => {
+                if (s.id === foodId) {
+                  return { ...s, feedback: s.feedback === type ? undefined : type };
+                }
+                return s;
+              });
+              return { ...msg, suggestions: updatedSuggestions };
+            }
+            return msg;
+          }),
+        );
+        toast.success(
+          type === 'LIKE'
+            ? 'Đã đánh dấu hữu ích! AI sẽ gợi ý các món ăn tương tự.'
+            : 'Đã ghi nhận phản hồi! AI sẽ hạn chế gợi ý món ăn này.',
+        );
+      }
+    } catch (err) {
+      console.error('Error submitting feedback', err);
+      toast.error('Lỗi khi gửi phản hồi.');
+    }
+  };
+
   return {
+    isAuthenticated,
     messages,
     setMessages,
     inputValue,
@@ -374,5 +504,6 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     loadConversations,
     refreshGps,
     scrollToBottom,
+    handleFeedback,
   };
 }

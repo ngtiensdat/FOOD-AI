@@ -5,7 +5,7 @@
  */
 import { apiClient } from '@/lib/api-client';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
-import { Food, CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
+import { CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
   async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
@@ -89,6 +89,16 @@ export const foodService = {
   }
 };
 
+export interface Conversation {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages?: unknown[];
+  suggestions?: unknown[];
+}
+
+let activeCreatePromise: Promise<Conversation | null> | null = null;
+
 export const aiService = {
   async chat(
     message: string,
@@ -126,13 +136,21 @@ export const aiService = {
     }
   },
 
-  async createConversation() {
-    try {
-      const response = await apiClient.post('/ai/conversations');
-      return response.data || response;
-    } catch {
-      return null;
+  async createConversation(): Promise<Conversation | null> {
+    if (activeCreatePromise) {
+      return activeCreatePromise;
     }
+    activeCreatePromise = (async () => {
+      try {
+        const response = await apiClient.post('/ai/conversations');
+        return response.data || response;
+      } catch {
+        return null;
+      } finally {
+        activeCreatePromise = null;
+      }
+    })();
+    return activeCreatePromise;
   },
 
   async getConversationDetail(id: number) {
@@ -150,6 +168,19 @@ export const aiService = {
       return true;
     } catch {
       return false;
+    }
+  },
+
+  async submitFeedback(conversationId: number, foodId: number, feedbackType: 'LIKE' | 'DISLIKE') {
+    try {
+      const response = await apiClient.post('/ai/feedback', {
+        conversationId,
+        foodId,
+        feedbackType,
+      });
+      return response.data || response;
+    } catch {
+      return null;
     }
   },
 
@@ -324,4 +355,3 @@ export const restaurantService = {
       .catch(() => ({ data: [], total: 0 }));
   }
 };
-

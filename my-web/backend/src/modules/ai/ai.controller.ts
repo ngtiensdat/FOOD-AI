@@ -21,15 +21,31 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { AiChatDto } from './dto/ai-chat.dto';
 import { Throttle } from '@nestjs/throttler';
+import { AiFeedbackDto } from './dto/ai-feedback.dto';
+import { AiLearningService } from './services/ai-learning.service';
 
 @Throttle({ default: { limit: 30, ttl: 60000 } })
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
 export class AiController {
   constructor(
-    // eslint-disable-next-line unused-imports/no-unused-vars
     private readonly aiService: AiService,
+    private readonly aiLearningService: AiLearningService,
   ) {}
+
+  @Post('feedback')
+  async submitFeedback(
+    @GetUser('id') userId: number,
+    @Body() dto: AiFeedbackDto,
+  ) {
+    await this.aiLearningService.saveFeedback(userId, dto);
+    return { success: true };
+  }
+
+  @Get('analytics')
+  async getAnalytics() {
+    return this.aiLearningService.getFeedbackAnalytics();
+  }
 
   @Post('chat')
   async chat(@GetUser('id') userId: number, @Body() dto: AiChatDto) {

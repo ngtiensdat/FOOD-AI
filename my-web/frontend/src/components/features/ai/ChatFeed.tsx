@@ -1,3 +1,8 @@
+/**
+ * Mục đích: Component giao diện hiển thị danh sách tin nhắn chat và các thẻ gợi ý món ăn kèm nút feedback.
+ * File quan hệ: Được sử dụng trong AiChatWindow để hiển thị nội dung hội thoại.
+ */
+
 'use client';
 
 import React from 'react';
@@ -7,11 +12,16 @@ import { MiniFoodCard } from '../food/MiniFoodCard';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 
+import { ChatMessage } from '@/hooks/useAiChat';
+import { FoodCardData } from '@/components/features/food/FoodCard';
+import { useRouter } from 'next/navigation';
+
 interface ChatFeedProps {
-  messages: any[];
+  messages: ChatMessage[];
   isLoading: boolean;
   chatFeedRef: React.RefObject<HTMLDivElement | null>;
-  onViewDetail?: (food: any) => void;
+  onViewDetail?: (food: FoodCardData) => void;
+  onFeedback?: (foodId: number, type: 'LIKE' | 'DISLIKE') => void;
 }
 
 export function ChatFeed({
@@ -19,7 +29,9 @@ export function ChatFeed({
   isLoading,
   chatFeedRef,
   onViewDetail,
+  onFeedback,
 }: ChatFeedProps) {
+  const router = useRouter();
   return (
     <div
       ref={chatFeedRef}
@@ -89,6 +101,26 @@ export function ChatFeed({
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
 
+                {/* Nút bấm Đăng nhập / Đăng ký nếu là tin nhắn yêu cầu xác thực */}
+                {msg.isAuthPrompt && (
+                  <div className="pt-2 pl-1 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => router.push('/login')}
+                      className="px-5 py-2.5 rounded-2xl bg-primary text-white text-xs font-bold shadow-md hover:bg-orange-600 transition-all cursor-pointer"
+                    >
+                      {LABELS.AUTH.LOGIN}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/register')}
+                      className="px-5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-slate-850 transition-all cursor-pointer"
+                    >
+                      {LABELS.AUTH.REGISTER_NOW}
+                    </button>
+                  </div>
+                )}
+
                 {/* Danh sách các thẻ món ăn gợi ý kiểu Mini (nếu có) */}
                 {msg.suggestions && msg.suggestions.length > 0 && (
                   <div className="pt-2 pl-1 space-y-3">
@@ -96,12 +128,47 @@ export function ChatFeed({
                       {LABELS.HERO.SUGGESTED_TITLE}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                      {msg.suggestions.map((food: any) => (
-                        <MiniFoodCard
-                          key={food.id}
-                          food={food}
-                          onViewDetail={onViewDetail}
-                        />
+                      {msg.suggestions.map((food: FoodCardData) => (
+                        <div key={food.id} className="flex flex-col gap-2">
+                          <MiniFoodCard
+                            food={food}
+                            onViewDetail={onViewDetail}
+                          />
+                          <div className="flex items-center gap-2 pl-1 select-none">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (food.id !== undefined) {
+                                  onFeedback?.(Number(food.id), 'LIKE');
+                                }
+                              }}
+                              className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
+                                food.feedback === 'LIKE'
+                                  ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800'
+                                  : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
+                              }`}
+                            >
+                              👍 Hữu ích
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (food.id !== undefined) {
+                                  onFeedback?.(Number(food.id), 'DISLIKE');
+                                }
+                              }}
+                              className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
+                                food.feedback === 'DISLIKE'
+                                  ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800'
+                                  : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
+                              }`}
+                            >
+                              👎 Không phù hợp
+                            </button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

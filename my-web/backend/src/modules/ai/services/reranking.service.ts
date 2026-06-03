@@ -1,13 +1,33 @@
+/**
+ * Mục đích: Service chấm điểm lại (Reranking) các món ăn dựa trên GPS, thời tiết, dị ứng, quy tắc nghiệp vụ và feedback học được.
+ * File quan hệ: Được gọi bởi RecommendationService.
+ */
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SearchResult } from '../vector.repository';
 import { DialogueState } from '../interfaces/dialogue-state.interface';
 import { AI_PARAMETERS } from '../constants/ai-parameters.constant';
-import { AI_CONSTANTS } from '../../../common/constants/ai.constant';
+import { BusinessRuleEngineService } from './business-rule-engine.service';
+import { FoodKnowledgeService } from './food-knowledge.service';
+import { FoodIntent } from '../constants/food-intent.enum';
+
+interface RerankingWeights {
+  intent: number;
+  embedding: number;
+  distance: number;
+  price: number;
+  rating: number;
+  context: number;
+}
 
 @Injectable()
 export class RerankingService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly ruleEngine: BusinessRuleEngineService,
+    private readonly knowledgeService: FoodKnowledgeService,
+  ) {}
 
   private getParam<T>(path: string, defaultValue: T): T {
     return this.configService.get<T>(`ai.${path}`) ?? defaultValue;
@@ -19,199 +39,272 @@ export class RerankingService {
     userLat?: number,
     userLng?: number,
     weather?: { temperature: number; isRaining: boolean },
+    message?: string,
+    intent?: FoodIntent,
+    needs?: Record<string, number>,
+    feedbackProfile?: {
+      likedFoods: string[];
+      likedCategories: string[];
+      dislikedFoods: string[];
+      dislikedCategories: string[];
+    },
   ): SearchResult[] {
     const currentHour = new Date().getHours();
     const temp = weather?.temperature ?? 28;
     const isRaining = weather?.isRaining ?? false;
 
-    const weights = this.getParam('weights', AI_PARAMETERS.WEIGHTS);
+    // Filter out candidates containing allergens completely
+    const safeCandidates = candidates.filter(
+      (food) => !this.hasAllergens(food, state.slots.allergies),
+    );
 
-    const reRanked = candidates.map((food) => {
-      // 1. Loại trừ nếu món nằm trong rejected_food_ids
+    // Load base weights
+    const baseWeights = this.getParam<RerankingWeights>(
+      'weights',
+      AI_PARAMETERS.WEIGHTS,
+    );
+    const weights = { ...baseWeights };
+
+    // Dynamically adjust weights if priority needs are analyzed by LLM
+    if (needs) {
+      if (needs.distance !== undefined)
+        weights.distance = needs.distance * 0.35;
+      if (needs.price !== undefined) weights.price = needs.price * 0.25;
+      if (needs.cuisine !== undefined) weights.intent = needs.cuisine * 0.45;
+      if (needs.emotion !== undefined || needs.weather !== undefined) {
+        weights.context =
+          Math.max(needs.emotion || 0, needs.weather || 0) * 0.2;
+      }
+
+      // Normalize weights
+      const total =
+        weights.intent +
+        weights.embedding +
+        weights.distance +
+        weights.price +
+        weights.rating +
+        weights.context;
+      if (total > 0) {
+        weights.intent /= total;
+        weights.embedding /= total;
+        weights.distance /= total;
+        weights.price /= total;
+        weights.rating /= total;
+        weights.context /= total;
+      }
+    }
+
+    // Check if there is wellness advice that should boost specific foods
+    let wellnessTargets: string[] = [];
+    if (message) {
+      const wellness = this.knowledgeService.getWellnessAdvice(message);
+      if (wellness) {
+        wellnessTargets = wellness.targetCuisines;
+      }
+    }
+
+    const reRanked = safeCandidates.map((food) => {
+      // 1. Exclude foods in rejected list
       if (state.rejected_food_ids.includes(Number(food.id))) {
         return { ...food, similarity: 0.0 };
       }
 
-      const intentScore = this.calculateIntentScore(
-        food,
-        state.slots.cuisineType,
-      );
-      const embeddingScore = this.calculateEmbeddingScore(food);
-      const distanceScore = this.calculateDistanceScore(food.distance_km);
-      const priceScore = this.calculatePriceScore(food, state.slots.budget);
-      const ratingScore = this.calculateRatingScore();
-      const contextScore = this.calculateContextScore(
-        food,
+      // 2. Intent Score (mismatched cuisine penalized, neutral if undefined)
+      let intentScore = 1.0;
+      const cuisine = state.slots.cuisineType?.toLowerCase();
+      if (cuisine) {
+        const nameLower = food.name.toLowerCase();
+        const descLower = (food.description || '').toLowerCase();
+        const tagsJoined = (food.tags || []).join(' ').toLowerCase();
+        const catNameLower = (food.categoryName || '').toLowerCase();
+
+        if (nameLower.includes(cuisine) || catNameLower.includes(cuisine)) {
+          intentScore = 1.0;
+        } else if (
+          descLower.includes(cuisine) ||
+          tagsJoined.includes(cuisine)
+        ) {
+          intentScore = 0.8;
+        } else {
+          intentScore = 0.3;
+        }
+      }
+
+      // 3. Embedding similarity score
+      const embeddingScore = food.embeddingSimilarity || 0.0;
+
+      // 4. Distance score (computed via Rule Engine)
+      const distanceScore = this.ruleEngine.getDistanceScore(
+        food.distance_km,
         state.slots.mobility,
-        state.slots.emotion,
+      );
+
+      // 5. Price score (computed via Rule Engine)
+      const priceScore = this.ruleEngine.getPriceScore(
+        food.price,
+        state.slots.budget,
+      );
+
+      // 6. Rating score
+      const defaultValues = this.getParam(
+        'defaultValues',
+        AI_PARAMETERS.DEFAULT_VALUES,
+      );
+      const ratingScore = defaultValues.rerankingDefaultRating;
+
+      // 7. Context score (Time & Weather boosts computed via Rule Engine)
+      const timeBoost = this.ruleEngine.getTimeBoost(
+        food.name,
+        food.categoryName,
+        food.tags,
         currentHour,
+      );
+      const weatherBoost = this.ruleEngine.getWeatherBoost(
+        food.name,
+        food.categoryName,
+        food.tags,
         temp,
         isRaining,
       );
 
-      // Tính FinalScore theo tỷ lệ từ cấu hình tập trung
+      let wellnessBoost = 0.0;
+      if (wellnessTargets.length > 0) {
+        const nameDesc =
+          `${food.name} ${food.description || ''} ${food.categoryName || ''}`.toLowerCase();
+        const isWellnessMatch = wellnessTargets.some((target) =>
+          nameDesc.includes(target.toLowerCase()),
+        );
+        if (isWellnessMatch) {
+          wellnessBoost = 0.25;
+        }
+      }
+
+      const contextScore = Math.max(
+        0.0,
+        Math.min(1.0, 0.5 + timeBoost + weatherBoost + wellnessBoost),
+      );
+
+      // 8. Apply AI Feedback Learning boosts/penalties
+      let feedbackBoost = 0.0;
+      if (feedbackProfile) {
+        const nameLower = food.name.toLowerCase();
+        const catNameLower = (food.categoryName || '').toLowerCase();
+
+        const isLikedFood = feedbackProfile.likedFoods.some((liked) =>
+          nameLower.includes(liked.toLowerCase()),
+        );
+        const isLikedCategory = feedbackProfile.likedCategories.some(
+          (likedCat) => catNameLower.includes(likedCat.toLowerCase()),
+        );
+
+        if (isLikedFood || isLikedCategory) {
+          feedbackBoost += 0.15;
+        }
+
+        const isDislikedFood = feedbackProfile.dislikedFoods.some((disliked) =>
+          nameLower.includes(disliked.toLowerCase()),
+        );
+        const isDislikedCategory = feedbackProfile.dislikedCategories.some(
+          (dislikedCat) => catNameLower.includes(dislikedCat.toLowerCase()),
+        );
+
+        if (isDislikedFood || isDislikedCategory) {
+          feedbackBoost -= 0.2;
+        }
+      }
+
+      // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +
         embeddingScore * weights.embedding +
         distanceScore * weights.distance +
         priceScore * weights.price +
         ratingScore * weights.rating +
-        contextScore * weights.context;
+        contextScore * weights.context +
+        feedbackBoost;
 
       return {
         ...food,
-        similarity: Number(finalScore.toFixed(4)),
+        similarity: Number(Math.max(0.0, finalScore).toFixed(4)),
       };
     });
+
+    // If intent is FIND_NEARBY, sort strictly by distance ascending
+    if (intent === FoodIntent.FIND_NEARBY) {
+      return reRanked.sort(
+        (a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity),
+      );
+    }
 
     return reRanked.sort((a, b) => b.similarity - a.similarity);
   }
 
-  calculateIntentScore(food: SearchResult, cuisineType?: string): number {
-    let intentScore = 0.5;
-    const cuisine = cuisineType?.toLowerCase();
-    if (cuisine) {
-      const nameLower = food.name.toLowerCase();
-      const descLower = (food.description || '').toLowerCase();
-      const tagsJoined = (food.tags || []).join(' ').toLowerCase();
-      const catNameLower = (food.categoryName || '').toLowerCase();
+  private hasAllergens(food: SearchResult, allergies?: string[]): boolean {
+    if (!allergies || allergies.length === 0) return false;
 
-      if (nameLower.includes(cuisine) || catNameLower.includes(cuisine)) {
-        intentScore = 1.0;
-      } else if (descLower.includes(cuisine) || tagsJoined.includes(cuisine)) {
-        intentScore = 0.8;
-      } else {
-        intentScore = 0.3;
-      }
-    }
-    return intentScore;
-  }
+    const stripDiacritics = (str: string) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .toLowerCase();
+    };
 
-  calculateEmbeddingScore(food: SearchResult): number {
-    return food.embeddingSimilarity || 0.0;
-  }
+    const nameLower = stripDiacritics(food.name);
+    const descLower = stripDiacritics(food.description || '');
+    const tagsLower = (food.tags || []).map((t) => stripDiacritics(t));
+    const catLower = stripDiacritics(food.categoryName || '');
+    const restaurantLower = stripDiacritics(food.restaurantName || '');
 
-  calculateDistanceScore(distance_km: number | null): number {
-    let distanceScore = 1.0;
-    if (distance_km !== null) {
-      const thresholds = this.getParam('thresholds', AI_PARAMETERS.THRESHOLDS);
-      const decay = this.getParam('decay', AI_PARAMETERS.DECAY);
-      // Hàm decay mũ liên tục và mượt mà sử dụng các hệ số cấu hình
-      distanceScore = Math.max(
-        thresholds.rerankingMinDistanceScore,
-        Math.exp(decay.distanceFactor * distance_km),
-      );
-    }
-    return distanceScore;
-  }
+    return allergies.some((allergy) => {
+      const cleanAllergy = stripDiacritics(allergy).trim();
+      if (!cleanAllergy) return false;
 
-  calculatePriceScore(food: SearchResult, maxBudget?: number): number {
-    let priceScore = 1.0;
-    if (maxBudget && food.price) {
-      const budget = Number(maxBudget);
-      if (food.price <= budget) {
-        priceScore = 1.0;
-      } else {
-        priceScore = Math.max(0, 1 - (food.price - budget) / budget);
-      }
-    }
-    return priceScore;
-  }
+      // Check name, description, tags, category, restaurant name
+      if (nameLower.includes(cleanAllergy)) return true;
+      if (descLower.includes(cleanAllergy)) return true;
+      if (catLower.includes(cleanAllergy)) return true;
+      if (restaurantLower.includes(cleanAllergy)) return true;
+      if (tagsLower.some((t) => t.includes(cleanAllergy))) return true;
 
-  calculateRatingScore(): number {
-    const defaultValues = this.getParam(
-      'defaultValues',
-      AI_PARAMETERS.DEFAULT_VALUES,
-    );
-    return defaultValues.rerankingDefaultRating;
-  }
+      // Special case: if allergy is "đậu phộng", check synonym "lac"
+      if (cleanAllergy === 'dau phong' || cleanAllergy === 'lac') {
+        if (
+          nameLower.includes('dau phong') ||
+          nameLower.includes('lac') ||
+          descLower.includes('dau phong') ||
+          descLower.includes('lac') ||
+          tagsLower.some((t) => t.includes('dau phong') || t.includes('lac'))
+        ) {
+          return true;
+        }
+      }
 
-  calculateContextScore(
-    food: SearchResult,
-    mobility?: 'LAZY' | 'NORMAL' | 'EXPLORE',
-    emotion?: 'TIRED' | 'REWARD' | 'STRESSED' | 'NORMAL',
-    currentHour = 12,
-    temp = 28,
-    isRaining = false,
-  ): number {
-    let contextScore = 0.5;
-    const nameAndTags =
-      `${food.name} ${(food.tags || []).join(' ')} ${food.categoryName || ''}`.toLowerCase();
+      // Special case: if allergy is "hai san", check common seafood terms
+      if (cleanAllergy === 'hai san') {
+        const seafoodTerms = [
+          'tom',
+          'cua',
+          'muc',
+          'oc',
+          'ca',
+          'so',
+          'hen',
+          'ngheu',
+        ];
+        if (
+          seafoodTerms.some(
+            (term) =>
+              nameLower.includes(term) ||
+              descLower.includes(term) ||
+              tagsLower.some((t) => t.includes(term)),
+          )
+        ) {
+          return true;
+        }
+      }
 
-    // a. Time of day
-    const timeSlots = AI_CONSTANTS.RERANK_KEYWORDS.TIME_SLOTS;
-    if (currentHour >= 6 && currentHour <= 9) {
-      if (timeSlots.MORNING.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-    } else if (currentHour >= 11 && currentHour <= 13) {
-      if (timeSlots.LUNCH.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-    } else if (currentHour >= 18 && currentHour <= 21) {
-      if (timeSlots.DINNER.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-    } else if (currentHour >= 22 || currentHour <= 4) {
-      if (timeSlots.LATE_NIGHT.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-    }
-
-    // b. Weather
-    const weatherKws = AI_CONSTANTS.RERANK_KEYWORDS.WEATHER;
-    if (temp > 33) {
-      if (weatherKws.HOT.BOOST.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-      if (weatherKws.HOT.PENALIZE.some((kw) => nameAndTags.includes(kw))) {
-        contextScore -= 0.25;
-      }
-    } else if (temp < 20 || isRaining) {
-      if (weatherKws.COLD_OR_RAIN.some((kw) => nameAndTags.includes(kw))) {
-        contextScore += 0.25;
-      }
-    }
-
-    // c. Mobility
-    const limits = this.getParam(
-      'mobilityLimits',
-      AI_PARAMETERS.MOBILITY_LIMITS,
-    );
-    if (mobility === 'LAZY' && food.distance_km !== null) {
-      if (food.distance_km < limits.lazyNearKm) {
-        contextScore += 0.25;
-      } else if (food.distance_km > limits.lazyFarKm) {
-        contextScore -= 0.3;
-      }
-    } else if (mobility === 'EXPLORE' && food.distance_km !== null) {
-      if (food.distance_km > limits.exploreMinKm) {
-        contextScore += 0.2;
-      }
-    }
-
-    // d. Emotion
-    const emotionLimits = this.getParam(
-      'emotionLimits',
-      AI_PARAMETERS.EMOTION_LIMITS,
-    );
-    const priceLimits = this.getParam(
-      'priceLimits',
-      AI_PARAMETERS.PRICE_LIMITS,
-    );
-    if (emotion === 'TIRED' || emotion === 'STRESSED') {
-      if (
-        food.distance_km !== null &&
-        food.distance_km < emotionLimits.tiredStressedNearKm
-      ) {
-        contextScore += 0.15;
-      }
-    } else if (emotion === 'REWARD') {
-      if (food.price && food.price > priceLimits.rewardThreshold) {
-        contextScore += 0.15;
-      }
-    }
-
-    return Math.max(0.0, Math.min(1.0, contextScore));
+      return false;
+    });
   }
 }

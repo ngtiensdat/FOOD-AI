@@ -1,3 +1,7 @@
+/**
+ * Mục đích: Component input form để người dùng nhập tin nhắn và gửi tới AI Assistant, hiển thị các quick replies gợi ý.
+ * File quan hệ: Được sử dụng trong AiChatWindow để lấy input từ người dùng.
+ */
 'use client';
 
 import React from 'react';
@@ -8,9 +12,10 @@ interface ChatInputFormProps {
   inputValue: string;
   setInputValue: (val: string) => void;
   isLoading: boolean;
-  quickReplies: any[];
+  quickReplies: Array<{ label: string; text: string }>;
   sendDirectMessage: (text: string) => void;
   handleSend: (e: React.FormEvent) => void;
+  isAuthenticated: boolean;
 }
 
 export function ChatInputForm({
@@ -20,6 +25,7 @@ export function ChatInputForm({
   quickReplies,
   sendDirectMessage,
   handleSend,
+  isAuthenticated,
 }: ChatInputFormProps) {
   return (
     <>
@@ -53,13 +59,13 @@ export function ChatInputForm({
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder={LABELS.AI_CHAT.INPUT.PLACEHOLDER}
-          disabled={isLoading}
+          placeholder={isAuthenticated ? LABELS.AI_CHAT.INPUT.PLACEHOLDER : LABELS.AUTH.LOGIN_REQUIRED}
+          disabled={isLoading || !isAuthenticated}
           className="flex-1 bg-gray-50 dark:bg-slate-900/50 border border-gray-150 dark:border-slate-800 hover:border-orange-200 dark:hover:border-slate-700 px-4 py-3 rounded-2xl text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all disabled:opacity-50"
         />
         <button
           type="submit"
-          disabled={isLoading || !inputValue.trim()}
+          disabled={isLoading || !inputValue.trim() || !isAuthenticated}
           title={LABELS.AI_CHAT.FEED.SEND_MESSAGE}
           aria-label={LABELS.AI_CHAT.FEED.SEND_MESSAGE}
           className="p-3.5 rounded-2xl bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-md hover:shadow-lg focus:outline-none"

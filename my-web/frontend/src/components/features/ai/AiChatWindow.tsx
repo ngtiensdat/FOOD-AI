@@ -1,3 +1,8 @@
+/**
+ * Mục đích: Component giao diện chính hiển thị khung chat AI (sidebar danh sách hội thoại, chat feed, config drawer).
+ * File quan hệ: Kết nối custom hook useAiChat và render các sub-component.
+ */
+
 'use client';
 
 /**
@@ -24,8 +29,10 @@ import { ChatConfigDrawer } from './ChatConfigDrawer';
 import { ChatFeed } from './ChatFeed';
 import { ChatInputForm } from './ChatInputForm';
 
+import { FoodCardData } from '@/components/features/food/FoodCard';
+
 interface AiChatWindowProps {
-  onViewDetail?: (food: any) => void;
+  onViewDetail?: (food: FoodCardData) => void;
   initialMessage?: string;
   onResetChat?: () => void;
 }
@@ -59,6 +66,8 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
     handleDeleteChat,
     loadConversations,
     refreshGps,
+    handleFeedback,
+    isAuthenticated,
   } = useAiChat({ initialMessage, onResetChat });
 
   return (
@@ -158,6 +167,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
           isLoading={isLoading}
           chatFeedRef={chatFeedRef}
           onViewDetail={onViewDetail}
+          onFeedback={handleFeedback}
         />
 
         {/* Vùng nhập liệu (Input Form) ở cuối */}
@@ -168,6 +178,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
           quickReplies={quickReplies}
           sendDirectMessage={sendDirectMessage}
           handleSend={handleSend}
+          isAuthenticated={isAuthenticated}
         />
 
       </div>
