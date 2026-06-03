@@ -9,7 +9,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
@@ -95,7 +95,7 @@ export class UserService {
       }
 
       // 3. Đồng bộ ngược sang RestaurantProfile nếu vai trò là RESTAURANT
-      if (user.role === 'RESTAURANT') {
+      if (user.role === UserRole.RESTAURANT) {
         const restaurantUpdate: Prisma.RestaurantProfileUpdateInput = {};
         if (data.syncWithRestaurantLogo && data.avatar) {
           restaurantUpdate.logo = data.avatar;

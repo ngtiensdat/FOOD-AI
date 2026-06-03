@@ -8,8 +8,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
-import { UserRole, UserStatus, Prisma, Food } from '@prisma/client';
-import { PrismaService } from '../../database/prisma.service';
+import { UserRole, UserStatus, Prisma } from '@prisma/client';
 import { MerchantImportService } from './merchant-import.service';
 import { MESSAGES } from '../../common/constants/messages.constant';
 
@@ -19,7 +18,6 @@ export class AdminService {
     private userRepository: UserRepository,
     private foodRepository: FoodRepository,
     private aiService: AiService,
-    private prisma: PrismaService,
     private merchantImportService: MerchantImportService,
   ) {}
 
@@ -101,10 +99,7 @@ export class AdminService {
   }
 
   async toggleWeeklyFeatured(id: number, value: boolean) {
-    return this.prisma.food.update({
-      where: { id },
-      data: { isFeaturedWeekly: value },
-    });
+    return this.foodRepository.updateWeeklyFeatured(id, value);
   }
 
   async batchUpdateFoods(
@@ -115,18 +110,7 @@ export class AdminService {
       isAdminRecommended?: boolean;
     }[],
   ) {
-    const results = await this.prisma.$transaction(async (tx) => {
-      const updatedFoods: Food[] = [];
-      for (const update of updates) {
-        const { id, ...data } = update;
-        const updated = await tx.food.update({
-          where: { id },
-          data,
-        });
-        updatedFoods.push(updated);
-      }
-      return updatedFoods;
-    });
+    const results = await this.foodRepository.batchUpdate(updates);
 
     // Cập nhật embedding món ăn trong background sau khi transaction đã commit thành công
     for (const food of results) {

@@ -594,4 +594,33 @@ export class FoodRepository {
     ]);
     return { data, total };
   }
+
+  async updateWeeklyFeatured(id: number, value: boolean) {
+    return this.prisma.food.update({
+      where: { id },
+      data: { isFeaturedWeekly: value },
+    });
+  }
+
+  async batchUpdate(
+    updates: {
+      id: number;
+      isFeaturedToday?: boolean;
+      isFeaturedWeekly?: boolean;
+      isAdminRecommended?: boolean;
+    }[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const updatedFoods: import('@prisma/client').Food[] = [];
+      for (const update of updates) {
+        const { id, ...data } = update;
+        const updated = await tx.food.update({
+          where: { id },
+          data,
+        });
+        updatedFoods.push(updated);
+      }
+      return updatedFoods;
+    });
+  }
 }

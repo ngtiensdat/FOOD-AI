@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SafeImage } from '@/components/base/SafeImage';
 import { MapPin, Smile, DollarSign, Send } from 'lucide-react';
 import { AiChatWindow } from './ai/AiChatWindow';
 import { AiSuggestedFood } from './ai/AiResponseBox';
@@ -65,6 +66,9 @@ export const Hero = ({
         priority
         sizes="100vw"
         className="object-cover opacity-10"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
       />
       <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
         <motion.h1
@@ -111,7 +115,7 @@ export const Hero = ({
                     title={LABELS.HERO.OPEN_AI_TOOLTIP}
                     className="relative w-8 h-8 rounded-xl overflow-hidden hover:scale-110 active:scale-95 transition-all flex-shrink-0 cursor-pointer border border-orange-100 dark:border-slate-800 hover:border-primary p-0.5 bg-orange-50/20"
                   >
-                    <Image
+                    <SafeImage
                       src="/logo.png"
                       alt={LABELS.COMMON.BRAND_LOGO_ALT}
                       fill

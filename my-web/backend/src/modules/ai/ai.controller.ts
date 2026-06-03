@@ -20,9 +20,9 @@ import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { AiChatDto } from './dto/ai-chat.dto';
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 
-@SkipThrottle()
+@Throttle({ default: { limit: 30, ttl: 60000 } })
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
 export class AiController {
