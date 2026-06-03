@@ -1,14 +1,14 @@
-/**
- * @fileoverview frontend/src/components/features/AdminImportExcelModal.tsx
- * @module AdminFeature
- * @description Modal dành riêng cho Admin để upload file Excel/CSV chứa danh sách nhà hàng và món ăn.
- */
+// Mục đích file này để làm gì: Modal dành riêng cho Admin để upload file Excel/CSV chứa danh sách đối tác và món ăn phục vụ import dữ liệu.
+// Các file khác hay file này có ý nghĩa như nào: Được hiển thị trên giao diện quản trị AdminTable khi admin nhấn chọn nút "Nhập Excel".
+// Các chức năng đặc biệt: Hỗ trợ kéo thả file, validate loại file xlsx/xls/csv, hiển thị tiến trình tải lên và link tải file biểu mẫu mẫu.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Presentational Modal Component, Drag and Drop File API.
+// Các biến, hàm đặc biệt: AdminImportExcelModal component, handleDragOver(), handleDrop(), handleUpload().
 
 import React, { useRef, useState } from 'react';
 import { Upload, X, FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/base/Button';
-import { adminService } from '@/services/food.service';
+import { adminService } from '@/services/admin.service';
 import { useToastStore } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 

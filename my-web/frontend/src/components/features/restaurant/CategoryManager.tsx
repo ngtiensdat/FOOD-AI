@@ -1,8 +1,8 @@
-/**
- * Mục đích file này để làm gì: Component quản lý hệ thống phân loại món ăn nhiều cấp (Nhóm -> Phân loại con).
- * Các file khác hay file này có ý nghĩa như nào: Được dùng trong trang quản lý của Thương gia.
- * Các chức năng đặc biệt: Hiển thị dạng cây (tree view), các thao tác CRUD danh mục.
- */
+// Mục đích file này để làm gì: Component quản lý hệ thống phân loại món ăn nhiều cấp (Nhóm -> Phân loại con).
+// Các file khác hay file này có ý nghĩa như nào: Được dùng trong trang quản lý của Thương gia (Merchant Dashboard).
+// Các chức năng đặc biệt: Hiển thị dạng cây đệ quy (tree view), các thao tác CRUD danh mục, sử dụng bảng padding tĩnh plMap để an toàn cho Tailwind JIT.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Recursive Rendering Pattern.
+// Các biến, hàm đặc biệt trong file: CategoryManager component, renderCategories().
 
 import React from 'react';
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Folder, FileText, HelpCircle } from 'lucide-react';
@@ -54,8 +54,15 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
     const children = categories.filter(c => c.parentId === parentId && !(parentId === null && c.name === groupName));
     if (children.length === 0) return null;
 
+    const plMap: Record<number, string> = {
+      0: 'pl-4',
+      1: 'pl-6',
+      2: 'pl-8'
+    };
+    const paddingClass = plMap[level] || 'pl-8';
+
     return (
-      <div className={`pl-${level === 0 ? '4' : '6'} mt-2 space-y-2 border-l border-gray-100 dark:border-slate-800 ml-4`}>
+      <div className={`${paddingClass} mt-2 space-y-2 border-l border-gray-100 dark:border-slate-800 ml-4`}>
         {children.map(category => (
           <div key={category.id} className="flex flex-col gap-2">
             <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl hover:shadow-sm transition-all group">

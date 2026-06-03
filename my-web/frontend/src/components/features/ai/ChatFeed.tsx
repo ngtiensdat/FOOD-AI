@@ -1,8 +1,8 @@
-/**
- * Mục đích: Component giao diện hiển thị danh sách tin nhắn chat và các thẻ gợi ý món ăn kèm nút feedback.
- * File quan hệ: Được sử dụng trong AiChatWindow để hiển thị nội dung hội thoại.
- */
-
+// Mục đích file này để làm gì: Component giao diện hiển thị danh sách tin nhắn chat và các thẻ gợi ý món ăn kèm nút feedback (Like/Dislike).
+// Các file khác hay file này có ý nghĩa như nào: Được sử dụng trong AiChatWindow để hiển thị nội dung hội thoại giữa người dùng và AI.
+// Các chức năng đặc biệt: Tải tin nhắn bất đồng bộ, render danh sách món ăn gợi ý dưới dạng MiniFoodCard và xử lý phản hồi trực quan.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Presentational Component Pattern.
+// Các biến, hàm đặc biệt trong file: ChatFeed component.
 'use client';
 
 import React from 'react';
@@ -149,7 +149,7 @@ export function ChatFeed({
                                   : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
                               }`}
                             >
-                              👍 Hữu ích
+                              {LABELS.AI_CHAT.FEED.FEEDBACK_LIKE}
                             </button>
                             <button
                               type="button"
@@ -165,7 +165,7 @@ export function ChatFeed({
                                   : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
                               }`}
                             >
-                              👎 Không phù hợp
+                              {LABELS.AI_CHAT.FEED.FEEDBACK_DISLIKE}
                             </button>
                           </div>
                         </div>
@@ -190,15 +190,7 @@ export function ChatFeed({
               className="object-contain p-1 animate-spin"
             />
           </div>
-          <div className="flex items-center gap-2 p-4 bg-white dark:bg-slate-900 border border-orange-50 dark:border-slate-800 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-400 italic">
-            <div className="w-4 h-4 relative animate-spin shrink-0">
-              <SafeImage
-                src="/logo.png"
-                alt={LABELS.COMMON.BRAND_LOGO_ALT}
-                fill
-                className="object-contain"
-              />
-            </div>
+          <div className="flex items-center p-4 bg-white dark:bg-slate-900 border border-orange-50 dark:border-slate-800 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-450 dark:text-slate-400 italic">
             <span>{LABELS.HERO.AI_THINKING}</span>
           </div>
         </div>

@@ -1,46 +1,69 @@
+// Mục đích: Cung cấp Context quản lý chế độ hiển thị giao diện (Theme) bao gồm các chế độ light, dark và mixed.
+// Ý nghĩa: Đóng vai trò là Provider trung tâm phân phối trạng thái theme đến toàn bộ các component trong ứng dụng.
+// Chức năng đặc biệt: Tự động tải và lưu theme từ localStorage, hỗ trợ chế độ mixed (trộn trung hòa) và chuyển đổi tuần hoàn.
+// Design Pattern: Context Pattern, Custom Hook pattern, Provider Pattern.
+// Biến, hàm đặc biệt: ThemeProvider, useTheme, applyTheme, toggleTheme.
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'mixed';
 
 interface ThemeContextType {
     theme: Theme;
+    setTheme: (theme: Theme) => void;
     toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setTheme] = useState<Theme>('light');
+    const [theme, setThemeState] = useState<Theme>('mixed');
     const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        // Lấy theme đã lưu hoặc theo cấu hình hệ thống
-        const savedTheme = localStorage.getItem('theme') as Theme | null;
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        const activeTheme = savedTheme || systemTheme;
+    const applyTheme = (t: Theme) => {
+        document.documentElement.classList.remove('dark', 'mixed');
+        if (t === 'mixed') {
+            document.documentElement.classList.add('mixed');
+        } else if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    };
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTheme(activeTheme);
-        document.documentElement.classList.toggle('dark', activeTheme === 'dark');
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme') as Theme | null;
+        const activeTheme = savedTheme || 'mixed';
+
+        setThemeState(activeTheme);
+        applyTheme(activeTheme);
         setMounted(true);
     }, []);
 
-    const toggleTheme = () => {
-        const nextTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(nextTheme);
+    const setTheme = (nextTheme: Theme) => {
+        setThemeState(nextTheme);
         localStorage.setItem('theme', nextTheme);
-        document.documentElement.classList.toggle('dark', nextTheme === 'dark');
+        applyTheme(nextTheme);
     };
 
-    // Tránh hiện tượng Hydration Mismatch bằng cách chỉ render children khi đã mounted ở client
+    const toggleTheme = () => {
+        let nextTheme: Theme = 'mixed';
+        if (theme === 'mixed') {
+            nextTheme = 'dark';
+        } else if (theme === 'dark') {
+            nextTheme = 'light';
+        } else {
+            nextTheme = 'mixed';
+        }
+        setTheme(nextTheme);
+    };
+
     if (!mounted) {
         return <div className="invisible">{children}</div>;
     }
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
             {children}
         </ThemeContext.Provider>
     );

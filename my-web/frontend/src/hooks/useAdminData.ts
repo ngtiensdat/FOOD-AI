@@ -1,5 +1,11 @@
+// Mục đích: Cung cấp và đồng bộ hóa dữ liệu trang quản trị viên như danh sách món ăn, người dùng và đối tác chờ duyệt.
+// Ý nghĩa: Đóng vai trò là data-layer của trang admin, gọi dịch vụ API và quản lý state tập trung.
+// Chức năng đặc biệt: Tải dữ liệu bất đồng bộ đồng thời qua Promise.all, tự động cập nhật lại state sau khi thực hiện thao tác xóa/sửa.
+// Design Pattern: Custom Hook pattern, Service-to-Hook data flow.
+// Biến, hàm đặc biệt: useAdminData, fetchData, deleteUser, recommendFood, approveFood.
+
 import { useState, useEffect, useCallback } from 'react';
-import { adminService } from '@/services/food.service';
+import { adminService } from '@/services/admin.service';
 import { User } from '@/types/user';
 import { AdminFoodItem } from '@/types/food';
 import { LABELS } from '@/constants/labels';

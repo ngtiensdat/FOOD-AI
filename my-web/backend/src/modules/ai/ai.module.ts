@@ -1,7 +1,8 @@
-/**
- * Mục đích: Định nghĩa module NestJS quản lý toàn bộ tính năng và service liên quan đến AI tư vấn ẩm thực.
- * File quan hệ: Được import vào AppModule và cung cấp các controller và service cần thiết cho AI.
- */
+// Mục đích file này để làm gì: Định nghĩa module NestJS quản lý toàn bộ tính năng và service liên quan đến AI tư vấn ẩm thực.
+// Các file khác hay file này có ý nghĩa như nào: Được import vào AppModule, kết nối và cung cấp các controller, service và repository cho module AI.
+// Các chức năng đặc biệt: Đăng ký các dịch vụ con phục vụ phân tích ý định (Intent), trích xuất slot, đề xuất món ăn, cache và học máy từ phản hồi.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Dependency Injection, Module Pattern (NestJS).
+// Các biến, hàm đặc biệt trong file: AiModule.
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -25,6 +26,7 @@ import { FoodKnowledgeService } from './services/food-knowledge.service';
 import { FoodRetrievalService } from './services/food-retrieval.service';
 import { ResponseGeneratorService } from './services/response-generator.service';
 import { AiLearningService } from './services/ai-learning.service';
+import { WeatherService } from './services/weather.service';
 
 @Module({
   imports: [PrismaModule, ConfigModule.forFeature(aiConfig)],
@@ -47,6 +49,7 @@ import { AiLearningService } from './services/ai-learning.service';
     FoodRetrievalService,
     ResponseGeneratorService,
     AiLearningService,
+    WeatherService,
   ],
   exports: [
     AiService,
@@ -66,6 +69,7 @@ import { AiLearningService } from './services/ai-learning.service';
     FoodRetrievalService,
     ResponseGeneratorService,
     AiLearningService,
+    WeatherService,
   ],
 })
 export class AiModule {}

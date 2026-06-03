@@ -1,8 +1,15 @@
+/* Mục đích: Định nghĩa toàn bộ hệ thống phong cách (CSS) của ứng dụng bao gồm các biến theme, Tailwind utilities và glassmorphism. */
+/* Ý nghĩa: Đóng vai trò là file CSS gốc chứa cấu hình theme (light, dark, mixed) và các utility class dùng chung trên toàn FE. */
+/* Chức năng đặc biệt: Định nghĩa chế độ màu mixed (blend) và dark mode ghi đè biến màu Tailwind gray, các utility về scrollbar, glassmorphism. */
+/* Design Pattern: CSS Custom Properties (Variables), Utility-First CSS organization. */
+/* Biến, hàm đặc biệt: --background, --foreground, --primary, dark, mixed, glass, gradient-text. */
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
 
-/* Define the custom dark variant for class-based Dark Mode in Tailwind CSS v4 */
+/* Define the custom dark and mixed variants for class-based themes in Tailwind CSS v4 */
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant mixed (&:where(.mixed, .mixed *));
 
 :root {
   --background: #ffffff;
@@ -57,6 +64,37 @@ html.dark,
   /* Sleek Card Background */
   --color-gray-50: #020b24;
   /* Cosmic Navy Page Background */
+}
+
+/* Mixed Mode (Dark-Light Blend) Colors Override */
+:root.mixed,
+html.mixed,
+.mixed {
+  --background: #252f3f;
+  /* Premium Slate Gray Page Background */
+  --foreground: #f3f4f6;
+  /* Soft gray text */
+  --accent: #374151;
+  /* Gray-700 accent border */
+  --text-muted: #9ca3af;
+  /* Gray-400 muted text */
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+  /* Curated Steel/Slate palette to override standard Tailwind gray variables in mixed mode */
+  --color-gray-950: #ffffff;
+  --color-gray-900: #f3f4f6;
+  --color-gray-800: #e5e7eb;
+  --color-gray-700: #d1d5db;
+  --color-gray-650: #9ca3af;
+  --color-gray-600: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #4b5563;
+  --color-gray-300: #374151;
+  --color-gray-200: #1f2937;
+  --color-gray-100: #1a2230;
+  /* Darker Slate Card Background */
+  --color-gray-50: #252f3f;
+  /* Page Background */
 }
 
 @theme inline {
@@ -303,4 +341,16 @@ body {
       background-color: var(--color-gray-200);
     }
   }
+}
+
+/* Ẩn nút mũi tên tăng giảm (spinners) của tất cả thẻ input số trong toàn dự án */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

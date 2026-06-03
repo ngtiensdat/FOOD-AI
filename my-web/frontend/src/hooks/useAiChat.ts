@@ -1,14 +1,13 @@
-/**
- * Mục đích file này để làm gì: Custom hook quản lý toàn bộ logic nghiệp vụ AI Chat (gửi/nhận tin nhắn, quản lý đa hội thoại, mock ngữ cảnh thời tiết và GPS).
- * Các file khác hay file này có ý nghĩa như nào: Được gọi bởi AiChatWindow.tsx (view component) để tách biệt hoàn toàn logic và giao diện.
- * Các chức năng đặc biệt: Quản lý đa hội thoại (tạo mới, chuyển đổi, xóa), gửi tin nhắn và nhận phản hồi AI, mock GPS và thời tiết cho kiểm thử.
- * Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Custom Hook pattern, Separation of Concerns (logic tách khỏi UI).
- * Các biến, hàm đặc biệt trong file: useAiChat(), sendMessage(), handleNewChat(), handleDeleteConversation(), handleSelectConversation().
- */
+// Mục đích: Quản lý toàn bộ logic nghiệp vụ AI Chat bao gồm gửi/nhận tin nhắn, quản lý đa hội thoại, ngữ cảnh thời tiết và định vị GPS.
+// Ý nghĩa: Được gọi bởi AiChatWindow.tsx để tách biệt hoàn toàn logic điều khiển hội thoại và giao diện hiển thị.
+// Chức năng đặc biệt: Quản lý đa hội thoại như ChatGPT, tự động đồng bộ hóa thời tiết từ GPS, hỗ trợ phản hồi nhanh sinh động từ AI và hệ thống phản hồi hữu ích (feedback).
+// Design Pattern: Custom Hook pattern, Separation of Concerns (SoC).
+// Biến, hàm đặc biệt: useAiChat, sendDirectMessage, handleCreateNewChat, handleDeleteChat, handleFeedback.
 import { useState, useEffect, useRef } from 'react';
-import { aiService } from '@/services/food.service';
+import { aiService } from '@/services/ai.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 import { useAuth } from '@/hooks/useAuth';
 
@@ -20,6 +19,17 @@ export interface ChatMessage {
   content: string;
   suggestions?: FoodCardData[];
   isAuthPrompt?: boolean;
+}
+
+export interface WeatherData {
+  temperature: number;
+  apparentTemperature: number;
+  humidity: number;
+  isRaining: boolean;
+  rainMm: number;
+  windSpeedKmh: number;
+  weatherCode: number;
+  description: string;
 }
 
 interface UseAiChatParams {
@@ -66,15 +76,23 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
   const [conversations, setConversations] = useState<{ id: number; title: string; createdAt: string; messageCount?: number }[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
 
-  // Bộ điều khiển Mock Ngữ cảnh (Thời tiết & Vị trí) để phục vụ kiểm thử
+  // Bộ điều khiển Ngữ cảnh thời tiết thực tế tự động từ GPS
   const [showConfig, setShowConfig] = useState(false);
-  const [temperature, setTemperature] = useState(28);
-  const [isRaining, setIsRaining] = useState(false);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
   
-  // Tọa độ GPS (Mặc định là Quận 1, sẽ tự động ghi đè bằng GPS thật hoặc nhập tay)
+  // Tọa độ GPS (Sử dụng useGeolocation hook chuẩn hóa)
   const [useGps, setUseGps] = useState(true);
-  const [lat, setLat] = useState(LABELS.AI_CHAT.CONFIG.GPS_DEFAULTS.LAT); 
-  const [lng, setLng] = useState(LABELS.AI_CHAT.CONFIG.GPS_DEFAULTS.LNG);
+  const {
+    lat,
+    setLat,
+    lng,
+    setLng,
+    refreshGps: triggerRefreshGps
+  } = useGeolocation(
+    LABELS.AI_CHAT.CONFIG.GPS_DEFAULTS.LAT,
+    LABELS.AI_CHAT.CONFIG.GPS_DEFAULTS.LNG
+  );
   const [district, setDistrict] = useState<string | undefined>(undefined);
   const [city, setCity] = useState<string | undefined>(LABELS.AI_CHAT.CONFIG.CITY_DEFAULTS.NAME);
 
@@ -168,79 +186,88 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     };
   }, [initialMessage, isAuthenticated]);
 
+  const loadConvHistory = async (convId: number) => {
+    if (!convId) return;
+    setIsLoading(true);
+    try {
+      const detail = await aiService.getConversationDetail(convId);
+      if (detail) {
+        if (detail.messages) {
+          const mapped: ChatMessage[] = detail.messages.map((m: DBMessage) => ({
+            id: String(m.id),
+            role: m.role === 'USER' ? 'user' : 'ai',
+            content: m.content,
+          }));
+
+          // Gắn suggestions vào tin nhắn AI cuối cùng trong lịch sử (nếu có)
+          if (detail.suggestions && detail.suggestions.length > 0 && mapped.length > 0) {
+            const lastAiMsgIndex = [...mapped].reverse().findIndex(m => m.role === 'ai');
+            if (lastAiMsgIndex !== -1) {
+              const actualIndex = mapped.length - 1 - lastAiMsgIndex;
+              mapped[actualIndex].suggestions = detail.suggestions;
+            }
+          }
+          setMessages(mapped);
+        } else {
+          setMessages([]);
+        }
+      }
+      setQuickReplies([]);
+    } catch (err) {
+      console.error(LABELS.AI_CHAT.TOAST.LOAD_HISTORY_ERROR, err);
+    } finally {
+      setIsHistoryLoaded(true);
+      setIsLoading(false);
+    }
+  };
+
   // Tải chi tiết lịch sử tin nhắn của cuộc trò chuyện hiện tại
   useEffect(() => {
     if (!isAuthenticated) return;
+    
+    // Nếu có activeInitialMessage và chưa gửi, ta giữ nguyên state messages là [{ id: 'user-init', ... }] để nó tự động gửi
+    if (activeInitialMessage && !hasSentInitial.current) {
+      setIsHistoryLoaded(true);
+      return;
+    }
+
+    if (activeConversationId) {
+      loadConvHistory(activeConversationId);
+    }
+  }, [activeConversationId]);
+
+  const reloadActiveConversation = () => {
+    if (activeConversationId) {
+      loadConvHistory(activeConversationId);
+    }
+  };
+
+  // Định vị GPS đã được tự động xử lý bởi useGeolocation hook
+
+  // Tự động lấy dữ liệu thời tiết thực khi tọa độ GPS thay đổi
+  useEffect(() => {
+    if (!isAuthenticated || !lat || !lng) return;
     let active = true;
-    async function loadConvHistory() {
-      if (!activeConversationId) return;
-      
-      // Nếu có activeInitialMessage và chưa gửi, ta giữ nguyên state messages là [{ id: 'user-init', ... }] để nó tự động gửi
-      if (activeInitialMessage && !hasSentInitial.current) {
-        if (active) {
-          setIsHistoryLoaded(true);
-        }
-        return;
-      }
-
-      if (active) {
-        setIsLoading(true);
-      }
+    async function fetchWeather() {
+      setIsWeatherLoading(true);
       try {
-        const detail = await aiService.getConversationDetail(activeConversationId);
-        if (detail && active) {
-          if (detail.messages) {
-            const mapped: ChatMessage[] = detail.messages.map((m: DBMessage) => ({
-              id: String(m.id),
-              role: m.role === 'USER' ? 'user' : 'ai',
-              content: m.content,
-            }));
-
-            // Gắn suggestions vào tin nhắn AI cuối cùng trong lịch sử (nếu có)
-            if (detail.suggestions && detail.suggestions.length > 0 && mapped.length > 0) {
-              const lastAiMsgIndex = [...mapped].reverse().findIndex(m => m.role === 'ai');
-              if (lastAiMsgIndex !== -1) {
-                const actualIndex = mapped.length - 1 - lastAiMsgIndex;
-                mapped[actualIndex].suggestions = detail.suggestions;
-              }
-            }
-            setMessages(mapped);
-          } else {
-            setMessages([]);
-          }
-        }
-        if (active) {
-          setQuickReplies([]);
+        const data = await aiService.getWeather(lat, lng);
+        if (active && data) {
+          setWeather(data);
         }
       } catch (err) {
-        console.error(LABELS.AI_CHAT.TOAST.LOAD_HISTORY_ERROR, err);
+        console.error('Error fetching weather:', err);
       } finally {
         if (active) {
-          setIsHistoryLoaded(true);
-          setIsLoading(false);
+          setIsWeatherLoading(false);
         }
       }
     }
-    loadConvHistory();
+    fetchWeather();
     return () => {
       active = false;
     };
-  }, [activeConversationId]);
-
-  // Tự động lấy tọa độ GPS thật của trình duyệt khi component mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLat(position.coords.latitude);
-          setLng(position.coords.longitude);
-        },
-        (error) => {
-          console.warn(LABELS.AI_CHAT.TOAST.GPS_WARN, error);
-        }
-      );
-    }
-  }, []);
+  }, [lat, lng, isAuthenticated]);
 
   // Hàm gửi tin nhắn trực tiếp (gọi từ handleSend, initialMessage, Quick Replies)
   const sendDirectMessage = async (text: string) => {
@@ -262,8 +289,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
       currentLng,
       city,
       district,
-      temperature,
-      isRaining,
+      undefined,
+      undefined,
       activeConversationId || undefined
     );
 
@@ -278,6 +305,11 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
         suggestions: response.suggestions || []
       }
     ]);
+
+    // Lưu thông tin thời tiết trả về từ response
+    if (response && response.weather) {
+      setWeather(response.weather);
+    }
 
     // Lưu quick replies sinh ra động bởi AI từ Backend
     setQuickReplies(response.quickReplies || []);
@@ -319,8 +351,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
             currentLng,
             city,
             district,
-            temperature,
-            isRaining,
+            undefined,
+            undefined,
             activeConversationId
           );
 
@@ -336,6 +368,11 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
                 suggestions: response.suggestions || []
               }
             ]);
+            
+            if (response && response.weather) {
+              setWeather(response.weather);
+            }
+
             setQuickReplies(response.quickReplies || []);
 
             // Tải lại danh sách hội thoại để cập nhật tiêu đề cuộc trò chuyện
@@ -417,22 +454,13 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
   };
 
   // Làm mới tọa độ GPS bằng định vị thực tế của thiết bị
-  const refreshGps = () => {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLat(position.coords.latitude);
-          setLng(position.coords.longitude);
-          setUseGps(true);
-          toast.success(LABELS.AI_CHAT.TOAST.GPS_SUCCESS);
-        },
-        (error) => {
-          toast.error(LABELS.AI_CHAT.TOAST.GPS_ERROR);
-          console.warn(error);
-        }
-      );
+  const refreshGps = async () => {
+    const pos = await triggerRefreshGps();
+    if (pos) {
+      setUseGps(true);
+      toast.success(LABELS.AI_CHAT.TOAST.GPS_SUCCESS);
     } else {
-      toast.error(LABELS.AI_CHAT.TOAST.GPS_NOT_SUPPORTED);
+      toast.error(LABELS.AI_CHAT.TOAST.GPS_ERROR);
     }
   };
 
@@ -483,10 +511,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     setActiveConversationId,
     showConfig,
     setShowConfig,
-    temperature,
-    setTemperature,
-    isRaining,
-    setIsRaining,
+    weather,
+    isWeatherLoading,
     district,
     city,
     setCity,
@@ -505,5 +531,6 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     refreshGps,
     scrollToBottom,
     handleFeedback,
+    reloadActiveConversation,
   };
 }

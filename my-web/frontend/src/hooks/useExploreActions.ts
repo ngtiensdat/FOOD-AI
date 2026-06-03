@@ -1,15 +1,16 @@
-/**
- * Mục đích file này: Hook quản lý trạng thái tải và tìm kiếm danh sách các nhà hàng công khai trên trang Khám Phá (/explore).
- * Các file liên quan: Được gọi bởi ExplorePage component.
- * Chức năng đặc biệt: Tự động tải dữ liệu nhà hàng công khai dựa trên tag danh mục, thành phố, quận/huyện và từ khóa tìm kiếm (đã được debounce).
- */
+// Mục đích: Quản lý trạng thái và hành động trên trang Khám Phá bao gồm tìm kiếm, phân trang và bộ lọc địa lý cho nhà hàng.
+// Ý nghĩa: Tách biệt logic truy vấn thông tin nhà hàng công khai khỏi view component để dễ bảo trì và tối ưu trải nghiệm.
+// Chức năng đặc biệt: Tự động tải lại danh sách dựa trên debounced search, lọc theo thành phố/quận/huyện và tag danh mục.
+// Design Pattern: Custom Hook pattern, Debounce pattern, UI-Logic separation.
+// Biến, hàm đặc biệt: useExploreActions, handleCityChange, handleDistrictChange, debouncedSearchQuery.
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { restaurantService } from '@/services/food.service';
+import { restaurantService } from '@/services/restaurant.service';
 import { LOCATION_DATA } from '@/constants/location.constant';
 import { Restaurant } from '@/types/restaurant';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface ExploreResponse {
   restaurants?: Restaurant[];
@@ -24,6 +25,8 @@ export const useExploreActions = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('explore');
   const [selectedCity, setSelectedCity] = useState(LOCATION_DATA[0]?.value || 'Hà Nội');
   const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -41,10 +44,10 @@ export const useExploreActions = () => {
     setCurrentPage(1);
   };
 
-  // Reset page to 1 when filters change
+  // Reset trang về 1 ngay khi bộ lọc thay đổi (không bị trễ)
   useEffect(() => {
     setCurrentPage(1);
-  }, [tag, selectedCity, selectedDistrict, searchQuery]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -54,12 +57,11 @@ export const useExploreActions = () => {
           tag: tag || undefined,
           city: selectedCity,
           district: selectedDistrict || undefined,
-          search: searchQuery || undefined,
+          search: debouncedSearchQuery || undefined,
           page: currentPage,
           pageSize: 6,
         });
         
-        // Nhận diện kiểu dữ liệu an toàn để tương thích với cấu trúc của backend
         const response = res as unknown as ExploreResponse | Restaurant[];
 
         if (response && !Array.isArray(response) && Array.isArray(response.restaurants)) {
@@ -82,12 +84,8 @@ export const useExploreActions = () => {
       }
     };
 
-    const timer = setTimeout(() => {
-      fetchRestaurants();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [tag, selectedCity, selectedDistrict, searchQuery, currentPage]);
+    fetchRestaurants();
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage]);
 
   return {
     tag,

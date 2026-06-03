@@ -1,9 +1,15 @@
+// Mục đích: Quản lý trạng thái và hành động cho trang admin bao gồm người dùng, món ăn, duyệt đối tác.
+// Ý nghĩa: Tách biệt hoàn toàn logic nghiệp vụ của quản trị viên khỏi phần UI hiển thị để tối ưu hóa việc bảo trì.
+// Chức năng đặc biệt: Cập nhật trạng thái duyệt đối tác, đề xuất món ăn, bật/tắt món ăn nổi bật trong tuần/ngày và cập nhật hàng loạt.
+// Design Pattern: Custom Hook pattern, Separation of Concerns (SoC).
+// Biến, hàm đặc biệt: useAdminActions, handleUpdateFood, handleBatchUpdate, getFilteredData.
+
 'use client';
 
 import { useState } from 'react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
-import { adminService, FoodBatchUpdateInput } from '@/services/food.service';
+import { adminService, FoodBatchUpdateInput } from '@/services/admin.service';
 import { UserRole, UserStatus, User } from '@/types/user';
 import { AdminFoodItem } from '@/types/food';
 import { AdminFoodFormData } from '@/components/features/admin/AdminFoodModal';

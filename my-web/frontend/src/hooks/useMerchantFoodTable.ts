@@ -1,9 +1,15 @@
+// Mục đích: Quản lý trạng thái cập nhật hàng loạt, nháp, mở rộng đối tác và phân trang món ăn cho bảng đối tác.
+// Ý nghĩa: Tách biệt logic thao tác dữ liệu thô và trạng thái cập nhật nháp (draft updates) của đối tác khỏi view component.
+// Chức năng đặc biệt: Nhóm món ăn theo đối tác, quản lý các thay đổi nháp trước khi lưu hàng loạt (batch update) hoặc hủy bỏ.
+// Design Pattern: Custom Hook pattern, Memoization (useMemo, useCallback).
+// Biến, hàm đặc biệt: useMerchantFoodTable, groupedMerchantFoods, handleToggleDraft, handleSaveBatch, handleDeselectAll.
+
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
 import { AdminFoodItem } from '@/types/food';
 import { UserStatus } from '@/types/user';
-import { FoodBatchUpdateInput } from '@/services/food.service';
+import { FoodBatchUpdateInput } from '@/services/admin.service';
 import { LABELS } from '@/constants/labels';
 
 interface UseMerchantFoodTableProps {

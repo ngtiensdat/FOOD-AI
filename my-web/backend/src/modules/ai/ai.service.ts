@@ -1,7 +1,8 @@
-/**
- * Mục đích: Service điều phối chính (Orchestrator) cho các tác vụ AI chat, quản lý trạng thái, và đề xuất món ăn.
- * File quan hệ: Gọi các service con như IntentDetectorService, RecommendationService, ResponseGeneratorService.
- */
+// Mục đích file này để làm gì: Service điều phối chính (Orchestrator) cho các tác vụ AI chat, quản lý trạng thái, và đề xuất món ăn.
+// Các file khác hay file này có ý nghĩa như nào: Nhận yêu cầu từ AiController, phối hợp gọi các dịch vụ con như IntentDetectorService, RecommendationService, ResponseGeneratorService.
+// Các chức năng đặc biệt: Xử lý logic hội thoại đa bước, tích hợp ngữ cảnh thời tiết thực tế từ WeatherService, và phản hồi kèm đề xuất món ăn tối ưu.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Orchestrator Pattern, Dependency Injection, Separation of Concerns.
+// Các biến, hàm đặc biệt trong file: chat(), getConversations(), createConversation(), deleteConversation(), getConversationDetail().
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -41,6 +42,7 @@ import { RecommendationService } from './services/recommendation.service';
 import { ResponseGeneratorService } from './services/response-generator.service';
 import { RedisService } from './services/redis.service';
 import { AiLearningService } from './services/ai-learning.service';
+import { WeatherService, WeatherData } from './services/weather.service';
 
 @Injectable()
 export class AiService {
@@ -59,6 +61,7 @@ export class AiService {
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     private readonly aiLearningService: AiLearningService,
+    private readonly weatherService: WeatherService,
   ) {}
 
   private getParam<T>(path: string, defaultValue: T): T {
@@ -213,6 +216,20 @@ export class AiService {
       // 8. RAG Embedding Retrieval
       const userVector = await this.openaiService.getEmbedding(cleanMessage);
 
+      // 8.5. Auto-detect weather from GPS via Open-Meteo
+      let weatherData: WeatherData | null = null;
+      if (userLat && userLng) {
+        weatherData = await this.weatherService.getCurrentWeather(
+          userLat,
+          userLng,
+        );
+      }
+      // Allow client override (for testing), otherwise use auto-detected data
+      const finalWeather = {
+        temperature: temperature ?? weatherData?.temperature ?? 28,
+        isRaining: isRaining ?? weatherData?.isRaining ?? false,
+      };
+
       // 9. Retrieve and Rerank candidates (delegated to RecommendationService)
       const { foods, shouldRecommend } =
         await this.recommendationService.searchAndRerank(
@@ -222,7 +239,7 @@ export class AiService {
           userLng,
           city,
           district,
-          { temperature: temperature ?? 28, isRaining: isRaining ?? false },
+          finalWeather,
           cleanMessage,
           intent,
           needs,
@@ -248,7 +265,11 @@ export class AiService {
         : '';
 
       // Prepare Prompt Templates
-      const currentDayTimeStr = `Bây giờ là ${new Date().getHours()}:${new Date().getMinutes()} ngày ${new Date().toLocaleDateString('vi-VN')}.`;
+      // Prepare Prompt Templates — include real weather description if available
+      const weatherStr = weatherData
+        ? ` Thời tiết: ${weatherData.description}, ${weatherData.temperature}°C (cảm nhận ${weatherData.apparentTemperature}°C), độ ẩm ${weatherData.humidity}%, gió ${weatherData.windSpeedKmh} km/h.`
+        : '';
+      const currentDayTimeStr = `Bây giờ là ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2, '0')} ngày ${new Date().toLocaleDateString('vi-VN')}.${weatherStr}`;
       const missingSlots: string[] = [];
       if (!currentState.slots.cuisineType) missingSlots.push('cuisineType');
       if (!currentState.slots.budget) missingSlots.push('budget');
@@ -341,6 +362,16 @@ export class AiService {
         })),
         quickReplies: parsedResponse.quickReplies,
         assessment: parsedResponse.assessment,
+        weather: weatherData
+          ? {
+              temperature: weatherData.temperature,
+              apparentTemperature: weatherData.apparentTemperature,
+              humidity: weatherData.humidity,
+              isRaining: weatherData.isRaining,
+              windSpeedKmh: weatherData.windSpeedKmh,
+              description: weatherData.description,
+            }
+          : null,
       };
     } finally {
       await releaseLock();

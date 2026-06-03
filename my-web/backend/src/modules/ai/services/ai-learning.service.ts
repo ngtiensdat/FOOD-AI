@@ -1,7 +1,8 @@
-/**
- * Mục đích: Service quản lý AI Feedback Learning, cập nhật sở thích người dùng và thống kê phản hồi.
- * File quan hệ: Được gọi từ AiController.submitFeedback và cung cấp thông tin sở thích cho RerankingService.
- */
+// Mục đích file này để làm gì: Service quản lý AI Feedback Learning, cập nhật sở thích người dùng và thống kê phản hồi.
+// Các file khác hay file này có ý nghĩa như nào: Được gọi từ AiController.submitFeedback và cung cấp thông tin sở thích cho RerankingService.
+// Các chức năng đặc biệt: Tải phản hồi, tính toán cập nhật profile vector sở thích của user, xóa toàn bộ phản hồi đồng bộ hóa với danh sách yêu thích.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Single Responsibility, Dependency Injection, Vector Embeddings.
+// Các biến, hàm đặc biệt trong file: saveFeedback(), getUserPreference(), clearUserFeedbacks().
 
 /* eslint-disable unused-imports/no-unused-vars */
 import { Injectable, Logger } from '@nestjs/common';
@@ -28,54 +29,146 @@ export class AiLearningService {
         `Saving AI Feedback: User ${userId} | Food ${dto.foodId} | Type ${dto.feedbackType}`,
       );
 
+      // Resolve conversation ID if not provided
+      let convId = dto.conversationId;
+      if (!convId) {
+        const lastConv = await this.prisma.conversation.findFirst({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (lastConv) {
+          convId = lastConv.id;
+        } else {
+          const newConv = await this.prisma.conversation.create({
+            data: {
+              userId,
+              metadata: {
+                title: 'Hội thoại mới',
+                slots: {},
+                current_stage: 'COLLECTING',
+                rejected_food_ids: [],
+                suggested_food_ids: [],
+              },
+            },
+          });
+          convId = newConv.id;
+        }
+      }
+
       // Fetch last messages to log the query context (optional)
       const lastMessage = await this.prisma.message.findFirst({
-        where: { conversationId: dto.conversationId, role: 'USER' },
+        where: { conversationId: convId, role: 'USER' },
         orderBy: { createdAt: 'desc' },
         select: { content: true },
       });
 
       const lastAiReply = await this.prisma.message.findFirst({
-        where: { conversationId: dto.conversationId, role: 'AI' },
+        where: { conversationId: convId, role: 'AI' },
         orderBy: { createdAt: 'desc' },
         select: { content: true },
       });
 
-      // Anti-spam: Upsert feedback (unique per userId and foodId)
-      await this.prisma.aiFeedback.upsert({
+      // Check if feedback already exists with the same type (Toggle Off)
+      const existing = await this.prisma.aiFeedback.findUnique({
         where: {
           userId_foodId: {
             userId,
             foodId: dto.foodId,
           },
         },
-        create: {
-          userId,
-          conversationId: dto.conversationId,
-          foodId: dto.foodId,
-          feedbackType: dto.feedbackType,
-          query: lastMessage?.content || null,
-          aiReply: lastAiReply?.content || null,
-        },
-        update: {
-          feedbackType: dto.feedbackType,
-          query: lastMessage?.content || null,
-          aiReply: lastAiReply?.content || null,
-          createdAt: new Date(),
-        },
       });
 
-      // Synchronize/Update User Embedding in the background on LIKE feedback
-      if (dto.feedbackType === FeedbackType.LIKE) {
-        this.updateUserEmbeddingWithFeedback(userId).catch((err: unknown) => {
-          const errMsg = err instanceof Error ? err.message : String(err);
-          const errStack = err instanceof Error ? err.stack : undefined;
-          this.logger.error(
-            `Failed to update user embedding after feedback: ${errMsg}`,
-            errStack,
-          );
+      if (existing && existing.feedbackType === dto.feedbackType) {
+        this.logger.log(
+          `Deleting/Toggling OFF AI Feedback: User ${userId} | Food ${dto.foodId} | Type ${dto.feedbackType}`,
+        );
+        await this.prisma.aiFeedback.delete({
+          where: {
+            userId_foodId: {
+              userId,
+              foodId: dto.foodId,
+            },
+          },
         });
+
+        // Data Consistency: If deleting a LIKE feedback, also remove from Favorite table
+        if (dto.feedbackType === FeedbackType.LIKE) {
+          const fav = await this.prisma.favorite.findUnique({
+            where: {
+              userId_foodId: {
+                userId,
+                foodId: dto.foodId,
+              },
+            },
+          });
+          if (fav) {
+            await this.prisma.favorite.delete({
+              where: {
+                userId_foodId: {
+                  userId,
+                  foodId: dto.foodId,
+                },
+              },
+            });
+          }
+        }
+      } else {
+        // Anti-spam: Upsert feedback (unique per userId and foodId)
+        await this.prisma.aiFeedback.upsert({
+          where: {
+            userId_foodId: {
+              userId,
+              foodId: dto.foodId,
+            },
+          },
+          create: {
+            userId,
+            conversationId: convId,
+            foodId: dto.foodId,
+            feedbackType: dto.feedbackType,
+            query: lastMessage?.content || null,
+            aiReply: lastAiReply?.content || null,
+          },
+          update: {
+            feedbackType: dto.feedbackType,
+            query: lastMessage?.content || null,
+            aiReply: lastAiReply?.content || null,
+            createdAt: new Date(),
+          },
+        });
+
+        // Data Consistency: If creating/updating a DISLIKE feedback, also remove from Favorite table
+        if (dto.feedbackType === FeedbackType.DISLIKE) {
+          const fav = await this.prisma.favorite.findUnique({
+            where: {
+              userId_foodId: {
+                userId,
+                foodId: dto.foodId,
+              },
+            },
+          });
+          if (fav) {
+            await this.prisma.favorite.delete({
+              where: {
+                userId_foodId: {
+                  userId,
+                  foodId: dto.foodId,
+                },
+              },
+            });
+          }
+        }
       }
+
+      // Synchronize/Update User Embedding in the background on any feedback change
+      this.updateUserEmbeddingWithFeedback(userId).catch((err: unknown) => {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const errStack = err instanceof Error ? err.stack : undefined;
+        this.logger.error(
+          `Failed to update user embedding after feedback change: ${errMsg}`,
+          errStack,
+        );
+      });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(`Error saving feedback: ${err.message}`, err.stack);
@@ -125,6 +218,64 @@ export class AiLearningService {
       dislikedFoods: Array.from(dislikedFoodsSet),
       dislikedCategories: Array.from(dislikedCategoriesSet),
     };
+  }
+
+  async getUserFeedbacks(userId: number) {
+    return this.prisma.aiFeedback.findMany({
+      where: { userId },
+      include: {
+        food: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+            description: true,
+            isActive: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async clearUserFeedbacks(userId: number): Promise<void> {
+    try {
+      this.logger.log(`Clearing all AI Feedbacks for User ${userId}`);
+
+      // Fetch all LIKE feedbacks first to remove them from Favorite table for consistency
+      const likes = await this.prisma.aiFeedback.findMany({
+        where: { userId, feedbackType: FeedbackType.LIKE },
+        select: { foodId: true },
+      });
+
+      const foodIds = likes.map((l) => l.foodId);
+
+      // Delete feedbacks
+      await this.prisma.aiFeedback.deleteMany({
+        where: { userId },
+      });
+
+      // Delete matching favorites
+      if (foodIds.length > 0) {
+        await this.prisma.favorite.deleteMany({
+          where: {
+            userId,
+            foodId: { in: foodIds },
+          },
+        });
+      }
+
+      // Re-calculate user embedding
+      await this.updateUserEmbeddingWithFeedback(userId);
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(
+        `Error clearing user feedbacks: ${err.message}`,
+        err.stack,
+      );
+      throw error;
+    }
   }
 
   async updateUserEmbeddingWithFeedback(userId: number): Promise<void> {

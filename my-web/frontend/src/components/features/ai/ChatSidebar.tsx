@@ -1,7 +1,12 @@
+// Mục đích file này để làm gì: Component Sidebar quản lý danh sách cuộc hội thoại gần đây (ChatGPT style).
+// Các file khác hay file này có ý nghĩa như nào: Được tích hợp vào AiChatWindow, cung cấp điều hướng cuộc trò chuyện và nút mở Modal cài đặt sở thích.
+// Các chức năng đặc biệt: Tạo mới đoạn chat, xóa đoạn chat, đóng mở sidebar thu phóng mượt mà.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Presentational Sidebar Component, State Propagation.
+// Các biến, hàm đặc biệt trong file: ChatSidebar component.
 'use client';
 
 import React from 'react';
-import { Plus, PanelLeftClose, MessageSquare, Trash2, RotateCcw } from 'lucide-react';
+import { Plus, PanelLeftClose, MessageSquare, Trash2, Settings } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 
 interface ChatSidebarProps {
@@ -13,6 +18,7 @@ interface ChatSidebarProps {
   handleCreateNewChat: () => void;
   handleDeleteChat: (e: React.MouseEvent, id: number) => void;
   loadConversations: () => void;
+  onOpenSettings: () => void;
 }
 
 export function ChatSidebar({
@@ -24,6 +30,7 @@ export function ChatSidebar({
   handleCreateNewChat,
   handleDeleteChat,
   loadConversations,
+  onOpenSettings,
 }: ChatSidebarProps) {
   return (
     <div
@@ -34,6 +41,7 @@ export function ChatSidebar({
       {/* Header Sidebar */}
       <div className="p-4 border-b border-slate-800/40 flex items-center justify-between gap-2 shrink-0">
         <button
+          id="chat-sidebar-new-chat-button"
           type="button"
           onClick={handleCreateNewChat}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-primary hover:from-orange-600 hover:to-orange-600 text-white text-xs font-extrabold transition-all shadow-md hover:shadow-lg"
@@ -43,6 +51,7 @@ export function ChatSidebar({
         </button>
 
         <button
+          id="chat-sidebar-close-button"
           type="button"
           onClick={() => setIsSidebarOpen(false)}
           title={LABELS.AI_CHAT.SIDEBAR.CLOSE_SIDEBAR}
@@ -65,6 +74,7 @@ export function ChatSidebar({
         ) : (
           conversations.map((conv) => (
             <div
+              id={`chat-sidebar-conv-item-${conv.id}`}
               key={conv.id}
               onClick={() => setActiveConversationId(conv.id)}
               className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
@@ -78,6 +88,7 @@ export function ChatSidebar({
                 <span className="truncate">{conv.title}</span>
               </div>
               <button
+                id={`chat-sidebar-delete-button-${conv.id}`}
                 type="button"
                 onClick={(e) => handleDeleteChat(e, conv.id)}
                 title={LABELS.AI_CHAT.SIDEBAR.DELETE_CHAT}
@@ -108,15 +119,14 @@ export function ChatSidebar({
         </div>
 
         <button
+          id="chat-sidebar-settings-button"
           type="button"
-          onClick={() => {
-            loadConversations();
-          }}
-          title={LABELS.AI_CHAT.SIDEBAR.REFRESH_LIST}
-          aria-label={LABELS.AI_CHAT.SIDEBAR.REFRESH_LIST}
+          onClick={onOpenSettings}
+          title={LABELS.AI_CHAT.PREFERENCES.TITLE}
+          aria-label={LABELS.AI_CHAT.PREFERENCES.TITLE}
           className="p-2 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-white transition-colors"
         >
-          <RotateCcw size={14} />
+          <Settings size={14} />
         </button>
       </div>
     </div>

@@ -1,17 +1,9 @@
-/**
- * Mục đích: Component giao diện chính hiển thị khung chat AI (sidebar danh sách hội thoại, chat feed, config drawer).
- * File quan hệ: Kết nối custom hook useAiChat và render các sub-component.
- */
-
+// Mục đích file này để làm gì: Component giao diện khung chat AI toàn diện (sidebar đa hội thoại, feed tin nhắn, khung nhập liệu, drawer giả lập ngữ cảnh).
+// Các file khác hay file này có ý nghĩa như nào: Sử dụng useAiChat hook để lấy logic nghiệp vụ, chịu trách nhiệm render toàn bộ layout giao diện chatbot AI.
+// Các chức năng đặc biệt: Hiển thị sidebar danh sách hội thoại, feed tin nhắn với animation, gợi ý nhanh, mock GPS/thời tiết drawer và modal cài đặt.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Presentational Component pattern, Separation of Concerns (chỉ UI, không logic).
+// Các biến, hàm đặc biệt trong file: AiChatWindow component.
 'use client';
-
-/**
- * Mục đích file này để làm gì: Component giao diện khung chat AI toàn diện (sidebar đa hội thoại, feed tin nhắn, khung nhập liệu, drawer giả lập ngữ cảnh).
- * Các file khác hay file này có ý nghĩa như nào: Sử dụng useAiChat hook để lấy logic, chỉ chịu trách nhiệm render giao diện.
- * Các chức năng đặc biệt: Hiển thị sidebar danh sách hội thoại, feed tin nhắn với animation, gợi ý nhanh, mock GPS/thời tiết drawer.
- * Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Presentational Component pattern, Separation of Concerns (chỉ UI, không logic).
- * Các biến, hàm đặc biệt trong file: AiChatWindow (Component), renderSidebar, renderChatFeed, renderConfigDrawer.
- */
 
 import React from 'react';
 import { 
@@ -28,6 +20,7 @@ import { ChatSidebar } from './ChatSidebar';
 import { ChatConfigDrawer } from './ChatConfigDrawer';
 import { ChatFeed } from './ChatFeed';
 import { ChatInputForm } from './ChatInputForm';
+import { PreferenceSettingsModal } from './PreferenceSettingsModal';
 
 import { FoodCardData } from '@/components/features/food/FoodCard';
 
@@ -51,10 +44,8 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
     setActiveConversationId,
     showConfig,
     setShowConfig,
-    temperature,
-    setTemperature,
-    isRaining,
-    setIsRaining,
+    weather,
+    isWeatherLoading,
     lat,
     setLat,
     lng,
@@ -68,7 +59,10 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
     refreshGps,
     handleFeedback,
     isAuthenticated,
+    reloadActiveConversation,
   } = useAiChat({ initialMessage, onResetChat });
+
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   return (
     <div className="w-full max-w-4xl mx-auto flex h-[650px] rounded-3xl bg-white dark:bg-slate-950 border border-orange-100 dark:border-slate-800 shadow-2xl overflow-hidden glass relative">
@@ -83,6 +77,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
         handleCreateNewChat={handleCreateNewChat}
         handleDeleteChat={handleDeleteChat}
         loadConversations={loadConversations}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Vùng chat chính (Main Chat Area) */}
@@ -150,10 +145,8 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
         <ChatConfigDrawer
           showConfig={showConfig}
           setShowConfig={setShowConfig}
-          temperature={temperature}
-          setTemperature={setTemperature}
-          isRaining={isRaining}
-          setIsRaining={setIsRaining}
+          weather={weather}
+          isWeatherLoading={isWeatherLoading}
           lat={lat}
           setLat={setLat}
           lng={lng}
@@ -179,6 +172,16 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
           sendDirectMessage={sendDirectMessage}
           handleSend={handleSend}
           isAuthenticated={isAuthenticated}
+        />
+
+        {/* Modal Cài đặt sở thích Like / Dislike */}
+        <PreferenceSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => {
+            setIsSettingsOpen(false);
+            reloadActiveConversation();
+          }}
+          activeConversationId={activeConversationId}
         />
 
       </div>

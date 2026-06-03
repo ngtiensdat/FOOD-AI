@@ -33,7 +33,7 @@ export interface FoodDetailData {
     profile?: {
       openingHours?: string;
     };
-  };
+  } | null;
   [key: string]: unknown;
 }
 

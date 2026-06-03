@@ -61,6 +61,37 @@ export class FoodRepository {
     });
   }
 
+  async toggleFavorite(userId: number, foodId: number): Promise<boolean> {
+    const existing = await this.prisma.favorite.findUnique({
+      where: {
+        userId_foodId: {
+          userId,
+          foodId,
+        },
+      },
+    });
+
+    if (existing) {
+      await this.prisma.favorite.delete({
+        where: {
+          userId_foodId: {
+            userId,
+            foodId,
+          },
+        },
+      });
+      return false;
+    } else {
+      await this.prisma.favorite.create({
+        data: {
+          userId,
+          foodId,
+        },
+      });
+      return true;
+    }
+  }
+
   async findRecentViews(
     userId: number,
     limit: number = LIMITS.DEFAULT_RECENT_VIEWS,

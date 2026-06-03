@@ -1,3 +1,8 @@
+// Mục đích file này để làm gì: Trang chủ của website FOOD AI, hiển thị Navbar, Hero banner và các danh sách món ăn/nhà hàng.
+// Các file khác hay file này có ý nghĩa như nào: Là điểm truy cập đầu tiên của ứng dụng khách hàng, sử dụng các components chung như FoodCard, RestaurantCard, và OnboardingModal.
+// Các chức năng đặc biệt: Tải dữ liệu trang chủ kèm định vị vị trí người dùng, xử lý onboarding khảo sát sở thích, thay đổi mật khẩu và quản lý popup chi tiết món ăn.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Container/Presenter Component Pattern, Separation of Concerns (logic đóng gói trong useHomeData và useHomeActions).
+// Các biến, hàm đặc biệt trong file: Home component.
 'use client';
 
 import React from 'react';
@@ -52,7 +57,8 @@ export default function Home() {
     handleChangePassword,
     handleVerifyEmail,
     fetchUserProfile,
-    handleDeleteAccount
+    handleDeleteAccount,
+    handleToggleFavorite
   } = useHomeActions();
 
   const { nearbyRestaurants, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
@@ -143,7 +149,7 @@ export default function Home() {
                       <RestaurantCard key={i} restaurant={restaurant} />
                     ))
                   : section.data.map((food, i) => (
-                      <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                      <FoodCard key={i} food={food} onViewDetail={setSelectedFood} onToggleFavorite={handleToggleFavorite} />
                     ))
                 }
               </Slider>

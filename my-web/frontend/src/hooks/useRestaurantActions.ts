@@ -1,7 +1,14 @@
+// Mục đích: Quản lý trạng thái và các hành động chính của đối tác (Merchant Hub) bao gồm món ăn, chi nhánh và giờ mở cửa.
+// Ý nghĩa: Tách biệt logic quản lý thực đơn và thông tin nhà hàng của đối tác ra khỏi tầng UI hiển thị.
+// Chức năng đặc biệt: Cập nhật giờ mở cửa với định dạng hợp lệ, thay đổi trạng thái hoạt động nhà hàng (mở/đóng cửa), quản lý thực đơn theo chi nhánh.
+// Design Pattern: Custom Hook pattern, Service abstraction.
+// Biến, hàm đặc biệt: useRestaurantActions, toggleRestaurantStatus, updateProfileHours, handleSubmit, handleConfirmDelete.
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { foodService, restaurantService } from '@/services/food.service';
+import { foodService } from '@/services/food.service';
+import { restaurantService } from '@/services/restaurant.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { isValidOpeningHours } from '@/utils/helpers';
@@ -9,10 +16,6 @@ import { User } from '@/types/user';
 import { Food } from '@/types/food';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 
-/**
- * Custom Hook: useRestaurantActions
- * Quản lý logic và trạng thái cho Merchant Hub (Trang chủ nhà hàng).
- */
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
