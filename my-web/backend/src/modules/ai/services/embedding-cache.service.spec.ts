@@ -2,18 +2,34 @@ process.env.JWT_SECRET = 'test-secret';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmbeddingCacheService } from './embedding-cache.service';
+import { RedisService } from './redis.service';
 
 describe('EmbeddingCacheService', () => {
   let service: EmbeddingCacheService;
+  let mockCache: Map<string, string>;
 
   beforeEach(async () => {
+    mockCache = new Map<string, string>();
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [EmbeddingCacheService],
+      providers: [
+        EmbeddingCacheService,
+        {
+          provide: RedisService,
+          useValue: {
+            get: jest.fn().mockImplementation((key: string) => {
+              return Promise.resolve(mockCache.get(key) || null);
+            }),
+            set: jest.fn().mockImplementation((key: string, value: string) => {
+              mockCache.set(key, value);
+              return Promise.resolve();
+            }),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<EmbeddingCacheService>(EmbeddingCacheService);
-    // Giả lập Redis offline để kích hoạt Graceful Memory Fallback phục vụ test
-    service['isRedisAvailable'] = false;
   });
 
   describe('Bản vá Fallback bộ nhớ đệm (In-memory cache fallback)', () => {

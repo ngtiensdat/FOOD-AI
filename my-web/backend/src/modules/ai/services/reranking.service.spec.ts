@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { RerankingService } from './reranking.service';
 import { SearchResult } from '../vector.repository';
+import { BusinessRuleEngineService } from './business-rule-engine.service';
+import { FoodKnowledgeService } from './food-knowledge.service';
 
 describe('RerankingService', () => {
   let service: RerankingService;
@@ -10,10 +12,12 @@ describe('RerankingService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RerankingService,
+        BusinessRuleEngineService,
+        FoodKnowledgeService,
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn().mockImplementation((key: string) => {
+            get: jest.fn().mockImplementation((_key: string) => {
               return undefined; // Trả về undefined để kích hoạt cơ chế fallback tĩnh an toàn
             }),
           },

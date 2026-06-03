@@ -24,10 +24,60 @@ interface RerankingWeights {
 @Injectable()
 export class RerankingService {
   constructor(
+    // eslint-disable-next-line unused-imports/no-unused-vars
     private readonly configService: ConfigService,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     private readonly ruleEngine: BusinessRuleEngineService,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     private readonly knowledgeService: FoodKnowledgeService,
   ) {}
+
+  /**
+   * Tính toán điểm suy hao khoảng cách dựa trên business rule engine.
+   * Phục vụ tương thích ngược và unit test.
+   * @param distanceKm Khoảng cách (km)
+   */
+  calculateDistanceScore(distanceKm: number | null): number {
+    return this.ruleEngine.getDistanceScore(distanceKm);
+  }
+
+  /**
+   * Tính toán điểm ngân sách dựa trên business rule engine.
+   * Phục vụ tương thích ngược và unit test.
+   * @param food Món ăn ứng viên
+   * @param budget Ngân sách tối đa của khách
+   */
+  calculatePriceScore(food: SearchResult, budget?: number): number {
+    return this.ruleEngine.getPriceScore(food.price, budget);
+  }
+
+  /**
+   * Tính toán điểm so khớp ý định (intent match score).
+   * Phục vụ tương thích ngược và unit test.
+   * @param food Món ăn ứng viên
+   * @param cuisine Ý định món ăn cần tìm
+   */
+  calculateIntentScore(food: SearchResult, cuisine: string): number {
+    const cuisineLower = cuisine.toLowerCase();
+    const nameLower = food.name.toLowerCase();
+    const descLower = (food.description || '').toLowerCase();
+    const tagsJoined = (food.tags || []).join(' ').toLowerCase();
+    const catNameLower = (food.categoryName || '').toLowerCase();
+
+    if (
+      nameLower.includes(cuisineLower) ||
+      catNameLower.includes(cuisineLower)
+    ) {
+      return 1.0;
+    } else if (
+      descLower.includes(cuisineLower) ||
+      tagsJoined.includes(cuisineLower)
+    ) {
+      return 0.8;
+    } else {
+      return 0.3;
+    }
+  }
 
   private getParam<T>(path: string, defaultValue: T): T {
     return this.configService.get<T>(`ai.${path}`) ?? defaultValue;

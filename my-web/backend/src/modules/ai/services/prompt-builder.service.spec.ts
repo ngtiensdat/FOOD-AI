@@ -49,7 +49,7 @@ describe('PromptBuilderService', () => {
     });
   });
 
-  describe('buildRecommendationPrompt (Tối ưu hóa Candidates truyền vào RAG)', () => {
+  describe('buildCandidatesSection (Tối ưu hóa Candidates truyền vào RAG)', () => {
     it('nên định dạng đúng candidates dạng JSON và loại bỏ address/description dư thừa', () => {
       const candidates = [
         {
@@ -57,12 +57,14 @@ describe('PromptBuilderService', () => {
           name: 'Món bún thịt nướng',
           price: 45000,
           similarity: 0.887,
+          restaurantName: 'Quán test',
+          distance_km: 1.2,
           address: '123 Đường Láng', // Sẽ bị loại bỏ để giảm token
           description: 'Rất ngon cay thơm', // Sẽ bị loại bỏ để giảm token
         },
       ] as any[];
 
-      const prompt = service.buildRecommendationPrompt(candidates);
+      const prompt = service.buildCandidatesSection(candidates);
 
       expect(prompt).toContain('Món bún thịt nướng');
       expect(prompt).toContain('45000');
@@ -79,12 +81,14 @@ describe('PromptBuilderService', () => {
         'Ngữ cảnh test',
         'Chỉ dẫn test',
         '{"cuisineType":"bún"}',
+        '[{"name":"Món test"}]',
       );
 
       expect(systemPrompt).toContain('Bây giờ là 12:00');
       expect(systemPrompt).toContain('Ngữ cảnh test');
       expect(systemPrompt).toContain('Chỉ dẫn test');
       expect(systemPrompt).toContain('{"cuisineType":"bún"}');
+      expect(systemPrompt).toContain('[{"name":"Món test"}]');
     });
   });
 });
