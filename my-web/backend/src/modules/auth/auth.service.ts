@@ -30,6 +30,7 @@ import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../ai/services/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,7 @@ export class AuthService {
     private jwtService: JwtService,
     private aiService: AiService,
     private prisma: PrismaService,
+    private redisService: RedisService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -78,6 +80,26 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     this.logger.log(`Attempting login for: ${dto.email}`);
+
+    const attemptsKey = `login_attempts:${dto.email}`;
+    const lockKey = `login_lock:${dto.email}`;
+
+    // 1. Kiểm tra xem tài khoản có đang bị khóa hay không
+    const lockTimeStr = await this.redisService.get(lockKey);
+    if (lockTimeStr) {
+      const lockTime = parseInt(lockTimeStr, 10);
+      const remainingMs = lockTime - Date.now();
+      if (remainingMs > 0) {
+        const remainingMinutes = Math.ceil(remainingMs / 60000);
+        throw new UnauthorizedException(
+          MESSAGES.AUTH.RATE_LIMIT_LOGIN_DYNAMIC(remainingMinutes),
+        );
+      } else {
+        // Khóa đã hết hạn, thực hiện xóa khóa
+        await this.redisService.del(lockKey);
+      }
+    }
+
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       this.logger.warn(`User not found: ${dto.email}`);
@@ -97,8 +119,33 @@ export class AuthService {
     );
     if (!isPasswordValid) {
       this.logger.warn(`Invalid password for: ${dto.email}`);
-      throw new UnauthorizedException(MESSAGES.AUTH.INVALID_CREDENTIALS);
+
+      // 2. Tăng số lần đăng nhập sai
+      const attemptsStr = await this.redisService.get(attemptsKey);
+      let attempts = attemptsStr ? parseInt(attemptsStr, 10) : 0;
+      attempts += 1;
+
+      const maxAttempts = 3;
+      const remainingAttempts = maxAttempts - attempts;
+
+      if (attempts >= maxAttempts) {
+        // Đã nhập sai 3 lần, thực hiện khóa 10 phút
+        const lockExpiration = Date.now() + 10 * 60 * 1000;
+        await this.redisService.set(lockKey, lockExpiration.toString(), 600); // ttl: 600 giây
+        await this.redisService.del(attemptsKey);
+        throw new UnauthorizedException(MESSAGES.AUTH.RATE_LIMIT_LOGIN_10M);
+      } else {
+        // Lưu lại số lần thử, ttl: 600 giây (10 phút)
+        await this.redisService.set(attemptsKey, attempts.toString(), 600);
+        throw new UnauthorizedException(
+          MESSAGES.AUTH.LOGIN_ATTEMPTS_REMAINING(remainingAttempts),
+        );
+      }
     }
+
+    // 3. Đăng nhập thành công, xóa lịch sử thử đăng nhập sai và khóa nếu có
+    await this.redisService.del(attemptsKey);
+    await this.redisService.del(lockKey);
 
     this.logger.log(`Login successful: ${dto.email}`);
     return this.generateToken(user);

@@ -686,7 +686,7 @@ export class AiService {
     });
 
     if (!conversation) {
-      throw new NotFoundException('Cuộc hội thoại không tồn tại.');
+      throw new NotFoundException(MESSAGES.AI.CONVERSATION_NOT_FOUND);
     }
 
     const metadata = conversation.metadata as unknown as ConversationMetadata;
@@ -705,7 +705,7 @@ export class AiService {
     });
 
     if (!conversation) {
-      throw new NotFoundException('Cuộc hội thoại không tồn tại.');
+      throw new NotFoundException(MESSAGES.AI.CONVERSATION_NOT_FOUND);
     }
 
     await this.prisma.message.deleteMany({

@@ -16,34 +16,20 @@ export class FoodKnowledgeService {
     const msgLower = message.toLowerCase().trim();
 
     if (
-      msgLower.includes('stress') ||
-      msgLower.includes('căng thẳng') ||
-      msgLower.includes('áp lực')
+      AI_RULES.WELLNESS_KEYWORDS.STRESSED.some((kw) => msgLower.includes(kw))
     ) {
       return AI_RULES.WELLNESS_ADVICE.STRESSED;
     }
-    if (
-      msgLower.includes('mệt') ||
-      msgLower.includes('oải') ||
-      msgLower.includes('đuối') ||
-      msgLower.includes('kiệt sức')
-    ) {
+    if (AI_RULES.WELLNESS_KEYWORDS.TIRED.some((kw) => msgLower.includes(kw))) {
       return AI_RULES.WELLNESS_ADVICE.TIRED;
     }
-    if (
-      msgLower.includes('giảm cân') ||
-      msgLower.includes('diet') ||
-      msgLower.includes('healthy') ||
-      msgLower.includes('giảm mỡ') ||
-      msgLower.includes('ít calo')
-    ) {
+    if (AI_RULES.WELLNESS_KEYWORDS.DIET.some((kw) => msgLower.includes(kw))) {
       return AI_RULES.WELLNESS_ADVICE.DIET;
     }
     if (
-      msgLower.includes('lạnh') ||
-      msgLower.includes('rét') ||
-      msgLower.includes('gió mùa') ||
-      msgLower.includes('đông về')
+      AI_RULES.WELLNESS_KEYWORDS.COLD_WEATHER.some((kw) =>
+        msgLower.includes(kw),
+      )
     ) {
       return AI_RULES.WELLNESS_ADVICE.COLD_WEATHER;
     }

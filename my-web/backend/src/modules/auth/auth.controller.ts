@@ -24,6 +24,7 @@ import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -39,6 +40,7 @@ export class AuthController {
     return { user: result.user };
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(CustomThrottlerGuard)
   @Post('login')
   async login(

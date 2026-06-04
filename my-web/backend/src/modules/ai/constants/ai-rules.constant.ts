@@ -209,4 +209,21 @@ export const AI_RULES = {
       targetCuisines: ['lẩu', 'súp', 'cay', 'bún bò', 'phở'],
     },
   },
+  WELLNESS_KEYWORDS: {
+    STRESSED: ['stress', 'căng thẳng', 'áp lực'],
+    TIRED: ['mệt', 'oải', 'đuối', 'kiệt sức'],
+    DIET: ['giảm cân', 'diet', 'healthy', 'giảm mỡ', 'ít calo'],
+    COLD_WEATHER: ['lạnh', 'rét', 'gió mùa', 'đông về'],
+  },
+  CUISINE_TRIGGERS: [
+    'thèm',
+    'muốn ăn',
+    'ăn',
+    'uống',
+    'tìm món',
+    'tìm quán',
+    'thích',
+    'thử món',
+    'món',
+  ],
 };

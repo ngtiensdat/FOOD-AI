@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AI_PARAMETERS } from '../constants/ai-parameters.constant';
 import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
+import { AI_RULES } from '../constants/ai-rules.constant';
 
 @Injectable()
 export class SlotExtractorService {
@@ -99,9 +100,15 @@ export class SlotExtractorService {
 
   extractCuisineType(text: string): string | undefined {
     const msgLower = text.toLowerCase().trim();
-    const cuisineMatch = msgLower.match(
-      /(?:thèm|muốn ăn|ăn|uống|tìm món|tìm quán|thích|thử món)\s+([^,.\s]+(?:\s+[^,.\s]+){0,2})/,
+    const triggersWithoutMon = AI_RULES.CUISINE_TRIGGERS.filter(
+      (t) => t !== 'món',
     );
+    const triggersPattern = triggersWithoutMon.join('|');
+    const cuisineRegex = new RegExp(
+      `(?:${triggersPattern})\\s+([^,.\\s]+(?:\\s+[^,.\\s]+){0,2})`,
+      'i',
+    );
+    const cuisineMatch = msgLower.match(cuisineRegex);
     if (!cuisineMatch) return undefined;
 
     const extracted = cuisineMatch[1].trim();
@@ -121,12 +128,9 @@ export class SlotExtractorService {
     }
 
     // Loại bỏ từ thừa ở đầu
-    filtered = filtered
-      .replace(
-        /^(?:thèm|muốn ăn|ăn|uống|tìm món|tìm quán|thích|thử món|món)\s+/,
-        '',
-      )
-      .trim();
+    const replacePattern = AI_RULES.CUISINE_TRIGGERS.join('|');
+    const replaceRegex = new RegExp(`^(?:${replacePattern})\\s+`, 'i');
+    filtered = filtered.replace(replaceRegex, '').trim();
 
     if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
       return filtered;
