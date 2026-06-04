@@ -53,7 +53,7 @@ class ApiClient {
       console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
       // Xử lý Refresh Token tự động nếu nhận lỗi 401
-      if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
         if (!this.refreshPromise) {
           this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, { 
               method: 'POST', 
