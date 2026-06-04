@@ -142,8 +142,12 @@ export class WeatherService {
         WEATHER_API_TIMEOUT_MS,
       );
 
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
+      let response: Response;
+      try {
+        response = await fetch(url, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
 
       if (!response.ok) {
         throw new Error(`Open-Meteo responded with status ${response.status}`);
