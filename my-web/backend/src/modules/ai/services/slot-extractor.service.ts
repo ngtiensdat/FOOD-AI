@@ -135,17 +135,26 @@ export class SlotExtractorService {
     return undefined;
   }
 
+  private stripDiacritics(str: string): string {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd');
+  }
+
   private findFuzzySlot<T extends string>(
     message: string,
     mapping: Record<T, string[]>,
   ): T | undefined {
     const msgLower = message.toLowerCase();
+    const msgClean = this.stripDiacritics(msgLower);
 
-    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước
+    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước (hỗ trợ cả gõ không dấu)
     for (const key of Object.keys(mapping) as T[]) {
       const synonyms = mapping[key];
       for (const syn of synonyms) {
-        if (msgLower.includes(syn.toLowerCase())) {
+        const synClean = this.stripDiacritics(syn.toLowerCase());
+        if (msgClean.includes(synClean)) {
           return key;
         }
       }
@@ -177,17 +186,10 @@ export class SlotExtractorService {
   }
 
   private calculateSimilarity(s1: string, s2: string): number {
-    // Chuẩn hóa và loại bỏ dấu tiếng Việt để so khớp mờ chính xác hơn khi người dùng gõ không dấu
-    const stripDiacritics = (str: string) => {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd');
-    };
-    const s1Clean = stripDiacritics(
+    const s1Clean = this.stripDiacritics(
       s1.toLowerCase().replace(/[.,]/g, ''),
     ).trim();
-    const s2Clean = stripDiacritics(
+    const s2Clean = this.stripDiacritics(
       s2.toLowerCase().replace(/[.,]/g, ''),
     ).trim();
     if (s1Clean === s2Clean) return 1.0;
