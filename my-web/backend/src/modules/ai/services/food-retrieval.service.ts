@@ -29,19 +29,97 @@ export class FoodRetrievalService {
     maxDistanceKm: number | null = null,
     intent?: FoodIntent,
     state?: DialogueState,
+    message?: string,
   ): Promise<SearchResult[]> {
     const dbDistrict =
       district && district !== 'Vị trí GPS hiện tại' ? district : undefined;
     const dbCity = city ? city : undefined;
 
     // Check if user is asking for nearby alternatives to previously suggested foods
+    let isAlternativeRequest = false;
     if (
       intent === FoodIntent.FIND_NEARBY &&
       state &&
       state.suggested_food_ids &&
-      state.suggested_food_ids.length > 0
+      state.suggested_food_ids.length > 0 &&
+      message
     ) {
-      const lastFoodId = state.suggested_food_ids[0];
+      const msgLower = message.toLowerCase();
+      const alternativeKeywords = [
+        'khác',
+        'gần hơn',
+        'thay thế',
+        'đổi',
+        'lựa chọn',
+        'chuyển',
+      ];
+      const hasAlternativeKeyword = alternativeKeywords.some((kw) =>
+        msgLower.includes(kw),
+      );
+
+      if (hasAlternativeKeyword) {
+        const lastFoodId = state.suggested_food_ids[0];
+        const lastFood = await this.prisma.food.findUnique({
+          where: { id: lastFoodId },
+          include: { category: true },
+        });
+
+        if (lastFood) {
+          const lastFoodNameLower = lastFood.name.toLowerCase();
+          const lastFoodCatLower = (
+            lastFood.category?.name || ''
+          ).toLowerCase();
+
+          const commonFoodNouns = [
+            'xôi',
+            'bún',
+            'phở',
+            'cơm',
+            'gà',
+            'pizza',
+            'mì',
+            'bánh',
+            'trà',
+            'cà phê',
+            'cafe',
+            'chè',
+            'sữa',
+            'nem',
+            'lẩu',
+            'nướng',
+            'burger',
+            'sushi',
+            'cháo',
+            'súp',
+            'ngan',
+            'vịt',
+            'bò',
+            'heo',
+            'lợn',
+            'hải sản',
+          ];
+
+          // If the message contains a food noun that is NOT in the last food's name or category name,
+          // it's a new request, so we should NOT hijack it.
+          const mentionsNewFood = commonFoodNouns.some((noun) => {
+            if (msgLower.includes(noun)) {
+              return (
+                !lastFoodNameLower.includes(noun) &&
+                !lastFoodCatLower.includes(noun)
+              );
+            }
+            return false;
+          });
+
+          if (!mentionsNewFood) {
+            isAlternativeRequest = true;
+          }
+        }
+      }
+    }
+
+    if (isAlternativeRequest) {
+      const lastFoodId = state!.suggested_food_ids[0];
       const lastFood = await this.prisma.food.findUnique({
         where: { id: lastFoodId },
         include: { category: true },
@@ -49,7 +127,7 @@ export class FoodRetrievalService {
 
       if (lastFood) {
         this.logger.log(
-          `FIND_NEARBY intent detected. Finding closer alternatives for food type: ${lastFood.name} (Category ID: ${lastFood.categoryId})`,
+          `FIND_NEARBY alternative request detected. Finding closer alternatives for food type: ${lastFood.name} (Category ID: ${lastFood.categoryId})`,
         );
 
         // Find foods in the same category

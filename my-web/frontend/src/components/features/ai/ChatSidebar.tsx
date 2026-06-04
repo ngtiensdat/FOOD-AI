@@ -8,6 +8,8 @@
 import React from 'react';
 import { Plus, PanelLeftClose, MessageSquare, Trash2, Settings } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { SafeImage } from '@/components/base/SafeImage';
+import { User } from '@/types/user';
 
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
@@ -19,6 +21,7 @@ interface ChatSidebarProps {
   handleDeleteChat: (e: React.MouseEvent, id: number) => void;
   loadConversations: () => void;
   onOpenSettings: () => void;
+  user?: Partial<User> | null;
 }
 
 export function ChatSidebar({
@@ -31,7 +34,17 @@ export function ChatSidebar({
   handleDeleteChat,
   loadConversations,
   onOpenSettings,
+  user,
 }: ChatSidebarProps) {
+  const displayName = user?.profile?.fullName || user?.name || LABELS.AI_CHAT.SIDEBAR.CUSTOMER;
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(-2)
+    .map((w: string) => w[0].toUpperCase())
+    .join('')
+    .slice(0, 2);
+  const avatarUrl = user?.profile?.avatar || user?.avatar || null;
   return (
     <div
       className={`h-full border-r border-orange-100/10 dark:border-slate-800/30 bg-slate-950 text-slate-200 transition-all duration-300 flex flex-col overflow-hidden relative shrink-0 z-20 ${
@@ -105,15 +118,26 @@ export function ChatSidebar({
       {/* Footer Sidebar */}
       <div className="p-4 border-t border-slate-800/40 bg-slate-950/80 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-primary flex items-center justify-center text-white text-xs font-black shrink-0 shadow-inner uppercase">
-            KH
+          <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 shadow-inner relative">
+            {avatarUrl ? (
+              <SafeImage
+                src={avatarUrl}
+                alt={displayName}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-orange-500 to-primary flex items-center justify-center text-white text-xs font-black uppercase">
+                {initials}
+              </div>
+            )}
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-extrabold text-white truncate">
-              {LABELS.AI_CHAT.SIDEBAR.CUSTOMER}
+              {displayName}
             </p>
             <p className="text-[10px] text-slate-500 font-bold truncate">
-              {LABELS.AI_CHAT.SIDEBAR.FREE_PLAN}
+              {user?.email || LABELS.AI_CHAT.SIDEBAR.FREE_PLAN}
             </p>
           </div>
         </div>

@@ -23,6 +23,109 @@ interface RerankingWeights {
 
 @Injectable()
 export class RerankingService {
+  private readonly CUISINE_KEYWORDS: Record<string, string[]> = {
+    'việt nam': [
+      'bún',
+      'phở',
+      'xôi',
+      'nem',
+      'cháo',
+      'nộm',
+      'bánh mì',
+      'cơm thố',
+      'bánh bột lọc',
+      'trà',
+      'chè',
+      'đậu mắm tôm',
+      'ngan',
+    ],
+    vietnamese: [
+      'bún',
+      'phở',
+      'xôi',
+      'nem',
+      'cháo',
+      'nộm',
+      'bánh mì',
+      'cơm thố',
+      'bánh bột lọc',
+      'trà',
+      'chè',
+      'đậu mắm tôm',
+      'ngan',
+    ],
+    'hàn quốc': [
+      'hàn quốc',
+      'kimbap',
+      'tokbokki',
+      'kim chi',
+      'mì cay',
+      'nướng hàn',
+      'tok',
+      'gà sốt hs',
+      'tteokbokki',
+    ],
+    korean: [
+      'hàn quốc',
+      'kimbap',
+      'tokbokki',
+      'kim chi',
+      'mì cay',
+      'nướng hàn',
+      'tok',
+      'gà sốt hs',
+      'tteokbokki',
+    ],
+    'nhật bản': [
+      'nhật bản',
+      'sushi',
+      'sashimi',
+      'ramen',
+      'udon',
+      'tempura',
+      'takoyaki',
+      'mì soba',
+    ],
+    japanese: [
+      'nhật bản',
+      'sushi',
+      'sashimi',
+      'ramen',
+      'udon',
+      'tempura',
+      'takoyaki',
+      'mì soba',
+    ],
+    'âu mỹ': [
+      'âu mỹ',
+      'pizza',
+      'burger',
+      'spaghetti',
+      'pasta',
+      'steak',
+      'khoai tây chiên',
+      'french fries',
+      'deli',
+      'hamburger',
+      'lotteria',
+      'domino',
+    ],
+    western: [
+      'âu mỹ',
+      'pizza',
+      'burger',
+      'spaghetti',
+      'pasta',
+      'steak',
+      'khoai tây chiên',
+      'french fries',
+      'deli',
+      'hamburger',
+      'lotteria',
+      'domino',
+    ],
+  };
+
   constructor(
     // eslint-disable-next-line unused-imports/no-unused-vars
     private readonly configService: ConfigService,
@@ -58,25 +161,42 @@ export class RerankingService {
    * @param cuisine Ý định món ăn cần tìm
    */
   calculateIntentScore(food: SearchResult, cuisine: string): number {
-    const cuisineLower = cuisine.toLowerCase();
+    const cuisineLower = cuisine.toLowerCase().trim();
     const nameLower = food.name.toLowerCase();
     const descLower = (food.description || '').toLowerCase();
     const tagsJoined = (food.tags || []).join(' ').toLowerCase();
     const catNameLower = (food.categoryName || '').toLowerCase();
 
+    // 1. Check exact string match
     if (
       nameLower.includes(cuisineLower) ||
       catNameLower.includes(cuisineLower)
     ) {
       return 1.0;
-    } else if (
-      descLower.includes(cuisineLower) ||
-      tagsJoined.includes(cuisineLower)
-    ) {
-      return 0.8;
-    } else {
-      return 0.3;
     }
+
+    // 2. Check general regional cuisine styles using synonyms/keywords
+    for (const [key, keywords] of Object.entries(this.CUISINE_KEYWORDS)) {
+      if (cuisineLower.includes(key) || key.includes(cuisineLower)) {
+        const isMatch = keywords.some(
+          (kw) =>
+            nameLower.includes(kw) ||
+            catNameLower.includes(kw) ||
+            descLower.includes(kw) ||
+            tagsJoined.includes(kw),
+        );
+        if (isMatch) {
+          return 1.0;
+        }
+      }
+    }
+
+    // 3. Check indirect description/tags match
+    if (descLower.includes(cuisineLower) || tagsJoined.includes(cuisineLower)) {
+      return 0.8;
+    }
+
+    return 0.3;
   }
 
   private getParam<T>(path: string, defaultValue: T): T {
@@ -161,23 +281,9 @@ export class RerankingService {
 
       // 2. Intent Score (mismatched cuisine penalized, neutral if undefined)
       let intentScore = 1.0;
-      const cuisine = state.slots.cuisineType?.toLowerCase();
+      const cuisine = state.slots.cuisineType;
       if (cuisine) {
-        const nameLower = food.name.toLowerCase();
-        const descLower = (food.description || '').toLowerCase();
-        const tagsJoined = (food.tags || []).join(' ').toLowerCase();
-        const catNameLower = (food.categoryName || '').toLowerCase();
-
-        if (nameLower.includes(cuisine) || catNameLower.includes(cuisine)) {
-          intentScore = 1.0;
-        } else if (
-          descLower.includes(cuisine) ||
-          tagsJoined.includes(cuisine)
-        ) {
-          intentScore = 0.8;
-        } else {
-          intentScore = 0.3;
-        }
+        intentScore = this.calculateIntentScore(food, cuisine);
       }
 
       // 3. Embedding similarity score
@@ -263,6 +369,21 @@ export class RerankingService {
         }
       }
 
+      // 8.5. Emotion REWARD (luxury) price adjustments
+      let emotionPriceAdjust = 0.0;
+      if (state.slots.emotion === 'REWARD') {
+        const priceLimits = this.getParam<any>(
+          'priceLimits',
+          AI_PARAMETERS.PRICE_LIMITS,
+        );
+        const rewardThreshold = priceLimits?.rewardThreshold ?? 80000;
+        if (food.price < rewardThreshold) {
+          emotionPriceAdjust = -0.3; // Heavy penalty for cheap food when trying to eat luxuriously
+        } else {
+          emotionPriceAdjust = 0.15; // Boost premium food options
+        }
+      }
+
       // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +
@@ -271,7 +392,8 @@ export class RerankingService {
         priceScore * weights.price +
         ratingScore * weights.rating +
         contextScore * weights.context +
-        feedbackBoost;
+        feedbackBoost +
+        emotionPriceAdjust;
 
       return {
         ...food,

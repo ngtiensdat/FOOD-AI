@@ -12,6 +12,7 @@ import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
 interface ParsedIntentResponse {
   needs?: Record<string, number>;
   slots?: SlotExtractionResult;
+  searchQuery?: string;
   reasoning?: string;
 }
 
@@ -25,6 +26,7 @@ export class IntentDetectorService {
     intent: FoodIntent;
     slots: SlotExtractionResult;
     needs: Record<string, number>;
+    searchQuery: string;
     reasoning: string;
   }> {
     try {
@@ -81,6 +83,7 @@ export class IntentDetectorService {
         intent,
         slots: slotsResult,
         needs,
+        searchQuery: parsed.searchQuery || message,
         reasoning,
       };
     } catch (error) {
@@ -92,6 +95,7 @@ export class IntentDetectorService {
         intent: FoodIntent.RECOMMEND_FOOD,
         slots: {},
         needs: {},
+        searchQuery: message,
         reasoning: 'Fallback do lỗi OpenAI',
       };
     }

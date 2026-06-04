@@ -11,6 +11,7 @@ import { User } from 'lucide-react';
 import { MiniFoodCard } from '../food/MiniFoodCard';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
+import { User as UserType } from '@/types/user';
 
 import { ChatMessage } from '@/hooks/useAiChat';
 import { FoodCardData } from '@/components/features/food/FoodCard';
@@ -22,6 +23,7 @@ interface ChatFeedProps {
   chatFeedRef: React.RefObject<HTMLDivElement | null>;
   onViewDetail?: (food: FoodCardData) => void;
   onFeedback?: (foodId: number, type: 'LIKE' | 'DISLIKE') => void;
+  user?: Partial<UserType> | null;
 }
 
 export function ChatFeed({
@@ -30,8 +32,18 @@ export function ChatFeed({
   chatFeedRef,
   onViewDetail,
   onFeedback,
+  user,
 }: ChatFeedProps) {
   const router = useRouter();
+  const displayName = user?.profile?.fullName || user?.name || '';
+  const userInitials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(-2)
+    .map((w: string) => w[0].toUpperCase())
+    .join('')
+    .slice(0, 2) || '?';
+  const userAvatarUrl = user?.profile?.avatar || user?.avatar || null;
   return (
     <div
       ref={chatFeedRef}
@@ -78,7 +90,18 @@ export function ChatFeed({
                 }`}
               >
                 {msg.role === 'user' ? (
-                  <User size={16} />
+                  userAvatarUrl ? (
+                    <SafeImage
+                      src={userAvatarUrl}
+                      alt={displayName || 'User'}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : userInitials !== '?' ? (
+                    <span className="text-[11px] font-black text-primary uppercase">{userInitials}</span>
+                  ) : (
+                    <User size={16} />
+                  )
                 ) : (
                   <SafeImage
                     src="/logo.png"
@@ -92,13 +115,13 @@ export function ChatFeed({
               {/* Bong bóng tin nhắn */}
               <div className="space-y-3">
                 <div
-                  className={`p-4 rounded-2xl shadow-sm text-sm leading-relaxed ${
+                  className={`p-4 rounded-2xl shadow-sm text-sm leading-relaxed text-left ${
                     msg.role === 'user'
                       ? 'bg-primary text-white rounded-tr-none'
                       : 'bg-white dark:bg-slate-900 border border-orange-50 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-tl-none'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className="whitespace-pre-wrap text-left">{msg.content}</p>
                 </div>
 
                 {/* Nút bấm Đăng nhập / Đăng ký nếu là tin nhắn yêu cầu xác thực */}

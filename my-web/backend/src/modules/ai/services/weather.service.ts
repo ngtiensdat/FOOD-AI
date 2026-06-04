@@ -156,7 +156,7 @@ export class WeatherService {
         temperature: Math.round(current.temperature_2m * 10) / 10,
         apparentTemperature: Math.round(current.apparent_temperature * 10) / 10,
         humidity: Math.round(current.relative_humidity_2m),
-        isRaining: current.rain > 0,
+        isRaining: current.rain > 0 || current.weather_code >= 51,
         rainMm: Math.round(current.rain * 100) / 100,
         windSpeedKmh: Math.round(current.wind_speed_10m * 10) / 10,
         weatherCode: current.weather_code,

@@ -526,7 +526,7 @@ export const LABELS = {
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',
-    AI_THINKING: 'Đang suy nghĩiiiiiiiiii...',
+    AI_THINKING: 'Đang suyyyyyy...',
     SUGGESTED_TITLE: 'Các món ăn gợi ý cho bạn:',
     FEATURES: {
       MOOD: 'Gợi ý theo tâm trạng',
@@ -597,6 +597,7 @@ export const LABELS = {
     ADD_FAVORITE: 'Thêm vào yêu thích',
     VIEW_DETAIL: 'Xem chi tiết',
     NO_DESCRIPTION: 'Không có mô tả',
+    NO_IMAGE: 'Không có ảnh',
     UNCATEGORIZED: 'Chưa phân loại',
     SYSTEM: 'Hệ thống',
   },
@@ -776,11 +777,11 @@ export const LABELS = {
         MAX: 42,
       },
       GPS_DEFAULTS: {
-        LAT: 10.7769,
-        LNG: 106.7009,
+        LAT: 21.0285,
+        LNG: 105.8542,
       },
       CITY_DEFAULTS: {
-        NAME: 'TP. Hồ Chí Minh',
+        NAME: 'Hà Nội',
       },
       SYNCING_WEATHER: 'Đang đồng bộ thời tiết...',
       FEELS_LIKE: (temp: number) => `Cảm nhận ${temp}°C`,
@@ -854,6 +855,9 @@ export const LABELS = {
       LOAD_HISTORY_ERROR: 'Lỗi tải lịch sử cuộc hội thoại:',
       SEND_FIRST_ERROR: 'Lỗi gửi tin nhắn đầu tiên:',
       GPS_WARN: 'Không lấy được GPS thực tế, dùng GPS giả lập mặc định:',
+      FEEDBACK_LIKE_SUCCESS: 'Đã đánh dấu hữu ích! AI sẽ gợi ý các món ăn tương tự.',
+      FEEDBACK_DISLIKE_SUCCESS: 'Đã ghi nhận phản hồi! AI sẽ hạn chế gợi ý món ăn này.',
+      FEEDBACK_ERROR: 'Lỗi khi gửi phản hồi.',
     }
   }
 };

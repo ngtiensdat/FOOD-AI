@@ -53,6 +53,7 @@ export class RecommendationService {
       null, // maxDistanceKm
       intent,
       state,
+      message,
     );
 
     // 2. Run Context Reranking (passing intent, needs, and feedbackProfile parameters)
@@ -77,14 +78,13 @@ export class RecommendationService {
       const isMatched = item.similarity >= minThreshold;
       if (isMatched) return true;
 
-      const cuisine = state.slots.cuisineType?.toLowerCase();
+      const cuisine = state.slots.cuisineType;
       if (cuisine) {
-        const nameLower = item.name.toLowerCase();
-        const catNameLower = (item.categoryName || '').toLowerCase();
-        if (
-          (nameLower.includes(cuisine) || catNameLower.includes(cuisine)) &&
-          item.similarity >= directThreshold
-        ) {
+        const intentScore = this.rerankingService.calculateIntentScore(
+          item,
+          cuisine,
+        );
+        if (intentScore >= 0.8 && item.similarity >= directThreshold) {
           return true;
         }
       }
@@ -92,11 +92,13 @@ export class RecommendationService {
     });
 
     const hasDirectIntentMatch = reRanked.some((item) => {
-      const cuisine = state.slots.cuisineType?.toLowerCase();
+      const cuisine = state.slots.cuisineType;
       if (!cuisine) return false;
-      const nameLower = item.name.toLowerCase();
-      const catNameLower = (item.categoryName || '').toLowerCase();
-      return nameLower.includes(cuisine) || catNameLower.includes(cuisine);
+      const intentScore = this.rerankingService.calculateIntentScore(
+        item,
+        cuisine,
+      );
+      return intentScore >= 0.8;
     });
 
     // Check if the user query is a general recommendation request
@@ -107,20 +109,21 @@ export class RecommendationService {
     let shouldRecommend = false;
     let foods: SearchResult[] = [];
 
-    // If intent is FIND_NEARBY and we got candidates, we definitely want to recommend them sorted by proximity
+    // Decision Logic
     if (intent === FoodIntent.FIND_NEARBY) {
       shouldRecommend = reRanked.length > 0;
       foods = reRanked.slice(0, 3);
-    } else if (hasCuisine) {
-      shouldRecommend = matchedFoods.length > 0 || hasDirectIntentMatch;
-      if (shouldRecommend) {
-        foods = matchedFoods;
-        if (foods.length === 0 && reRanked.length > 0) {
-          foods = reRanked.slice(0, 3);
-        }
-      }
+    } else if (matchedFoods.length > 0) {
+      shouldRecommend = true;
+      foods = matchedFoods.slice(0, 5);
+    } else if (hasCuisine && hasDirectIntentMatch) {
+      shouldRecommend = true;
+      foods = reRanked.slice(0, 3);
     } else if (isGeneralRec) {
       shouldRecommend = true;
+      foods = reRanked.slice(0, 3);
+    } else {
+      // Fallback candidates if we have no matches but recommendation is triggered anyway by dialogue manager
       foods = reRanked.slice(0, 3);
     }
 

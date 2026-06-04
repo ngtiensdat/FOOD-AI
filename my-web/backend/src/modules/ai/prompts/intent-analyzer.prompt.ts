@@ -29,6 +29,18 @@ Ngoài ra hãy trích xuất các thuộc tính cụ thể (slots) nếu có:
 - companion (ví dụ: "SINGLE", "FAMILY", "DATE", "FRIENDS")
 - allergies (mảng các chất/nguyên liệu/món gây dị ứng của người dùng dưới dạng chuỗi, ví dụ: ["tôm", "lạc", "hải sản"])
 
+Dựa trên ngữ cảnh và ý định ngầm hiểu, hãy sinh ra một "searchQuery" bằng tiếng Việt gồm các từ khóa đặc trưng (ví dụ: món ăn, thể loại, từ khóa liên quan) để dùng tìm kiếm trong cơ sở dữ liệu vector.
+Ví dụ:
+- "muốn ăn cái gì sang chảnh" -> "pizza, steak, lẩu nướng, sushi, nhà hàng sang trọng"
+- "thèm ngọt ngọt" -> "trà sữa, kem, bánh ngọt, chè, trà đào"
+- "đói quá muốn ăn no" -> "cơm thố, cơm sườn, cơm văn phòng, mì, bún chả"
+- "bún ngan" -> "bún ngan"
+- "tôi buồn quá / tôi stress / tôi mệt" -> "trà sữa, bánh ngọt, kem, chè, đồ ngọt, comfort food, đồ uống dễ chịu"
+- "tôi vui quá / tôi thành công" -> "lẩu nướng, buffet, đồ ăn liên hoan, pizza, gà rán"
+- "muốn ăn gì đó nhẹ nhàng" -> "salad, cháo, soup, bánh mì, sandwitch, phở"
+- "ăn với bạn bè / đi chơi nhóm" -> "lẩu, nướng, buffet, đồ ăn vặt, pizza, gà"
+- "ăn một mình / buổi tối yên tĩnh" -> "cơm bình thường, bún, phở, mì, cháo"
+
 Trả về đúng cấu trúc JSON sau:
 {
   "needs": {
@@ -49,6 +61,7 @@ Trả về đúng cấu trúc JSON sau:
     "companion": null,
     "allergies": null
   },
+  "searchQuery": "từ khóa tìm kiếm tối ưu",
   "reasoning": "Giải thích ngắn gọn bằng tiếng Việt"
 }
 

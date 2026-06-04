@@ -59,13 +59,14 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
     refreshGps,
     handleFeedback,
     isAuthenticated,
+    user,
     reloadActiveConversation,
   } = useAiChat({ initialMessage, onResetChat });
 
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex h-[650px] rounded-3xl bg-white dark:bg-slate-950 border border-orange-100 dark:border-slate-800 shadow-2xl overflow-hidden glass relative">
+    <div className="w-full max-w-4xl mx-auto flex h-[650px] rounded-3xl bg-white dark:bg-slate-950 border border-orange-100 dark:border-slate-800 shadow-2xl overflow-hidden glass relative text-left font-outfit [&_input]:text-left [&_input]:font-outfit [&_button]:font-outfit [&_select]:font-outfit [&_textarea]:font-outfit">
       
       {/* Sidebar tương tự Chat GPT */}
       <ChatSidebar
@@ -78,6 +79,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
         handleDeleteChat={handleDeleteChat}
         loadConversations={loadConversations}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        user={user}
       />
 
       {/* Vùng chat chính (Main Chat Area) */}
@@ -104,10 +106,12 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
               <h3 className="font-extrabold text-gray-800 dark:text-slate-100 text-sm md:text-base leading-none mb-1">
                 {LABELS.COMMON.AI_ASSISTANT_NAME}
               </h3>
-              <span className="text-[10px] md:text-xs text-green-500 font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
-                {LABELS.AI_CHAT.HEADER.ACTIVE}
-              </span>
+              {isAuthenticated && (
+                <span className="text-[10px] md:text-xs text-green-500 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
+                  {LABELS.AI_CHAT.HEADER.ACTIVE}
+                </span>
+              )}
             </div>
           </div>
 
@@ -161,6 +165,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
           chatFeedRef={chatFeedRef}
           onViewDetail={onViewDetail}
           onFeedback={handleFeedback}
+          user={user}
         />
 
         {/* Vùng nhập liệu (Input Form) ở cuối */}

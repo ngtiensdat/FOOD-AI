@@ -3,7 +3,7 @@
 // Chức năng đặc biệt: Quản lý đa hội thoại như ChatGPT, tự động đồng bộ hóa thời tiết từ GPS, hỗ trợ phản hồi nhanh sinh động từ AI và hệ thống phản hồi hữu ích (feedback).
 // Design Pattern: Custom Hook pattern, Separation of Concerns (SoC).
 // Biến, hàm đặc biệt: useAiChat, sendDirectMessage, handleCreateNewChat, handleDeleteChat, handleFeedback.
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { aiService } from '@/services/ai.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
@@ -53,7 +53,7 @@ interface DBMessage {
 const sentInitialMessages = new Set<string>();
 
 export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: isAuthLoading, user } = useAuth();
 
   if (!initialMessage && sentInitialMessages.size > 0) {
     sentInitialMessages.clear();
@@ -113,7 +113,7 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     scrollToBottom('smooth');
   }, [messages, isLoading]);
 
-  const loadConversations = async (overrideActiveId?: number | null) => {
+  const loadConversations = useCallback(async (overrideActiveId?: number | null) => {
     const list = await aiService.getConversations();
     const currentActiveId = overrideActiveId !== undefined ? overrideActiveId : activeConversationId;
     const updatedList = list.map((c: DBConversationItem) => {
@@ -129,10 +129,12 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     });
     setConversations(updatedList);
     return updatedList;
-  };
+  }, [activeConversationId, initialMessage]);
 
   // Load danh sách cuộc trò chuyện khi component mount
   useEffect(() => {
+    if (isAuthLoading) return;
+
     if (!isAuthenticated) {
       const initialMsgs: ChatMessage[] = [];
       if (initialMessage) {
@@ -184,9 +186,9 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     return () => {
       active = false;
     };
-  }, [initialMessage, isAuthenticated]);
+  }, [initialMessage, isAuthenticated, isAuthLoading]);
 
-  const loadConvHistory = async (convId: number) => {
+  const loadConvHistory = useCallback(async (convId: number) => {
     if (!convId) return;
     setIsLoading(true);
     try {
@@ -219,7 +221,7 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
       setIsHistoryLoaded(true);
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Tải chi tiết lịch sử tin nhắn của cuộc trò chuyện hiện tại
   useEffect(() => {
@@ -236,11 +238,11 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     }
   }, [activeConversationId]);
 
-  const reloadActiveConversation = () => {
+  const reloadActiveConversation = useCallback(() => {
     if (activeConversationId) {
       loadConvHistory(activeConversationId);
     }
-  };
+  }, [activeConversationId, loadConvHistory]);
 
   // Định vị GPS đã được tự động xử lý bởi useGeolocation hook
 
@@ -486,18 +488,19 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
         );
         toast.success(
           type === 'LIKE'
-            ? 'Đã đánh dấu hữu ích! AI sẽ gợi ý các món ăn tương tự.'
-            : 'Đã ghi nhận phản hồi! AI sẽ hạn chế gợi ý món ăn này.',
+            ? LABELS.AI_CHAT.TOAST.FEEDBACK_LIKE_SUCCESS
+            : LABELS.AI_CHAT.TOAST.FEEDBACK_DISLIKE_SUCCESS,
         );
       }
     } catch (err) {
       console.error('Error submitting feedback', err);
-      toast.error('Lỗi khi gửi phản hồi.');
+      toast.error(LABELS.AI_CHAT.TOAST.FEEDBACK_ERROR);
     }
   };
 
   return {
     isAuthenticated,
+    user,
     messages,
     setMessages,
     inputValue,

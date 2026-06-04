@@ -1,8 +1,8 @@
 // Cấu hình tập trung cho toàn bộ module AI tư vấn ẩm thực và xếp hạng món ăn.
 export const AI_PARAMETERS = {
   THRESHOLDS: {
-    minSimilarity: 0.7,
-    directMatch: 0.6,
+    minSimilarity: 0.45,
+    directMatch: 0.4,
     rerankingMinDistanceScore: 0.5,
   },
   DECAY: {

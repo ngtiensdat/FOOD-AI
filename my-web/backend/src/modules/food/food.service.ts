@@ -23,6 +23,8 @@ import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
 import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
+const FOOD_DISPLAY_LIMIT = 20;
+
 @Injectable()
 export class FoodService {
   constructor(
@@ -88,10 +90,10 @@ export class FoodService {
     }
 
     return {
-      data: foods.slice(0, 20),
+      data: foods.slice(0, FOOD_DISPLAY_LIMIT),
       meta: {
         total: tag ? foods.length : result.total,
-        limit: 20,
+        limit: FOOD_DISPLAY_LIMIT,
       },
     };
   }

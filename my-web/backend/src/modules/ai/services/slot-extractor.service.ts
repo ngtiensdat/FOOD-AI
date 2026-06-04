@@ -158,11 +158,13 @@ export class SlotExtractorService {
       const synonyms = mapping[key];
       for (const syn of synonyms) {
         const synWords = syn.toLowerCase().split(/\s+/);
-        for (const msgWord of msgWords) {
-          for (const synWord of synWords) {
-            if (this.calculateSimilarity(msgWord, synWord) >= FUZZY_THRESHOLD) {
+        if (synWords.length === 1) {
+          for (const msgWord of msgWords) {
+            if (
+              this.calculateSimilarity(msgWord, synWords[0]) >= FUZZY_THRESHOLD
+            ) {
               this.logger.debug(
-                `Fuzzy matched synonym typo: "${msgWord}" with "${synWord}" -> ${key}`,
+                `Fuzzy matched synonym typo: "${msgWord}" with "${synWords[0]}" -> ${key}`,
               );
               return key;
             }

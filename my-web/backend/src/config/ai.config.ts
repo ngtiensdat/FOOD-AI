@@ -8,9 +8,9 @@ import { registerAs } from '@nestjs/config';
 export default registerAs('ai', () => ({
   thresholds: {
     minSimilarity: parseFloat(
-      process.env.AI_THRESHOLD_MIN_SIMILARITY || '0.70',
+      process.env.AI_THRESHOLD_MIN_SIMILARITY || '0.45',
     ),
-    directMatch: parseFloat(process.env.AI_THRESHOLD_DIRECT_MATCH || '0.60'),
+    directMatch: parseFloat(process.env.AI_THRESHOLD_DIRECT_MATCH || '0.40'),
     rerankingMinDistanceScore: parseFloat(
       process.env.AI_THRESHOLD_RERANKING_MIN_DISTANCE_SCORE || '0.5',
     ),

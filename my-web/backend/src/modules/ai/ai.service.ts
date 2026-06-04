@@ -29,6 +29,14 @@ export interface FoodSuggestion {
   restaurantName: string;
   address: string;
 }
+
+const DEFAULT_WEATHER_TEMP = 28;
+const CONVERSATION_LOCK_TTL_MS = 10000;
+const CONVERSATION_LOCK_RETRIES = 10;
+const CONVERSATION_LOCK_RETRY_DELAY_MS = 150;
+const SLOT_FILL_MAX_MESSAGES = 3;
+const FALLBACK_SUGGESTIONS_COUNT = 2;
+
 import { LIMITS } from '../../common/constants/limits.constant';
 import { AI_CONSTANTS } from '../../common/constants/ai.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
@@ -43,6 +51,7 @@ import { ResponseGeneratorService } from './services/response-generator.service'
 import { RedisService } from './services/redis.service';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService, WeatherData } from './services/weather.service';
+import { SlotExtractorService } from './services/slot-extractor.service';
 
 @Injectable()
 export class AiService {
@@ -62,6 +71,7 @@ export class AiService {
     private readonly configService: ConfigService,
     private readonly aiLearningService: AiLearningService,
     private readonly weatherService: WeatherService,
+    private readonly slotExtractor: SlotExtractorService,
   ) {}
 
   private getParam<T>(path: string, defaultValue: T): T {
@@ -149,9 +159,9 @@ export class AiService {
     // 3. Centralized Distributed Lock via RedisService
     const releaseLock = await this.redisService.acquireLock(
       `lock:conversation:${conversation.id}`,
-      10000,
-      10,
-      150,
+      CONVERSATION_LOCK_TTL_MS,
+      CONVERSATION_LOCK_RETRIES,
+      CONVERSATION_LOCK_RETRY_DELAY_MS,
     );
 
     try {
@@ -172,11 +182,14 @@ export class AiService {
       // 5. Intent and Slot Detection Layer
       const {
         intent,
-        slots: localSlots,
+        slots: llmSlots,
         needs,
+        searchQuery,
       } = await this.intentDetector.detectIntentAndSlots(cleanMessage);
+      const localSlots = this.slotExtractor.extractSlotsLocally(cleanMessage);
       currentState.slots = {
         ...(currentState.slots || {}),
+        ...llmSlots,
         ...localSlots,
       };
 
@@ -214,7 +227,9 @@ export class AiService {
       );
 
       // 8. RAG Embedding Retrieval
-      const userVector = await this.openaiService.getEmbedding(cleanMessage);
+      const userVector = await this.openaiService.getEmbedding(
+        searchQuery || cleanMessage,
+      );
 
       // 8.5. Auto-detect weather from GPS via Open-Meteo
       let weatherData: WeatherData | null = null;
@@ -226,13 +241,104 @@ export class AiService {
       }
       // Allow client override (for testing), otherwise use auto-detected data
       const finalWeather = {
-        temperature: temperature ?? weatherData?.temperature ?? 28,
+        temperature:
+          temperature ?? weatherData?.temperature ?? DEFAULT_WEATHER_TEMP,
         isRaining: isRaining ?? weatherData?.isRaining ?? false,
       };
 
+      // 8.7. Explicit History or Favorites retrieval
+      const isHistoryRequest =
+        cleanMessage.toLowerCase().includes('đã xem') ||
+        cleanMessage.toLowerCase().includes('vừa xem') ||
+        cleanMessage.toLowerCase().includes('lịch sử');
+
+      const isFavoriteRequest =
+        cleanMessage.toLowerCase().includes('yêu thích') ||
+        cleanMessage.toLowerCase().includes('đã thích');
+
+      let customCandidates: SearchResult[] = [];
+      if (isHistoryRequest) {
+        const historyItems = await this.prisma.history.findMany({
+          where: { userId, foodId: { not: null } },
+          include: {
+            food: {
+              include: {
+                restaurant: true,
+                category: true,
+              },
+            },
+          },
+          orderBy: { visitedAt: 'desc' },
+          take: 5,
+        });
+        customCandidates = historyItems
+          .filter((h) => h.food !== null)
+          .map((h) => {
+            const f = h.food!;
+            return {
+              id: f.id,
+              name: f.name,
+              price: f.price,
+              description: f.description || '',
+              image: f.image || '',
+              tags: f.tags,
+              restaurantName: f.restaurant?.name || '',
+              address: f.address || f.restaurant?.address || '',
+              lat: f.lat || 0,
+              lng: f.lng || 0,
+              categoryName: f.category?.name || '',
+              embeddingSimilarity: 1.0,
+              distance_km: null,
+              similarity: 1.0,
+            };
+          });
+      } else if (isFavoriteRequest) {
+        const favoriteItems = await this.prisma.favorite.findMany({
+          where: { userId },
+          include: {
+            food: {
+              include: {
+                restaurant: true,
+                category: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        });
+        customCandidates = favoriteItems
+          .filter((fav) => fav.food !== null)
+          .map((fav) => {
+            const f = fav.food;
+            return {
+              id: f.id,
+              name: f.name,
+              price: f.price,
+              description: f.description || '',
+              image: f.image || '',
+              tags: f.tags,
+              restaurantName: f.restaurant?.name || '',
+              address: f.address || f.restaurant?.address || '',
+              lat: f.lat || 0,
+              lng: f.lng || 0,
+              categoryName: f.category?.name || '',
+              embeddingSimilarity: 1.0,
+              distance_km: null,
+              similarity: 1.0,
+            };
+          });
+      }
+
       // 9. Retrieve and Rerank candidates (delegated to RecommendationService)
-      const { foods, shouldRecommend } =
-        await this.recommendationService.searchAndRerank(
+      let foods: SearchResult[] = [];
+      let shouldRecommend = false;
+
+      if (customCandidates.length > 0) {
+        foods = customCandidates;
+        shouldRecommend = true;
+        currentState.current_stage = 'RECOMMENDED';
+      } else {
+        const result = await this.recommendationService.searchAndRerank(
           userVector,
           currentState,
           userLat,
@@ -245,11 +351,14 @@ export class AiService {
           needs,
           feedbackProfile,
         );
+        foods = result.foods;
+        shouldRecommend = result.shouldRecommend;
+      }
 
       const isTriggerRecommend =
         shouldRecommend ||
         currentState.current_stage !== 'COLLECTING' ||
-        messageCount >= 3;
+        messageCount >= SLOT_FILL_MAX_MESSAGES;
 
       let selectedRecommendationFoods: SearchResult[] = [];
       if (isTriggerRecommend) {
@@ -284,7 +393,8 @@ export class AiService {
 
       const promptInstructions =
         !isTriggerRecommend ||
-        (selectedRecommendationFoods.length === 0 && messageCount < 3)
+        (selectedRecommendationFoods.length === 0 &&
+          messageCount < SLOT_FILL_MAX_MESSAGES)
           ? this.promptBuilderService.buildSlotFillingPrompt(missingSlots)
           : this.promptBuilderService.buildRecommendationPrompt();
 
@@ -336,18 +446,50 @@ export class AiService {
       }
 
       // Filter verified recommendations to return to frontend
-      const suggestedIdsSet = new Set(parsedResponse.suggestedFoodIds);
-      let recommendedFoods = selectedRecommendationFoods.filter((f) =>
-        suggestedIdsSet.has(f.id),
+      // Cross-validate: check that each LLM-suggested food ID is actually mentioned in the reply text.
+      // This prevents mismatch where LLM picks random IDs from candidates that don't match what it said.
+      const replyLower = parsedResponse.reply.toLowerCase();
+
+      const crossValidateId = (candidateId: number): boolean => {
+        const candidate = selectedRecommendationFoods.find(
+          (c) => c.id === candidateId,
+        );
+        if (!candidate) return false;
+        const nameLower = candidate.name.toLowerCase();
+        const cleanName = nameLower.split('/')[0].split('-')[0].trim();
+        const words = cleanName.split(/\s+/);
+        const firstThreeWords = words.slice(0, 3).join(' ');
+        // A candidate is "mentioned" if its name (or a significant prefix) appears in the reply
+        return (
+          (cleanName.length > 3 && replyLower.includes(cleanName)) ||
+          (words.length >= 2 &&
+            firstThreeWords.length > 5 &&
+            replyLower.includes(firstThreeWords))
+        );
+      };
+
+      // Start with LLM-suggested IDs, but filter out any that aren't actually mentioned in the reply
+      const rawSuggestedFoodIds = parsedResponse.suggestedFoodIds.filter((id) =>
+        crossValidateId(id),
       );
 
+      // If LLM provided IDs but none passed cross-validation, try text-based extraction as fallback
+      // (this handles cases where LLM left suggestedFoodIds empty but mentioned foods in text)
       if (
-        isTriggerRecommend &&
-        selectedRecommendationFoods.length > 0 &&
-        recommendedFoods.length === 0
+        rawSuggestedFoodIds.length === 0 &&
+        selectedRecommendationFoods.length > 0
       ) {
-        recommendedFoods = selectedRecommendationFoods.slice(0, 2);
+        for (const candidate of selectedRecommendationFoods) {
+          if (crossValidateId(candidate.id)) {
+            rawSuggestedFoodIds.push(candidate.id);
+          }
+        }
       }
+
+      const suggestedIdsSet = new Set(rawSuggestedFoodIds);
+      const recommendedFoods = selectedRecommendationFoods.filter((f) =>
+        suggestedIdsSet.has(f.id),
+      );
 
       return {
         reply: parsedResponse.reply,
@@ -378,6 +520,33 @@ export class AiService {
     }
   }
 
+  private async fetchSuggestionsFromMetadata(
+    metadata: ConversationMetadata,
+  ): Promise<FoodSuggestion[]> {
+    if (
+      !metadata ||
+      !Array.isArray(metadata.suggested_food_ids) ||
+      metadata.suggested_food_ids.length === 0
+    ) {
+      return [];
+    }
+
+    const foodIds = metadata.suggested_food_ids.map((id) => Number(id));
+    const dbFoods = await this.prisma.food.findMany({
+      where: { id: { in: foodIds } },
+      include: { restaurant: true },
+    });
+
+    return dbFoods.map((f) => ({
+      id: f.id,
+      name: f.name,
+      price: f.price,
+      image: f.image,
+      restaurantName: f.restaurant?.name || '',
+      address: f.address || f.restaurant?.address || '',
+    }));
+  }
+
   async getChatContext(userId: number) {
     const conversation = await this.prisma.conversation.findFirst({
       where: { userId },
@@ -392,29 +561,8 @@ export class AiService {
 
     if (!conversation) return null;
 
-    let suggestions: FoodSuggestion[] = [];
     const metadata = conversation.metadata as unknown as ConversationMetadata;
-    if (
-      metadata &&
-      Array.isArray(metadata.suggested_food_ids) &&
-      metadata.suggested_food_ids.length > 0
-    ) {
-      const foodIds = metadata.suggested_food_ids.map((id: number) =>
-        Number(id),
-      );
-      const dbFoods = await this.prisma.food.findMany({
-        where: { id: { in: foodIds } },
-        include: { restaurant: true },
-      });
-      suggestions = dbFoods.map((f) => ({
-        id: f.id,
-        name: f.name,
-        price: f.price,
-        image: f.image,
-        restaurantName: f.restaurant?.name || '',
-        address: f.address || f.restaurant?.address || '',
-      }));
-    }
+    const suggestions = await this.fetchSuggestionsFromMetadata(metadata);
 
     return {
       ...conversation,
@@ -541,29 +689,8 @@ export class AiService {
       throw new NotFoundException('Cuộc hội thoại không tồn tại.');
     }
 
-    let suggestions: FoodSuggestion[] = [];
     const metadata = conversation.metadata as unknown as ConversationMetadata;
-    if (
-      metadata &&
-      Array.isArray(metadata.suggested_food_ids) &&
-      metadata.suggested_food_ids.length > 0
-    ) {
-      const foodIds = metadata.suggested_food_ids.map((fid: number) =>
-        Number(fid),
-      );
-      const dbFoods = await this.prisma.food.findMany({
-        where: { id: { in: foodIds } },
-        include: { restaurant: true },
-      });
-      suggestions = dbFoods.map((f) => ({
-        id: f.id,
-        name: f.name,
-        price: f.price,
-        image: f.image,
-        restaurantName: f.restaurant?.name || '',
-        address: f.address || f.restaurant?.address || '',
-      }));
-    }
+    const suggestions = await this.fetchSuggestionsFromMetadata(metadata);
 
     return {
       ...conversation,
