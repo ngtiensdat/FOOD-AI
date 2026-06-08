@@ -31,3 +31,4 @@ Thumbs.db
 
 # Temporary Linter Log Files
 *eslint_errors*
+.vercel
