@@ -515,6 +515,18 @@ export class AiService {
             }
           : null,
       };
+    } catch (error) {
+      this.logger.error(
+        'Lỗi trong luồng AiService.chat:',
+        error instanceof Error ? error.stack : error,
+      );
+      return {
+        reply: MESSAGES.AI.SYSTEM_ERROR,
+        suggestions: [],
+        quickReplies: [],
+        assessment: null,
+        weather: null,
+      };
     } finally {
       await releaseLock();
     }

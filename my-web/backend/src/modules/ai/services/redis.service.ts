@@ -155,6 +155,32 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.memoryCache.delete(key);
   }
 
+  async incr(key: string, ttlSeconds?: number): Promise<number> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        const count = await this.redisClient.incr(key);
+        if (count === 1 && ttlSeconds) {
+          await this.redisClient.expire(key, ttlSeconds);
+        }
+        return count;
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Redis INCR failed for key: ${key}. Error: ${errMsg}`);
+      }
+    }
+    // Dev Fallback
+    const attemptsStr = this.memoryCache.get(key);
+    let attempts = attemptsStr ? parseInt(attemptsStr, 10) : 0;
+    attempts += 1;
+    this.memoryCache.set(key, attempts.toString());
+    if (attempts === 1 && ttlSeconds) {
+      setTimeout(() => {
+        this.memoryCache.delete(key);
+      }, ttlSeconds * 1000);
+    }
+    return attempts;
+  }
+
   // DISTRIBUTED LOCKS
   async acquireLock(
     lockKey: string,

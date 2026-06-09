@@ -120,10 +120,8 @@ export class AuthService {
     if (!isPasswordValid) {
       this.logger.warn(`Invalid password for: ${dto.email}`);
 
-      // 2. Tăng số lần đăng nhập sai
-      const attemptsStr = await this.redisService.get(attemptsKey);
-      let attempts = attemptsStr ? parseInt(attemptsStr, 10) : 0;
-      attempts += 1;
+      // 2. Tăng số lần đăng nhập sai (atomic)
+      const attempts = await this.redisService.incr(attemptsKey, 600);
 
       const maxAttempts = 3;
       const remainingAttempts = maxAttempts - attempts;
@@ -135,8 +133,6 @@ export class AuthService {
         await this.redisService.del(attemptsKey);
         throw new UnauthorizedException(MESSAGES.AUTH.RATE_LIMIT_LOGIN_10M);
       } else {
-        // Lưu lại số lần thử, ttl: 600 giây (10 phút)
-        await this.redisService.set(attemptsKey, attempts.toString(), 600);
         throw new UnauthorizedException(
           MESSAGES.AUTH.LOGIN_ATTEMPTS_REMAINING(remainingAttempts),
         );

@@ -23,6 +23,9 @@ import { Throttle } from '@nestjs/throttler';
 import { AiFeedbackDto } from './dto/ai-feedback.dto';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService } from './services/weather.service';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Throttle({ default: { limit: 30, ttl: 60000 } })
 @Controller('ai')
@@ -62,6 +65,8 @@ export class AiController {
   }
 
   @Get('analytics')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   async getAnalytics() {
     return this.aiLearningService.getFeedbackAnalytics();
   }
