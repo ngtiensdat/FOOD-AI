@@ -169,30 +169,54 @@ export const useAdminActions = (adminData: AdminData) => {
   };
 
   // --- Logic Lọc dữ liệu (Data Filtering) ---
-  const getFilteredData = () => {
-    let data: (AdminFoodItem | User)[] = [];
-    if (activeTab === 'merchants') data = pendingMerchants;
-    else if (activeTab === 'menu') {
-      if (foodSubTab === 'system') {
-        data = allFoods.filter((f: AdminFoodItem) => !f.restaurantId);
-      } else {
-        data = allFoods.filter((f: AdminFoodItem) => !!f.restaurantId);
-        // Sort by restaurant name for grouping
-        (data as AdminFoodItem[]).sort((a, b) => {
-          const nameA = a.restaurant?.name || '';
-          const nameB = b.restaurant?.name || '';
-          return nameA.localeCompare(nameB);
-        });
-      }
-    }
-    else if (activeTab === 'users') data = allUsers.filter((u: User) => u.role === UserRole.RESTAURANT && u.status === UserStatus.APPROVED);
-    else if (activeTab === 'customers') data = allUsers.filter((u: User) => u.role === UserRole.CUSTOMER);
+  const getFilteredMerchants = (): User[] => {
+    const query = searchQuery.toLowerCase();
+    return pendingMerchants.filter((item: User) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const emailMatch = item.email?.toLowerCase().includes(query);
+      return !!(nameMatch || emailMatch);
+    });
+  };
 
-    return data.filter((item: AdminFoodItem | User) => {
-      const nameMatch = item.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const emailMatch = 'email' in item && (item as User).email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const restaurantMatch = 'restaurant' in item && (item as AdminFoodItem).restaurant?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      return !!(nameMatch || emailMatch || restaurantMatch);
+  const getFilteredUsers = (): User[] => {
+    const query = searchQuery.toLowerCase();
+    const filtered = allUsers.filter((u: User) => u.role === UserRole.RESTAURANT && u.status === UserStatus.APPROVED);
+    return filtered.filter((item: User) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const emailMatch = item.email?.toLowerCase().includes(query);
+      return !!(nameMatch || emailMatch);
+    });
+  };
+
+  const getFilteredCustomers = (): User[] => {
+    const query = searchQuery.toLowerCase();
+    const filtered = allUsers.filter((u: User) => u.role === UserRole.CUSTOMER);
+    return filtered.filter((item: User) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const emailMatch = item.email?.toLowerCase().includes(query);
+      return !!(nameMatch || emailMatch);
+    });
+  };
+
+  const getFilteredFoods = (): AdminFoodItem[] => {
+    const query = searchQuery.toLowerCase();
+    let data = foodSubTab === 'system'
+      ? allFoods.filter((f: AdminFoodItem) => !f.restaurantId)
+      : allFoods.filter((f: AdminFoodItem) => !!f.restaurantId);
+
+    if (foodSubTab === 'merchant') {
+      // Create a shallow copy before sorting to avoid mutating the original array directly
+      data = [...data].sort((a, b) => {
+        const nameA = a.restaurant?.name || '';
+        const nameB = b.restaurant?.name || '';
+        return nameA.localeCompare(nameB);
+      });
+    }
+
+    return data.filter((item: AdminFoodItem) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const restaurantMatch = item.restaurant?.name?.toLowerCase().includes(query);
+      return !!(nameMatch || restaurantMatch);
     });
   };
 
@@ -235,7 +259,10 @@ export const useAdminActions = (adminData: AdminData) => {
     setDeleteFoodId,
     deleteUserId,
     setDeleteUserId,
-    getFilteredData,
+    getFilteredMerchants,
+    getFilteredUsers,
+    getFilteredCustomers,
+    getFilteredFoods,
     actions: {
       handleDeleteUser,
       confirmDeleteUser,

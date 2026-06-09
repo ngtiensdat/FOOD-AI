@@ -17,17 +17,20 @@ import { AdminSystemFoodTable } from './AdminSystemFoodTable';
 import { AdminMerchantFoodTable } from './AdminMerchantFoodTable';
 
 interface AdminTableProps {
-  activeTab: string;
+  activeTab: 'merchants' | 'users' | 'menu' | 'customers';
   foodSubTab?: 'system' | 'merchant';
   loading: boolean;
-  filteredData: any[];
+  merchants: User[];
+  users: User[];
+  customers: User[];
+  foods: AdminFoodItem[];
   actions: {
     handleUpdateStatus: (id: number, status: string) => void;
     handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
     handleRecommendFood: (id: number, newValue: boolean) => void;
     handleDeleteFood: (id: number) => void;
     handleDeleteUser: (id: number) => void;
-    openEditModal: (food: any) => void;
+    openEditModal: (food: AdminFoodItem) => void;
     handleApproveFood?: (id: number, status: string) => void;
     handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
     handleBatchUpdate?: (updates: FoodBatchUpdateInput[]) => Promise<boolean>;
@@ -38,10 +41,28 @@ export const AdminTable = ({
   activeTab,
   foodSubTab = 'merchant',
   loading,
-  filteredData,
+  merchants,
+  users,
+  customers,
+  foods,
   actions,
 }: AdminTableProps) => {
-  if (loading && filteredData.length === 0) {
+  const getCurrentDataLength = () => {
+    switch (activeTab) {
+      case 'merchants':
+        return merchants.length;
+      case 'users':
+        return users.length;
+      case 'customers':
+        return customers.length;
+      case 'menu':
+        return foods.length;
+      default:
+        return 0;
+    }
+  };
+
+  if (loading && getCurrentDataLength() === 0) {
     return (
       <div className="card-container p-12 text-center text-gray-400 font-bold bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
         {LABELS.COMMON.LOADING}
@@ -52,16 +73,25 @@ export const AdminTable = ({
   if (activeTab === 'merchants') {
     return (
       <AdminMerchantApprovalTable
-        filteredData={filteredData as User[]}
+        filteredData={merchants}
         actions={actions}
       />
     );
   }
 
-  if (activeTab === 'users' || activeTab === 'customers') {
+  if (activeTab === 'users') {
     return (
       <AdminUserTable
-        filteredData={filteredData as User[]}
+        filteredData={users}
+        actions={actions}
+      />
+    );
+  }
+
+  if (activeTab === 'customers') {
+    return (
+      <AdminUserTable
+        filteredData={customers}
         actions={actions}
       />
     );
@@ -71,14 +101,14 @@ export const AdminTable = ({
     if (foodSubTab === 'system') {
       return (
         <AdminSystemFoodTable
-          filteredData={filteredData as AdminFoodItem[]}
+          filteredData={foods}
           actions={actions}
         />
       );
     } else {
       return (
         <AdminMerchantFoodTable
-          filteredData={filteredData as AdminFoodItem[]}
+          filteredData={foods}
           actions={actions}
         />
       );
