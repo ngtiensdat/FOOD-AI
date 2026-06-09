@@ -72,12 +72,18 @@ export default function AdminDashboard() {
     setDeleteFoodId,
     deleteUserId,
     setDeleteUserId,
-    getFilteredData,
+    getFilteredMerchants,
+    getFilteredUsers,
+    getFilteredCustomers,
+    getFilteredFoods,
     actions
   } = useAdminActions(adminData);
 
   const { loading } = adminData;
-  const filteredData = getFilteredData();
+  const filteredMerchants = getFilteredMerchants();
+  const filteredUsers = getFilteredUsers();
+  const filteredCustomers = getFilteredCustomers();
+  const filteredFoods = getFilteredFoods();
 
   return (
     <div className="admin-layout">
@@ -180,7 +186,10 @@ export default function AdminDashboard() {
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
-          filteredData={filteredData}
+          merchants={filteredMerchants}
+          users={filteredUsers}
+          customers={filteredCustomers}
+          foods={filteredFoods}
           actions={actions}
         />
       </main>

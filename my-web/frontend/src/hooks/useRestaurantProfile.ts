@@ -74,6 +74,7 @@ export const useRestaurantProfile = () => {
         const hasNext = (res.page * res.pageSize) < res.total;
         setHasMoreFoods(hasNext);
       } else {
+        console.error('Cấu trúc phản hồi từ API getPublicRestaurantFoods không hợp lệ hoặc thiếu mảng "items":', res);
         setFoodsData([]);
         setHasMoreFoods(false);
       }
