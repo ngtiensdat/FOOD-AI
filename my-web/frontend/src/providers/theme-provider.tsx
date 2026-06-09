@@ -20,7 +20,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const [theme, setThemeState] = useState<Theme>('mixed');
-    const [mounted, setMounted] = useState(false);
 
     const applyTheme = (t: Theme) => {
         document.documentElement.classList.remove('dark', 'mixed');
@@ -37,7 +36,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
         setThemeState(activeTheme);
         applyTheme(activeTheme);
-        setMounted(true);
     }, []);
 
     const setTheme = (nextTheme: Theme) => {
@@ -57,10 +55,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setTheme(nextTheme);
     };
-
-    if (!mounted) {
-        return <div className="invisible">{children}</div>;
-    }
 
     return (
         <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>

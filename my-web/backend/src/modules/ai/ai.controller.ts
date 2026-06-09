@@ -27,6 +27,8 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
+import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
+
 @Throttle({ default: { limit: 30, ttl: 60000 } })
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -71,6 +73,7 @@ export class AiController {
     return this.aiLearningService.getFeedbackAnalytics();
   }
 
+  @UseGuards(CustomThrottlerGuard)
   @Post('chat')
   async chat(@GetUser('id') userId: number, @Body() dto: AiChatDto) {
     return this.aiService.chat(

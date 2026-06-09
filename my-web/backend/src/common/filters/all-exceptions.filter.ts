@@ -1,17 +1,19 @@
-// Mục đích: Lọc và gom toàn bộ các lỗi (Exception) văng ra trong ứng dụng.
-// Ý nghĩa: Đảm bảo mọi lỗi đều được trả về client dưới cùng một format JSON thống nhất, tránh rò rỉ mã lỗi hệ thống.
-// Chức năng đặc biệt: Nhận diện lỗi từ HttpException hoặc Error thường để trích xuất thông báo lỗi phù hợp.
-// Kiến thức/Design Pattern: Exception Filter Pattern, Dependency Inversion (cung cấp lớp middleware xử lý).
-// Biến/hàm đặc biệt: Hàm catch() chuyển đổi context sang HTTP và ép kiểu Response/Request của Express.
-import { ExceptionFilter, Catch, ArgumentsHost } from '@nestjs/common';
-
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 import { MESSAGES } from '../constants/messages.constant';
 import { ErrorCodes } from '../constants/error-codes.constant';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -34,8 +36,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else {
         message = responseBody;
       }
-    } else if (exception instanceof Error) {
-      message = exception.message;
+      this.logger.warn(
+        `HttpException: [${request.method}] ${request.url} - Status: ${status} - Msg: ${JSON.stringify(message)}`,
+      );
+    } else {
+      // Ghi nhận chi tiết lỗi kèm stack trace trên terminal server phục vụ debug
+      this.logger.error(
+        `Unhandled Exception: [${request.method}] ${request.url}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+      // Giữ nguyên message mặc định là MESSAGES.SYSTEM.INTERNAL_SERVER_ERROR để bảo mật thông tin DB/hệ thống
     }
 
     const errors = Array.isArray(message)

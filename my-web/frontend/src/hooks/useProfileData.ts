@@ -49,9 +49,7 @@ export const useProfileData = (targetId?: string | null) => {
 
   const fetchProfileData = useCallback(async (id: number, requesterId?: number) => {
     try {
-      const data = await authService.getProfile(id, requesterId);
-      setProfile(data);
-      return data;
+      return await authService.getProfile(id, requesterId);
     } catch (error) {
       console.error('Lỗi lấy profile:', error);
       return null;
@@ -59,15 +57,23 @@ export const useProfileData = (targetId?: string | null) => {
   }, []);
 
   useEffect(() => {
+    let active = true;
     const idToFetch = targetId ? parseInt(targetId) : me?.id;
     if (idToFetch) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchProfileData(idToFetch, me?.id);
+      fetchProfileData(idToFetch, me?.id).then((data) => {
+        if (active && data) {
+          setProfile(data);
+        }
+      });
     }
     
     // Đóng modals tự động khi id profile mục tiêu thay đổi
     setShowFollowersModal(false);
     setShowFollowingModal(false);
+
+    return () => {
+      active = false;
+    };
   }, [targetId, me?.id, fetchProfileData]);
 
   useEffect(() => {
@@ -102,8 +108,11 @@ export const useProfileData = (targetId?: string | null) => {
       await authService.updateProfile(updatePayload);
       const newData = await fetchProfileData(profile.id, me?.id);
       
-      if (me?.id === profile.id && newData) {
-        updateMe({ ...me, name: newData.name, avatar: newData.profile?.avatar || null });
+      if (newData) {
+        setProfile(newData);
+        if (me?.id === profile.id) {
+          updateMe({ ...me, name: newData.name, avatar: newData.profile?.avatar || null });
+        }
       }
       
       setIsEditing(false);
@@ -126,7 +135,8 @@ export const useProfileData = (targetId?: string | null) => {
     setIsFollowLoading(true);
     try {
       await authService.toggleFollowUser({ followingId: profile.id });
-      await fetchProfileData(profile.id, me.id);
+      const newData = await fetchProfileData(profile.id, me.id);
+      if (newData) setProfile(newData);
     } catch (error) {
       console.error('Lỗi follow:', error);
     } finally {

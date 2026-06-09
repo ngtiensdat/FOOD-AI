@@ -29,6 +29,8 @@ import { Throttle } from '@nestjs/throttler';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @UseGuards(CustomThrottlerGuard)
   @Post('register')
   async register(
     @Body() dto: RegisterDto,

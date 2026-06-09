@@ -155,6 +155,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.memoryCache.delete(key);
   }
 
+  async ttl(key: string): Promise<number> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        return await this.redisClient.ttl(key);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Redis TTL failed for key: ${key}. Error: ${errMsg}`);
+      }
+    }
+    return -1;
+  }
+
   async incr(key: string, ttlSeconds?: number): Promise<number> {
     if (this.isRedisAvailable && this.redisClient) {
       try {
