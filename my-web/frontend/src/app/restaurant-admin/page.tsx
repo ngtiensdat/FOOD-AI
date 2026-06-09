@@ -118,7 +118,7 @@ export default function RestaurantDashboard() {
                 size={16}
                 className={`transition-all duration-300 ${isRestaurantActive
                   ? 'text-amber-500 animate-pulse drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]'
-                  : 'text-gray-300 dark:text-slate-650'
+                  : 'text-gray-300 dark:text-slate-700'
                   }`}
               />
               <span className="text-xs font-bold text-gray-700 dark:text-slate-300">

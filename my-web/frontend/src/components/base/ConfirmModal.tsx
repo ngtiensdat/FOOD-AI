@@ -68,7 +68,7 @@ export const ConfirmModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="modal-backdrop z-50">
+        <div className="modal-backdrop z-[200]">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

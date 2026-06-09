@@ -75,9 +75,7 @@ export class CategoryGroupService {
 
   async getPublicHierarchy(restaurantId: number) {
     // Fetch groups and their categories
-    const groups = await this.categoryGroupRepo[
-      'prisma'
-    ].categoryGroup.findMany({
+    const groups = await this.prisma.categoryGroup.findMany({
       where: { restaurantId },
       include: {
         categories: {

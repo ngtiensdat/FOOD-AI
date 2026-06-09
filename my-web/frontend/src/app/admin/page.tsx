@@ -20,7 +20,7 @@ import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
 import { LABELS } from '@/constants/labels';
 // Feature Components
-import { AdminTable, AdminTableItem } from '@/components/features/admin/AdminTable';
+import { AdminTable } from '@/components/features/admin/AdminTable';
 import { AdminFoodModal } from '@/components/features/admin/AdminFoodModal';
 import { AdminImportExcelModal } from '@/components/features/admin/AdminImportExcelModal';
 import { FileUp } from 'lucide-react';
@@ -72,12 +72,18 @@ export default function AdminDashboard() {
     setDeleteFoodId,
     deleteUserId,
     setDeleteUserId,
-    getFilteredData,
+    getFilteredMerchants,
+    getFilteredUsers,
+    getFilteredCustomers,
+    getFilteredFoods,
     actions
   } = useAdminActions(adminData);
 
   const { loading } = adminData;
-  const filteredData = getFilteredData();
+  const filteredMerchants = getFilteredMerchants();
+  const filteredUsers = getFilteredUsers();
+  const filteredCustomers = getFilteredCustomers();
+  const filteredFoods = getFilteredFoods();
 
   return (
     <div className="admin-layout">
@@ -180,7 +186,10 @@ export default function AdminDashboard() {
           activeTab={activeTab}
           foodSubTab={foodSubTab}
           loading={loading}
-          filteredData={filteredData as unknown as AdminTableItem[]}
+          merchants={filteredMerchants}
+          users={filteredUsers}
+          customers={filteredCustomers}
+          foods={filteredFoods}
           actions={actions}
         />
       </main>
