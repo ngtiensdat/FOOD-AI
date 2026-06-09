@@ -27,9 +27,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
   return (
     <Link href={`/restaurant/${id}`}>
-      <div className="bg-white dark:bg-slate-900 rounded-card overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer">
+      <div className="card-premium overflow-hidden hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer">
         {/* Phần ảnh bìa (Cover Image) */}
-        <div className="h-32 bg-gray-150 dark:bg-slate-800 relative overflow-hidden">
+        <div className="h-32 bg-gray-200 dark:bg-slate-800 relative overflow-hidden">
           {profile?.coverImage ? (
             <SafeImage
               src={profile.coverImage}

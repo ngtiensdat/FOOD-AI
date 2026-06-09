@@ -522,7 +522,7 @@ export const LABELS = {
     DESCRIPTION: 'Hãy kể cho AI nghe về tâm trạng, ngân sách hoặc sở thích của bạn. Chúng tôi sẽ gợi ý món ăn hoàn hảo nhất ngay gần bạn.',
     BG_ALT: 'Hình nền trang chủ',
     OPEN_AI_TOOLTIP: 'Bật trợ lý AI',
-    SEARCH_PLACEHOLDER: 'Hôm nay bạn muốn ăn gì? (Ví dụ: Thèm bún chả gần đây, Tìm trà sữa dưới 50k...)',
+    SEARCH_PLACEHOLDER: 'Hôm nay bạn cảm thấy thế nào?',
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',

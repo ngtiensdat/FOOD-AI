@@ -12,6 +12,7 @@ import { SafeImage } from '@/components/base/SafeImage';
 import { MapPin, Smile, DollarSign, Send } from 'lucide-react';
 import { AiChatWindow } from './ai/AiChatWindow';
 import { AiSuggestedFood } from './ai/AiResponseBox';
+import { FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
 
@@ -24,7 +25,7 @@ interface HeroProps {
   isAiLoading: boolean;
   aiResponse: string;
   suggestedFoods: AiSuggestedFood[];
-  setSelectedFood: (food: any) => void;
+  setSelectedFood: (food: FoodCardData) => void;
   isAuthenticated: boolean;
   selectedCity: string;
   selectedDistrict: string;

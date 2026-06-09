@@ -86,7 +86,7 @@ export function ChatFeed({
                 className={`w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center shadow-sm relative ${
                   msg.role === 'user'
                     ? 'bg-orange-100 text-primary'
-                    : 'bg-white dark:bg-slate-950 border border-orange-100 dark:border-slate-850'
+                    : 'bg-white dark:bg-slate-950 border border-orange-100 dark:border-slate-800'
                 }`}
               >
                 {msg.role === 'user' ? (
@@ -137,7 +137,7 @@ export function ChatFeed({
                     <button
                       type="button"
                       onClick={() => router.push('/register')}
-                      className="px-5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-slate-850 transition-all cursor-pointer"
+                      className="px-5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
                     >
                       {LABELS.AUTH.REGISTER_NOW}
                     </button>
@@ -169,7 +169,7 @@ export function ChatFeed({
                               className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
                                 food.feedback === 'LIKE'
                                   ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800'
-                                  : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
+                                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
                               }`}
                             >
                               {LABELS.AI_CHAT.FEED.FEEDBACK_LIKE}
@@ -185,7 +185,7 @@ export function ChatFeed({
                               className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
                                 food.feedback === 'DISLIKE'
                                   ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800'
-                                  : 'bg-white text-gray-500 border-gray-150 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
+                                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
                               }`}
                             >
                               {LABELS.AI_CHAT.FEED.FEEDBACK_DISLIKE}
@@ -213,7 +213,7 @@ export function ChatFeed({
               className="object-contain p-1 animate-spin"
             />
           </div>
-          <div className="flex items-center p-4 bg-white dark:bg-slate-900 border border-orange-50 dark:border-slate-800 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-450 dark:text-slate-400 italic">
+          <div className="flex items-center p-4 bg-white dark:bg-slate-900 border border-orange-50 dark:border-slate-800 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-400 dark:text-slate-400 italic">
             <span>{LABELS.HERO.AI_THINKING}</span>
           </div>
         </div>

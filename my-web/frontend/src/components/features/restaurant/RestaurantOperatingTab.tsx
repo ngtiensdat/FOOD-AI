@@ -44,7 +44,7 @@ export const RestaurantOperatingTab: React.FC<RestaurantOperatingTabProps> = ({
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.CITY_LABEL}
           </label>
-          <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-card px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full">
+          <div className="form-input flex items-center gap-2 rounded-card px-4 py-3 text-slate-700 dark:text-slate-200">
             <MapPin size={18} className="text-primary shrink-0" />
             <select
               value={city}
@@ -64,7 +64,7 @@ export const RestaurantOperatingTab: React.FC<RestaurantOperatingTabProps> = ({
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.DISTRICT_LABEL}
           </label>
-          <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-card px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full">
+          <div className="form-input flex items-center gap-2 rounded-card px-4 py-3 text-slate-700 dark:text-slate-200">
             <MapPin size={18} className="text-primary shrink-0" />
             <select
               value={district}

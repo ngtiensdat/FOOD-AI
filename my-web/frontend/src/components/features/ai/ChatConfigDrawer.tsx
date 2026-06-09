@@ -41,11 +41,11 @@ export function ChatConfigDrawer({
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="overflow-hidden border-b border-orange-55 dark:border-slate-800 bg-orange-50/20 dark:bg-slate-900/10 px-6 py-4 shrink-0"
+      className="overflow-hidden border-b border-orange-100 dark:border-slate-800 bg-orange-50/20 dark:bg-slate-900/10 px-6 py-4 shrink-0"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         {/* Thời tiết thực tế */}
-        <div className="space-y-2 bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-850">
+        <div className="space-y-2 bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-800">
           <span className="font-extrabold text-gray-700 dark:text-slate-300 flex items-center gap-1.5 border-b border-gray-100 dark:border-slate-800 pb-1.5">
             <Thermometer size={14} className="text-orange-500 animate-pulse" />
             {LABELS.AI_CHAT.CONFIG.WEATHER_TITLE}
@@ -73,7 +73,7 @@ export function ChatConfigDrawer({
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">{LABELS.AI_CHAT.CONFIG.WIND_SPEED}:</span>
                 <span className="font-bold text-gray-800 dark:text-slate-200 flex items-center gap-1">
-                  <Wind size={12} className="text-teal-450 dark:text-teal-400" />
+                  <Wind size={12} className="text-teal-400 dark:text-teal-400" />
                   {weather.windSpeedKmh} km/h
                 </span>
               </div>
@@ -97,7 +97,7 @@ export function ChatConfigDrawer({
         </div>
 
         {/* Tọa độ GPS */}
-        <div className="space-y-2 bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-850">
+        <div className="space-y-2 bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-800">
           <span className="font-extrabold text-gray-700 dark:text-slate-300 flex items-center gap-1.5 border-b border-gray-100 dark:border-slate-800 pb-1.5">
             <MapPin size={14} className="text-blue-500" />
             {LABELS.AI_CHAT.CONFIG.LOCATION_TITLE}
@@ -110,7 +110,7 @@ export function ChatConfigDrawer({
                 step="0.0001"
                 value={lat}
                 onChange={(e) => setLat(Number(e.target.value))}
-                className="bg-gray-50 dark:bg-slate-800 border border-gray-150 dark:border-slate-750 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -120,7 +120,7 @@ export function ChatConfigDrawer({
                 step="0.0001"
                 value={lng}
                 onChange={(e) => setLng(Number(e.target.value))}
-                className="bg-gray-50 dark:bg-slate-800 border border-gray-150 dark:border-slate-750 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
               />
             </div>
           </div>
@@ -140,7 +140,7 @@ export function ChatConfigDrawer({
         </div>
 
         {/* Hướng dẫn kiểm thử */}
-        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-850 flex flex-col justify-center text-[11px] leading-relaxed text-gray-500 dark:text-slate-400">
+        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-2xl border border-orange-50 dark:border-slate-800 flex flex-col justify-center text-[11px] leading-relaxed text-gray-500 dark:text-slate-400">
           <p className="font-bold text-gray-700 dark:text-slate-300 mb-1">
             {LABELS.AI_CHAT.CONFIG.TIPS_TITLE}
           </p>

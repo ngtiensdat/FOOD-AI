@@ -48,8 +48,8 @@ function ProfileContent() {
   const router = useRouter();
 
   if (!profile) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <div className="page-loading">
+      <div className="loading-spinner h-12 w-12"></div>
       <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
     </div>
   );
@@ -57,7 +57,7 @@ function ProfileContent() {
   const user = profile;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
+    <div className="page-container min-h-screen">
       <Navbar activeTab="profile" setActiveTab={() => { }} />
 
       <div className="max-w-5xl mx-auto pt-24 pb-20 px-4 md:px-6">
@@ -180,8 +180,8 @@ function ProfileContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-foreground gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="page-loading">
+        <div className="loading-spinner h-12 w-12"></div>
         <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
       </div>
     }>

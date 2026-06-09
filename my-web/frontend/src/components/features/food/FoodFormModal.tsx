@@ -85,12 +85,19 @@ export const FoodFormModal = ({
   };
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-wrapper">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="modal-overlay"
+      />
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }} 
         animate={{ scale: 1, opacity: 1 }} 
         exit={{ scale: 0.9, opacity: 0 }} 
-        className="modal-card"
+        className="modal-card max-w-xl w-full relative z-10"
       >
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-h2 flex items-center gap-3">
@@ -106,12 +113,12 @@ export const FoodFormModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Chọn Cơ sở */}
             <div className="md:col-span-2 space-y-2">
-              <label className="text-small font-semibold text-gray-700 ml-1">{LABELS.RESTAURANT.MODAL.BRANCH_LABEL}</label>
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">{LABELS.RESTAURANT.MODAL.BRANCH_LABEL}</label>
               <select
                 required
                 value={formData.restaurantId || ''}
                 onChange={e => onSelectBranch(parseInt(e.target.value))}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
+                className="form-input py-4 px-6 rounded-2xl text-sm font-semibold"
               >
                 <option value="" disabled hidden>
                   {LABELS.RESTAURANT.MODAL.BRANCH_PLACEHOLDER}
@@ -126,11 +133,11 @@ export const FoodFormModal = ({
 
             {/* Chọn Danh mục */}
             <div className="md:col-span-2 space-y-2">
-              <label className="text-small font-semibold text-gray-700 ml-1">{LABELS.RESTAURANT.MODAL.CATEGORY_LABEL}</label>
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">{LABELS.RESTAURANT.MODAL.CATEGORY_LABEL}</label>
               <select
                 value={formData.categoryId || ''}
                 onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold"
+                className="form-input py-4 px-6 rounded-2xl text-sm font-semibold"
               >
                 <option value="">{LABELS.RESTAURANT.MODAL.CATEGORY_PLACEHOLDER}</option>
                 {buildFlatOptions()}

@@ -78,7 +78,7 @@ export const SecuritySettingsTab = ({
               type={field.show ? 'text' : 'password'}
               required
               placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
-              className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 pl-12 pr-12 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm"
+              className="form-input py-4 pl-12 pr-12 text-sm"
               value={field.value}
               onChange={(e) => field.setter(e.target.value)}
             />

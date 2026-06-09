@@ -30,7 +30,7 @@ interface RestaurantInfoTabProps {
 export const RestaurantInfoTab = ({ restaurantData }: RestaurantInfoTabProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-card p-6 md:p-8 border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col gap-6">
+      <div className="card-container lg:col-span-2 p-6 md:p-8 flex flex-col gap-6">
         <h3 className="text-h3 font-black text-gray-900 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.DETAIL_INFO}</h3>
         
         <div className="flex items-start gap-4">
@@ -91,7 +91,7 @@ export const RestaurantInfoTab = ({ restaurantData }: RestaurantInfoTabProps) =>
       </div>
 
       {/* Quick Bio Info */}
-      <div className="bg-white dark:bg-slate-900 rounded-card p-6 md:p-8 border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+      <div className="card-container p-6 md:p-8 flex flex-col gap-4">
         <h3 className="text-h3 font-black text-gray-900 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.BIO_TITLE}</h3>
         <p className="text-small text-gray-500 leading-relaxed font-medium">
           {restaurantData.profile?.bio || LABELS.RESTAURANT.PUBLIC_PROFILE.BIO_EMPTY}

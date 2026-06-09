@@ -66,35 +66,30 @@ html.dark,
   /* Cosmic Navy Page Background */
 }
 
-/* Mixed Mode (Dark-Light Blend) Colors Override */
+/* Mixed Mode — "Coffee House" Theme */
+/* Inspired by warm restaurant candlelight: espresso + cream + caramel */
 :root.mixed,
 html.mixed,
 .mixed {
-  --background: #252f3f;
-  /* Premium Slate Gray Page Background */
-  --foreground: #f3f4f6;
-  /* Soft gray text */
-  --accent: #374151;
-  /* Gray-700 accent border */
-  --text-muted: #9ca3af;
-  /* Gray-400 muted text */
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --background: #1c1510;        /* Deep espresso page background */
+  --foreground: #fef0d6;        /* Warm cream text */
+  --accent: #3d2c18;            /* Dark wood card border */
+  --text-muted: #c8946a;        /* Warm caramel muted text */
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(255, 140, 0, 0.06);
 
-  /* Curated Steel/Slate palette to override standard Tailwind gray variables in mixed mode */
+  /* "Coffee House" warm palette — amber/caramel tones tuned for #1c1510 bg */
   --color-gray-950: #ffffff;
-  --color-gray-900: #f3f4f6;
-  --color-gray-800: #e5e7eb;
-  --color-gray-700: #d1d5db;
-  --color-gray-650: #9ca3af;
-  --color-gray-600: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-400: #4b5563;
-  --color-gray-300: #374151;
-  --color-gray-200: #1f2937;
-  --color-gray-100: #1a2230;
-  /* Darker Slate Card Background */
-  --color-gray-50: #252f3f;
-  /* Page Background */
+  --color-gray-900: #fef8ee;    /* Ivory white — headings */
+  --color-gray-800: #f5deb3;    /* Wheat — body text (~12:1 contrast) */
+  --color-gray-700: #e8c89a;    /* Golden cream — secondary text (~8:1) */
+  --color-gray-650: #d4a97a;
+  --color-gray-600: #c8946a;    /* Warm tan — label text (~5:1) */
+  --color-gray-500: #a87a55;    /* Caramel — muted text (~3.8:1) */
+  --color-gray-400: #7a5a3e;    /* Dark caramel — placeholder */
+  --color-gray-300: #4f3820;    /* Rich wood — divider */
+  --color-gray-200: #3d2c18;    /* Dark wood — visible border */
+  --color-gray-100: #261c10;    /* Coffee card bg — distinct from page */
+  --color-gray-50:  #1c1510;    /* Espresso page background */
 }
 
 @theme inline {
@@ -234,6 +229,12 @@ body {
     border-color: var(--color-gray-200);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   }
+
+  &:where(.mixed, .mixed *) {
+    background-color: var(--color-gray-100);
+    border-color: var(--color-gray-200);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 140, 0, 0.05);
+  }
 }
 
 @utility page-container {
@@ -243,16 +244,18 @@ body {
   transition: background-color 300ms, color 300ms;
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .dark .glass {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+.mixed .glass {
+  background: rgba(38, 28, 16, 0.85);
+  border: 1px solid rgba(255, 140, 0, 0.12);
+  backdrop-filter: blur(12px);
+}
+
 
 @utility badge-status {
   display: inline-flex;
@@ -281,17 +284,6 @@ body {
   /* tracking-widest */
 }
 
-@utility modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-}
 
 @utility modal-card {
   background-color: white;
@@ -308,6 +300,13 @@ body {
     background-color: var(--color-gray-100);
     border-color: var(--color-gray-200);
     box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.8);
+  }
+
+  &:where(.mixed, .mixed *) {
+    background-color: var(--color-gray-100); /* Coffee card bg #261c10 */
+    border-color: var(--color-gray-200);     /* Dark wood border #3d2c18 */
+    color: var(--foreground);                /* Warm cream text */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 140, 0, 0.06);
   }
 }
 
@@ -341,6 +340,14 @@ body {
       background-color: var(--color-gray-200);
     }
   }
+
+  &:where(.mixed, .mixed *) {
+    color: var(--color-gray-800); /* Wheat text */
+
+    &:hover {
+      background-color: rgba(255, 140, 0, 0.08); /* Subtle amber hover */
+    }
+  }
 }
 
 /* Ẩn nút mũi tên tăng giảm (spinners) của tất cả thẻ input số trong toàn dự án */
@@ -353,4 +360,155 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+@utility text-h3 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+@utility text-mini {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1rem;
+}
+
+@utility ai-box {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-orange-100);
+  
+  &:where(.dark, .dark *) {
+    background-color: var(--color-slate-950);
+    border-color: var(--color-slate-800);
+  }
+
+  &:where(.mixed, .mixed *) {
+    background-color: rgba(255, 140, 0, 0.05); /* Amber tinted coffee card */
+    border-color: rgba(255, 140, 0, 0.18);
+  }
+}
+
+@utility loading-spinner {
+  border-width: 3px;
+  border-color: var(--primary);
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: spin 1s linear infinite;
+}
+
+@utility modal-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@utility modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(2, 11, 36, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+@utility form-input {
+  width: 100%;
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-input);
+  padding: 0.875rem 1.5rem; /* py-3.5 px-6 */
+  outline: none;
+  transition: all 150ms ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 8%, transparent);
+  }
+
+  &:where(.dark, .dark *) {
+    background-color: var(--color-gray-50); /* maps to #020b24 in dark */
+    border-color: var(--color-gray-200);   /* maps to #0e2252 in dark */
+    color: white;
+    &:focus {
+      box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.08);
+    }
+  }
+
+  &:where(.mixed, .mixed *) {
+    background-color: var(--color-gray-100); /* Coffee card bg #261c10 */
+    border-color: var(--color-gray-200);     /* Dark wood border #3d2c18 */
+    color: var(--foreground);                /* Warm cream #fef0d6 */
+    &:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.12);
+    }
+  }
+}
+
+@utility page-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background);
+  color: var(--foreground);
+  gap: 1rem;
+}
+
+@utility alert-box-rose {
+  padding: 1rem;
+  background-color: #fff1f2; /* rose-50 */
+  border: 1px solid #ffe4e6; /* rose-100 */
+  border-radius: 1rem; /* rounded-2xl */
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #e11d48; /* rose-600 */
+
+  &:where(.dark, .dark *) {
+    background-color: rgba(136, 19, 55, 0.12); /* rose-950/20 */
+    border-color: rgba(136, 19, 55, 0.4); /* rose-900/50 */
+    color: #fb7185; /* rose-400 */
+  }
+
+  &:where(.mixed, .mixed *) {
+    background-color: rgba(136, 19, 55, 0.15);
+    border-color: rgba(200, 50, 70, 0.35);
+    color: #fca5a5; /* rose-300 — brighter on dark bg */
+  }
+}
+
+@utility icon-btn-blue {
+  padding: 0.375rem;
+  color: var(--color-blue-500);
+  border-radius: var(--radius-input);
+  transition: all 150ms ease;
+  &:hover {
+    background-color: var(--color-blue-50);
+  }
+  &:where(.dark, .dark *) {
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.15);
+    }
+  }
+}
+
+@utility icon-btn-rose {
+  padding: 0.375rem;
+  color: var(--color-rose-500);
+  border-radius: var(--radius-input);
+  transition: all 150ms ease;
+  &:hover {
+    background-color: var(--color-rose-50);
+  }
+  &:where(.dark, .dark *) {
+    &:hover {
+      background-color: rgba(244, 63, 94, 0.15);
+    }
+  }
 }

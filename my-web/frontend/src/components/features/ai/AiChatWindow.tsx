@@ -86,7 +86,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Header của Khung Chat */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-orange-55 dark:border-slate-800 bg-orange-50/40 dark:bg-slate-900/30 backdrop-blur-md z-10 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-orange-100 dark:border-slate-800 bg-orange-50/40 dark:bg-slate-900/30 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-3">
             {!isSidebarOpen && (
               <button
@@ -94,7 +94,7 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
                 onClick={() => setIsSidebarOpen(true)}
                 title={LABELS.AI_CHAT.HEADER.OPEN_SIDEBAR}
                 aria-label={LABELS.AI_CHAT.HEADER.OPEN_SIDEBAR}
-                className="p-2.5 rounded-xl hover:bg-orange-50/20 text-gray-500 dark:text-slate-400 transition-colors mr-1 border border-transparent hover:border-gray-250 dark:hover:border-slate-800"
+                className="p-2.5 rounded-xl hover:bg-orange-50/20 text-gray-500 dark:text-slate-400 transition-colors mr-1 border border-transparent hover:border-gray-200 dark:hover:border-slate-800"
               >
                 <PanelLeft size={16} />
               </button>

@@ -24,7 +24,7 @@ export const ProfileSettingsTab = ({
 }: ProfileSettingsTabProps) => {
   return (
     <div className="space-y-6 max-w-2xl">
-      <div className="bg-gray-50 p-6 rounded-card border border-gray-100 space-y-4">
+      <div className="card-container p-6 space-y-4">
         <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
           <UserIcon className="text-primary" size={20} /> {LABELS.SETTINGS.PROFILE.TITLE}
         </h3>
@@ -45,7 +45,7 @@ export const ProfileSettingsTab = ({
       </div>
 
       {user?.role === 'RESTAURANT' && (
-        <div className="bg-gray-50 p-6 rounded-card border border-gray-100 space-y-4">
+        <div className="card-container p-6 space-y-4">
           <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
             {LABELS.RESTAURANT.PUBLIC_PROFILE.PRIVACY_TITLE}
           </h3>

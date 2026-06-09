@@ -25,7 +25,7 @@ interface AdminMerchantFoodTableProps {
     handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
     handleRecommendFood: (id: number, newValue: boolean) => void;
     handleDeleteFood: (id: number) => void;
-    openEditModal: (food: any) => void;
+    openEditModal: (food: AdminFoodItem) => void;
     handleApproveFood?: (id: number, status: string) => void;
     handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
     handleBatchUpdate?: (updates: FoodBatchUpdateInput[]) => Promise<boolean>;
@@ -89,7 +89,7 @@ export const AdminMerchantFoodTable = ({
   return (
     <div className="space-y-6 pb-24"> {/* Thêm pb-24 để tránh bị đè bởi banner nổi phía dưới */}
       {filteredData.length === 0 ? (
-        <div className="card-container p-12 text-center text-gray-400 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container p-12 text-center text-gray-400">
           {LABELS.ADMIN.TABLE.EMPTY}
         </div>
       ) : (
@@ -386,7 +386,7 @@ export const AdminMerchantFoodTable = ({
       )}
 
       {totalRestaurantPages > 1 && (
-        <div className="card-container px-8 py-4 flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container px-8 py-4 flex justify-between items-center">
           <span className="text-xs text-gray-400 font-bold">
             {LABELS.ADMIN.TABLE.SHOWING_RESTAURANTS(groupedMerchantFoods.length)}
           </span>

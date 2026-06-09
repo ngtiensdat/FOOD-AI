@@ -27,7 +27,7 @@ export const VerificationSettingsTab = ({
 }: VerificationSettingsTabProps) => {
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-gray-55/35 p-6 rounded-card border border-gray-100/50 space-y-4">
+      <div className="bg-gray-50/35 p-6 rounded-card border border-gray-100/50 space-y-4">
         <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
           <Mail className="text-primary" size={20} /> {LABELS.SETTINGS.VERIFICATION.TITLE}
         </h3>
@@ -43,7 +43,7 @@ export const VerificationSettingsTab = ({
                 type="email"
                 required
                 placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
-                className="w-full bg-white border border-gray-200 rounded-input py-3 px-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-medium"
+                className="form-input py-3 px-4 text-sm font-medium"
                 value={verifyEmail}
                 onChange={(e) => setVerifyEmail(e.target.value)}
               />

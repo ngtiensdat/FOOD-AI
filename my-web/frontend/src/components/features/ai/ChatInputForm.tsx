@@ -61,7 +61,7 @@ export function ChatInputForm({
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={isAuthenticated ? LABELS.AI_CHAT.INPUT.PLACEHOLDER : LABELS.AUTH.LOGIN_REQUIRED}
           disabled={isLoading || !isAuthenticated}
-          className="flex-1 bg-gray-50 dark:bg-slate-900/50 border border-gray-150 dark:border-slate-800 hover:border-orange-200 dark:hover:border-slate-700 px-4 py-3 rounded-2xl text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all disabled:opacity-50"
+          className="flex-1 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 hover:border-orange-200 dark:hover:border-slate-700 px-4 py-3 rounded-2xl text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all disabled:opacity-50"
         />
         <button
           type="submit"

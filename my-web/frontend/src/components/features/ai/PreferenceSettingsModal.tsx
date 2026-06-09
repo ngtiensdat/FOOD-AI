@@ -148,7 +148,7 @@ export function PreferenceSettingsModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="modal-wrapper">
         {/* Overlay */}
         <motion.div
           id="preference-modal-overlay"
@@ -156,7 +156,7 @@ export function PreferenceSettingsModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+          className="modal-overlay"
         />
 
         {/* Modal Container */}
@@ -164,7 +164,7 @@ export function PreferenceSettingsModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-3xl h-[85vh] max-h-[580px] flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-orange-100/50 dark:border-slate-800/80 overflow-hidden"
+          className="modal-card max-w-3xl w-full h-[85vh] max-h-[580px] flex flex-col !p-0 overflow-hidden relative z-10"
         >
           {/* Header */}
           <div className="p-5 border-b border-orange-50 dark:border-slate-800/60 flex items-center justify-between shrink-0 bg-white dark:bg-slate-900">
@@ -172,14 +172,14 @@ export function PreferenceSettingsModal({
               <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                 <Sparkles size={16} />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-850 dark:text-slate-100">
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100">
                 {LABELS.AI_CHAT.PREFERENCES.TITLE}
               </h3>
             </div>
             <button
               id="preference-modal-close-button"
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X size={18} />
             </button>
@@ -200,8 +200,8 @@ export function PreferenceSettingsModal({
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all relative ${
                       isSelected
-                        ? 'bg-slate-100 dark:bg-slate-850 text-orange-500 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-250 hover:bg-slate-50/50 dark:hover:bg-slate-850/30'
+                        ? 'bg-slate-100 dark:bg-slate-800 text-orange-500 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
                     }`}
                   >
                     <Icon size={14} className={isSelected ? 'text-orange-500' : 'text-slate-400'} />
@@ -231,7 +231,7 @@ export function PreferenceSettingsModal({
                     {/* Giao diện (Theme) */}
                     <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800/50">
                       <div>
-                        <p className="text-xs font-bold text-slate-850 dark:text-slate-200">
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                           {LABELS.AI_CHAT.PREFERENCES.THEME_LABEL}
                         </p>
                       </div>
@@ -239,7 +239,7 @@ export function PreferenceSettingsModal({
                         id="preference-modal-theme-select"
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as any)}
-                        className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 focus:outline-none focus:border-orange-500"
+                        className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
                       >
                         <option value="mixed">{LABELS.AI_CHAT.PREFERENCES.THEME_MIXED}</option>
                         <option value="light">{LABELS.AI_CHAT.PREFERENCES.THEME_LIGHT}</option>
@@ -250,7 +250,7 @@ export function PreferenceSettingsModal({
                     {/* Ngôn ngữ */}
                     <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800/50">
                       <div>
-                        <p className="text-xs font-bold text-slate-850 dark:text-slate-200">
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                           {LABELS.AI_CHAT.PREFERENCES.LANG_LABEL}
                         </p>
                       </div>
@@ -258,7 +258,7 @@ export function PreferenceSettingsModal({
                         id="preference-modal-lang-select"
                         value={lang}
                         onChange={(e) => setLang(e.target.value as any)}
-                        className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 focus:outline-none focus:border-orange-500"
+                        className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
                       >
                         <option value="auto">{LABELS.AI_CHAT.PREFERENCES.LANG_AUTO}</option>
                         <option value="vi">{LABELS.AI_CHAT.PREFERENCES.LANG_VI}</option>
@@ -270,7 +270,7 @@ export function PreferenceSettingsModal({
                     <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800/50">
                       <div className="flex items-center gap-2">
                         <Volume2 size={14} className="text-slate-400" />
-                        <p className="text-xs font-bold text-slate-850 dark:text-slate-200">
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                           {LABELS.AI_CHAT.PREFERENCES.VOICE_INPUT_LABEL}
                         </p>
                       </div>
@@ -282,7 +282,7 @@ export function PreferenceSettingsModal({
                           onChange={(e) => setVoiceEnabled(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-650 peer-checked:bg-orange-500"></div>
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-orange-500"></div>
                       </label>
                     </div>
 
@@ -305,7 +305,7 @@ export function PreferenceSettingsModal({
                       className={`pb-2.5 text-[11px] font-extrabold transition-all relative flex items-center gap-1.5 ${
                         activeSubTab === 'like'
                           ? 'text-orange-500'
-                          : 'text-slate-450 dark:text-slate-500 hover:text-slate-700'
+                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-700'
                       }`}
                     >
                       <Heart size={12} fill={activeSubTab === 'like' ? 'currentColor' : 'none'} />
@@ -323,7 +323,7 @@ export function PreferenceSettingsModal({
                       className={`pb-2.5 text-[11px] font-extrabold transition-all relative flex items-center gap-1.5 ${
                         activeSubTab === 'dislike'
                           ? 'text-orange-500'
-                          : 'text-slate-450 dark:text-slate-500 hover:text-slate-700'
+                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-700'
                       }`}
                     >
                       <EyeOff size={12} />
@@ -378,7 +378,7 @@ export function PreferenceSettingsModal({
                                     className="object-cover"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-350">
+                                  <div className="w-full h-full flex items-center justify-center text-slate-300">
                                     <span className="text-[9px] font-bold">No img</span>
                                   </div>
                                 )}
@@ -426,7 +426,7 @@ export function PreferenceSettingsModal({
 
                     <div className="p-4 rounded-2xl border border-red-100 dark:border-red-950/30 bg-red-50/10 dark:bg-red-950/5 space-y-4">
                       <div>
-                        <p className="text-xs font-extrabold text-red-650 dark:text-red-400">
+                        <p className="text-xs font-extrabold text-red-600 dark:text-red-400">
                           {LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_TITLE}
                         </p>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-1.5 leading-relaxed">
@@ -462,7 +462,7 @@ export function PreferenceSettingsModal({
                     </h4>
 
                     <div className="p-5 rounded-2xl border border-slate-100 dark:border-slate-800/40 bg-slate-50/50 dark:bg-slate-900/30 space-y-4">
-                      <p className="text-xs font-extrabold text-slate-750 dark:text-slate-200 border-b border-slate-200/50 dark:border-slate-800 pb-2">
+                      <p className="text-xs font-extrabold text-slate-700 dark:text-slate-200 border-b border-slate-200/50 dark:border-slate-800 pb-2">
                         {LABELS.AI_CHAT.PREFERENCES.ACCOUNT_INFO_TITLE}
                       </p>
 

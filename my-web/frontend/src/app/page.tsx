@@ -110,7 +110,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <main className="page-container min-h-screen">
       <Navbar activeTab={activeTab} setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')} />
 
       {activeTab === 'home' ? (

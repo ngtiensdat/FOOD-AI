@@ -49,7 +49,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
             suppressHydrationWarning
             type="text"
             placeholder={LABELS.EXPLORE.TAG_PLACEHOLDER}
-            className="w-full bg-white dark:bg-gray-100 border border-gray-200 dark:border-gray-200 rounded-input py-3 pl-12 pr-4 outline-none focus:border-primary dark:text-gray-900 shadow-sm transition-all text-body"
+            className="form-input rounded-input py-3 pl-12 pr-4 shadow-sm text-body"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleCategoryClick((e.target as HTMLInputElement).value);

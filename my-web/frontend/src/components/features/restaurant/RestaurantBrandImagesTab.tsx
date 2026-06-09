@@ -26,7 +26,7 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
 }) => {
   return (
     <div className="space-y-6">
-      <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100/50 dark:border-orange-900/20 p-4 rounded-card space-y-4">
+      <div className="ai-box border p-4 rounded-card space-y-4">
         <div>
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.LOGO_LABEL}
@@ -52,7 +52,7 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
         </label>
       </div>
 
-      <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100/50 dark:border-orange-900/20 p-4 rounded-card space-y-4">
+      <div className="ai-box border p-4 rounded-card space-y-4">
         <div>
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.COVER_LABEL}

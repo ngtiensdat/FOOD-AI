@@ -113,7 +113,7 @@ export default function RestaurantProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="loading-spinner w-12 h-12"></div>
         <p className="text-gray-500 font-bold text-body">{LABELS.COMMON.LOADING}</p>
       </div>
     );
@@ -134,7 +134,7 @@ export default function RestaurantProfilePage() {
   const isOwner = user?.id === restaurantData.ownerId;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
+    <div className="page-container min-h-screen">
       <Navbar activeTab="explore" setActiveTab={(tab) => {
         if (tab === 'home') router.push('/');
         else router.push(`/?tab=${tab}`);

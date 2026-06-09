@@ -76,8 +76,9 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-card w-full max-w-4xl shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-800 transition-all duration-300 flex flex-col md:flex-row h-[90vh] max-h-[750px]">
+      <div className="modal-wrapper">
+        <div className="modal-overlay" onClick={onClose} />
+        <div className="modal-card max-w-4xl w-full !p-0 shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] max-h-[750px] relative z-10">
         
         {/* Left Column: Real-time Live Preview Panel */}
         <RestaurantLivePreview
@@ -111,7 +112,7 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-card text-xs font-semibold">
+            <div className="alert-box-rose mb-4 rounded-card text-xs font-semibold">
               {error}
             </div>
           )}

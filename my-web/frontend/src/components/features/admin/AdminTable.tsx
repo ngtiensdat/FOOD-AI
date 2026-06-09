@@ -64,7 +64,7 @@ export const AdminTable = ({
 
   if (loading && getCurrentDataLength() === 0) {
     return (
-      <div className="card-container p-12 text-center text-gray-400 font-bold bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+      <div className="card-container p-12 text-center text-gray-400 font-bold">
         {LABELS.COMMON.LOADING}
       </div>
     );
