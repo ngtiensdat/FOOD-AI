@@ -4,6 +4,7 @@ import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { LABELS } from "@/constants/labels";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,8 +34,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script
+      <body className="min-h-full flex flex-col">
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {
@@ -47,8 +50,6 @@ export default function RootLayout({
             `
           }}
         />
-      </head>
-      <body className="min-h-full flex flex-col">
         <ThemeProvider>
           {children}
         </ThemeProvider>
