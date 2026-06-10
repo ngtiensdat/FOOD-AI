@@ -155,7 +155,7 @@ jobs:
     name: 🚀 Deploy Backend (Render)
     needs: [backend-ci, frontend-ci]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     steps:
       - name: 🚀 Trigger Render Deploy
         run: |
@@ -166,7 +166,7 @@ jobs:
     name: 🚀 Deploy Frontend (Vercel)
     needs: [backend-ci, frontend-ci]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
