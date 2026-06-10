@@ -25,5 +25,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-// Rebuild trigger with updated NEXT_PUBLIC_API_URL
+// Rebuild trigger with non-sensitive NEXT_PUBLIC_API_URL
+
 
