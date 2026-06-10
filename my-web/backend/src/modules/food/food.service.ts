@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { FoodRepository } from './food.repository';
 import { AiService } from '../ai/ai.service';
+import { PrismaService } from '../../database/prisma.service';
+import { AiLearningService } from '../ai/services/ai-learning.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
 import { FoodQueryDto } from './dto/food-query.dto';
@@ -21,11 +23,15 @@ import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
 import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
+const FOOD_DISPLAY_LIMIT = 20;
+
 @Injectable()
 export class FoodService {
   constructor(
     private repository: FoodRepository,
     private aiService: AiService,
+    private prisma: PrismaService,
+    private aiLearningService: AiLearningService,
   ) {}
 
   async getAllFoods(query: FoodQueryDto) {
@@ -84,10 +90,10 @@ export class FoodService {
     }
 
     return {
-      data: foods.slice(0, 20),
+      data: foods.slice(0, FOOD_DISPLAY_LIMIT),
       meta: {
         total: tag ? foods.length : result.total,
-        limit: 20,
+        limit: FOOD_DISPLAY_LIMIT,
       },
     };
   }
@@ -95,6 +101,82 @@ export class FoodService {
   async trackView(user: User, id: number) {
     if (!user) return;
     return this.repository.trackView(user.id, id);
+  }
+
+  async toggleFavorite(userId: number, foodId: number) {
+    const isFavorite = await this.repository.toggleFavorite(userId, foodId);
+
+    // Sync with AI Feedback Learning: find or create the user's latest conversation
+    let conversation = await this.prisma.conversation.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!conversation) {
+      conversation = await this.prisma.conversation.create({
+        data: {
+          userId,
+          metadata: {
+            title: 'Hội thoại mới',
+            slots: {},
+            current_stage: 'COLLECTING',
+            rejected_food_ids: [],
+            suggested_food_ids: [],
+          },
+        },
+      });
+    }
+
+    if (isFavorite) {
+      // Favorite -> Add LIKE feedback
+      await this.prisma.aiFeedback.upsert({
+        where: {
+          userId_foodId: {
+            userId,
+            foodId,
+          },
+        },
+        create: {
+          userId,
+          conversationId: conversation.id,
+          foodId,
+          feedbackType: 'LIKE',
+        },
+        update: {
+          feedbackType: 'LIKE',
+          createdAt: new Date(),
+        },
+      });
+    } else {
+      // Unfavorite -> Remove LIKE feedback if it exists
+      const existingFeedback = await this.prisma.aiFeedback.findUnique({
+        where: {
+          userId_foodId: {
+            userId,
+            foodId,
+          },
+        },
+      });
+      if (existingFeedback && existingFeedback.feedbackType === 'LIKE') {
+        await this.prisma.aiFeedback.delete({
+          where: {
+            userId_foodId: {
+              userId,
+              foodId,
+            },
+          },
+        });
+      }
+    }
+
+    // Trigger background embedding update to keep preferences synced
+    this.aiLearningService
+      .updateUserEmbeddingWithFeedback(userId)
+      .catch((err: unknown) => {
+        // Gracefully handle embedding calculation failure in background
+      });
+
+    return { isFavorite };
   }
 
   async getRecentFoods(

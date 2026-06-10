@@ -90,7 +90,7 @@ export const ProfileHeader = ({
       <div className="px-6 md:px-12 pb-10 pt-8">
         {/* Warning Banner if closed */}
         {user?.role === 'RESTAURANT' && restaurant && !isOpen && (
-          <div className="mb-8 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl flex items-start gap-3 text-rose-600 dark:text-rose-400">
+          <div className="alert-box-rose mb-8">
             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-sm">{LABELS.RESTAURANT.CLOSED_WARNING_TITLE}</p>

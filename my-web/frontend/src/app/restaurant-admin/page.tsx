@@ -143,10 +143,10 @@ export default function RestaurantDashboard() {
 
               {/* Tooltip Help Icon */}
               <div className="relative group flex items-center justify-center cursor-help">
-                <HelpCircle size={14} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-350 transition-colors" />
-                <div className="absolute right-0 bottom-full mb-3 w-64 p-3 bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 rounded-xl shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-50 text-[11px] text-gray-500 dark:text-slate-305 font-normal leading-relaxed">
+                <HelpCircle size={14} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors" />
+                <div className="absolute right-0 bottom-full mb-3 w-64 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-50 text-[11px] text-gray-500 dark:text-slate-300 font-normal leading-relaxed">
                   {LABELS.RESTAURANT.STATUS_TOOLTIP}
-                  <div className="absolute top-full right-3 -translate-y-px w-2 h-2 rotate-45 bg-white dark:bg-slate-800 border-r border-b border-gray-150 dark:border-slate-700" />
+                  <div className="absolute top-full right-3 -translate-y-px w-2 h-2 rotate-45 bg-white dark:bg-slate-800 border-r border-b border-gray-200 dark:border-slate-700" />
                 </div>
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function RestaurantDashboard() {
                         placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
                         defaultValue={restaurant?.profile?.openingHours || ''}
                         id="opening-hours-input"
-                        className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-150 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
+                        className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
                       />
                       <Button
                         onClick={() => {

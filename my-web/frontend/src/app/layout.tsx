@@ -4,6 +4,7 @@ import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { LABELS } from "@/constants/labels";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,24 @@ export default function RootLayout({
     <html
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col">
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const savedTheme = localStorage.getItem('theme') || 'mixed';
+                document.documentElement.classList.remove('dark', 'mixed');
+                if (savedTheme === 'dark' || savedTheme === 'mixed') {
+                  document.documentElement.classList.add(savedTheme);
+                }
+              } catch (e) {}
+            `
+          }}
+        />
         <ThemeProvider>
           {children}
         </ThemeProvider>

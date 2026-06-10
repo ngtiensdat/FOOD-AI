@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { restaurantService } from '@/services/restaurant.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
+import { toast } from '@/store/useToastStore';
 
 export const useRestaurantProfile = () => {
   const params = useParams();
@@ -120,7 +121,7 @@ export const useRestaurantProfile = () => {
 
   const handleToggleFollow = async () => {
     if (!isAuthenticated) {
-      alert(LABELS.RESTAURANT.PUBLIC_PROFILE.LOGIN_REQUIRED);
+      toast.error(LABELS.RESTAURANT.PUBLIC_PROFILE.LOGIN_REQUIRED);
       return;
     }
     try {
@@ -134,7 +135,7 @@ export const useRestaurantProfile = () => {
 
   const openFollowersModal = async () => {
     if (!showFollowList && user?.id !== restaurantData?.ownerId) {
-      alert(LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWERS_PRIVATE);
+      toast.info(LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWERS_PRIVATE);
       return;
     }
     setShowFollowersModal(true);
@@ -152,7 +153,7 @@ export const useRestaurantProfile = () => {
 
   const openFollowingModal = async () => {
     if (!showFollowList && user?.id !== restaurantData?.ownerId) {
-      alert(LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWING_PRIVATE);
+      toast.info(LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWING_PRIVATE);
       return;
     }
     setShowFollowingModal(true);

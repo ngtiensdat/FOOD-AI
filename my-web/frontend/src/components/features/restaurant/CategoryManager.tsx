@@ -1,8 +1,8 @@
-/**
- * Mục đích file này để làm gì: Component quản lý hệ thống phân loại món ăn nhiều cấp (Nhóm -> Phân loại con).
- * Các file khác hay file này có ý nghĩa như nào: Được dùng trong trang quản lý của Thương gia.
- * Các chức năng đặc biệt: Hiển thị dạng cây (tree view), các thao tác CRUD danh mục.
- */
+// Mục đích file này để làm gì: Component quản lý hệ thống phân loại món ăn nhiều cấp (Nhóm -> Phân loại con).
+// Các file khác hay file này có ý nghĩa như nào: Được dùng trong trang quản lý của Thương gia (Merchant Dashboard).
+// Các chức năng đặc biệt: Hiển thị dạng cây đệ quy (tree view), các thao tác CRUD danh mục, sử dụng bảng padding tĩnh plMap để an toàn cho Tailwind JIT.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Recursive Rendering Pattern.
+// Các biến, hàm đặc biệt trong file: CategoryManager component, renderCategories().
 
 import React from 'react';
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Folder, FileText, HelpCircle } from 'lucide-react';
@@ -54,8 +54,15 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
     const children = categories.filter(c => c.parentId === parentId && !(parentId === null && c.name === groupName));
     if (children.length === 0) return null;
 
+    const plMap: Record<number, string> = {
+      0: 'pl-4',
+      1: 'pl-6',
+      2: 'pl-8'
+    };
+    const paddingClass = plMap[level] || 'pl-8';
+
     return (
-      <div className={`pl-${level === 0 ? '4' : '6'} mt-2 space-y-2 border-l border-gray-100 dark:border-slate-800 ml-4`}>
+      <div className={`${paddingClass} mt-2 space-y-2 border-l border-gray-100 dark:border-slate-800 ml-4`}>
         {children.map(category => (
           <div key={category.id} className="flex flex-col gap-2">
             <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl hover:shadow-sm transition-all group">
@@ -70,10 +77,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
                     <Plus size={14} />
                   </button>
                 )}
-                <button onClick={() => handleOpenEditCategory(category)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
+                <button onClick={() => handleOpenEditCategory(category)} className="icon-btn-blue">
                   <Edit2 size={14} />
                 </button>
-                <button onClick={() => setDeleteConfirm({ type: 'category', id: category.id })} className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg">
+                <button onClick={() => setDeleteConfirm({ type: 'category', id: category.id })} className="icon-btn-rose">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -124,10 +131,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
                 <button onClick={() => handleOpenAddCategory(group.id)} className="p-2 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_ROOT_CATEGORY}>
                   <Plus size={16} />
                 </button>
-                <button onClick={() => handleOpenEditGroup(group)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl">
+                <button onClick={() => handleOpenEditGroup(group)} className="icon-btn-blue">
                   <Edit2 size={16} />
                 </button>
-                <button onClick={() => setDeleteConfirm({ type: 'group', id: group.id })} className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl">
+                <button onClick={() => setDeleteConfirm({ type: 'group', id: group.id })} className="icon-btn-rose">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -166,20 +173,21 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
 
       {/* Modals */}
       {isGroupModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl">
+        <div className="modal-wrapper">
+          <div className="modal-overlay" onClick={() => setIsGroupModalOpen(false)} />
+          <div className="modal-card max-w-md w-full !p-6 relative">
             <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_GROUP : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}</h3>
             <form onSubmit={handleSubmitGroup} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_NAME} <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
                   {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_GROUP}
                 </p>
-                <input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
@@ -191,20 +199,21 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
       )}
 
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl">
+        <div className="modal-wrapper">
+          <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)} />
+          <div className="modal-card max-w-md w-full !p-6 relative">
             <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_CATEGORY}</h3>
             <form onSubmit={handleSubmitCategory} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_NAME} <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
                   {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_CATEGORY}
                 </p>
-                <input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: e.target.value })} className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-primary dark:text-white" />
+                <input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>

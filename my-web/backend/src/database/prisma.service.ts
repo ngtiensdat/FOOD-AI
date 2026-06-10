@@ -9,6 +9,8 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private readonly pool: Pool;
+
   constructor(configService: ConfigService) {
     // 1. Tạo Pool kết nối từ thư viện 'pg'
     const pool = new Pool({
@@ -20,6 +22,8 @@ export class PrismaService
 
     // 3. Truyền adapter vào constructor của PrismaClient
     super({ adapter });
+
+    this.pool = pool;
   }
 
   async onModuleInit() {
@@ -28,5 +32,6 @@ export class PrismaService
 
   async onModuleDestroy() {
     await this.$disconnect();
+    await this.pool.end();
   }
 }

@@ -16,6 +16,8 @@ export const useHomeData = (city?: string, district?: string) => {
 
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
         const [resFoods, resToday, resWeekly, resRecommended] = await Promise.all([
@@ -24,6 +26,8 @@ export const useHomeData = (city?: string, district?: string) => {
           foodService.getFeaturedWeekly(),
           foodService.getRecommendedFoods()
         ]);
+
+        if (!isMounted) return;
 
         const filterByLocation = (list: any[]) => {
           let filtered = [...list];
@@ -52,7 +56,9 @@ export const useHomeData = (city?: string, district?: string) => {
         const fetchNearbyWithFallback = async (lat: number, lng: number) => {
           try {
             const nearby = await restaurantService.getNearbyRestaurants(lat, lng, LIMITS.NEARBY_FOODS_RADIUS);
-            setNearbyRestaurants(nearby);
+            if (isMounted) {
+              setNearbyRestaurants(nearby);
+            }
           } catch (err) {
             console.error('Lỗi lấy quán ăn quanh đây:', err);
           }
@@ -64,10 +70,12 @@ export const useHomeData = (city?: string, district?: string) => {
         if (typeof window !== 'undefined' && "geolocation" in navigator) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
+              if (!isMounted) return;
               const { latitude, longitude } = position.coords;
               await fetchNearbyWithFallback(latitude, longitude);
             },
             async (error) => {
+              if (!isMounted) return;
               console.warn('Lỗi định vị GPS, dùng vị trí mặc định:', error.message);
               await fetchNearbyWithFallback(fallbackCoords.lat, fallbackCoords.lng);
             },
@@ -84,10 +92,16 @@ export const useHomeData = (city?: string, district?: string) => {
       } catch (err) {
         console.error('Lỗi kết nối API:', err);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [city, district]);
 
   return {

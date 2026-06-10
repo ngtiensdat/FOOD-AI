@@ -36,19 +36,26 @@ export const EditProfileModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-wrapper">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="modal-overlay"
+      />
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
         exit={{ opacity: 0, scale: 0.95 }} 
-        className="modal-card"
+        className="modal-card relative z-10 max-w-2xl w-full !p-0 overflow-hidden"
       >
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <h3 className="text-xl font-bold">{LABELS.SETTINGS.PROFILE.EDIT_MODAL.TITLE}</h3>
+        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{LABELS.SETTINGS.PROFILE.EDIT_MODAL.TITLE}</h3>
           <button 
             onClick={onClose} 
             aria-label="Đóng cài đặt cá nhân"
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
           >
             <X size={20} />
           </button>
@@ -82,7 +89,7 @@ export const EditProfileModal = ({
           </div>
 
           {role === 'RESTAURANT' && (
-            <div className="bg-orange-50/50 dark:bg-slate-800/40 border border-orange-100 dark:border-slate-800 p-4 rounded-card space-y-3">
+            <div className="ai-box p-4 rounded-card space-y-3 border">
               <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.MERCHANT_SYNC}
               </h4>
@@ -119,7 +126,7 @@ export const EditProfileModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tỉnh / Thành phố */}
             <div>
-              <label className="text-small font-semibold text-gray-700 ml-1">
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">
                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.CITY}
               </label>
               <select
@@ -131,7 +138,7 @@ export const EditProfileModal = ({
                     district: ''
                   });
                 }}
-                className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+                className="form-input py-4 px-6 text-sm font-semibold mt-2"
               >
                 {LOCATION_DATA.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -143,13 +150,13 @@ export const EditProfileModal = ({
 
             {/* Quận / Huyện */}
             <div>
-              <label className="text-small font-semibold text-gray-700 ml-1">
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">
                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT}
               </label>
               <select
                 value={editData.district || ''}
                 onChange={(e) => setEditData({ ...editData, district: e.target.value })}
-                className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 px-6 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-semibold mt-2"
+                className="form-input py-4 px-6 text-sm font-semibold mt-2"
               >
                 <option value="" disabled hidden>
                   {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
@@ -182,7 +189,7 @@ export const EditProfileModal = ({
           </div>
         </div>
 
-        <div className="p-6 bg-gray-50 flex gap-3">
+        <div className="p-6 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-800 flex gap-3">
           <Button variant="outline" fullWidth onClick={onClose}>
             {LABELS.COMMON.CANCEL}
           </Button>

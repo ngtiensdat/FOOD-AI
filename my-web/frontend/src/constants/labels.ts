@@ -1,3 +1,9 @@
+// Mục đích: Khai báo đối tượng hằng số LABELS chứa toàn bộ văn bản hiển thị (UI text) tiếng Việt của ứng dụng.
+// Ý nghĩa: Đóng vai trò là nguồn văn bản hiển thị tập trung (Localization/i18n), tránh việc hardcode trực tiếp vào UI.
+// Chức năng đặc biệt: Tổ chức văn bản theo từng phân hệ (Auth, Restaurant, Admin, Customer, Settings, Nav, Footer, Hero, Home, Form, Explore, Food, AI Chat).
+// Design Pattern: Constant pattern, Namespace grouping.
+// Biến, hàm đặc biệt: LABELS.
+
 export const LABELS = {
   COMMON: {
     SAVE: 'Lưu thay đổi',
@@ -514,10 +520,13 @@ export const LABELS = {
     TITLE_START: 'Bạn muốn ăn gì',
     TITLE_HIGHLIGHT: 'hôm nay?',
     DESCRIPTION: 'Hãy kể cho AI nghe về tâm trạng, ngân sách hoặc sở thích của bạn. Chúng tôi sẽ gợi ý món ăn hoàn hảo nhất ngay gần bạn.',
+    BG_ALT: 'Hình nền trang chủ',
+    OPEN_AI_TOOLTIP: 'Bật trợ lý AI',
+    SEARCH_PLACEHOLDER: 'Hôm nay bạn cảm thấy thế nào?',
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',
-    AI_THINKING: 'Đang suy nghĩ món ngon cho bạn...',
+    AI_THINKING: 'Đang suyyyyyy...',
     SUGGESTED_TITLE: 'Các món ăn gợi ý cho bạn:',
     FEATURES: {
       MOOD: 'Gợi ý theo tâm trạng',
@@ -588,6 +597,7 @@ export const LABELS = {
     ADD_FAVORITE: 'Thêm vào yêu thích',
     VIEW_DETAIL: 'Xem chi tiết',
     NO_DESCRIPTION: 'Không có mô tả',
+    NO_IMAGE: 'Không có ảnh',
     UNCATEGORIZED: 'Chưa phân loại',
     SYSTEM: 'Hệ thống',
   },
@@ -731,6 +741,123 @@ export const LABELS = {
       OFFICE: 'văn phòng',
       SPICY: 'cay',
       HEALTHY: 'healthy'
+    }
+  },
+  AI_CHAT: {
+    SIDEBAR: {
+      NEW_CHAT: 'Đoạn chat mới',
+      RECENT: 'Gần đây',
+      NO_CHAT: 'Chưa có đoạn chat nào',
+      CLOSE_SIDEBAR: 'Đóng sidebar',
+      DELETE_CHAT: 'Xóa đoạn chat',
+      CUSTOMER: 'Khách hàng',
+      FREE_PLAN: 'Free Plan',
+      REFRESH_LIST: 'Làm mới danh sách',
+    },
+    HEADER: {
+      OPEN_SIDEBAR: 'Mở sidebar',
+      SIMULATE_CONTEXT: 'Thời tiết tại',
+      COLLAPSE_CHAT: 'Thu gọn khung chat',
+      ACTIVE: 'Đang hoạt động',
+    },
+    CONFIG: {
+      WEATHER_TITLE: 'Thời tiết Thực tế',
+      TEMPERATURE: 'Nhiệt độ',
+      STATUS: 'Trạng thái',
+      RAINY: 'Có mưa 🌧️',
+      DRY: 'Khô ráo ☀️',
+      LOCATION_TITLE: 'Vị trí & Tọa độ GPS',
+      GPS_COORDS: 'Tọa độ GPS',
+      UPDATE_GPS: 'Cập nhật vị trí hiện tại',
+      TIPS_TITLE: '💡 Cơ chế tự động phát hiện:',
+      TIP_1: '1. Hệ thống tự động lấy tọa độ GPS từ trình duyệt để đồng bộ thời tiết thực tế từ Open-Meteo.',
+      TIP_2: '2. Trợ lý AI sẽ tự động phân tích (nhiệt độ, mưa, độ ẩm, gió) để gợi ý các món ăn tối ưu nhất.',
+      WEATHER_TEMP_LIMITS: {
+        MIN: 15,
+        MAX: 42,
+      },
+      GPS_DEFAULTS: {
+        LAT: 21.0285,
+        LNG: 105.8542,
+      },
+      CITY_DEFAULTS: {
+        NAME: 'Hà Nội',
+      },
+      SYNCING_WEATHER: 'Đang đồng bộ thời tiết...',
+      FEELS_LIKE: (temp: number) => `Cảm nhận ${temp}°C`,
+      HUMIDITY: 'Độ ẩm',
+      WIND_SPEED: 'Sức gió',
+      NO_WEATHER_DATA: 'Chưa có dữ liệu thời tiết. Hãy cập nhật GPS để kích hoạt.',
+      LATITUDE: 'Vĩ độ (Lat)',
+      LONGITUDE: 'Kinh độ (Lng)',
+      UPDATE_BTN: 'Cập nhật',
+    },
+    FEED: {
+      WELCOME: 'Xin chào! Tôi có thể giúp gì cho bạn hôm nay?',
+      WELCOME_SUB: 'Hãy hỏi tôi bất kỳ điều gì (Ví dụ: "Hôm nay ăn gì ngon", "Tôi muốn tìm quán bún chả gần đây",...)',
+      SUGGESTION: 'Gợi ý cho bạn:',
+      SEND_MESSAGE: 'Gửi tin nhắn',
+      FEEDBACK_LIKE: '👍 Hữu ích',
+      FEEDBACK_DISLIKE: '👎 Không phù hợp',
+    },
+    INPUT: {
+      PLACEHOLDER: 'Hỏi trợ lý ẩm thực AI...',
+      SEND: 'Gửi',
+      SEARCH: 'Trò chuyện ngay!'
+    },
+    PREFERENCES: {
+      TITLE: 'Cài đặt gợi ý AI',
+      TAB_LIKED: 'Món ăn đã thích',
+      TAB_DISLIKED: 'Đề xuất đã ẩn',
+      LOADING: 'Đang tải danh sách...',
+      EMPTY_LIST: 'Danh sách trống',
+      EMPTY_LIKED_DESC: 'Bấm nút hữu ích (LIKE) trên các món ăn đề xuất trong đoạn chat để lưu vào đây.',
+      EMPTY_DISLIKED_DESC: 'Bấm nút không phù hợp (DISLIKE) trong đoạn chat để ẩn các món ăn và lưu vào đây.',
+      VOICE_INPUT_LABEL: 'Bật nhập bằng giọng nói',
+      REMOVE_LIKE_SUCCESS: 'Đã bỏ thích món ăn!',
+      REMOVE_DISLIKE_SUCCESS: 'Đã gỡ món ăn khỏi danh sách ẩn đề xuất!',
+      LOAD_ERROR: 'Không thể tải danh sách sở thích.',
+      REMOVE_ERROR: 'Không thể gỡ phản hồi. Vui lòng thử lại.',
+      TOOLTIP_REMOVE: 'Gỡ phản hồi',
+      TAB_GENERAL: 'Chung',
+      TAB_PERSONALIZATION: 'Cá nhân hóa',
+      TAB_DATA_CONTROL: 'Kiểm soát dữ liệu',
+      TAB_ACCOUNT: 'Tài khoản',
+      THEME_LABEL: 'Giao diện',
+      THEME_MIXED: 'Pha trộn (Mixed)',
+      THEME_LIGHT: 'Sáng',
+      THEME_DARK: 'Tối',
+      LANG_LABEL: 'Ngôn ngữ',
+      LANG_AUTO: 'Dò tìm tự động',
+      LANG_VI: 'Tiếng Việt',
+      LANG_EN: 'Tiếng Anh',
+      DELETE_FEEDBACKS_TITLE: 'Xóa toàn bộ phản hồi gợi ý AI',
+      DELETE_FEEDBACKS_DESC: 'Hành động này sẽ xóa sạch danh sách món ăn đã Thích (LIKE) và Đề xuất đã ẩn (DISLIKE), đưa mô hình gợi ý AI cá nhân hóa về trạng thái mặc định.',
+      DELETE_FEEDBACKS_BTN: 'Xóa tất cả phản hồi',
+      DELETE_FEEDBACKS_CONFIRM: 'Bạn có chắc chắn muốn xóa toàn bộ lịch sử phản hồi Like/Dislike không? Hành động này cũng sẽ gỡ các món ăn khỏi danh sách yêu thích của bạn!',
+      DELETE_FEEDBACKS_SUCCESS: 'Đã xóa toàn bộ phản hồi thành công!',
+      DELETE_FEEDBACKS_ERROR: 'Lỗi khi xóa phản hồi. Vui lòng thử lại.',
+      ACCOUNT_INFO_TITLE: 'Thông tin tài khoản thực khách',
+      ACCOUNT_NAME: 'Họ tên',
+      ACCOUNT_EMAIL: 'Địa chỉ Email',
+      ACCOUNT_ROLE: 'Vai trò tài khoản',
+      ACCOUNT_PLAN: 'Gói dịch vụ',
+    },
+    CONFIRM: {
+      DELETE_CHAT: 'Bạn có chắc chắn muốn xóa đoạn hội thoại này không?',
+      EMPTY_CHAT_WARNING: 'Bạn đã có một đoạn chat mới chưa sử dụng.',
+      ERROR_FALLBACK: 'Xin lỗi, tôi gặp chút trục trặc hệ thống.',
+    },
+    TOAST: {
+      GPS_SUCCESS: 'Đã cập nhật tọa độ từ GPS của thiết bị.',
+      GPS_ERROR: 'Không thể lấy tọa độ GPS từ trình duyệt.',
+      GPS_NOT_SUPPORTED: 'Trình duyệt không hỗ trợ GPS.',
+      LOAD_HISTORY_ERROR: 'Lỗi tải lịch sử cuộc hội thoại:',
+      SEND_FIRST_ERROR: 'Lỗi gửi tin nhắn đầu tiên:',
+      GPS_WARN: 'Không lấy được GPS thực tế, dùng GPS giả lập mặc định:',
+      FEEDBACK_LIKE_SUCCESS: 'Đã đánh dấu hữu ích! AI sẽ gợi ý các món ăn tương tự.',
+      FEEDBACK_DISLIKE_SUCCESS: 'Đã ghi nhận phản hồi! AI sẽ hạn chế gợi ý món ăn này.',
+      FEEDBACK_ERROR: 'Lỗi khi gửi phản hồi.',
     }
   }
 };

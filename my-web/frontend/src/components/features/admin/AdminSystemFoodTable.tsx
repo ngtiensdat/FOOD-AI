@@ -43,7 +43,7 @@ export const AdminSystemFoodTable = ({
   return (
     <div className="space-y-6">
       {filteredData.length === 0 ? (
-        <div className="card-container p-12 text-center text-gray-400 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container p-12 text-center text-gray-400">
           {LABELS.ADMIN.TABLE.EMPTY}
         </div>
       ) : (
@@ -124,7 +124,7 @@ export const AdminSystemFoodTable = ({
       )}
 
       {totalPages > 1 && (
-        <div className="card-container px-8 py-4 flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container px-8 py-4 flex justify-between items-center">
           <span className="text-xs text-gray-400 font-bold">
             {LABELS.ADMIN.TABLE.SHOWING_FOODS(filteredData.length)}
           </span>

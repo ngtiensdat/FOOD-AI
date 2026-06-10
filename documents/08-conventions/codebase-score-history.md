@@ -20,16 +20,19 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | 15/05/2026 | **Sprint 2** | AI Auditor | 1.5 | 1.8 | 1.5 | 1.2 | **6.0 / 10** | **Khởi đầu:** Codebase còn trộn lẫn logic trong controller. Next.js image bị wildcard hostname không an toàn. |
 | 25/05/2026 | **Sprint 3** | AI Auditor | 2.5 | 2.3 | 2.2 | 2.3 | **9.3 / 10** | **Tiến bộ lớn:** Đã tách Service/Repository. Triển khai component `SafeImage` và khôi phục whitelist hostname bảo mật. Sửa ảnh ShopeeFood HD sắc nét và dọn dẹp link Unsplash hỏng. |
+| 03/06/2026 | **Sprint 4** | AI Auditor | 2.25 | 2.3 | 2.35 | 2.25 | **9.18 / 10** | **Ổn định:** Codebase sạch, không có lỗi biên dịch. Đã thêm báo cáo chi tiết cho Sprint 4, phát hiện bypass throttling AI, trực tiếp process.env trong MailService, và một số SRP component lớn. |
 
 ---
 
-## 3. Nhật Ký Chi Tiết Sprint 3 (25/05/2026)
+## 3. Nhật Ký Chi Tiết Sprint 4 (03/06/2026)
 
 ### Điểm cộng (Strengths)
-- **Bảo mật tối đa:** `next.config.ts` đã khôi phục whitelist 4 host an toàn. Sử dụng `SafeImage` chặn lỗi crash và fallback ảnh lỗi sang SVG an toàn.
-- **Tối ưu trải nghiệm:** Cắt bỏ bộ lọc resize giúp ảnh món ăn ShopeeFood hiển thị HD sắc nét.
-- **Dọn dẹp DB:** Đã xóa sạch 24 link Unsplash hỏng trong DB đưa về `null` giúp terminal hoàn toàn sạch log lỗi 404.
+- **Đóng gói & Biên dịch hoàn hảo:** Cả FE và BE biên dịch 100% thành công không có bất kỳ lỗi Typescript hay lints nào.
+- **Tính năng AI ổn định:** Hybrid search ngữ cảnh địa lý và RAG hoạt động trơn tru. Có distributed locks phân tán sử dụng Redis an toàn.
+- **Tập trung hằng số tốt:** Các labels và vị trí địa phương tĩnh đã được cấu hình trong constant file.
 
 ### Điểm cần cải thiện tiếp theo (Action Items)
-- **Unit Tests:** Cần bổ sung Unit Tests cho tầng Service của User và Food để nâng điểm kiến trúc và khả năng bảo trì lên tối đa.
-- **GraphQL (Tương lai):** Khi mở rộng dữ liệu lớn, cần cân nhắc tích hợp GraphQL theo đúng API Design Standard.
+- **Cấu hình rate limits cho AI Chat:** Thêm custom Throttle cho `AiController` thay vì `@SkipThrottle()`.
+- **Tách biệt cấu hình SMTP:** Quản lý SMTP credentials thông qua NestJS config tập trung (`appConfig`) thay vì gọi trực tiếp `process.env`.
+- **Đồng bộ hóa Clean Architecture & SRP:** Chuyển các câu Prisma update trong `AdminService` vào `FoodRepository` và tách nhỏ component frontend `AiChatWindow.tsx`.
+

@@ -1,9 +1,9 @@
-'use client';
-
 // Mục đích file này để làm gì: Hiển thị danh sách món ăn của các nhà hàng đối tác (Merchant) được gom nhóm theo nhà hàng dưới dạng dòng trực quan.
 // Các file khác hay file này có ý nghĩa như nào: Component con của AdminTable phục vụ tab "Đối tác" trong Quản lý thực đơn.
-// Các chức năng đặc biệt: Gom nhóm món ăn theo nhà hàng, lưu nháp batch update, phân trang cấp nhà hàng (cấp ngoài cùng) và phân trang món ăn bên trong mỗi nhà hàng.
-// Các chế độ hiển thị mới: Tích hợp chế độ lọc xem (Tất cả, Đề xuất, Chưa đề xuất) và chế độ Chỉnh sửa riêng lẻ của từng nhà hàng.
+// Các chức năng đặc biệt: Gom nhóm món ăn theo nhà hàng, lưu nháp batch update, phân trang cấp nhà hàng và phân trang món ăn bên trong mỗi nhà hàng.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Batch Processing, Compound Component Pattern.
+// Các biến, hàm đặc biệt trong file: AdminMerchantFoodTable component.
+'use client';
 
 import React, { useState, useMemo } from 'react';
 import { Check, X, Star, Sparkles, Settings, Trash2, Clock, XCircle, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
@@ -12,7 +12,7 @@ import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { AdminFoodItem } from '@/types/food';
-import { FoodBatchUpdateInput } from '@/services/food.service';
+import { FoodBatchUpdateInput } from '@/services/admin.service';
 import { UpdateFoodPayload } from '@/hooks/useAdminActions';
 import { UserStatus } from '@/types/user';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
@@ -25,7 +25,7 @@ interface AdminMerchantFoodTableProps {
     handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
     handleRecommendFood: (id: number, newValue: boolean) => void;
     handleDeleteFood: (id: number) => void;
-    openEditModal: (food: any) => void;
+    openEditModal: (food: AdminFoodItem) => void;
     handleApproveFood?: (id: number, status: string) => void;
     handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
     handleBatchUpdate?: (updates: FoodBatchUpdateInput[]) => Promise<boolean>;
@@ -89,7 +89,7 @@ export const AdminMerchantFoodTable = ({
   return (
     <div className="space-y-6 pb-24"> {/* Thêm pb-24 để tránh bị đè bởi banner nổi phía dưới */}
       {filteredData.length === 0 ? (
-        <div className="card-container p-12 text-center text-gray-400 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container p-12 text-center text-gray-400">
           {LABELS.ADMIN.TABLE.EMPTY}
         </div>
       ) : (
@@ -386,7 +386,7 @@ export const AdminMerchantFoodTable = ({
       )}
 
       {totalRestaurantPages > 1 && (
-        <div className="card-container px-8 py-4 flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl">
+        <div className="card-container px-8 py-4 flex justify-between items-center">
           <span className="text-xs text-gray-400 font-bold">
             {LABELS.ADMIN.TABLE.SHOWING_RESTAURANTS(groupedMerchantFoods.length)}
           </span>

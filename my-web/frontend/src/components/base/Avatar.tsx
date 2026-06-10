@@ -24,7 +24,8 @@ export const Avatar: React.FC<AvatarProps> = ({
   const [hasError, setHasError] = useState(false);
   const displaySize = `${size}px`;
   const hasRoundedClass = className.includes('rounded');
-  const isResponsiveSize = className.includes('w-') || className.includes('h-');
+  // Sử dụng regex để tránh so khớp nhầm các class chứa 'w-' hoặc 'h-' (ví dụ: shadow-md, shadow-lg, shadow-xl)
+  const isResponsiveSize = /(?:^|\s|:)(?:w|h)-/.test(className);
 
   // Lọc kỹ các URL không hợp lệ trước khi quyết định hiển thị ảnh
   const hasValidImage = src && 

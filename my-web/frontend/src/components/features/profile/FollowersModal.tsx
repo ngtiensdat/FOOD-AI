@@ -41,20 +41,20 @@ export const FollowersModal = ({
   const modalEmpty = emptyLabel || LABELS.RESTAURANT.PUBLIC_PROFILE.FOLLOWERS_EMPTY;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-wrapper">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="modal-overlay"
       />
       
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-card max-w-md w-full p-6 relative border border-gray-100 dark:border-slate-800 shadow-2xl z-10"
+        className="modal-card max-w-md w-full !p-6"
       >
         <button 
           onClick={onClose}
@@ -70,7 +70,7 @@ export const FollowersModal = ({
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="loading-spinner w-8 h-8"></div>
           </div>
         ) : error ? (
           <div className="text-center py-8 text-red-500 font-semibold text-small flex flex-col items-center gap-2">
@@ -110,7 +110,7 @@ export const FollowersModal = ({
                     <h4 className="text-body font-extrabold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                       {userName}
                     </h4>
-                    <p className="text-mini text-gray-450 dark:text-gray-400 font-medium">
+                    <p className="text-mini text-gray-400 dark:text-gray-400 font-medium">
                       {userEmail || userRoleLabel}
                     </p>
                   </div>

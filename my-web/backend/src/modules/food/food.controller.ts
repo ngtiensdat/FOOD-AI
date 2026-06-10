@@ -76,6 +76,15 @@ export class FoodController {
     return this.foodService.trackView(user, id);
   }
 
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  toggleFavorite(
+    @GetUser() user: PrismaClient.User,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.foodService.toggleFavorite(user.id, id);
+  }
+
   @Get('recent-views')
   @UseGuards(JwtAuthGuard)
   getRecentViews(

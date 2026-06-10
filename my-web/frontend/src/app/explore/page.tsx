@@ -41,7 +41,7 @@ function ExploreContent() {
   } = useExploreActions();
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
+    <div className="page-container min-h-screen">
       <Navbar activeTab={activeTab} setActiveTab={(tab: string) => {
         if (tab === 'home') router.push('/');
         else setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings');
@@ -132,7 +132,7 @@ function ExploreContent() {
                     <div className="h-4 bg-gray-300 dark:bg-slate-700 rounded-md w-3/4" />
                     <div className="h-3 bg-gray-200 dark:bg-slate-800 rounded-md w-1/2" />
                   </div>
-                  <div className="border-t border-gray-150 dark:border-slate-800/40 py-2.5 space-y-2">
+                  <div className="border-t border-gray-200 dark:border-slate-800/40 py-2.5 space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-slate-800 rounded-md w-full" />
                   </div>
                   <div className="flex justify-between">

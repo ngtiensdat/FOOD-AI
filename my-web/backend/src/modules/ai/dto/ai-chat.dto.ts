@@ -4,7 +4,7 @@
 // Kiến thức/Design Pattern: DTO Pattern, Validation Pattern, Separation of Concerns.
 // Các biến, hàm đặc biệt: message, lat, lng, city, district.
 
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 
 export class AiChatDto {
   @IsString()
@@ -25,4 +25,16 @@ export class AiChatDto {
   @IsOptional()
   @IsString()
   district?: string;
+
+  @IsOptional()
+  @IsNumber()
+  temperature?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isRaining?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  conversationId?: number;
 }

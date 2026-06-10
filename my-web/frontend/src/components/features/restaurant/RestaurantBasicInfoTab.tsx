@@ -54,7 +54,7 @@ export const RestaurantBasicInfoTab: React.FC<RestaurantBasicInfoTabProps> = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-card px-4 py-3 text-sm outline-none focus:border-primary text-gray-800 dark:text-white transition-colors resize-none"
+          className="form-input rounded-card px-4 py-3 text-sm text-gray-800 resize-none"
         />
       </div>
     </div>

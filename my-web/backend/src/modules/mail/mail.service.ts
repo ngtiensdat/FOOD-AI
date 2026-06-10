@@ -8,18 +8,20 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter, SentMessageInfo } from 'nodemailer';
 import { MESSAGES } from '../../common/constants/messages.constant';
+import { appConfig } from '../../config/app.config';
 
 @Injectable()
 export class MailService {
   private transporter: Transporter;
 
   constructor() {
+    const config = appConfig();
     this.transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: Number(process.env.MAIL_PORT),
+      host: config.mailHost,
+      port: config.mailPort,
       auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
+        user: config.mailUser,
+        pass: config.mailPass,
       },
     });
   }
@@ -29,11 +31,11 @@ export class MailService {
     name: string,
     token: string,
   ): Promise<SentMessageInfo> {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
+    const config = appConfig();
+    const verificationUrl = `${config.frontendUrl}/verify-email?token=${token}`;
 
     const mailOptions = {
-      from: process.env.MAIL_FROM,
+      from: config.mailFrom,
       to,
       subject: MESSAGES.MAIL.VERIFICATION_SUBJECT,
       html: `

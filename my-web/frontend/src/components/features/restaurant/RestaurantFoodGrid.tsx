@@ -52,7 +52,7 @@ export const RestaurantFoodGrid = ({
   if (loadingFoods && foodsData.length === 0) {
     return (
       <div className="flex-1 w-full text-center py-20">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="loading-spinner w-8 h-8 mx-auto mb-4"></div>
         <p className="text-gray-500">{LABELS.RESTAURANT.PUBLIC_PROFILE.LOADING_FOODS}</p>
       </div>
     );

@@ -1,3 +1,6 @@
+// Mục đích: Định nghĩa module/service/component liên quan đến module AI (schema.prisma).
+// File quan hệ: Được liên kết trong luồng xử lý AI của hệ thống.
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
@@ -39,6 +42,7 @@ model User {
   userFollowing     UserFollow[]   @relation("UserFollowing")
   userFollowers     UserFollow[]   @relation("UserFollowers")
   profile           UserProfile?
+  aiFeedbacks       AiFeedback[]
 
   @@index([role, status])
   @@map("users")
@@ -134,6 +138,7 @@ model Food {
   restaurant         Restaurant?            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   histories          History[]
   posts              Post[]                 @relation("PostToFood")
+  aiFeedbacks        AiFeedback[]
 
   @@index([restaurantId, status])
   @@map("foods")
@@ -280,6 +285,7 @@ model Conversation {
   metadata  Json?
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  Message[]
+  aiFeedbacks AiFeedback[]
 
   @@map("conversations")
 }
@@ -363,4 +369,28 @@ enum MessageRole {
   USER
   AI
   SYSTEM
+}
+
+enum FeedbackType {
+  LIKE
+  DISLIKE
+}
+
+model AiFeedback {
+  id             Int          @id @default(autoincrement())
+  userId         Int          @map("user_id")
+  conversationId Int          @map("conversation_id")
+  foodId         Int          @map("food_id")
+  query          String?
+  aiReply        String?      @map("ai_reply")
+  feedbackType   FeedbackType @map("feedback_type")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  food         Food         @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, foodId])
+  @@index([userId, foodId, feedbackType])
+  @@map("ai_feedbacks")
 }

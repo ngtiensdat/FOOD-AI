@@ -1,11 +1,11 @@
-/**
- * Mục đích file này để làm gì: Component Card hiển thị một món ăn (thông tin món, ảnh, giá, khoảng cách).
- * Các file khác hay file này có ý nghĩa như nào: Dùng chung ở rất nhiều nơi (trang chủ, gợi ý AI, kết quả tìm kiếm).
- * Các chức năng đặc biệt: Hiển thị icon bản đồ nếu có link map, tính toán khoảng cách (nếu có), nút yêu thích.
- */
+// Mục đích file này để làm gì: Component Card hiển thị một món ăn (thông tin món, ảnh, giá, khoảng cách).
+// Các file khác hay file này có ý nghĩa như nào: Dùng chung ở rất nhiều nơi (trang chủ, gợi ý AI, kết quả tìm kiếm).
+// Các chức năng đặc biệt: Hiển thị icon bản đồ nếu có link map, tính toán khoảng cách (nếu có), nút yêu thích thông qua callback prop onToggleFavorite.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Presentational Component Pattern, Callback Propagation.
+// Các biến, hàm đặc biệt trong file: FoodCard component.
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SafeImage from '@/components/base/SafeImage';
 import { ShoppingBag, Navigation, Heart } from 'lucide-react';
@@ -20,7 +20,7 @@ export interface FoodCardData {
   price?: number;
   image?: string;
   description?: string;
-  restaurant?: { name: string };
+  restaurant?: { name: string } | null;
   restaurantName?: string;
   distance?: number;
   mapUrl?: string;
@@ -31,10 +31,15 @@ export interface FoodCardData {
 interface FoodCardProps {
   food: FoodCardData;
   onViewDetail?: (food: FoodCardData) => void;
+  onToggleFavorite?: (foodId: number) => Promise<boolean>;
 }
 
-export function FoodCard({ food, onViewDetail }: FoodCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps) {
+  const [isFavorite, setIsFavorite] = useState(!!food.isFavorite || !!food.is_favorite);
+
+  useEffect(() => {
+    setIsFavorite(!!food.isFavorite || !!food.is_favorite);
+  }, [food.isFavorite, food.is_favorite]);
 
   return (
     <motion.div
@@ -57,9 +62,14 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
         )}
 
         <button
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            setIsFavorite(!isFavorite);
+            if (onToggleFavorite) {
+              const res = await onToggleFavorite(Number(food.id));
+              setIsFavorite(res);
+            } else {
+              setIsFavorite(!isFavorite);
+            }
           }}
           className={`absolute top-4 right-4 p-2.5 rounded-xl shadow-lg transition-all hover:scale-110 z-10 ${
             isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-400'

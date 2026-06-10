@@ -30,6 +30,7 @@ import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisService } from '../ai/services/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,7 @@ export class AuthService {
     private jwtService: JwtService,
     private aiService: AiService,
     private prisma: PrismaService,
+    private redisService: RedisService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -78,6 +80,21 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     this.logger.log(`Attempting login for: ${dto.email}`);
+
+    const attemptsKey = `login_attempts:${dto.email}`;
+    const lockKey = `login_lock:${dto.email}`;
+
+    // 1. Kiểm tra xem tài khoản có đang bị khóa hay không
+    const isLocked = await this.redisService.get(lockKey);
+    if (isLocked) {
+      const remainingSeconds = await this.redisService.ttl(lockKey);
+      const remainingMinutes =
+        remainingSeconds > 0 ? Math.ceil(remainingSeconds / 60) : 10;
+      throw new UnauthorizedException(
+        MESSAGES.AUTH.RATE_LIMIT_LOGIN_DYNAMIC(remainingMinutes),
+      );
+    }
+
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
       this.logger.warn(`User not found: ${dto.email}`);
@@ -97,8 +114,28 @@ export class AuthService {
     );
     if (!isPasswordValid) {
       this.logger.warn(`Invalid password for: ${dto.email}`);
-      throw new UnauthorizedException(MESSAGES.AUTH.INVALID_CREDENTIALS);
+
+      // 2. Tăng số lần đăng nhập sai (atomic)
+      const attempts = await this.redisService.incr(attemptsKey, 600);
+
+      const maxAttempts = 3;
+      const remainingAttempts = maxAttempts - attempts;
+
+      if (attempts >= maxAttempts) {
+        // Đã nhập sai 3 lần, thực hiện khóa 10 phút (600 giây)
+        await this.redisService.set(lockKey, 'locked', 600);
+        await this.redisService.del(attemptsKey);
+        throw new UnauthorizedException(MESSAGES.AUTH.RATE_LIMIT_LOGIN_10M);
+      } else {
+        throw new UnauthorizedException(
+          MESSAGES.AUTH.LOGIN_ATTEMPTS_REMAINING(remainingAttempts),
+        );
+      }
     }
+
+    // 3. Đăng nhập thành công, xóa lịch sử thử đăng nhập sai và khóa nếu có
+    await this.redisService.del(attemptsKey);
+    await this.redisService.del(lockKey);
 
     this.logger.log(`Login successful: ${dto.email}`);
     return this.generateToken(user);
@@ -243,61 +280,9 @@ export class AuthService {
       throw new UnauthorizedException(MESSAGES.AUTH.PASSWORD_INCORRECT_DELETE);
     }
 
-    // Thực hiện hard delete thông tin người dùng trong Database thông qua transaction
-    await this.prisma.$transaction(async (tx) => {
-      // 1. Xóa các followings & followers liên quan đến User
-      await tx.userFollow.deleteMany({
-        where: {
-          OR: [{ followerId: userId }, { followingId: userId }],
-        },
-      });
-
-      // 2. Xóa các lượt theo dõi nhà hàng
-      await tx.follow.deleteMany({
-        where: { userId },
-      });
-
-      // 3. Xóa các lượt yêu thích (favorites)
-      await tx.favorite.deleteMany({
-        where: { userId },
-      });
-
-      // 4. Xóa hồ sơ cá nhân (UserProfile)
-      await tx.userProfile.deleteMany({
-        where: { userId },
-      });
-
-      // 5. Nếu user là RESTAURANT (Merchant), thực hiện xóa/update các nhà hàng của họ
-      if (user.role === UserRole.RESTAURANT) {
-        // Tìm các nhà hàng của user này
-        const restaurants = await tx.restaurant.findMany({
-          where: { ownerId: userId },
-        });
-        const restaurantIds = restaurants.map((r) => r.id);
-
-        if (restaurantIds.length > 0) {
-          // Xóa hồ sơ nhà hàng
-          await tx.restaurantProfile.deleteMany({
-            where: { restaurantId: { in: restaurantIds } },
-          });
-
-          // Cập nhật các món ăn của nhà hàng này về null restaurantId hoặc xóa món ăn tùy business
-          // Ở đây, vì cascade schema, chúng ta sẽ xóa các món ăn thuộc các nhà hàng này
-          await tx.food.deleteMany({
-            where: { restaurantId: { in: restaurantIds } },
-          });
-
-          // Xóa bản thân các nhà hàng
-          await tx.restaurant.deleteMany({
-            where: { ownerId: userId },
-          });
-        }
-      }
-
-      // 6. Xóa chính User
-      await tx.user.delete({
-        where: { id: userId },
-      });
+    // Nhờ cấu hình onDelete: Cascade trong schema.prisma, việc xóa User sẽ tự động xóa sạch các dữ liệu liên quan ở tầng DB
+    await this.prisma.user.delete({
+      where: { id: userId },
     });
 
     return {
@@ -324,12 +309,12 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // Ép kiểu 'as any' là bắt buộc ở đây do thuộc tính 'expiresIn' sử dụng kiểu dữ liệu 'StringValue'
+      // quá nghiêm ngặt của gói 'ms' (chặn kiểu dữ liệu 'string' động của env).
       expiresIn: appConfig().jwtAccessExpiration as any,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expiresIn: appConfig().jwtRefreshExpiration as any,
     });
 

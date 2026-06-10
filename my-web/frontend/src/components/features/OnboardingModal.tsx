@@ -44,8 +44,8 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
   } = useOnboardingActions({ user, onComplete });
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+    <div className="modal-wrapper !z-[9999] !p-4 md:!p-6">
+      <div className="modal-overlay !bg-black/60 backdrop-blur-xl" />
 
       <AnimatePresence mode="wait">
         {!isFinishing ? (
@@ -54,7 +54,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
             initial={{ opacity: 0, x: 50, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -50, scale: 0.95 }}
-            className={`bg-white w-full ${isBranchStep ? 'max-w-2xl' : 'max-w-xl'} rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 p-8 md:p-10 transition-all duration-300`}
+            className={`modal-card w-full ${isBranchStep ? 'max-w-2xl' : 'max-w-xl'} !rounded-[2.5rem] overflow-hidden relative z-10 !p-8 md:!p-10 transition-all duration-300`}
           >
             {onClose && (
               <button
@@ -126,7 +126,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.name}
                               onChange={(e) => handleBranchChange(index, 'name', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.NAME_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
 
@@ -142,7 +142,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                                 handleBranchChange(index, 'city', e.target.value);
                                 handleBranchChange(index, 'district', '');
                               }}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                              className="form-input rounded-xl px-3 py-2 text-xs font-bold"
                             >
                               {LOCATION_DATA.map((c) => (
                                 <option key={c.value} value={c.value}>
@@ -161,7 +161,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               required
                               value={branch.district || ''}
                               onChange={(e) => handleBranchChange(index, 'district', e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:border-primary text-xs font-bold"
+                              className="form-input rounded-xl px-3 py-2 text-xs font-bold"
                             >
                               <option value="" disabled hidden>
                                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
@@ -186,7 +186,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.street || ''}
                               onChange={(e) => handleBranchChange(index, 'street', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.ADDRESS_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs font-bold"
+                              className="form-input rounded-xl px-3 py-2 text-xs font-bold"
                             />
                           </div>
 
@@ -202,7 +202,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.latitude}
                               onChange={(e) => handleBranchChange(index, 'latitude', parseFloat(e.target.value))}
                               placeholder={LABELS.ONBOARDING.FORM.LAT_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
 
@@ -218,7 +218,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.longitude}
                               onChange={(e) => handleBranchChange(index, 'longitude', parseFloat(e.target.value))}
                               placeholder={LABELS.ONBOARDING.FORM.LNG_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
 
@@ -232,7 +232,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.mapUrl || ''}
                               onChange={(e) => handleBranchChange(index, 'mapUrl', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.MAP_URL_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
 
@@ -246,7 +246,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.openingHours || ''}
                               onChange={(e) => handleBranchChange(index, 'openingHours', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.HOURS_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
 
@@ -260,7 +260,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               value={branch.bio || ''}
                               onChange={(e) => handleBranchChange(index, 'bio', e.target.value)}
                               placeholder={LABELS.ONBOARDING.FORM.BIO_PLACEHOLDER}
-                              className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary text-xs"
+                              className="form-input rounded-xl px-3 py-2 text-xs"
                             />
                           </div>
                         </div>
@@ -340,7 +340,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       <textarea
                         autoFocus
                         placeholder={LABELS.FORM.OPINION_PLACEHOLDER}
-                        className="w-full p-6 bg-gray-50 border-2 border-gray-200 rounded-3xl outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-lg min-h-[120px]"
+                        className="form-input rounded-3xl p-6 border-2 text-lg min-h-[120px]"
                         value={otherValue}
                         onChange={(e) => setOtherValue(e.target.value)}
                       />
@@ -375,7 +375,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white w-full max-w-md rounded-[3rem] p-12 text-center relative z-10 shadow-2xl overflow-hidden"
+            className="modal-card w-full max-w-md !rounded-[3rem] !p-12 text-center relative z-10 overflow-hidden"
           >
             {/* Background decor */}
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,107,0,0.05),transparent)] pointer-events-none" />

@@ -1,9 +1,8 @@
-/**
- * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) hiển thị Nút chuyển đổi giao diện Sáng/Tối (Dark/Light mode).
- * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI tương tác kết nối trực tiếp với Context `useTheme`. Sử dụng `framer-motion` để tạo hiệu ứng xoay (rotate) và phóng to/thu nhỏ (scale) khi đổi theme.
- * Các chức năng đặc biệt: Hoạt động mượt mà bằng cách gối 2 icon Sun và Moon lên nhau (`absolute`) và thay đổi `scale` nghịch đảo nhau tuỳ theo trạng thái theme. Bắt buộc phải là Client Component.
- * Các biến, hàm đặc biệt trong file: Sử dụng `LABELS.COMMON.TOGGLE_THEME` cho `aria-label` để thân thiện với trình đọc màn hình.
- */
+// Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) hiển thị Nút chuyển đổi giao diện Sáng/Tối/Pha trộn (Dark/Light/Mixed mode).
+// Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI tương tác trên Navbar, kết nối trực tiếp với Context useTheme.
+// Các chức năng đặc biệt: Sử dụng framer-motion để tạo hiệu ứng xoay (rotate) và phóng to/thu nhỏ (scale) mượt mà cho icon Sun/Moon, tự đổi màu Moon thành xanh chàm khi ở chế độ Mixed.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: React Context, Presentational Component Pattern, Declarative Animation.
+// Các biến, hàm đặc biệt trong file: ThemeToggle component.
 'use client';
 
 import { motion } from 'framer-motion';
@@ -24,7 +23,7 @@ export const ThemeToggle = () => {
         >
             <motion.div
                 initial={false}
-                animate={{ rotate: theme === 'dark' ? 90 : 0, scale: theme === 'dark' ? 0 : 1 }}
+                animate={{ rotate: theme === 'dark' ? 90 : theme === 'mixed' ? 45 : 0, scale: theme === 'light' ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
                 className="absolute"
             >
@@ -33,11 +32,11 @@ export const ThemeToggle = () => {
 
             <motion.div
                 initial={false}
-                animate={{ rotate: theme === 'dark' ? 0 : -90, scale: theme === 'dark' ? 1 : 0 }}
+                animate={{ rotate: theme === 'dark' ? 0 : theme === 'mixed' ? -45 : -90, scale: theme === 'light' ? 0 : 1 }}
                 transition={{ duration: 0.3 }}
                 className="absolute"
             >
-                <Moon size={20} className="text-blue-400" />
+                <Moon size={20} className={theme === 'mixed' ? "text-indigo-400" : "text-blue-400"} />
             </motion.div>
         </motion.button>
     );

@@ -89,7 +89,7 @@ export const RestaurantMenuSidebar = ({
 
   return (
     <div className="w-full lg:w-72 flex-shrink-0">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 lg:sticky lg:top-24">
+      <div className="card-container p-4 lg:sticky lg:top-24">
         <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-4 text-lg">
           {LABELS.RESTAURANT.PUBLIC_PROFILE.MENU_CATEGORIES}
         </h3>

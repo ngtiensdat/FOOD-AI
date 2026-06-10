@@ -1,14 +1,14 @@
-/**
- * @fileoverview frontend/src/components/features/AdminImportExcelModal.tsx
- * @module AdminFeature
- * @description Modal dành riêng cho Admin để upload file Excel/CSV chứa danh sách nhà hàng và món ăn.
- */
+// Mục đích file này để làm gì: Modal dành riêng cho Admin để upload file Excel/CSV chứa danh sách đối tác và món ăn phục vụ import dữ liệu.
+// Các file khác hay file này có ý nghĩa như nào: Được hiển thị trên giao diện quản trị AdminTable khi admin nhấn chọn nút "Nhập Excel".
+// Các chức năng đặc biệt: Hỗ trợ kéo thả file, validate loại file xlsx/xls/csv, hiển thị tiến trình tải lên và link tải file biểu mẫu mẫu.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SOLID (Single Responsibility), Presentational Modal Component, Drag and Drop File API.
+// Các biến, hàm đặc biệt: AdminImportExcelModal component, handleDragOver(), handleDrop(), handleUpload().
 
 import React, { useRef, useState } from 'react';
 import { Upload, X, FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/base/Button';
-import { adminService } from '@/services/food.service';
+import { adminService } from '@/services/admin.service';
 import { useToastStore } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 
@@ -82,35 +82,37 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      >
+      <div className="modal-wrapper">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="modal-overlay"
+        />
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+          className="modal-card max-w-lg w-full !p-0 shadow-2xl relative z-10 overflow-hidden"
         >
-          <div className="flex justify-between items-center p-6 border-b border-gray-100">
-            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-slate-800">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
               <FileSpreadsheet className="w-6 h-6 text-primary" />
               {LABELS.IMPORT_EXCEL.UI.TITLE}
             </h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100">
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="p-6">
-            <div className="mb-6 flex justify-between items-center bg-blue-50 p-4 rounded-xl">
+            <div className="mb-6 flex justify-between items-center bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 p-4 rounded-xl">
               <div>
-                <p className="text-sm font-semibold text-blue-900">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_TITLE}</p>
-                <p className="text-xs text-blue-700 mt-1">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_DESC}</p>
+                <p className="text-sm font-semibold text-blue-900 dark:text-blue-300">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_TITLE}</p>
+                <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_DESC}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50">
                 <Download className="w-4 h-4" />
                 {LABELS.IMPORT_EXCEL.UI.BTN_DOWNLOAD}
               </Button>
@@ -118,7 +120,7 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
 
             <div
               className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer
-                ${file ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'}`}
+                ${file ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-gray-200 dark:border-slate-800 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-slate-900/30'}`}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
@@ -136,8 +138,8 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <FileSpreadsheet className="w-8 h-8 text-primary" />
                   </div>
-                  <p className="font-semibold text-gray-800">{file.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">{(file.size / 1024).toFixed(2)} KB</p>
+                  <p className="font-semibold text-gray-800 dark:text-slate-200">{file.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{(file.size / 1024).toFixed(2)} KB</p>
                   <button
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
                     className="mt-4 text-sm text-red-500 hover:text-red-700 font-medium"
@@ -147,17 +149,17 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                     <Upload className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="font-semibold text-gray-700">{LABELS.IMPORT_EXCEL.UI.DROPZONE_TITLE_FILE}</p>
-                  <p className="text-sm text-gray-500 mt-2">{LABELS.IMPORT_EXCEL.UI.DROPZONE_SUBTITLE_FILE}</p>
+                  <p className="font-semibold text-gray-700 dark:text-slate-300">{LABELS.IMPORT_EXCEL.UI.DROPZONE_TITLE_FILE}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-2">{LABELS.IMPORT_EXCEL.UI.DROPZONE_SUBTITLE_FILE}</p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+          <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 flex justify-end gap-3">
             <Button variant="outline" onClick={onClose} disabled={loading}>{LABELS.IMPORT_EXCEL.UI.BTN_CANCEL}</Button>
             <Button onClick={handleUpload} disabled={!file || loading} className="gap-2 min-w-[120px]">
               {loading ? (
@@ -168,7 +170,7 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
             </Button>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }

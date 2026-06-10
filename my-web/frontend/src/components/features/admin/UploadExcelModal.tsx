@@ -151,12 +151,19 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
   };
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-wrapper">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="modal-overlay"
+      />
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="modal-card max-w-4xl"
+        className="modal-card max-w-4xl w-full relative z-10"
       >
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-h2 flex items-center gap-3">
@@ -197,7 +204,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 required
                 value={selectedBranchId}
                 onChange={e => setSelectedBranchId(parseInt(e.target.value))}
-                className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:border-primary transition-all text-sm font-semibold dark:text-white"
+                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold"
               >
                 <option value="" disabled hidden>{LABELS.RESTAURANT.UPLOAD_EXCEL.SELECT_BRANCH}</option>
                 {myBranches.map((branch) => (
@@ -214,7 +221,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 value={selectedCategoryId}
                 onChange={e => setSelectedCategoryId(e.target.value ? parseInt(e.target.value) : '')}
                 disabled={!selectedBranchId || loadingCategories}
-                className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:border-primary transition-all text-sm font-semibold dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">{LABELS.RESTAURANT.UPLOAD_EXCEL.SELECT_CATEGORY}</option>
                 {flatCategories.map(cat => (

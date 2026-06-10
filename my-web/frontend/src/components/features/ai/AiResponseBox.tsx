@@ -18,7 +18,7 @@ export interface AiSuggestedFood {
   price?: number;
   image?: string;
   description?: string;
-  restaurant?: { name: string };
+  restaurant?: { name: string } | null;
   restaurantName?: string;
   distance?: number;
   mapUrl?: string;

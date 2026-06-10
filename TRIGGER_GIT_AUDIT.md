@@ -13,6 +13,7 @@
 2. Tập trung phân tích nội dung code mới được thêm vào hoặc chỉnh sửa trong các tệp này.
 
 ### Bước 2: Kiểm tra các lỗi định dạng & Cú pháp (Lỗi Định dạng & ESLint)
+không được để lỗi:  eslint --config my-web/backend/eslint.config.mjs --fix
 Rà soát kỹ lưỡng các lỗi sau trong phần code thay đổi:
 1. **Lỗi Dòng trống dư thừa (Empty Lines - eline):** 
    - Không được xuất hiện 2 dòng trống liên tiếp trở lên trong thân code.

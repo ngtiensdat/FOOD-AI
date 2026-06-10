@@ -15,4 +15,33 @@ export const AI_CONSTANTS = {
     CHAT_MS: 5000,
   },
   DEFAULT_TEMPERATURE: 0.2,
+  GOAL_MAP: {
+    muscle_gain: 'Tăng cơ',
+    weight_loss: 'Giảm cân',
+    eat_clean: 'Ăn sạch',
+    enjoy: 'Thưởng thức',
+  } as Record<string, string>,
+  EMBEDDING_LABELS: {
+    NO_DESCRIPTION: 'Không có mô tả',
+    NO_TAGS: 'Không có',
+    NO_GOAL: 'Không có',
+    DEFAULT_CUISINE: 'đa dạng',
+    DEFAULT_BUDGET: 'linh hoạt',
+    CATEGORY_OTHER: 'Khác',
+  },
+  RERANK_KEYWORDS: {
+    TIME_SLOTS: {
+      MORNING: ['sáng', 'cà phê', 'phở', 'bánh mì', 'hủ tiếu'],
+      LUNCH: ['cơm', 'trưa', 'bún'],
+      DINNER: ['tối', 'lẩu', 'nướng', 'nhậu', 'tụ tập'],
+      LATE_NIGHT: ['đêm', 'khuya', 'ăn vặt'],
+    },
+    WEATHER: {
+      HOT: {
+        BOOST: ['lạnh', 'kem', 'chè', 'trà sữa', 'nước ép', 'sinh tố'],
+        PENALIZE: ['lẩu', 'nướng', 'nóng'],
+      },
+      COLD_OR_RAIN: ['lẩu', 'nướng', 'nóng', 'súp', 'phở', 'cháo'],
+    },
+  },
 };

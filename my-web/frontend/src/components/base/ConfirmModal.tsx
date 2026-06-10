@@ -68,12 +68,19 @@ export const ConfirmModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="modal-backdrop z-[200]">
+        <div className="modal-wrapper !z-[200]">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCancel}
+            className="modal-overlay"
+          />
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="modal-card max-w-md w-full p-6 text-center bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800"
+            className="modal-card max-w-md w-full !p-6 text-center relative z-10"
           >
             <div className="mb-4">
               {getIcon()}

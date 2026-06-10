@@ -28,10 +28,22 @@ export const MESSAGES = {
       'Vui lòng cung cấp mật khẩu để xác nhận xóa tài khoản',
     PASSWORD_INCORRECT_DELETE:
       'Mật khẩu không chính xác. Không thể xóa tài khoản',
+    RATE_LIMIT_LOGIN_DYNAMIC: (minutes: number) =>
+      `Tài khoản của bạn đã bị tạm khóa do thử đăng nhập sai quá nhiều lần. Vui lòng quay lại sau ${minutes} phút.`,
+    RATE_LIMIT_LOGIN_10M:
+      'Tài khoản của bạn đã bị tạm khóa do thử đăng nhập sai quá nhiều lần. Vui lòng quay lại sau 10 phút.',
+    LOGIN_ATTEMPTS_REMAINING: (attempts: number) =>
+      `Email hoặc mật khẩu không chính xác. Bạn còn ${attempts} lần thử.`,
   },
   AI: {
     RATE_LIMIT_CHAT:
       'Bạn đã gửi quá nhiều yêu cầu tư vấn AI. Vui lòng thử lại sau vài phút để tránh quá tải hệ thống.',
+    RATE_LIMIT_FAST:
+      'Bạn đang chat hơi nhanh quá. Hãy đợi một vài giây rồi gửi lại nhé! 😊',
+    CUSTOMER_ONLY: 'Tính năng Trợ lý AI chỉ dành riêng cho Khách hàng.',
+    SYSTEM_ERROR: 'Xin lỗi, tôi gặp chút trục trặc hệ thống.',
+    SYSTEM_ERROR_FALLBACK: 'Xin lỗi, tôi không thể trả lời lúc này.',
+    CONVERSATION_NOT_FOUND: 'Cuộc hội thoại không tồn tại.',
   },
   SYSTEM: {
     INTERNAL_SERVER_ERROR: 'Lỗi hệ thống, vui lòng thử lại sau',
