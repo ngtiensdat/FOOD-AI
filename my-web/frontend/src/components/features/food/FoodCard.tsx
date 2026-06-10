@@ -86,7 +86,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
                 href={food.mapUrl || food.map_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-550 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
+                className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-500 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
                 aria-label={LABELS.FOOD.VIEW_MAP}
               >
                 <Navigation size={18} />
@@ -101,7 +101,7 @@ export function FoodCard({ food, onViewDetail }: FoodCardProps) {
           {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
         </p>
 
-        <p className="text-gray-500 dark:text-gray-550 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
 
         <Button
           fullWidth

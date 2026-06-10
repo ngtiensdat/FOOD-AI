@@ -1,7 +1,12 @@
+/**
+ * Mục đích file này: Thực hiện kiểm thử đơn vị (Unit Test) cho CategoryService.
+ * Ý nghĩa/Quan hệ: Sử dụng Jest để kiểm tra hoạt động của CategoryService, mock các dependencies (CategoryRepository, CategoryGroupRepository, PrismaService).
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoryService } from './category.service';
 import { CategoryRepository } from '../repositories/category.repository';
 import { CategoryGroupRepository } from '../repositories/category-group.repository';
+import { PrismaService } from '../../../database/prisma.service';
 
 describe('CategoryService', () => {
   let service: CategoryService;
@@ -16,6 +21,10 @@ describe('CategoryService', () => {
         },
         {
           provide: CategoryGroupRepository,
+          useValue: {},
+        },
+        {
+          provide: PrismaService,
           useValue: {},
         },
       ],

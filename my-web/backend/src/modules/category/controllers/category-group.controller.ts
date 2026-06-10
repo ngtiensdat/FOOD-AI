@@ -34,36 +34,35 @@ export class CategoryGroupController {
 
   @Post()
   async create(
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
     @Body() dto: CreateCategoryGroupDto,
   ) {
-    const data = await this.categoryGroupService.create(restaurantId, dto);
+    const data = await this.categoryGroupService.create(userId, dto);
     return { data };
   }
 
   @Get()
-  async findAll(@GetUser('id') restaurantId: number) {
-    const data =
-      await this.categoryGroupService.findAllByRestaurantId(restaurantId);
+  async findAll(@GetUser('id') userId: number) {
+    const data = await this.categoryGroupService.findAllByRestaurantId(userId);
     return { data };
   }
 
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
     @Body() dto: UpdateCategoryGroupDto,
   ) {
-    const data = await this.categoryGroupService.update(id, restaurantId, dto);
+    const data = await this.categoryGroupService.update(id, userId, dto);
     return { data };
   }
 
   @Delete(':id')
   async delete(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') restaurantId: number,
+    @GetUser('id') userId: number,
   ) {
-    const data = await this.categoryGroupService.delete(id, restaurantId);
+    const data = await this.categoryGroupService.delete(id, userId);
     return { data };
   }
 }

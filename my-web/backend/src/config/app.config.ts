@@ -1,14 +1,14 @@
 export const appConfig = () => {
   const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret && process.env.NODE_ENV === 'production') {
+  if (!jwtSecret) {
     throw new Error(
-      'FATAL ERROR: JWT_SECRET is missing in production environment',
+      'FATAL ERROR: JWT_SECRET is missing in environment configuration',
     );
   }
 
   return {
     port: parseInt(process.env.PORT || '3001', 10),
-    jwtSecret: jwtSecret || 'super-secret-key-for-dev-only',
+    jwtSecret: jwtSecret,
     jwtAccessExpiration: process.env.JWT_ACCESS_EXPIRATION || '1d',
     jwtRefreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
     cookieAccessMaxAge: 1 * 24 * 60 * 60 * 1000, // 1 day

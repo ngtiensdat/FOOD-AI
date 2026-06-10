@@ -126,7 +126,7 @@ export default function RestaurantDashboard() {
               </span>
               <button
                 onClick={actions.toggleRestaurantStatus}
-                className={`w-12 h-6 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${isRestaurantActive ? 'bg-primary dark:bg-orange-600' : 'bg-gray-200 dark:bg-slate-850'
+                className={`w-12 h-6 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${isRestaurantActive ? 'bg-primary dark:bg-orange-600' : 'bg-gray-200 dark:bg-slate-800'
                   }`}
               >
                 <div

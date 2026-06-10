@@ -4,7 +4,7 @@
 // Kiến thức/Design Pattern: Retrieval-Augmented Generation (RAG) Pattern, Caching Pattern (lưu cache vector embedding tránh gọi API trùng lặp), Rate Limiting, Dependency Injection.
 // Các biến, hàm đặc biệt: getEmbedding(), chat(), getChatContext(), clearChatContext(), updateFoodEmbedding(), updateUserEmbedding().
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import OpenAI from 'openai';
 import { VectorRepository } from './vector.repository';
@@ -24,6 +24,7 @@ type HistoryWithFood = History & { food: { name: string } | null };
 
 @Injectable()
 export class AiService {
+  private readonly logger = new Logger(AiService.name);
   private openai: OpenAI;
   private embeddingCache: Map<string, number[]> = new Map();
   private lastChatTime: Map<number, number> = new Map();
@@ -255,7 +256,10 @@ export class AiService {
         })),
       };
     } catch (error: unknown) {
-      console.error('LỖI AI SERVICE:', error);
+      this.logger.error(
+        'LỖI AI SERVICE:',
+        error instanceof Error ? error.stack : error,
+      );
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       return {
@@ -302,7 +306,10 @@ export class AiService {
       const embedding = await this.getEmbedding(textToEmbed);
       await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
     } catch (error) {
-      console.error('LỖI CẬP NHẬT EMBEDDING MÓN ĂN:', error);
+      this.logger.error(
+        'LỖI CẬP NHẬT EMBEDDING MÓN ĂN:',
+        error instanceof Error ? error.stack : error,
+      );
     }
   }
 
@@ -317,7 +324,10 @@ export class AiService {
       const embedding = await this.getEmbedding(textToEmbed);
       await this.vectorRepository.updateUserEmbedding(userId, embedding);
     } catch (error) {
-      console.error('LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG:', error);
+      this.logger.error(
+        'LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG:',
+        error instanceof Error ? error.stack : error,
+      );
     }
   }
 }

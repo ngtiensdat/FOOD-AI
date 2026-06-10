@@ -4,7 +4,7 @@
 // Kiến thức/Design Pattern: Dependency Injection, SOLID (Single Responsibility - Điều phối quản trị hệ thống, Dependency Inversion), và Transaction Pattern cho batch update.
 // Các biến, hàm đặc biệt: getPendingUsers(), updateUserStatus(), getAllFoods(), updateFood(), getAllUsers(), deleteUser(), deleteFood(), importMerchantsFromExcel(), toggleWeeklyFeatured(), batchUpdateFoods().
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { FoodRepository } from '../food/food.repository';
 import { AiService } from '../ai/ai.service';
@@ -29,7 +29,7 @@ export class AdminService {
 
   async updateUserStatus(id: number, status: string) {
     if (status !== UserStatus.APPROVED && status !== UserStatus.REJECTED) {
-      throw new UnauthorizedException(MESSAGES.ADMIN.INVALID_STATUS);
+      throw new BadRequestException(MESSAGES.ADMIN.INVALID_STATUS);
     }
 
     const updatedUser = await this.userRepository.update(id, {

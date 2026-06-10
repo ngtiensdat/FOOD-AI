@@ -11,18 +11,18 @@ import { MESSAGES } from '../../../common/constants/messages.constant';
 import { CategoryGroupRepository } from '../repositories/category-group.repository';
 import { BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     private readonly categoryRepo: CategoryRepository,
     private readonly categoryGroupRepo: CategoryGroupRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   private async getRestaurantId(userId: number): Promise<number> {
-    const restaurant = await this.categoryGroupRepo[
-      'prisma'
-    ].restaurant.findFirst({
+    const restaurant = await this.prisma.restaurant.findFirst({
       where: { ownerId: userId },
       orderBy: { id: 'asc' },
     });

@@ -21,6 +21,7 @@ import { GetUser } from '../../common/decorators/get-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
 
@@ -60,12 +61,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async changePassword(
     @GetUser('id') userId: number,
-    @Body() body: { oldPassword?: string; newPassword: string },
+    @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(
       userId,
-      body.oldPassword,
-      body.newPassword,
+      dto.oldPassword,
+      dto.newPassword,
     );
   }
 

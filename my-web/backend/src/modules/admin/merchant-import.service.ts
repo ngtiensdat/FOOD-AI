@@ -8,7 +8,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AiService } from '../ai/ai.service';
 import * as xlsx from 'xlsx';
-import * as bcrypt from 'bcrypt';
+import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { UserRole, UserStatus, FoodStatus } from '@prisma/client';
 import { MESSAGES } from '../../common/constants/messages.constant';
 
@@ -170,8 +170,7 @@ export class MerchantImportService {
         let restaurantId: number;
 
         if (!user) {
-          const salt = await bcrypt.genSalt(10);
-          const hashedPassword = await bcrypt.hash(merchant.password, salt);
+          const hashedPassword = await BcryptHelper.hash(merchant.password, 10);
 
           user = await prisma.user.create({
             data: {

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -11,6 +11,7 @@ import { Request, Response, NextFunction } from 'express';
 import { appConfig } from './config/app.config';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   const config = appConfig();
 
@@ -32,8 +33,8 @@ async function bootstrap() {
 
   // Thêm logger đơn giản để kiểm tra request có đến được server không
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(
-      `[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`,
+    logger.log(
+      `[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`,
     );
     next();
   });
@@ -61,9 +62,9 @@ async function bootstrap() {
   });
 
   await app.listen(config.port);
-  console.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
+  logger.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
 bootstrap().catch((err) => {
-  console.error('Error during bootstrap:', err);
+  new Logger('Bootstrap').error('Error during bootstrap:', err);
 });
 // Trigger clean reload
