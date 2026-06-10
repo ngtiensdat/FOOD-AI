@@ -19,7 +19,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setThemeState] = useState<Theme>('mixed');
+    const [theme, setThemeState] = useState<Theme>('light');
 
     const applyTheme = (t: Theme) => {
         document.documentElement.classList.remove('dark', 'mixed');
@@ -32,7 +32,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as Theme | null;
-        const activeTheme = savedTheme || 'mixed';
+        const activeTheme = savedTheme || 'light';
 
         setThemeState(activeTheme);
         applyTheme(activeTheme);
