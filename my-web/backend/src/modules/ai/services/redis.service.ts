@@ -36,15 +36,28 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
       const RedisConstructor = Redis as unknown as {
         new (options: unknown): Redis;
+        new (url: string, options: unknown): Redis;
       };
 
-      this.redisClient = new RedisConstructor({
-        host: config.redisHost,
-        port: config.redisPort,
-        password: config.redisPassword,
-        maxRetriesPerRequest: 1, // Fail fast to activate fallback quickly
-        connectTimeout: 2000,
-      });
+      const connectionOptions: Record<string, unknown> = config.redisUrl
+        ? {
+            // Dùng URL trực tiếp - ioredis tự parse TLS từ scheme rediss://
+            // Đây là cách chuẩn để kết nối Upstash Redis
+            lazyConnect: false,
+            maxRetriesPerRequest: 1,
+            connectTimeout: 5000,
+          }
+        : {
+            host: config.redisHost,
+            port: config.redisPort,
+            password: config.redisPassword,
+            maxRetriesPerRequest: 1,
+            connectTimeout: 5000,
+          };
+
+      this.redisClient = config.redisUrl
+        ? new RedisConstructor(config.redisUrl, connectionOptions)
+        : new RedisConstructor(connectionOptions);
 
       this.redisClient.on('error', (err: Error) => {
         if (this.isRedisAvailable) {

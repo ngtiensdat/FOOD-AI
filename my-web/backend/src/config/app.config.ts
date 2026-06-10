@@ -15,6 +15,8 @@ export const appConfig = () => {
     cookieRefreshMaxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    // Hỗ trợ kết nối qua URL (ưu tiên dùng với Upstash - tự bật TLS qua scheme rediss://)
+    redisUrl: process.env.REDIS_URL || undefined,
     redisHost: process.env.REDIS_HOST || 'localhost',
     redisPort: parseInt(process.env.REDIS_PORT || '6379', 10),
     redisPassword: process.env.REDIS_PASSWORD || undefined,

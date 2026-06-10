@@ -30,5 +30,8 @@ Thumbs.db
 ~$*.xlsx
 
 # Temporary Linter Log Files
-*eslint_errors*
-.vercel
+# Chỉ bỏ qua .vercel ở thư mục gốc, cho phép .vercel trong thư mục con (ví dụ: frontend)
+/.vercel
+# Cho phép frontend/.vercel/project.json cho CI/CD
+!my-web/frontend/.vercel/
+!my-web/frontend/.vercel/project.json
