@@ -5,14 +5,15 @@
 // Các biến, hàm đặc biệt: oldPassword, newPassword.
 
 import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { MESSAGES } from '../../../common/constants/messages.constant';
 
 export class ChangePasswordDto {
   @IsString()
-  @IsNotEmpty({ message: 'Mật khẩu cũ không được để trống' })
+  @IsNotEmpty({ message: () => MESSAGES.VALIDATION.OLD_PASSWORD_REQUIRED })
   oldPassword: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Mật khẩu mới không được để trống' })
-  @MinLength(8, { message: 'Mật khẩu mới phải có ít nhất 8 ký tự' })
+  @IsNotEmpty({ message: () => MESSAGES.VALIDATION.NEW_PASSWORD_REQUIRED })
+  @MinLength(8, { message: () => MESSAGES.VALIDATION.NEW_PASSWORD_MIN_LENGTH })
   newPassword: string;
 }

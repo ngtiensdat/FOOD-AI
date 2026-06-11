@@ -1,8 +1,8 @@
-/**
- * @fileoverview frontend/src/components/features/restaurant/EditRestaurantModal.tsx
- * @module EditRestaurantModal
- * @description Modal chỉnh sửa thông tin nhà hàng toàn diện cho Merchant, tích hợp bộ chọn địa điểm động, cờ đồng bộ ảnh cá nhân, và live preview.
- **/
+// Mục đích file này để làm gì: Modal chỉnh sửa thông tin nhà hàng toàn diện cho Merchant.
+// Các file khác hay file này có ý nghĩa như nào: Được hiển thị từ Quản trị viên của Nhà hàng (Restaurant Admin) khi bấm nút chỉnh sửa thông tin nhà hàng.
+// Các chức năng đặc biệt: Tích hợp bộ chọn địa điểm động, cờ đồng bộ ảnh cá nhân, tab thông tin cơ bản, hình ảnh thương hiệu, giờ mở cửa và live preview trực quan.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Tabbed Interface, Live Preview Sync.
+// Các biến, hàm đặc biệt trong file: EditRestaurantModal component, updateRestaurantProfile.
 
 import React, { useState } from 'react';
 import { X, Store } from 'lucide-react';
@@ -103,7 +103,7 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              aria-label="Đóng cài đặt cửa hàng"
+              aria-label={LABELS.RESTAURANT.EDIT_MODAL.CLOSE_SETTINGS}
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
             >
               <X size={20} className="text-gray-500" />

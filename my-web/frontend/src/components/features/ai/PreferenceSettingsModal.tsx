@@ -28,6 +28,7 @@ import SafeImage from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/providers/theme-provider';
+import { ConfirmModal } from '@/components/base/ConfirmModal';
 
 interface FoodItem {
   id: number;
@@ -70,6 +71,19 @@ export function PreferenceSettingsModal({
   const { theme, setTheme } = useTheme();
   const [lang, setLang] = useState<'auto' | 'vi' | 'en'>('auto');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [showConfirmLang, setShowConfirmLang] = useState(false);
+  const [pendingLang, setPendingLang] = useState<'auto' | 'vi' | 'en'>('auto');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('lang') as 'vi' | 'en' | null;
+      if (savedLang) {
+        setLang(savedLang);
+      } else {
+        setLang('vi');
+      }
+    }
+  }, []);
 
   const fetchFeedbacks = async () => {
     setLoading(true);
@@ -254,10 +268,13 @@ export function PreferenceSettingsModal({
                           {LABELS.AI_CHAT.PREFERENCES.LANG_LABEL}
                         </p>
                       </div>
-                      <select
+                       <select
                         id="preference-modal-lang-select"
                         value={lang}
-                        onChange={(e) => setLang(e.target.value as any)}
+                        onChange={(e) => {
+                          setPendingLang(e.target.value as any);
+                          setShowConfirmLang(true);
+                        }}
                         className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
                       >
                         <option value="auto">{LABELS.AI_CHAT.PREFERENCES.LANG_AUTO}</option>
@@ -493,6 +510,29 @@ export function PreferenceSettingsModal({
           </div>
         </motion.div>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirmLang}
+        title={LABELS.SETTINGS.LANGUAGE_CONFIRM_TITLE}
+        message={LABELS.SETTINGS.LANGUAGE_CONFIRM_DESC}
+        confirmText={LABELS.COMMON.SAVE}
+        cancelText={LABELS.COMMON.CANCEL}
+        variant="warning"
+        onConfirm={() => {
+          setLang(pendingLang);
+          if (pendingLang === 'auto') {
+            localStorage.removeItem('lang');
+            document.cookie = "lang=; path=/; max-age=0";
+          } else {
+            localStorage.setItem('lang', pendingLang);
+            document.cookie = `lang=${pendingLang}; path=/; max-age=31536000; SameSite=Lax`;
+          }
+          window.location.reload();
+        }}
+        onCancel={() => {
+          setShowConfirmLang(false);
+        }}
+      />
     </AnimatePresence>
   );
 }

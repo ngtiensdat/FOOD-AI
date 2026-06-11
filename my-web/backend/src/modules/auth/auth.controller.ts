@@ -67,7 +67,7 @@ export class AuthController {
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
     });
-    return { message: 'Logged out successfully' };
+    return { message: MESSAGES.AUTH.LOGOUT_SUCCESS };
   }
 
   @Post('change-password')

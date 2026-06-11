@@ -242,7 +242,7 @@ export class AuthService {
           : undefined,
     });
 
-    return { message: 'Hoàn thiện hồ sơ đa chi nhánh thành công.' };
+    return { message: MESSAGES.AUTH.ONBOARDING_SUCCESS };
   }
 
   async changePassword(userId: number, oldPass?: string, newPass?: string) {
@@ -262,7 +262,7 @@ export class AuthService {
 
     const hashedPassword = await BcryptHelper.hash(newPass, 10);
     await this.userRepository.update(userId, { password: hashedPassword });
-    return { message: 'Đổi mật khẩu thành công' };
+    return { message: MESSAGES.AUTH.CHANGE_PASSWORD_SUCCESS };
   }
 
   async deleteAccount(userId: number, password?: string) {
@@ -286,7 +286,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Tài khoản của bạn đã được xóa vĩnh viễn khỏi hệ thống.',
+      message: MESSAGES.AUTH.DELETE_ACCOUNT_SUCCESS,
     };
   }
 

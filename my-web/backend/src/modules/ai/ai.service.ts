@@ -592,7 +592,7 @@ export class AiService {
         where: { conversationId: conversation.id },
       });
     }
-    return { message: 'Chat history cleared' };
+    return { message: MESSAGES.AI.CHAT_HISTORY_CLEARED };
   }
 
   async getConversations(userId: number) {

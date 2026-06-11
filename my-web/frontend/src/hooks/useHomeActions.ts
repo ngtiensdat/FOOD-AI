@@ -1,8 +1,8 @@
 // Mục đích: Quản lý trạng thái và hành động chính ở trang chủ (Home) bao gồm định vị GPS, khảo sát AI, yêu thích món ăn và cài đặt tài khoản.
-// Ý nghĩa: Tách biệt logic kinh doanh của trang chủ và hồ sơ người dùng khỏi phần hiển thị giao diện chính.
-// Chức năng đặc biệt: Tự động phát hiện vị trí của người dùng bằng GPS, tích hợp tư vấn món ăn qua AI, cập nhật mật khẩu, xác minh email và xóa tài khoản.
-// Design Pattern: Custom Hook pattern, Facade pattern (tổng hợp các service).
-// Biến, hàm đặc biệt: useHomeActions, handleAiConsult, handleOnboardingComplete, handleToggleFavorite, fetchUserProfile.
+// Các file khác hay file này có ý nghĩa như nào: Tách biệt logic kinh doanh của trang chủ và hồ sơ người dùng khỏi phần hiển thị giao diện chính.
+// Các chức năng đặc biệt: Tự động phát hiện vị trí của người dùng bằng GPS, tích hợp tư vấn món ăn qua AI, cập nhật mật khẩu, xác minh email và xóa tài khoản.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Custom Hook pattern, Facade pattern (tổng hợp các service).
+// Các biến, hàm đặc biệt trong file: useHomeActions, handleAiConsult, handleOnboardingComplete, handleToggleFavorite, fetchUserProfile.
 
 'use client';
 
@@ -135,9 +135,10 @@ export const useHomeActions = () => {
     try {
       await authServiceApi.changePassword(data);
       toast.success(LABELS.SETTINGS.SECURITY.CHANGE_SUCCESS);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       console.error('Lỗi đổi mật khẩu:', error);
-      toast.error(error.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');
+      toast.error(err.message || LABELS.SETTINGS.SECURITY.CHANGE_PASSWORD_ERROR);
     }
   };
 
@@ -148,9 +149,10 @@ export const useHomeActions = () => {
       await authServiceApi.verifyEmail({ email });
       setIsEmailVerifiedInProfile(true);
       toast.success(LABELS.SETTINGS.VERIFICATION.SUCCESS);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       console.error('Lỗi xác minh email:', error);
-      toast.error(error.message || 'Gửi email xác minh thất bại.');
+      toast.error(err.message || LABELS.SETTINGS.VERIFICATION.SEND_EMAIL_ERROR);
     }
   };
 
@@ -170,9 +172,10 @@ export const useHomeActions = () => {
       await authServiceApi.deleteAccount({ password });
       toast.success(LABELS.SETTINGS.DANGER_ZONE.TOAST_SUCCESS);
       logout();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       console.error('Lỗi xóa tài khoản:', error);
-      toast.error(error.message || LABELS.SETTINGS.DANGER_ZONE.TOAST_ERROR);
+      toast.error(err.message || LABELS.SETTINGS.DANGER_ZONE.TOAST_ERROR);
     }
   };
 
@@ -182,7 +185,7 @@ export const useHomeActions = () => {
       return !!res.isFavorite;
     } catch (err) {
       console.error('Error toggling favorite:', err);
-      toast.error('Không thể cập nhật danh sách yêu thích.');
+      toast.error(LABELS.CUSTOMER.FAVORITE_UPDATE_ERROR);
       return false;
     }
   };

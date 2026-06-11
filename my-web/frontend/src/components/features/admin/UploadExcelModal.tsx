@@ -1,6 +1,7 @@
 // Mục đích file này để làm gì: Component Modal hỗ trợ chủ nhà hàng tải lên danh sách món ăn hàng loạt từ file Excel.
 // Các file khác hay file này có ý nghĩa như nào: Được gọi từ trang Quản lý thực đơn (Admin), giúp tối ưu thời gian nhập liệu thay vì tạo từng món.
 // Các chức năng đặc biệt: Đọc và parse file Excel ngay dưới local, tự động map các cột tương ứng, chọn chi nhánh và danh mục trước khi upload, tải file mẫu.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Client-side Excel parsing, Separation of Concerns.
 // Các biến, hàm đặc biệt trong file: handleFileUpload (parse Excel), handleSubmit (gửi API), previewData (hiển thị trước data).
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -180,10 +181,10 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
             <div>
               <p className="font-bold mb-2">{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDE_TITLE}</p>
               <ul className="list-disc pl-5 space-y-1 text-emerald-700 dark:text-emerald-400">
-                <li>File Excel phải có đúng các cột: <strong>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.DESC}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.IMAGE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS}</strong></li>
-                <li><strong>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME}</strong> và <strong>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE}</strong> là 2 cột bắt buộc.</li>
-                <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS} nhập nhiều giá trị cách nhau bởi dấu phẩy (vd: <em>Ăn vặt, Đồ uống</em>).</li>
-                <li>Bạn chưa có file? Tải file mẫu về điền vào rồi upload lại.</li>
+                <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.COLS_INFO} <strong>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.DESC}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.IMAGE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS}</strong></li>
+                <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.REQUIRED_INFO(LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME, LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE)}</li>
+                <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS} {LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.TAGS_INFO}</li>
+                <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.NO_FILE}</li>
               </ul>
             </div>
             <button

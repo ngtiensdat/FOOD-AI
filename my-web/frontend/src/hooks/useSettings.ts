@@ -1,9 +1,9 @@
-/**
- * Mục đích file này: Custom Hook quản lý trạng thái và các hành vi nghiệp vụ cho phân hệ Cài đặt tài khoản (Settings).
- * Ý nghĩa/Quan hệ: Đóng gói 11 state, xử lý gọi API cập nhật mật khẩu, xác thực email, xóa tài khoản và lấy thông tin profile của người dùng.
- * Các hàm đặc biệt: onPasswordSubmit, onVerifySubmit, onDeleteSubmit, handleTabChange.
- */
-import { useState } from 'react';
+// Mục đích file này để làm gì: Custom Hook quản lý trạng thái và các hành vi nghiệp vụ cho phân hệ Cài đặt tài khoản (Settings).
+// Các file khác hay file này có ý nghĩa như nào: Đóng gói 11 state, xử lý gọi API cập nhật mật khẩu, xác thực email, xóa tài khoản và lấy thông tin profile của người dùng.
+// Các chức năng đặc biệt: Xử lý thay đổi tab, lấy dữ liệu hồ sơ cá nhân và theo dõi, kiểm soát trạng thái xác thực và xóa tài khoản.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Custom Hook Pattern, State encapsulation, Separation of Concerns.
+// Các biến, hàm đặc biệt trong file: useSettings, onDeleteSubmit, onPasswordSubmit, onVerifySubmit, handleTabChange.
+import { useState, useEffect } from 'react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { authService } from '@/services/auth.service';
@@ -23,7 +23,7 @@ export function useSettings({
   fetchUserProfile,
   handleDeleteAccount,
 }: UseSettingsProps) {
-  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification'>('security');
+  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'danger_zone'>('profile');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -36,6 +36,23 @@ export function useSettings({
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [profileData, setProfileData] = useState<{ profile?: { preferences?: { showFollowList?: boolean } }; [key: string]: unknown } | null>(null);
+
+  useEffect(() => {
+    if (settingsTab === 'profile' && user?.id) {
+      const fetchProfile = async () => {
+        setIsLoading(true);
+        try {
+          const data = await authService.getProfile(Number(user.id));
+          setProfileData(data);
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchProfile();
+    }
+  }, [user?.id, settingsTab]);
 
   const onDeleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +111,7 @@ export function useSettings({
     }
   };
 
-  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification') => {
+  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'danger_zone') => {
     setSettingsTab(tabId);
     if (tabId === 'verification') {
       fetchUserProfile();

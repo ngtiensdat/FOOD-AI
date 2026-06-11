@@ -1,10 +1,16 @@
+// Mục đích file này để làm gì: Cung cấp lớp đối tượng ApiClient gói các HTTP requests tương tác với Backend.
+// Các file khác hay file này có ý nghĩa như nào: Được import và sử dụng bởi tất cả các service của frontend (auth, food, ai, category...) để gọi API.
+// Các chức năng đặc biệt: Tự động trích xuất ngôn ngữ hiện tại từ localStorage để gửi header Accept-Language, quản lý cơ chế tự động refresh token khi gặp lỗi 401.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Singleton Pattern, Request Interceptor Pattern, Promise Memoization.
+// Các biến, hàm đặc biệt trong file: ApiClient, apiClient instance, request.
+
 const API_URL = '/api';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-interface RequestOptions extends Omit<RequestInit, 'method'> {
-  params?: Record<string, any>;
-  body?: any;
+interface RequestOptions extends Omit<RequestInit, 'method' | 'body'> {
+  params?: Record<string, string | number | boolean | null | undefined>;
+  body?: unknown;
 }
 
 class ApiClient {
@@ -31,21 +37,29 @@ class ApiClient {
     const isFormData = options.body instanceof FormData;
     const headers: Record<string, string> = { ...options.headers } as Record<string, string>;
 
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('lang');
+      if (savedLang) {
+        headers['Accept-Language'] = savedLang;
+      }
+    }
+
     if (!isFormData && !headers['Content-Type']) {
       headers['Content-Type'] = 'application/json';
     }
 
+    const { body, params, ...restOptions } = options;
     const config: RequestInit = {
       method,
       headers,
       credentials: 'include',
-      ...options,
+      ...restOptions,
     };
 
-    if (options.body && method !== 'GET') {
-      config.body = isFormData ? (options.body as FormData) : JSON.stringify(options.body);
+    if (body && method !== 'GET') {
+      config.body = isFormData ? (body as FormData) : JSON.stringify(body);
       if (!isFormData) {
-        console.log(`[ApiClient] ${method} ${endpoint} Payload:`, options.body);
+        console.log(`[ApiClient] ${method} ${endpoint} Payload:`, body);
       }
     }
 
@@ -117,14 +131,15 @@ class ApiClient {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; stack?: string; response?: { data?: unknown }; status?: string | number };
       console.error("Request failed", {
         endpoint,
         error,
-        message: error?.message,
-        stack: error?.stack,
-        response: error?.response?.data || error?.message,
-        status: error?.status || 'network_error'
+        message: err?.message,
+        stack: err?.stack,
+        response: err?.response?.data || err?.message,
+        status: err?.status || 'network_error'
       });
       throw error;
     }
@@ -134,15 +149,15 @@ class ApiClient {
     return this.request('GET', endpoint, options);
   }
 
-  async post(endpoint: string, body?: any, options?: RequestOptions) {
+  async post(endpoint: string, body?: unknown, options?: RequestOptions) {
     return this.request('POST', endpoint, { ...options, body });
   }
 
-  async put(endpoint: string, body?: any, options?: RequestOptions) {
+  async put(endpoint: string, body?: unknown, options?: RequestOptions) {
     return this.request('PUT', endpoint, { ...options, body });
   }
 
-  async patch(endpoint: string, body?: any, options?: RequestOptions) {
+  async patch(endpoint: string, body?: unknown, options?: RequestOptions) {
     return this.request('PATCH', endpoint, { ...options, body });
   }
 

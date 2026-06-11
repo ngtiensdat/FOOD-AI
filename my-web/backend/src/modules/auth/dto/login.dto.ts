@@ -5,12 +5,13 @@
 // Các biến, hàm đặc biệt: email, password.
 
 import { IsEmail, IsString, IsNotEmpty } from 'class-validator';
+import { MESSAGES } from '../../../common/constants/messages.constant';
 
 export class LoginDto {
-  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsEmail({}, { message: () => MESSAGES.VALIDATION.EMAIL_INVALID })
   email: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
+  @IsNotEmpty({ message: () => MESSAGES.VALIDATION.PASSWORD_REQUIRED })
   password: string;
 }

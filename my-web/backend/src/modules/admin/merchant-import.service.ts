@@ -252,7 +252,7 @@ export class MerchantImportService {
     }
 
     return {
-      message: 'Import thành công',
+      message: MESSAGES.ADMIN.IMPORT_SUCCESS,
       createdMerchants: createdCount,
       appendedMerchants: appendedCount,
       totalFoods: createdFoodIds.length,
