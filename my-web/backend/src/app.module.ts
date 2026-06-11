@@ -17,6 +17,11 @@ import { CategoryModule } from './modules/category/category.module';
 import { UserModule } from './modules/user/user.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { I18nMiddleware } from './common/i18n/i18n.middleware';
+import { SocialModule } from './modules/social/social.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
+import { OfferModule } from './modules/offer/offer.module';
+import { BadgeModule } from './modules/badge/badge.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -27,6 +32,11 @@ import { I18nMiddleware } from './common/i18n/i18n.middleware';
     AdminModule,
     AiModule,
     FoodModule,
+    SocialModule,
+    VoucherModule,
+    OfferModule,
+    BadgeModule,
+    ReportModule,
     ThrottlerModule.forRoot([
       {
         ttl: 600000,

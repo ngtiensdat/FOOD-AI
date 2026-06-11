@@ -32,6 +32,7 @@ export class FoodRepository {
               id: true,
               name: true,
               address: true,
+              mapUrl: true,
               ownerId: true,
               isActive: true,
               profile: {
@@ -130,6 +131,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             ownerId: true,
             isActive: true,
             profile: {
@@ -183,6 +185,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             ownerId: true,
             isActive: true,
             profile: {
@@ -401,6 +404,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             profile: {
               select: {
                 coverImage: true,

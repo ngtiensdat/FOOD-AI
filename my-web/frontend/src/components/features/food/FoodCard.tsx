@@ -23,6 +23,7 @@ export interface FoodCardData {
   restaurant?: { name: string; address?: string; mapUrl?: string } | null;
   restaurantName?: string;
   distance?: number;
+  address?: string;
   mapUrl?: string;
   map_url?: string;
   totalOrder?: number;

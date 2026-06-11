@@ -546,6 +546,12 @@ export class FoodService {
         isActive: restaurant.isActive,
         ownerId: restaurant.ownerId,
         createdAt: restaurant.createdAt,
+        // Các trường từ dataset
+        ratingAvg: restaurant.ratingAvg,
+        ratingCount: restaurant.ratingCount,
+        cuisines: restaurant.cuisines,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
         profile: restaurant.profile,
         foods: restaurant.foods.slice(0, LIMITS.RESTAURANT_INITIAL_FOODS),
       },
@@ -647,5 +653,34 @@ export class FoodService {
     pageSize?: number;
   }) {
     return this.repository.findManyPublicRestaurants(filters);
+  }
+
+  async getMyAnalytics(user: User) {
+    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
+    }
+
+    const foods = await this.prisma.food.findMany({
+      where: { restaurantId: restaurant.id, deletedAt: null },
+      select: { id: true, name: true },
+    });
+
+    return Promise.all(
+      foods.map(async (food) => {
+        const views = await this.prisma.history.count({
+          where: { foodId: food.id },
+        });
+        const aiSuggestions = await this.prisma.aiFeedback.count({
+          where: { foodId: food.id },
+        });
+        return {
+          id: food.id,
+          name: food.name,
+          views,
+          aiSuggestions,
+        };
+      }),
+    );
   }
 }

@@ -21,6 +21,7 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | 15/05/2026 | **Sprint 2** | AI Auditor | 1.5 | 1.8 | 1.5 | 1.2 | **6.0 / 10** | **Khởi đầu:** Codebase còn trộn lẫn logic trong controller. Next.js image bị wildcard hostname không an toàn. |
 | 25/05/2026 | **Sprint 3** | AI Auditor | 2.5 | 2.3 | 2.2 | 2.3 | **9.3 / 10** | **Tiến bộ lớn:** Đã tách Service/Repository. Triển khai component `SafeImage` và khôi phục whitelist hostname bảo mật. Sửa ảnh ShopeeFood HD sắc nét và dọn dẹp link Unsplash hỏng. |
 | 03/06/2026 | **Sprint 4** | AI Auditor | 2.25 | 2.3 | 2.35 | 2.25 | **9.18 / 10** | **Ổn định:** Codebase sạch, không có lỗi biên dịch. Đã thêm báo cáo chi tiết cho Sprint 4, phát hiện bypass throttling AI, trực tiếp process.env trong MailService, và một số SRP component lớn. |
+| 11/06/2026 | **Sprint 5** | AI Auditor | 2.5 | 2.3 | 2.1 | 2.2 | **9.1 / 10** | **Cải tiến và Bản địa hóa:** Nâng cao bảo mật qua SafeImage, kiểm soát chặt chẽ phân quyền RBAC/IDOR, tối ưu biểu đồ và hoàn tất bản địa hóa 100% ứng dụng. |
 
 ---
 
@@ -35,4 +36,16 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 - **Cấu hình rate limits cho AI Chat:** Thêm custom Throttle cho `AiController` thay vì `@SkipThrottle()`.
 - **Tách biệt cấu hình SMTP:** Quản lý SMTP credentials thông qua NestJS config tập trung (`appConfig`) thay vì gọi trực tiếp `process.env`.
 - **Đồng bộ hóa Clean Architecture & SRP:** Chuyển các câu Prisma update trong `AdminService` vào `FoodRepository` và tách nhỏ component frontend `AiChatWindow.tsx`.
+
+---
+
+## 4. Nhật Ký Chi Tiết Sprint 5 (11/06/2026)
+
+### Điểm cộng (Strengths)
+- **Mã hóa & Bảo mật mạnh mẽ:** Không hardcode dữ liệu nhạy cảm, tích hợp whitelisting hình ảnh qua `SafeImage`, và thực thi kiểm tra phân quyền RBAC/IDOR ở mọi API endpoints.
+- **Bản địa hóa hoàn thiện 100%:** Di chuyển toàn bộ các chuỗi tiếng Việt cứng, các nhãn thông báo hệ thống và dropdown bài viết vào tệp cấu hình đa ngôn ngữ tập trung (`labels.ts` và `labels.en.ts`).
+- **Tối ưu hóa Biểu đồ:** Refactor logic hiển thị biểu đồ kép `DoubleBarChart.tsx`, hợp nhất logic hover trùng lặp, tối ưu hóa hiệu suất bằng `useCallback`, loại bỏ magic numbers thành hằng số dễ bảo trì.
+
+### Điểm cần cải thiện tiếp theo (Action Items)
+- **Tránh trùng lặp logic mạng xã hội:** Các hàm xử lý tương tác mạng xã hội (`awardPoints`, `handleCreatePost`, `handleLike`, `handleComment`, `handleShare`...) bị trùng lặp giữa các trang forum và profile. Cần tách chúng ra thành một custom hook dùng chung như `useSocialActions` để tăng khả năng bảo trì.
 

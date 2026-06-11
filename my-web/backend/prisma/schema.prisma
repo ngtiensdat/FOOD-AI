@@ -43,6 +43,7 @@ model User {
   userFollowers     UserFollow[]   @relation("UserFollowers")
   profile           UserProfile?
   aiFeedbacks       AiFeedback[]
+  userVouchers      UserVoucher[]
 
   @@index([role, status])
   @@map("users")
@@ -82,6 +83,9 @@ model Restaurant {
   updatedAt      DateTime           @updatedAt @map("updated_at")
   deletedAt      DateTime?          @map("deleted_at")
   isActive       Boolean            @default(true) @map("is_active")
+  ratingAvg      Float?             @map("rating_avg")
+  ratingCount    Int?               @map("rating_count")
+  cuisines       String[]           @default([])
   categoryGroups CategoryGroup[]
   followers      Follow[]
   foods          Food[]
@@ -121,6 +125,8 @@ model Food {
   isAdminRecommended Boolean                @default(false) @map("is_admin_recommended")
   isFeaturedToday    Boolean                @default(false) @map("is_featured_today")
   isFeaturedWeekly   Boolean                @default(false) @map("is_featured_weekly")
+  totalOrder         Int                    @default(0) @map("total_order")
+  totalLike          Int                    @default(0) @map("total_like")
   lat                Float?
   lng                Float?
   address            String?
@@ -184,6 +190,8 @@ model Post {
   rating       Int?
   postType     PostType    @default(NORMAL)
   status       PostStatus  @default(APPROVED)
+  isShared     Boolean     @default(false) @map("is_shared")
+  sharedFromId Int?        @map("shared_from_id")
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
   deletedAt    DateTime?   @map("deleted_at")
@@ -193,6 +201,8 @@ model Post {
   author       User        @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
   food         Food?       @relation("PostToFood", fields: [foodId], references: [id], onDelete: Cascade)
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  sharedFrom   Post?       @relation("SharedPosts", fields: [sharedFromId], references: [id], onDelete: Cascade)
+  sharedPosts  Post[]      @relation("SharedPosts")
 
   @@index([authorId, createdAt])
   @@index([postType, status])
@@ -212,13 +222,16 @@ model Like {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   content   String
-  userId    Int      @map("user_id")
-  postId    Int      @map("post_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int       @map("user_id")
+  postId    Int       @map("post_id")
+  parentId  Int?      @map("parent_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
 
   @@index([postId])
   @@map("comments")
@@ -393,4 +406,55 @@ model AiFeedback {
   @@unique([userId, foodId])
   @@index([userId, foodId, feedbackType])
   @@map("ai_feedbacks")
+}
+
+model Voucher {
+  id            String        @id @default(uuid())
+  code          String        @unique
+  title         String
+  description   String
+  pointsCost    Int           @map("points_cost")
+  discountValue String        @map("discount_value")
+  minSpend      String        @map("min_spend")
+  expiryDays    Int           @map("expiry_days")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  userVouchers  UserVoucher[]
+
+  @@map("vouchers")
+}
+
+model UserVoucher {
+  id         String   @id @default(uuid())
+  userId     Int      @map("user_id")
+  voucherId  String   @map("voucher_id")
+  code       String   @unique
+  redeemedAt DateTime @default(now()) @map("redeemed_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher    Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@map("user_vouchers")
+}
+
+model Offer {
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String
+  promoType      String   @map("promo_type")
+  discountValue  String   @map("discount_value")
+  restaurantName String   @map("restaurant_name")
+  restaurantId   Int?     @map("restaurant_id")
+  image          String
+  validUntil     String   @map("valid_until")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("offers")
+}
+
+model BadgeConfig {
+  id     String   @id @default(uuid())
+  role   UserRole
+  title  String
+  points Int
+
+  @@map("badge_configs")
 }
