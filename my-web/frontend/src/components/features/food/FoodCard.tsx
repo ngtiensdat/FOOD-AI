@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SafeImage from '@/components/base/SafeImage';
-import { ShoppingBag, Navigation, Heart } from 'lucide-react';
+import { ShoppingBag, Navigation, Heart, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDistance } from '@/utils/formatters';
@@ -20,11 +20,13 @@ export interface FoodCardData {
   price?: number;
   image?: string;
   description?: string;
-  restaurant?: { name: string } | null;
+  restaurant?: { name: string; address?: string; mapUrl?: string } | null;
   restaurantName?: string;
   distance?: number;
   mapUrl?: string;
   map_url?: string;
+  totalOrder?: number;
+  totalLike?: number;
   [key: string]: unknown;
 }
 
@@ -40,6 +42,9 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
   useEffect(() => {
     setIsFavorite(!!food.isFavorite || !!food.is_favorite);
   }, [food.isFavorite, food.is_favorite]);
+
+  const mapLink = food.mapUrl || food.map_url || (food.restaurant as any)?.mapUrl;
+  const addressText = food.address || (food.restaurant as any)?.address;
 
   return (
     <motion.div
@@ -91,11 +96,12 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
               </div>
             )}
 
-            {(food.mapUrl || food.map_url) && (
+            {mapLink && (
               <a
-                href={food.mapUrl || food.map_url}
+                href={mapLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-500 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
                 aria-label={LABELS.FOOD.VIEW_MAP}
               >
@@ -107,9 +113,40 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
 
         <h3 className="font-bold text-xl mb-0.5 line-clamp-1 text-gray-900">{food.name}</h3>
 
-        <p className="text-primary text-xs font-bold mb-3 uppercase tracking-wider">
+        <p className="text-primary text-xs font-bold mb-1 uppercase tracking-wider">
           {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
         </p>
+
+        {addressText && (
+          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2 truncate" title={addressText}>
+            <MapPin size={12} className="text-primary shrink-0" />
+            {mapLink ? (
+              <a
+                href={mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="hover:text-primary hover:underline cursor-pointer truncate font-medium text-left"
+              >
+                {addressText}
+              </a>
+            ) : (
+              <span className="truncate">{addressText}</span>
+            )}
+          </div>
+        )}
+
+        {/* Lượt bán & Lượt thích */}
+        {(food.totalOrder !== undefined || food.totalLike !== undefined) && (
+          <div className="flex gap-4 text-xs font-extrabold text-gray-500 dark:text-slate-400 mb-3">
+            {food.totalOrder !== undefined && (
+              <span>Đã bán {food.totalOrder}</span>
+            )}
+            {food.totalLike !== undefined && (
+              <span className="flex items-center gap-0.5">❤️ {food.totalLike}</span>
+            )}
+          </div>
+        )}
 
         <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
 

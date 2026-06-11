@@ -21,9 +21,11 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
 
   // Thu thập các tag món ăn độc bản phục vụ kết xuất danh mục tiêu biểu
-  const typicalTags = Array.from(
-    new Set(foods.flatMap((f) => f.tags || []))
-  ).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
+  const typicalTags = restaurant.cuisines && restaurant.cuisines.length > 0
+    ? restaurant.cuisines.slice(0, 3)
+    : Array.from(
+        new Set(foods.flatMap((f) => f.tags || []))
+      ).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
 
   return (
     <Link href={`/restaurant/${id}`}>
@@ -63,7 +65,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
           <div>
             {/* Tên nhà hàng & Badge Verified */}
-            <div className="flex justify-between items-start mb-1.5 gap-2">
+            <div className="flex justify-between items-start mb-1 gap-2">
               <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">
                 {name}
               </h3>
@@ -71,6 +73,15 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
                 <Check size={8} /> {LABELS.RESTAURANT.EDIT_MODAL.VERIFIED}
               </span>
             </div>
+
+            {/* Điểm đánh giá sao */}
+            {restaurant.ratingAvg !== undefined && restaurant.ratingAvg !== null && (
+              <div className="flex items-center gap-1 text-xs text-yellow-500 font-extrabold mb-2">
+                <span>⭐</span>
+                <span>{restaurant.ratingAvg.toFixed(1)}</span>
+                <span className="text-gray-400 font-bold">({restaurant.ratingCount || 0} đánh giá)</span>
+              </div>
+            )}
 
             {/* Giới thiệu ngắn (Bio) */}
             <p className="text-xs text-gray-500 dark:text-slate-400 italic mb-4 line-clamp-1">
@@ -94,13 +105,31 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
           {/* Địa điểm & Thẻ món ăn */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 truncate max-w-[60%]">
-              <MapPin size={12} className="text-primary shrink-0" />
-              <span className="truncate">
-                {distance !== undefined && distance !== null ? `${distance.toFixed(1)} km • ` : ''}
-                {district || city || LABELS.RESTAURANT.CARD_LABELS.DEFAULT_LOCATION}
-              </span>
-            </div>
+            {restaurant.mapUrl ? (
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(restaurant.mapUrl, '_blank', 'noopener,noreferrer');
+                }}
+                className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-primary hover:underline cursor-pointer truncate max-w-[60%]"
+                title={restaurant.address || LABELS.FOOD.VIEW_MAP}
+              >
+                <MapPin size={12} className="text-primary shrink-0" />
+                <span className="truncate">
+                  {distance !== undefined && distance !== null ? `${distance.toFixed(1)} km • ` : ''}
+                  {district || city || LABELS.RESTAURANT.CARD_LABELS.DEFAULT_LOCATION}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 truncate max-w-[60%]">
+                <MapPin size={12} className="text-primary shrink-0" />
+                <span className="truncate">
+                  {distance !== undefined && distance !== null ? `${distance.toFixed(1)} km • ` : ''}
+                  {district || city || LABELS.RESTAURANT.CARD_LABELS.DEFAULT_LOCATION}
+                </span>
+              </div>
+            )}
 
 
             {/* Tags tiêu biểu */}

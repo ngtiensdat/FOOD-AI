@@ -12,7 +12,7 @@ import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { User } from '@/types/user';
 
-export type FollowingRestaurant = User & { address?: string };
+export type FollowingRestaurant = User & { address?: string; mapUrl?: string };
 
 interface FollowingModalProps {
   isOpen: boolean;
@@ -155,9 +155,22 @@ export const FollowingModal = ({
                           <h5 className="text-body font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                             {restaurantItem.name}
                           </h5>
-                          <p className="text-mini text-gray-400 dark:text-gray-400 font-medium line-clamp-1">
-                            {address}
-                          </p>
+                          {restaurantItem.mapUrl ? (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(restaurantItem.mapUrl, '_blank', 'noopener,noreferrer');
+                              }}
+                              className="text-mini text-gray-400 dark:text-gray-400 font-medium line-clamp-1 hover:text-primary hover:underline cursor-pointer"
+                              title={LABELS.FOOD.VIEW_MAP}
+                            >
+                              {address}
+                            </span>
+                          ) : (
+                            <p className="text-mini text-gray-400 dark:text-gray-400 font-medium line-clamp-1">
+                              {address}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
