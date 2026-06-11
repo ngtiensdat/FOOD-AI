@@ -23,6 +23,8 @@ interface RestaurantHeaderCardProps {
     address?: string;
     mapUrl?: string;
     description?: string;
+    ratingAvg?: number | null;
+    ratingCount?: number | null;
     profile?: {
       coverImage?: string;
     };
@@ -117,8 +119,8 @@ export const RestaurantHeaderCard = ({
                 {restaurantData.ratingAvg !== undefined && restaurantData.ratingAvg !== null && (
                   <div className="flex items-center gap-1.5 text-sm text-yellow-500 font-extrabold mb-2">
                     <span>⭐</span>
-                    <span>{(restaurantData.ratingAvg as number).toFixed(1)}</span>
-                    <span className="text-gray-400 font-bold">({(restaurantData.ratingCount as number) || 0} đánh giá)</span>
+                    <span>{Number(restaurantData.ratingAvg).toFixed(1)}</span>
+                    <span className="text-gray-400 font-bold">({Number(restaurantData.ratingCount) || 0} đánh giá)</span>
                   </div>
                 )}
                 {restaurantData.mapUrl ? (

@@ -43,8 +43,8 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
     setIsFavorite(!!food.isFavorite || !!food.is_favorite);
   }, [food.isFavorite, food.is_favorite]);
 
-  const mapLink = food.mapUrl || food.map_url || (food.restaurant as any)?.mapUrl;
-  const addressText = food.address || (food.restaurant as any)?.address;
+  const mapLink = food.mapUrl || food.map_url || food.restaurant?.mapUrl;
+  const addressText = food.address || food.restaurant?.address;
 
   return (
     <motion.div
