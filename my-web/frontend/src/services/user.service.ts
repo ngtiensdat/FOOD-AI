@@ -21,5 +21,10 @@ export const userService = {
       followingId,
     });
   },
+
+  async getLeaderboard() {
+    return apiClient.get('/user/leaderboard');
+  },
 };
+
 

@@ -34,18 +34,18 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
 
   const navActions = (
     <div className="hidden md:flex gap-3">
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => scroll('left')}
         className="w-12 h-12 rounded-full p-0"
         aria-label={LABELS.COMMON.SCROLL_LEFT}
       >
         <ChevronLeft size={24} />
       </Button>
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => scroll('right')}
         className="w-12 h-12 rounded-full p-0"
         aria-label={LABELS.COMMON.SCROLL_RIGHT}
@@ -69,7 +69,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-h2 flex items-center gap-3">
-              {icon} 
+              {icon}
               <span className="flex flex-wrap gap-2">
                 {title.split(' ').map((word, i) => (
                   <span key={i} className={i >= title.split(' ').length - 2 ? 'gradient-text' : ''}>
@@ -82,7 +82,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
           </div>
           {navActions}
         </div>
-        
+
         <div
           ref={sliderRef}
           className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"

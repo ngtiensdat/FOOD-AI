@@ -71,25 +71,39 @@ html.dark,
 :root.mixed,
 html.mixed,
 .mixed {
-  --background: #1c1510;        /* Deep espresso page background */
-  --foreground: #fef0d6;        /* Warm cream text */
-  --accent: #3d2c18;            /* Dark wood card border */
-  --text-muted: #c8946a;        /* Warm caramel muted text */
+  --background: #1c1510;
+  /* Deep espresso page background */
+  --foreground: #fef0d6;
+  /* Warm cream text */
+  --accent: #3d2c18;
+  /* Dark wood card border */
+  --text-muted: #c8946a;
+  /* Warm caramel muted text */
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(255, 140, 0, 0.06);
 
   /* "Coffee House" warm palette — amber/caramel tones tuned for #1c1510 bg */
   --color-gray-950: #ffffff;
-  --color-gray-900: #fef8ee;    /* Ivory white — headings */
-  --color-gray-800: #f5deb3;    /* Wheat — body text (~12:1 contrast) */
-  --color-gray-700: #e8c89a;    /* Golden cream — secondary text (~8:1) */
+  --color-gray-900: #fef8ee;
+  /* Ivory white — headings */
+  --color-gray-800: #f5deb3;
+  /* Wheat — body text (~12:1 contrast) */
+  --color-gray-700: #e8c89a;
+  /* Golden cream — secondary text (~8:1) */
   --color-gray-650: #d4a97a;
-  --color-gray-600: #c8946a;    /* Warm tan — label text (~5:1) */
-  --color-gray-500: #a87a55;    /* Caramel — muted text (~3.8:1) */
-  --color-gray-400: #7a5a3e;    /* Dark caramel — placeholder */
-  --color-gray-300: #4f3820;    /* Rich wood — divider */
-  --color-gray-200: #3d2c18;    /* Dark wood — visible border */
-  --color-gray-100: #261c10;    /* Coffee card bg — distinct from page */
-  --color-gray-50:  #1c1510;    /* Espresso page background */
+  --color-gray-600: #c8946a;
+  /* Warm tan — label text (~5:1) */
+  --color-gray-500: #a87a55;
+  /* Caramel — muted text (~3.8:1) */
+  --color-gray-400: #7a5a3e;
+  /* Dark caramel — placeholder */
+  --color-gray-300: #4f3820;
+  /* Rich wood — divider */
+  --color-gray-200: #3d2c18;
+  /* Dark wood — visible border */
+  --color-gray-100: #261c10;
+  /* Coffee card bg — distinct from page */
+  --color-gray-50: #1c1510;
+  /* Espresso page background */
 }
 
 @theme inline {
@@ -303,9 +317,12 @@ body {
   }
 
   &:where(.mixed, .mixed *) {
-    background-color: var(--color-gray-100); /* Coffee card bg #261c10 */
-    border-color: var(--color-gray-200);     /* Dark wood border #3d2c18 */
-    color: var(--foreground);                /* Warm cream text */
+    background-color: var(--color-gray-100);
+    /* Coffee card bg #261c10 */
+    border-color: var(--color-gray-200);
+    /* Dark wood border #3d2c18 */
+    color: var(--foreground);
+    /* Warm cream text */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 140, 0, 0.06);
   }
 }
@@ -342,10 +359,12 @@ body {
   }
 
   &:where(.mixed, .mixed *) {
-    color: var(--color-gray-800); /* Wheat text */
+    color: var(--color-gray-800);
+    /* Wheat text */
 
     &:hover {
-      background-color: rgba(255, 140, 0, 0.08); /* Subtle amber hover */
+      background-color: rgba(255, 140, 0, 0.08);
+      /* Subtle amber hover */
     }
   }
 }
@@ -363,27 +382,30 @@ input[type=number] {
 }
 
 @utility text-h3 {
-  font-size: 1.5rem; /* 24px */
+  font-size: 1.5rem;
+  /* 24px */
   font-weight: 700;
   line-height: 1.3;
 }
 
 @utility text-mini {
-  font-size: 0.6875rem; /* 11px */
+  font-size: 0.6875rem;
+  /* 11px */
   line-height: 1rem;
 }
 
 @utility ai-box {
   background-color: var(--color-white);
   border: 1px solid var(--color-orange-100);
-  
+
   &:where(.dark, .dark *) {
     background-color: var(--color-slate-950);
     border-color: var(--color-slate-800);
   }
 
   &:where(.mixed, .mixed *) {
-    background-color: rgba(255, 140, 0, 0.05); /* Amber tinted coffee card */
+    background-color: rgba(255, 140, 0, 0.05);
+    /* Amber tinted coffee card */
     border-color: rgba(255, 140, 0, 0.18);
   }
 }
@@ -418,7 +440,8 @@ input[type=number] {
   background-color: var(--color-gray-50);
   border: 1px solid var(--color-gray-200);
   border-radius: var(--radius-input);
-  padding: 0.875rem 1.5rem; /* py-3.5 px-6 */
+  padding: 0.875rem 1.5rem;
+  /* py-3.5 px-6 */
   outline: none;
   transition: all 150ms ease;
   font-size: 0.875rem;
@@ -430,18 +453,25 @@ input[type=number] {
   }
 
   &:where(.dark, .dark *) {
-    background-color: var(--color-gray-50); /* maps to #020b24 in dark */
-    border-color: var(--color-gray-200);   /* maps to #0e2252 in dark */
+    background-color: var(--color-gray-50);
+    /* maps to #020b24 in dark */
+    border-color: var(--color-gray-200);
+    /* maps to #0e2252 in dark */
     color: white;
+
     &:focus {
       box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.08);
     }
   }
 
   &:where(.mixed, .mixed *) {
-    background-color: var(--color-gray-100); /* Coffee card bg #261c10 */
-    border-color: var(--color-gray-200);     /* Dark wood border #3d2c18 */
-    color: var(--foreground);                /* Warm cream #fef0d6 */
+    background-color: var(--color-gray-100);
+    /* Coffee card bg #261c10 */
+    border-color: var(--color-gray-200);
+    /* Dark wood border #3d2c18 */
+    color: var(--foreground);
+
+    /* Warm cream #fef0d6 */
     &:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.12);
@@ -462,24 +492,32 @@ input[type=number] {
 
 @utility alert-box-rose {
   padding: 1rem;
-  background-color: #fff1f2; /* rose-50 */
-  border: 1px solid #ffe4e6; /* rose-100 */
-  border-radius: 1rem; /* rounded-2xl */
+  background-color: #fff1f2;
+  /* rose-50 */
+  border: 1px solid #ffe4e6;
+  /* rose-100 */
+  border-radius: 1rem;
+  /* rounded-2xl */
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  color: #e11d48; /* rose-600 */
+  color: #e11d48;
+  /* rose-600 */
 
   &:where(.dark, .dark *) {
-    background-color: rgba(136, 19, 55, 0.12); /* rose-950/20 */
-    border-color: rgba(136, 19, 55, 0.4); /* rose-900/50 */
-    color: #fb7185; /* rose-400 */
+    background-color: rgba(136, 19, 55, 0.12);
+    /* rose-950/20 */
+    border-color: rgba(136, 19, 55, 0.4);
+    /* rose-900/50 */
+    color: #fb7185;
+    /* rose-400 */
   }
 
   &:where(.mixed, .mixed *) {
     background-color: rgba(136, 19, 55, 0.15);
     border-color: rgba(200, 50, 70, 0.35);
-    color: #fca5a5; /* rose-300 — brighter on dark bg */
+    color: #fca5a5;
+    /* rose-300 — brighter on dark bg */
   }
 }
 
@@ -488,9 +526,11 @@ input[type=number] {
   color: var(--color-blue-500);
   border-radius: var(--radius-input);
   transition: all 150ms ease;
+
   &:hover {
     background-color: var(--color-blue-50);
   }
+
   &:where(.dark, .dark *) {
     &:hover {
       background-color: rgba(59, 130, 246, 0.15);
@@ -503,12 +543,30 @@ input[type=number] {
   color: var(--color-rose-500);
   border-radius: var(--radius-input);
   transition: all 150ms ease;
+
   &:hover {
     background-color: var(--color-rose-50);
   }
+
   &:where(.dark, .dark *) {
     &:hover {
       background-color: rgba(244, 63, 94, 0.15);
     }
   }
+}
+
+/* Tối ưu thẩm mỹ: Ẩn thanh cuộn (scrollbar) cho toàn bộ trang và tất cả các danh sách cuộn nội bộ */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }

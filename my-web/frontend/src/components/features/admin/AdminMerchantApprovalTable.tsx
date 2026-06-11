@@ -5,6 +5,7 @@
 // Các chức năng đặc biệt: Render danh sách thẻ đối tác trực quan với các nút phê duyệt/từ chối.
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Check, X, UserCheck } from 'lucide-react';
 import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
@@ -26,6 +27,7 @@ export const AdminMerchantApprovalTable = ({
   actions,
 }: AdminMerchantApprovalTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
   const activePage = Math.min(Math.max(1, currentPage), totalPages || 1);
@@ -86,6 +88,7 @@ export const AdminMerchantApprovalTable = ({
                 subtitle={subtitleNode}
                 image={item.avatar}
                 fallbackIcon={<UserCheck size={36} />}
+                onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[
                   { label: LABELS.AUTH.RESTAURANT, type: 'secondary' as const },
                   { 

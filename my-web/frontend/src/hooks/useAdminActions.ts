@@ -60,7 +60,7 @@ export const useAdminActions = (adminData: AdminData) => {
   } = adminData;
 
   // --- State Management ---
-  const [activeTab, setActiveTab] = useState<'merchants' | 'users' | 'menu' | 'customers'>('merchants');
+  const [activeTab, setActiveTab] = useState<'merchants' | 'users' | 'menu' | 'customers' | 'moderation' | 'levels' | 'notifications'>('merchants');
   const [foodSubTab, setFoodSubTab] = useState<'system' | 'merchant'>('merchant');
   const [editingFood, setEditingFood] = useState<AdminFoodItem | null>(null);
   const [editFormData, setEditFormData] = useState<AdminFoodFormData>({

@@ -8,13 +8,17 @@ import React from 'react';
 import { Sparkles, Settings } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
+import { getPrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
 
 interface UserProfileDetailProps {
-  profile: { email?: string; profile?: { phone?: string; preferences?: Record<string, unknown> }; [key: string]: unknown } | null;
+  profile: { email?: string; profile?: { phone?: string; preferences?: Record<string, unknown> };[key: string]: unknown } | null;
   onUpdatePreferences: () => void;
 }
 
 export const UserProfileDetail = ({ profile, onUpdatePreferences }: UserProfileDetailProps) => {
+  const showEmail = getPrivacyValue('showEmail');
+  const showPhone = getPrivacyValue('showPhone');
+
   return (
     <section className="card-container p-8">
       <div className="flex justify-between items-center mb-8">
@@ -30,25 +34,29 @@ export const UserProfileDetail = ({ profile, onUpdatePreferences }: UserProfileD
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-small">
-        <div>
-          <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">
-            {LABELS.FORM.EMAIL}
-          </label>
-          <p className="font-bold text-gray-700">{profile?.email}</p>
-        </div>
-        <div>
-          <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">
-            {LABELS.FORM.PHONE}
-          </label>
-          <p className="font-bold text-gray-700">{profile?.profile?.phone || LABELS.FORM.NOT_SET}</p>
-        </div>
+        {showEmail && (
+          <div>
+            <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              {LABELS.FORM.EMAIL}
+            </label>
+            <p className="font-bold text-gray-700">{profile?.email}</p>
+          </div>
+        )}
+        {showPhone && (
+          <div>
+            <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              {LABELS.FORM.PHONE}
+            </label>
+            <p className="font-bold text-gray-700">{profile?.profile?.phone || LABELS.FORM.NOT_SET}</p>
+          </div>
+        )}
         <div className="col-span-1 md:col-span-2">
           <label className="font-bold text-gray-400 uppercase tracking-widest block mb-1">
             {LABELS.CUSTOMER.AI_CONTEXT}
           </label>
           <p className="font-bold text-gray-700 italic">
-            {profile?.profile?.preferences 
-              ? Object.values(profile.profile.preferences).join(', ') 
+            {profile?.profile?.preferences
+              ? Object.values(profile.profile.preferences).join(', ')
               : LABELS.FORM.NO_PREFERENCES}
           </p>
         </div>

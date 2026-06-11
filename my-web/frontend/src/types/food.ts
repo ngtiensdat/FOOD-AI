@@ -24,6 +24,8 @@ export interface Food {
   categoryId?: number | null;
   createdAt: string;
   updatedAt: string;
+  totalOrder?: number;
+  totalLike?: number;
 }
 
 export interface AdminFoodItem extends Food {

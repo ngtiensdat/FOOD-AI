@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { restaurantService } from '@/services/restaurant.service';
-import { LOCATION_DATA } from '@/constants/location.constant';
+import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { Restaurant } from '@/types/restaurant';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -28,7 +28,7 @@ export const useExploreActions = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('explore');
-  const [selectedCity, setSelectedCity] = useState(LOCATION_DATA[0]?.value || 'Hà Nội');
+  const [selectedCity, setSelectedCity] = useState((LOCATION_DATA[0]?.value) ?? DEFAULT_CITY);
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

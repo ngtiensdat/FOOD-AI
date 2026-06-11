@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown } from 'lucide-react';
+import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown, ShieldAlert, Award, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,9 @@ import { AdminTable } from '@/components/features/admin/AdminTable';
 import { AdminFoodModal } from '@/components/features/admin/AdminFoodModal';
 import { AdminImportExcelModal } from '@/components/features/admin/AdminImportExcelModal';
 import { FileUp } from 'lucide-react';
+import { ModerationTab } from '@/components/features/admin/ModerationTab';
+import { LevelBadgeManagerTab } from '@/components/features/admin/LevelBadgeManagerTab';
+import { AdminNotificationTab } from '@/components/features/admin/AdminNotificationTab';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -92,18 +95,24 @@ export default function AdminDashboard() {
         <SidebarItem icon={Store} label={LABELS.ADMIN.MANAGE_MERCHANTS} active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
         <SidebarItem icon={Users} label={LABELS.ADMIN.MANAGE_CUSTOMERS} active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
         <SidebarItem icon={Pizza} label={LABELS.ADMIN.MANAGE_MENU} active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
+        <SidebarItem icon={ShieldAlert} label={LABELS.MODERATION.TITLE} active={activeTab === 'moderation'} onClick={() => setActiveTab('moderation')} />
+        <SidebarItem icon={Award} label={LABELS.ADMIN.MANAGE_LEVEL_BADGES} active={activeTab === 'levels'} onClick={() => setActiveTab('levels')} />
+        <SidebarItem icon={Bell} label={LABELS.ADMIN.SEND_NOTIFICATION} active={activeTab === 'notifications'} onClick={() => setActiveTab('notifications')} />
         <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
       </Sidebar>
 
       <main className="admin-main">
         <header className="flex justify-between items-center mb-12">
           <div className="flex flex-col">
-            <h2 className="text-h2 text-gray-800">
-              {activeTab === 'merchants' ? LABELS.ADMIN.APPROVE_MERCHANTS :
-                activeTab === 'menu' ? LABELS.ADMIN.MANAGE_MENU :
-                  activeTab === 'users' ? LABELS.ADMIN.MANAGE_MERCHANTS :
-                    LABELS.ADMIN.MANAGE_CUSTOMERS}
-            </h2>
+              <h2 className="text-h2 text-gray-800">
+                {activeTab === 'merchants' ? LABELS.ADMIN.APPROVE_MERCHANTS :
+                  activeTab === 'menu' ? LABELS.ADMIN.MANAGE_MENU :
+                    activeTab === 'users' ? LABELS.ADMIN.MANAGE_MERCHANTS :
+                      activeTab === 'moderation' ? LABELS.MODERATION.TITLE :
+                        activeTab === 'levels' ? LABELS.ADMIN.MANAGE_LEVEL_BADGES :
+                          activeTab === 'notifications' ? LABELS.ADMIN.SEND_NOTIFICATION :
+                            LABELS.ADMIN.MANAGE_CUSTOMERS}
+              </h2>
 
             {activeTab === 'menu' && (
               <div className="flex gap-6 mt-4 text-small font-bold">
@@ -124,7 +133,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-            {(activeTab === 'users' || activeTab === 'menu') && (
+            {activeTab !== 'moderation' && activeTab !== 'levels' && activeTab !== 'notifications' && (activeTab === 'users' || activeTab === 'menu') && (
               <Button
                 variant="outline"
                 className="gap-2"
@@ -134,13 +143,15 @@ export default function AdminDashboard() {
                 {LABELS.ADMIN.IMPORT_EXCEL}
               </Button>
             )}
-            <Input
-              icon={Search}
-              placeholder={LABELS.COMMON.SEARCH}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-80"
-            />
+            {activeTab !== 'moderation' && activeTab !== 'levels' && activeTab !== 'notifications' && (
+              <Input
+                icon={Search}
+                placeholder={LABELS.COMMON.SEARCH}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-80"
+              />
+            )}
             {user && (
               <div className="flex items-center gap-3 relative">
                 <button
@@ -182,16 +193,24 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <AdminTable
-          activeTab={activeTab}
-          foodSubTab={foodSubTab}
-          loading={loading}
-          merchants={filteredMerchants}
-          users={filteredUsers}
-          customers={filteredCustomers}
-          foods={filteredFoods}
-          actions={actions}
-        />
+        {activeTab === 'moderation' ? (
+          <ModerationTab />
+        ) : activeTab === 'levels' ? (
+          <LevelBadgeManagerTab />
+        ) : activeTab === 'notifications' ? (
+          <AdminNotificationTab allUsers={adminData.allUsers} adminAvatar={user?.avatar || undefined} />
+        ) : (
+          <AdminTable
+            activeTab={activeTab as any}
+            foodSubTab={foodSubTab}
+            loading={loading}
+            merchants={filteredMerchants}
+            users={filteredUsers}
+            customers={filteredCustomers}
+            foods={filteredFoods}
+            actions={actions}
+          />
+        )}
       </main>
 
       <AnimatePresence>

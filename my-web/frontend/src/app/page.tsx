@@ -28,6 +28,7 @@ import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
 
 import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { SettingsSection } from '@/components/features/SettingsSection';
+import { OffersSection } from '@/components/features/offers/OffersSection';
 import { Footer } from '@/components/features/Footer';
 
 import { LABELS } from '@/constants/labels';
@@ -166,6 +167,11 @@ export default function Home() {
           fetchUserProfile={fetchUserProfile}
           isEmailVerified={isEmailVerifiedInProfile}
           handleDeleteAccount={handleDeleteAccount}
+        />
+      ) : activeTab === 'offers' ? (
+        <OffersSection
+          user={user}
+          setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')}
         />
       ) : (
         <Placeholder onBack={() => setActiveTab('home')} />

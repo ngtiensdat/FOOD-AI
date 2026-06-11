@@ -43,6 +43,9 @@ export interface User {
   avatar?: string;
   createdAt?: string;
   legalDocs?: string;
+  points?: number;
+  level?: number;
+  badgeTitle?: string | null;
 }
 
 export interface UpdateProfileData {

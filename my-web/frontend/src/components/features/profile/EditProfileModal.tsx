@@ -11,7 +11,7 @@ import { X, Save } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
-import { LOCATION_DATA } from '@/constants/location.constant';
+import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { ProfileEditState } from '@/hooks/useProfileData';
 
 interface EditProfileModalProps {
@@ -134,7 +134,7 @@ export const EditProfileModal = ({
                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.CITY}
               </label>
               <select
-                value={editData.city || 'Hà Nội'}
+                value={editData.city || DEFAULT_CITY}
                 onChange={(e) => {
                   setEditData({
                     ...editData,
@@ -165,7 +165,7 @@ export const EditProfileModal = ({
                 <option value="" disabled hidden>
                   {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
                 </option>
-                {LOCATION_DATA.find((c) => c.value === (editData.city || 'Hà Nội'))
+                {LOCATION_DATA.find((c) => c.value === (editData.city || DEFAULT_CITY))
                   ?.districts.map((d) => (
                     <option key={d.value} value={d.value}>
                       {d.label}

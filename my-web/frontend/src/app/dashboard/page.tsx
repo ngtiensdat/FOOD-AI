@@ -105,20 +105,19 @@ export default function CustomerDashboard() {
                     size={40}
                     className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
                   />
-                  <ChevronDown 
-                    size={16} 
-                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
-                      showMenu ? 'rotate-180 text-primary' : ''
-                    }`} 
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
+                      }`}
                   />
                 </button>
 
                 {showMenu && (
                   <>
                     {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
-                    <div 
-                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
-                      onClick={() => setShowMenu(false)} 
+                    <div
+                      className="fixed inset-0 z-40 bg-transparent cursor-default"
+                      onClick={() => setShowMenu(false)}
                     />
                     <UserDropdown
                       user={user}

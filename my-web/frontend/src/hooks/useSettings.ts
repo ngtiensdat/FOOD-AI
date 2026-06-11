@@ -23,7 +23,7 @@ export function useSettings({
   fetchUserProfile,
   handleDeleteAccount,
 }: UseSettingsProps) {
-  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'danger_zone'>('profile');
+  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone'>('profile');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -35,7 +35,11 @@ export function useSettings({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [profileData, setProfileData] = useState<{ profile?: { preferences?: { showFollowList?: boolean } }; [key: string]: unknown } | null>(null);
+  const [profileData, setProfileData] = useState<{ profile?: { preferences?: { showFollowList?: boolean, showPersonalInfo?: boolean } }; [key: string]: unknown } | null>(null);
+  const [showPersonalInfo, setShowPersonalInfo] = useState(() => {
+    const stored = typeof window !== 'undefined' && localStorage.getItem('showPersonalInfo');
+    return stored ? JSON.parse(stored) : true;
+  });
 
   useEffect(() => {
     if (settingsTab === 'profile' && user?.id) {
@@ -111,7 +115,7 @@ export function useSettings({
     }
   };
 
-  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'danger_zone') => {
+  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone') => {
     setSettingsTab(tabId);
     if (tabId === 'verification') {
       fetchUserProfile();
@@ -152,6 +156,8 @@ export function useSettings({
     setDeletePassword,
     isDeleting,
     profileData,
+    showPersonalInfo,
+    setShowPersonalInfo,
     setProfileData,
     onDeleteSubmit,
     onPasswordSubmit,

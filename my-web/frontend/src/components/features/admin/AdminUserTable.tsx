@@ -5,6 +5,7 @@
 // Các chức năng đặc biệt: Phân trang danh sách tài khoản, chứa các nút xóa tài khoản nhanh.
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Trash2, User } from 'lucide-react';
 import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
@@ -26,6 +27,7 @@ export const AdminUserTable = ({
   actions,
 }: AdminUserTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
   const activePage = Math.min(Math.max(1, currentPage), totalPages || 1);
@@ -67,6 +69,7 @@ export const AdminUserTable = ({
                 subtitle={item.email}
                 image={item.avatar}
                 fallbackIcon={<User size={36} />}
+                onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[
                   { 
                     label: isMerchant ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER, 
