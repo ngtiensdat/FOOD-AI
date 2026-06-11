@@ -63,7 +63,7 @@ export const ModerationTab = () => {
       toast.success(LABELS.MODERATION.RESOLVE_SUCCESS);
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi xử lý báo cáo vi phạm!');
+      toast.error(LABELS.MODERATION.RESOLVE_ERROR);
     }
   };
 
@@ -88,7 +88,7 @@ export const ModerationTab = () => {
       toast.success(LABELS.MODERATION.REJECT_SUCCESS);
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi từ chối báo cáo vi phạm!');
+      toast.error(LABELS.MODERATION.DISMISS_ERROR);
     }
   };
 

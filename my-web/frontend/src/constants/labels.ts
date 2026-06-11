@@ -321,6 +321,8 @@ const LABELS_VI = {
       TITLE_REQUIRED: 'Vui lòng nhập tên danh hiệu.',
       TITLE_PLACEHOLDER: 'Ví dụ: Chuyên Gia Ẩm Thực',
       POINTS_PLACEHOLDER: 'Ví dụ: 1000',
+      CREATE_ERROR: 'Lỗi khi tạo cấu hình danh hiệu',
+      DELETE_ERROR: 'Lỗi khi xóa cấu hình danh hiệu',
     },
     NOTIFICATION_TAB: {
       TITLE: 'Gửi thông báo hệ thống',
@@ -1040,6 +1042,10 @@ const LABELS_VI = {
       { id: 'b5', role: 'RESTAURANT' as const, title: 'Đối Tác Uy Tín', points: 2000 },
       { id: 'b6', role: 'RESTAURANT' as const, title: 'Thương Hiệu Xuất Sắc', points: 5000 },
     ],
+    NOTIFICATIONS: {
+      LEVEL_UP_TITLE: 'Thăng cấp độ mới!',
+      LEVEL_UP_BODY: (level: number) => `Chúc mừng bạn đã đạt cấp độ ${level} nhờ hoạt động tích cực!`,
+    }
   },
   OFFERS: {
     TITLE: 'Ưu đãi & Khuyến mãi',
@@ -1090,6 +1096,7 @@ const LABELS_VI = {
       EXPIRY_REQUIRED: 'Vui lòng chọn hạn sử dụng ưu đãi!',
       DESC_REQUIRED: 'Vui lòng nhập mô tả chi tiết!',
       CREATE_SUCCESS: 'Đăng bài khuyến mãi thành công!',
+      CREATE_ERROR: 'Lỗi khi tạo tin khuyến mại!',
     },
     PROMO_TYPES: {
       DISCOUNT: 'GIẢM GIÁ',
@@ -1139,6 +1146,7 @@ const LABELS_VI = {
   },
   SOCIAL: {
     FEED_TITLE: 'Bảng tin ẩm thực',
+    FEED_DESC: 'Không gian chia sẻ review ăn uống, đánh giá nhà hàng chất lượng và bí kíp ẩm thực hấp dẫn từ cộng đồng ẩm thực Food AI.',
     CREATE_POST: 'Đăng bài viết mới',
     POST_TYPE_NORMAL: 'Thông thường',
     POST_TYPE_REVIEW: 'Đánh giá quán',
@@ -1191,6 +1199,17 @@ const LABELS_VI = {
       LIKE_SUCCESS: 'Đã thích bài viết!',
       UNLIKE_SUCCESS: 'Đã bỏ thích bài viết!',
       CONTACT_TOAST: (name: string) => `Liên hệ ${name} để áp dụng ưu đãi!`,
+      INTERACTION_ERROR: 'Lỗi khi thực hiện tương tác!',
+      COMMENT_ERROR: 'Lỗi khi gửi bình luận!',
+      SHARE_SUCCESS: 'Đã chia sẻ bài viết về trang cá nhân của bạn!',
+      SHARE_ERROR: 'Lỗi khi chia sẻ bài viết!',
+      COMMENT_DELETE_SUCCESS: 'Đã xóa bình luận thành công!',
+      COMMENT_DELETE_ERROR: 'Lỗi khi xóa bình luận!',
+      REPLY_SUCCESS: 'Đã gửi phản hồi thành công!',
+      REPLY_ERROR: 'Lỗi khi gửi phản hồi!',
+      REPLY_DELETE_SUCCESS: 'Đã xóa phản hồi thành công!',
+      REPLY_DELETE_ERROR: 'Lỗi khi xóa phản hồi!',
+      LOGIN_REQUIRED_SHARE: 'Vui lòng đăng nhập để thực hiện chia sẻ!',
     },
     DROPDOWN: {
       PIN: 'Ghim bài viết',
@@ -1204,6 +1223,16 @@ const LABELS_VI = {
       SAVE: 'Lưu bài viết',
       UNSAVE: 'Bỏ lưu bài viết',
       REPORT: 'Báo cáo bài viết',
+    },
+    NOTIFICATIONS: {
+      LIKE_TITLE: 'Tương tác bài viết (Like)',
+      LIKE_BODY: (name: string, title: string) => `${name} đã thích bài viết của bạn: "${title}"`,
+      COMMENT_TITLE: 'Bình luận bài viết',
+      COMMENT_BODY: (name: string, title: string) => `${name} đã bình luận bài viết của bạn: "${title}"`,
+      REPLY_TITLE: 'Phản hồi bình luận',
+      REPLY_BODY: (name: string, title: string) => `${name} đã phản hồi bình luận của bạn trong bài viết: "${title}"`,
+      SHARE_TITLE: 'Chia sẻ bài viết',
+      SHARE_BODY: (name: string, title: string) => `${name} đã chia sẻ bài viết của bạn: "${title}"`,
     }
   },
   MODERATION: {
@@ -1220,6 +1249,9 @@ const LABELS_VI = {
     NO_REPORTS: 'Không có báo cáo nào cần xử lý.',
     RESOLVE_SUCCESS: 'Đã xử lý báo cáo thành công.',
     REPORT_SUBMITTED: 'Đã gửi báo cáo vi phạm. Cảm ơn sự hợp tác của bạn!',
+    TOAST_REPORT_ERROR: 'Lỗi gửi báo cáo vi phạm!',
+    RESOLVE_ERROR: 'Lỗi khi xử lý báo cáo vi phạm!',
+    DISMISS_ERROR: 'Lỗi khi từ chối báo cáo vi phạm!',
     REPORT_TITLE: 'Báo cáo bài viết/bình luận vi phạm',
     REPORT_REASON_LABEL: 'Mô tả lý do báo cáo vi phạm:',
     REPORT_MAIN_REASON_LABEL: 'Lý do chính',

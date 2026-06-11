@@ -317,6 +317,8 @@ export const LABELS_EN = {
       TITLE_REQUIRED: 'Please enter badge title.',
       TITLE_PLACEHOLDER: 'E.g., Food Expert',
       POINTS_PLACEHOLDER: 'E.g., 1000',
+      CREATE_ERROR: 'Failed to create badge configuration',
+      DELETE_ERROR: 'Failed to delete badge configuration',
     },
     NOTIFICATION_TAB: {
       TITLE: 'Send System Notification',
@@ -1037,6 +1039,10 @@ export const LABELS_EN = {
       { id: 'b5', role: 'RESTAURANT' as const, title: 'Reputable Partner', points: 2000 },
       { id: 'b6', role: 'RESTAURANT' as const, title: 'Outstanding Brand', points: 5000 },
     ],
+    NOTIFICATIONS: {
+      LEVEL_UP_TITLE: 'New Level Reached!',
+      LEVEL_UP_BODY: (level: number) => `Congratulations! You have reached Level ${level} due to active participation!`,
+    }
   },
   OFFERS: {
     TITLE: 'Offers & Promotions',
@@ -1087,6 +1093,7 @@ export const LABELS_EN = {
       EXPIRY_REQUIRED: 'Please select an expiry date!',
       DESC_REQUIRED: 'Please enter a description!',
       CREATE_SUCCESS: 'Promotion posted successfully!',
+      CREATE_ERROR: 'Failed to create promotion!',
     },
     PROMO_TYPES: {
       DISCOUNT: 'DISCOUNT',
@@ -1136,6 +1143,7 @@ export const LABELS_EN = {
   },
   SOCIAL: {
     FEED_TITLE: 'Culinary Feed',
+    FEED_DESC: 'A space to share food reviews, quality restaurant ratings, and fascinating culinary tips from the Food AI community.',
     CREATE_POST: 'Create New Post',
     POST_TYPE_NORMAL: 'Normal',
     POST_TYPE_REVIEW: 'Restaurant Review',
@@ -1188,6 +1196,17 @@ export const LABELS_EN = {
       LIKE_SUCCESS: 'Liked post!',
       UNLIKE_SUCCESS: 'Unliked post!',
       CONTACT_TOAST: (name: string) => `Contact ${name} to apply this offer!`,
+      INTERACTION_ERROR: 'Failed to perform interaction!',
+      COMMENT_ERROR: 'Failed to post comment!',
+      SHARE_SUCCESS: 'Post shared to your profile successfully!',
+      SHARE_ERROR: 'Failed to share post!',
+      COMMENT_DELETE_SUCCESS: 'Comment deleted successfully!',
+      COMMENT_DELETE_ERROR: 'Failed to delete comment!',
+      REPLY_SUCCESS: 'Reply posted successfully!',
+      REPLY_ERROR: 'Failed to post reply!',
+      REPLY_DELETE_SUCCESS: 'Reply deleted successfully!',
+      REPLY_DELETE_ERROR: 'Failed to delete reply!',
+      LOGIN_REQUIRED_SHARE: 'Please login to share this post!',
     },
     DROPDOWN: {
       PIN: 'Pin post',
@@ -1201,6 +1220,16 @@ export const LABELS_EN = {
       SAVE: 'Save post',
       UNSAVE: 'Unsave post',
       REPORT: 'Report post',
+    },
+    NOTIFICATIONS: {
+      LIKE_TITLE: 'Post Liked',
+      LIKE_BODY: (name: string, title: string) => `${name} liked your post: "${title}"`,
+      COMMENT_TITLE: 'Post Commented',
+      COMMENT_BODY: (name: string, title: string) => `${name} commented on your post: "${title}"`,
+      REPLY_TITLE: 'Comment Replied',
+      REPLY_BODY: (name: string, title: string) => `${name} replied to your comment on post: "${title}"`,
+      SHARE_TITLE: 'Post Shared',
+      SHARE_BODY: (name: string, title: string) => `${name} shared your post: "${title}"`,
     }
   },
   MODERATION: {
@@ -1217,6 +1246,9 @@ export const LABELS_EN = {
     NO_REPORTS: 'No reports to process.',
     RESOLVE_SUCCESS: 'Report processed successfully.',
     REPORT_SUBMITTED: 'Report submitted. Thank you for your feedback!',
+    TOAST_REPORT_ERROR: 'Failed to submit report!',
+    RESOLVE_ERROR: 'Failed to resolve report!',
+    DISMISS_ERROR: 'Failed to dismiss report!',
     REPORT_TITLE: 'Report Content Violation',
     REPORT_REASON_LABEL: 'Describe reason for reporting:',
     REPORT_MAIN_REASON_LABEL: 'Main Reason',

@@ -97,8 +97,8 @@ export default function ForumPage() {
           toast.success(LABELS.LOYALTY.LEVEL_UP_SUCCESS(updatedProfile.level));
           addNotification(
             profile.id,
-            'Thăng cấp độ mới!',
-            `Chúc mừng bạn đã đạt cấp độ ${updatedProfile.level} nhờ hoạt động tích cực!`,
+            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_TITLE,
+            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_BODY(updatedProfile.level),
             'LEVEL_UP',
             '/trophy.png'
           );
@@ -141,8 +141,8 @@ export default function ForumPage() {
         if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
           addNotification(
             targetPost.author.id,
-            'Tương tác bài viết (Like)',
-            `${me?.name || 'Ai đó'} đã thích bài viết của bạn: "${targetPost.title}"`,
+            LABELS.SOCIAL.NOTIFICATIONS.LIKE_TITLE,
+            LABELS.SOCIAL.NOTIFICATIONS.LIKE_BODY(me?.name || 'Ai đó', targetPost.title || ''),
             'LIKE',
             me?.avatar || undefined
           );
@@ -152,7 +152,7 @@ export default function ForumPage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi thực hiện tương tác!');
+      toast.error(LABELS.SOCIAL.TOAST.INTERACTION_ERROR);
     }
   };
 
@@ -175,15 +175,15 @@ export default function ForumPage() {
       if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
         addNotification(
           targetPost.author.id,
-          'Bình luận mới',
-          `${me?.name || 'Ai đó'} đã bình luận về bài viết của bạn: "${commentContent.substring(0, 30)}${commentContent.length > 30 ? '...' : ''}"`,
+          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_TITLE,
+          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_BODY(me?.name || 'Ai đó', targetPost.title || ''),
           'COMMENT',
           me?.avatar || undefined
         );
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi gửi bình luận!');
+      toast.error(LABELS.SOCIAL.TOAST.COMMENT_ERROR);
     }
   };
 
@@ -199,7 +199,7 @@ export default function ForumPage() {
 
   const handleShare = async (postToShare: PostData) => {
     if (!profile) {
-      toast.error('Vui lòng đăng nhập để thực hiện chia sẻ!');
+      toast.error(LABELS.SOCIAL.TOAST.LOGIN_REQUIRED_SHARE);
       return;
     }
 
@@ -216,7 +216,7 @@ export default function ForumPage() {
         sharedFromId: postToShare.id
       });
 
-      toast.success('Đã chia sẻ bài viết về trang cá nhân của bạn!');
+      toast.success(LABELS.SOCIAL.TOAST.SHARE_SUCCESS);
       
       const data = await socialService.getPosts();
       setPosts(data || []);
@@ -226,15 +226,15 @@ export default function ForumPage() {
       if (postToShare.author?.id && postToShare.author.id !== me?.id) {
         addNotification(
           postToShare.author.id,
-          'Chia sẻ bài viết',
-          `${me?.name || 'Ai đó'} đã chia sẻ bài viết của bạn: "${postToShare.title}"`,
+          LABELS.SOCIAL.NOTIFICATIONS.SHARE_TITLE,
+          LABELS.SOCIAL.NOTIFICATIONS.SHARE_BODY(me?.name || 'Ai đó', postToShare.title || ''),
           'SHARE',
           me?.avatar || undefined
         );
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi chia sẻ bài viết!');
+      toast.error(LABELS.SOCIAL.TOAST.SHARE_ERROR);
     }
   };
 
@@ -253,10 +253,10 @@ export default function ForumPage() {
         }
         return p;
       }));
-      toast.success('Đã xóa bình luận thành công!');
+      toast.success(LABELS.SOCIAL.TOAST.COMMENT_DELETE_SUCCESS);
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi xóa bình luận!');
+      toast.error(LABELS.SOCIAL.TOAST.COMMENT_DELETE_ERROR);
     }
   };
 
@@ -281,7 +281,7 @@ export default function ForumPage() {
         }
         return p;
       }));
-      toast.success('Đã gửi phản hồi thành công!');
+      toast.success(LABELS.SOCIAL.TOAST.REPLY_SUCCESS);
       awardPoints(5, 'Trả lời bình luận');
 
       const targetPost = posts.find(p => p.id === postId);
@@ -290,8 +290,8 @@ export default function ForumPage() {
         if (targetComment && targetComment.userId && targetComment.userId !== me?.id) {
           addNotification(
             targetComment.userId,
-            'Phản hồi bình luận',
-            `${me?.name || 'Ai đó'} đã phản hồi bình luận của bạn: "${replyContent.substring(0, 30)}${replyContent.length > 30 ? '...' : ''}"`,
+            LABELS.SOCIAL.NOTIFICATIONS.REPLY_TITLE,
+            LABELS.SOCIAL.NOTIFICATIONS.REPLY_BODY(me?.name || 'Ai đó', targetPost.title || ''),
             'REPLY',
             me?.avatar || undefined
           );
@@ -299,7 +299,7 @@ export default function ForumPage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi gửi phản hồi!');
+      toast.error(LABELS.SOCIAL.TOAST.REPLY_ERROR);
     }
   };
 
@@ -324,10 +324,10 @@ export default function ForumPage() {
         }
         return p;
       }));
-      toast.success('Đã xóa phản hồi thành công!');
+      toast.success(LABELS.SOCIAL.TOAST.REPLY_DELETE_SUCCESS);
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi xóa phản hồi!');
+      toast.error(LABELS.SOCIAL.TOAST.REPLY_DELETE_ERROR);
     }
   };
 
@@ -341,10 +341,10 @@ export default function ForumPage() {
           <div>
             <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white flex items-center gap-2 mb-2">
               <Flame className="text-primary animate-pulse" size={36} />
-              Diễn đàn Thực Thần
+              {LABELS.SOCIAL.FEED_TITLE}
             </h1>
             <p className="text-gray-500 text-small max-w-xl font-medium">
-              Không gian chia sẻ review ăn uống, đánh giá nhà hàng chất lượng và bí kíp ẩm thực hấp dẫn từ cộng đồng ẩm thực Food AI.
+              {LABELS.SOCIAL.FEED_DESC}
             </p>
           </div>
           {profile && (

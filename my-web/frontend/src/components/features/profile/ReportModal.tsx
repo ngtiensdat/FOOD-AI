@@ -63,7 +63,7 @@ export const ReportModal = ({
     } catch (err: any) {
       console.error(err);
       const { toast } = await import('@/store/useToastStore');
-      toast.error('Lỗi gửi báo cáo vi phạm!');
+      toast.error(LABELS.MODERATION.TOAST_REPORT_ERROR);
     } finally {
       setLoading(false);
     }

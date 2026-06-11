@@ -109,7 +109,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       setIsOpenModal(false);
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || 'Lỗi khi tạo tin khuyến mại!');
+      toast.error(err.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
     }
   };
 

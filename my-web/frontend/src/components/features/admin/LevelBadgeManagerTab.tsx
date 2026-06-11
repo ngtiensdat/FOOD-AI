@@ -63,7 +63,7 @@ export const LevelBadgeManagerTab = () => {
       setPoints('');
     } catch (err: any) {
       console.error(err);
-      toast.error('Lỗi khi tạo cấu hình danh hiệu');
+      toast.error(LABELS.ADMIN.BADGES_MANAGER.CREATE_ERROR);
     }
   };
 
@@ -75,7 +75,7 @@ export const LevelBadgeManagerTab = () => {
         toast.success(LABELS.ADMIN.DELETE_SUCCESS);
       } catch (err: any) {
         console.error(err);
-        toast.error('Lỗi khi xóa cấu hình danh hiệu');
+        toast.error(LABELS.ADMIN.BADGES_MANAGER.DELETE_ERROR);
       }
     }
   };
