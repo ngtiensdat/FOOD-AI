@@ -13,6 +13,7 @@ import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { ProfileEditState } from '@/hooks/useProfileData';
+import { UserRole } from '@/types/user';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -92,7 +93,7 @@ export const EditProfileModal = ({
             />
           </div>
 
-          {role === 'RESTAURANT' && (
+          {role === UserRole.RESTAURANT && (
             <div className="ai-box p-4 rounded-card space-y-3 border">
               <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.MERCHANT_SYNC}

@@ -106,7 +106,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
       style={imgStyle}
       loading={priority ? "eager" : "lazy"}
       onError={handleError}
-      {...(props as any)}
+      {...(props as React.ImgHTMLAttributes<HTMLImageElement>)}
     />
   );
 };

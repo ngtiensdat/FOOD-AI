@@ -28,6 +28,7 @@ interface RestaurantMenuSidebarProps {
   expandedCategories: Record<number, boolean>;
   setExpandedCategories: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   activeCategoryId?: number | null;
+  onScrollToCategory?: (id: number) => void;
 }
 
 export const RestaurantMenuSidebar = ({
@@ -37,6 +38,7 @@ export const RestaurantMenuSidebar = ({
   expandedCategories,
   setExpandedCategories,
   activeCategoryId,
+  onScrollToCategory,
 }: RestaurantMenuSidebarProps) => {
   const toggleCategory = (id: number) => {
     setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
@@ -57,9 +59,8 @@ export const RestaurantMenuSidebar = ({
               <div 
                 className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20 text-primary font-bold' : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300'}`}
                 onClick={() => {
-                  const section = document.getElementById(`category-sec-${cat.id}`);
-                  if (section && selectedCategoryId === null) {
-                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  if (onScrollToCategory && selectedCategoryId === null) {
+                    onScrollToCategory(cat.id);
                   } else {
                     setSelectedCategoryId(cat.id);
                   }

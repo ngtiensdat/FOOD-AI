@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 
 export type FollowerItem = User & { user?: User };
 
@@ -91,7 +91,7 @@ export const FollowersModal = ({
               const userName = userObj.profile?.fullName || userObj.name || LABELS.COMMON.USER;
               const userEmail = userObj.email;
               const userAvatar = userObj.profile?.avatar;
-              const userRoleLabel = userObj.role === 'RESTAURANT' ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
+              const userRoleLabel = userObj.role === UserRole.RESTAURANT ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
 
               return (
                 <div 

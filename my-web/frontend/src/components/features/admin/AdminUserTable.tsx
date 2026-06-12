@@ -10,7 +10,7 @@ import { Trash2, User } from 'lucide-react';
 import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
 import { formatDate } from '@/utils/formatters';
-import { User as UserType } from '@/types/user';
+import { User as UserType, UserRole } from '@/types/user';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
 
 interface AdminUserTableProps {
@@ -59,7 +59,7 @@ export const AdminUserTable = ({
               }
             ];
 
-            const isMerchant = item.role === 'RESTAURANT';
+            const isMerchant = item.role === UserRole.RESTAURANT;
 
             return (
               <MiniCardForAdmin

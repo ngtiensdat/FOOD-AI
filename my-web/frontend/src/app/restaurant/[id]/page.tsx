@@ -28,9 +28,10 @@ import { RestaurantFoodGrid } from '@/components/features/restaurant/RestaurantF
 export default function RestaurantProfilePage() {
   const router = useRouter();
 
-  // Local state for expanded categories & Scrollspy active category
+  // Local state for expanded categories & Scrollspy active category & Grid container ref
   const [expandedCategories, setExpandedCategories] = React.useState<Record<number, boolean>>({});
   const [activeCategoryId, setActiveCategoryId] = React.useState<number | null>(null);
+  const gridContainerRef = React.useRef<HTMLDivElement>(null);
 
   const {
     restaurantData,
@@ -82,7 +83,7 @@ export default function RestaurantProfilePage() {
       return;
     }
 
-    const sections = document.querySelectorAll('.category-section');
+    const sections = gridContainerRef.current?.querySelectorAll('.category-section') || [];
     if (sections.length === 0) return;
 
     const observerOptions = {
@@ -190,17 +191,27 @@ export default function RestaurantProfilePage() {
               expandedCategories={expandedCategories}
               setExpandedCategories={setExpandedCategories}
               activeCategoryId={activeCategoryId}
+              onScrollToCategory={(id) => {
+                const section = gridContainerRef.current?.querySelector(`#category-sec-${id}`);
+                if (section && selectedCategoryId === null) {
+                  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                  setSelectedCategoryId(id);
+                }
+              }}
             />
-            <RestaurantFoodGrid 
-              foodsData={foodsData}
-              loadingFoods={loadingFoods}
-              hasMoreFoods={hasMoreFoods}
-              restaurantData={restaurantData}
-              handleLoadMoreFoods={handleLoadMoreFoods}
-              setSelectedFood={setSelectedFood}
-              categories={categories}
-              selectedCategoryId={selectedCategoryId}
-            />
+            <div ref={gridContainerRef} className="flex-1 w-full">
+              <RestaurantFoodGrid 
+                foodsData={foodsData}
+                loadingFoods={loadingFoods}
+                hasMoreFoods={hasMoreFoods}
+                restaurantData={restaurantData}
+                handleLoadMoreFoods={handleLoadMoreFoods}
+                setSelectedFood={setSelectedFood}
+                categories={categories}
+                selectedCategoryId={selectedCategoryId}
+              />
+            </div>
           </div>
         ) : (
           <RestaurantInfoTab restaurantData={restaurantData} />

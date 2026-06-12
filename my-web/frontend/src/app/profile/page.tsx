@@ -13,7 +13,7 @@ import { Info, Plus, Star } from 'lucide-react';
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
 import { useAuth } from '@/hooks/useAuth';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
@@ -96,7 +96,7 @@ function ProfileContent() {
   // Gamification helper to award points and handle level-ups
   const awardPoints = async (pointsAmount: number, reason: string) => {
     if (!profile) return;
-    if (profile.role !== 'CUSTOMER' && profile.role !== 'RESTAURANT') return;
+    if (profile.role !== UserRole.CUSTOMER && profile.role !== UserRole.RESTAURANT) return;
 
     try {
       const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);

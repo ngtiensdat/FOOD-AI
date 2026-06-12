@@ -12,7 +12,7 @@ import { userService } from '@/services/user.service';
 import { authService } from '@/services/auth.service';
 import { socialService } from '@/services/social.service';
 import { addNotification } from '@/utils/notifications';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LABELS } from '@/constants/labels';
@@ -60,9 +60,9 @@ export default function ForumPage() {
   useEffect(() => {
     if (me?.id) {
       authService.getFollowing(me.id)
-        .then((data: any) => {
-          const followedUserIds = data?.users?.map((u: any) => u.id) || [];
-          const followedRestaurantIds = data?.restaurants?.map((u: any) => u.id) || [];
+        .then((data: { users?: { id: number }[]; restaurants?: { id: number }[] }) => {
+          const followedUserIds = data?.users?.map((u) => u.id) || [];
+          const followedRestaurantIds = data?.restaurants?.map((u) => u.id) || [];
           setFollowingIds([...followedUserIds, ...followedRestaurantIds]);
         })
         .catch(err => console.error('Lỗi lấy danh sách theo dõi:', err));
@@ -88,7 +88,7 @@ export default function ForumPage() {
   // Gamification helper to award points and handle level-ups
   const awardPoints = async (pointsAmount: number, reason: string) => {
     if (!profile) return;
-    if (profile.role !== 'CUSTOMER' && profile.role !== 'RESTAURANT') return;
+    if (profile.role !== UserRole.CUSTOMER && profile.role !== UserRole.RESTAURANT) return;
 
     try {
       const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);

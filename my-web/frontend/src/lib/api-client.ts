@@ -6,6 +6,20 @@
 
 const API_URL = '/api';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
+const logDev = (...args: unknown[]) => {
+  if (isDev) {
+    console.log(...args);
+  }
+};
+
+const errorDev = (...args: unknown[]) => {
+  if (isDev) {
+    console.error(...args);
+  }
+};
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface RequestOptions extends Omit<RequestInit, 'method' | 'body'> {
@@ -59,14 +73,14 @@ class ApiClient {
     if (body && method !== 'GET') {
       config.body = isFormData ? (body as FormData) : JSON.stringify(body);
       if (!isFormData) {
-        console.log(`[ApiClient] ${method} ${endpoint} Payload:`, body);
+        logDev(`[ApiClient] ${method} ${endpoint} Payload:`, body);
       }
     }
 
     try {
-      console.log(`[ApiClient] Fetching: ${method} ${url.toString()}`);
+      logDev(`[ApiClient] Fetching: ${method} ${url.toString()}`);
       let response = await fetch(url.toString(), config);
-      console.log(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
+      logDev(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
       // Xử lý Refresh Token tự động nếu nhận lỗi 401
       if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
@@ -77,7 +91,7 @@ class ApiClient {
           })
             .then((res) => res.ok)
             .catch((error) => {
-              console.error('Refresh token error:', error);
+              errorDev('Refresh token error:', error);
               return false;
             })
             .finally(() => {
@@ -102,9 +116,9 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-        console.error(`[ApiClient] Request failed for ${endpoint}:`, errorData);
+        errorDev(`[ApiClient] Request failed for ${endpoint}:`, errorData);
 
-        console.error("Request failed details", {
+        errorDev("Request failed details", {
           endpoint,
           status: response.status,
           statusText: response.statusText,
@@ -123,7 +137,7 @@ class ApiClient {
       }
 
       const result = await response.json();
-      console.log(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
+      logDev(`[ApiClient] Result for ${endpoint}:`, JSON.stringify(result).substring(0, 200) + '...');
 
       // Tự động unwrap nếu data có cấu trúc { data, ... } và không phải lỗi (errors)
       if (result && typeof result === 'object' && 'data' in result && !('errors' in result)) {
@@ -133,7 +147,7 @@ class ApiClient {
       return result;
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string; response?: { data?: unknown }; status?: string | number };
-      console.error("Request failed", {
+      errorDev("Request failed", {
         endpoint,
         error,
         message: err?.message,

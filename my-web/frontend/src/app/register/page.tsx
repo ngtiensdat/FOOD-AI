@@ -11,6 +11,7 @@ import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { Alert } from '@/components/base/Alert';
 import { LABELS } from '@/constants/labels';
+import { UserRole } from '@/types/user';
 
 export default function RegisterPage() {
   const {
@@ -84,7 +85,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <label className="text-small font-semibold text-gray-700 dark:text-gray-800 ml-1">{LABELS.AUTH.WHO_ARE_YOU}</label>
                   <div className="grid grid-cols-2 gap-4">
-                    {['CUSTOMER', 'RESTAURANT'].map((r) => (
+                    {[UserRole.CUSTOMER, UserRole.RESTAURANT].map((r) => (
                       <button
                         suppressHydrationWarning
                         key={r}
@@ -96,7 +97,7 @@ export default function RegisterPage() {
                             : 'border-gray-100 dark:border-gray-200 text-gray-500 hover:border-gray-200 dark:hover:border-gray-300'
                         }`}
                       >
-                        {r === 'CUSTOMER' ? LABELS.AUTH.CUSTOMER : LABELS.AUTH.RESTAURANT}
+                        {r === UserRole.CUSTOMER ? LABELS.AUTH.CUSTOMER : LABELS.AUTH.RESTAURANT}
                       </button>
                     ))}
                   </div>
@@ -167,7 +168,7 @@ export default function RegisterPage() {
                   </button>
                 </div>
 
-                {role === 'RESTAURANT' && (
+                {role === UserRole.RESTAURANT && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                     <Input
                       label={LABELS.AUTH.LEGAL_DOCS}

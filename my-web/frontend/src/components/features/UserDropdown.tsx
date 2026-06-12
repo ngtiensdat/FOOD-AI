@@ -10,6 +10,7 @@ import { Shield, Store, User, Settings, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
+import { UserRole } from '@/types/user';
 
 interface UserDropdownProps {
   user: { name?: string; role?: string; avatar?: string | null; [key: string]: unknown };
@@ -51,12 +52,12 @@ export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserD
         </div>
       </Link>
 
-      {user.role === 'ADMIN' && (
+      {user.role === UserRole.ADMIN && (
         <Link href="/admin" onClick={(e) => handleItemClick(e)} className="dropdown-item">
           <Shield size={18} className="text-primary" /> {LABELS.NAV.ADMIN_PANEL}
         </Link>
       )}
-      {user.role === 'RESTAURANT' && (
+      {user.role === UserRole.RESTAURANT && (
         <Link href="/restaurant-admin" onClick={(e) => handleItemClick(e)} className="dropdown-item">
           <Store size={18} className="text-primary" /> {LABELS.NAV.RESTAURANT_PANEL}
         </Link>

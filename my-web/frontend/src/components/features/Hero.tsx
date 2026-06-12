@@ -6,7 +6,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SafeImage } from '@/components/base/SafeImage';
 import { MapPin, Smile, DollarSign, Send } from 'lucide-react';
@@ -60,16 +59,13 @@ export const Hero = ({
 
   return (
     <section className="pt-32 pb-20 px-6 relative overflow-hidden min-h-[600px] flex items-center">
-      <Image
-        src={heroBg}
+      <SafeImage
+        src={heroBg.src}
         alt={LABELS.HERO.BG_ALT}
         fill
         priority
         sizes="100vw"
         className="object-cover opacity-10"
-        onError={(e) => {
-          e.currentTarget.style.display = 'none';
-        }}
       />
       <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
         <motion.h1

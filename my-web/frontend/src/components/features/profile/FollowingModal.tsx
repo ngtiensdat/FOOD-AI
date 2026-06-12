@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 
 export type FollowingRestaurant = User & { address?: string; mapUrl?: string };
 
@@ -99,7 +99,7 @@ export const FollowingModal = ({
                   {users.map((followingUser) => {
                     const userName = followingUser.profile?.fullName || followingUser.name || LABELS.COMMON.USER;
                     const userAvatar = followingUser.profile?.avatar;
-                    const userRoleLabel = followingUser.role === 'RESTAURANT' ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
+                    const userRoleLabel = followingUser.role === UserRole.RESTAURANT ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER;
 
                     return (
                       <div 

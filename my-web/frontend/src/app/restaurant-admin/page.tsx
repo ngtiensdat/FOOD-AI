@@ -256,14 +256,13 @@ export default function RestaurantDashboard() {
                         <input
                           type="text"
                           placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
-                          defaultValue={restaurant?.profile?.openingHours || ''}
-                          id="opening-hours-input"
+                          value={openingHoursText}
+                          onChange={(e) => setOpeningHoursText(e.target.value)}
                           className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
                         />
                         <Button
                           onClick={() => {
-                            const val = (document.getElementById('opening-hours-input') as HTMLInputElement)?.value;
-                            actions.updateProfileHours(val);
+                            actions.updateProfileHours(openingHoursText);
                           }}
                         >
                           {LABELS.RESTAURANT.SAVE}
