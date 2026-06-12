@@ -70,29 +70,31 @@ export class FoodService {
       });
     }
 
-    if (andFilters.length > 0) {
-      where.AND = andFilters;
-    }
-
-    const result = await this.repository.findAll(where);
-    let foods = result.data;
-
     if (tag) {
       const searchTags = tag
         .split(',')
         .map((t) => t.trim().toLowerCase())
         .filter((t) => t);
-
-      foods = foods.filter((food) => {
-        const foodTagsLower = food.tags.map((t) => t.toLowerCase());
-        return searchTags.every((st) => foodTagsLower.includes(st));
-      });
+      if (searchTags.length > 0) {
+        andFilters.push({
+          tags: {
+            hasEvery: searchTags,
+          },
+        });
+      }
     }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
+    }
+
+    const result = await this.repository.findAll(where);
+    const foods = result.data;
 
     return {
       data: foods.slice(0, FOOD_DISPLAY_LIMIT),
       meta: {
-        total: tag ? foods.length : result.total,
+        total: result.total,
         limit: FOOD_DISPLAY_LIMIT,
       },
     };

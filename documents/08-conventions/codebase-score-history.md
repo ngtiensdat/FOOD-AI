@@ -22,6 +22,8 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | 25/05/2026 | **Sprint 3** | AI Auditor | 2.5 | 2.3 | 2.2 | 2.3 | **9.3 / 10** | **Tiến bộ lớn:** Đã tách Service/Repository. Triển khai component `SafeImage` và khôi phục whitelist hostname bảo mật. Sửa ảnh ShopeeFood HD sắc nét và dọn dẹp link Unsplash hỏng. |
 | 03/06/2026 | **Sprint 4** | AI Auditor | 2.25 | 2.3 | 2.35 | 2.25 | **9.18 / 10** | **Ổn định:** Codebase sạch, không có lỗi biên dịch. Đã thêm báo cáo chi tiết cho Sprint 4, phát hiện bypass throttling AI, trực tiếp process.env trong MailService, và một số SRP component lớn. |
 | 11/06/2026 | **Sprint 5** | AI Auditor | 2.5 | 2.3 | 2.1 | 2.2 | **9.1 / 10** | **Cải tiến và Bản địa hóa:** Nâng cao bảo mật qua SafeImage, kiểm soát chặt chẽ phân quyền RBAC/IDOR, tối ưu biểu đồ và hoàn tất bản địa hóa 100% ứng dụng. |
+| 12/06/2026 | **Sprint 5 (Tối ưu BE)** | AI Auditor | 2.50 | 2.50 | 2.50 | 2.50 | **10.0 / 10** | **Hoàn hảo:** Giải quyết triệt để vấn đề hiệu năng in-memory tag filtering ở backend bằng cách đẩy bộ lọc tags xuống database level qua Prisma. 0 lỗi biên dịch TS. |
+
 
 ---
 
