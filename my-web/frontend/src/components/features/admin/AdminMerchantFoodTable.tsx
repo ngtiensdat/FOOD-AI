@@ -18,6 +18,7 @@ import { UserStatus } from '@/types/user';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
 import { useMerchantFoodTable } from '@/hooks/useMerchantFoodTable';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
+import { LIMITS } from '@/constants/limits.constant';
 
 interface AdminMerchantFoodTableProps {
   filteredData: AdminFoodItem[];
@@ -32,8 +33,7 @@ interface AdminMerchantFoodTableProps {
   };
 }
 
-const PAGE_SIZE = 5;
-const RESTAURANT_PAGE_SIZE = 5;
+
 
 export const AdminMerchantFoodTable = ({
   filteredData,
@@ -78,12 +78,12 @@ export const AdminMerchantFoodTable = ({
     };
   }, [pendingStatusChange]);
 
-  const totalRestaurantPages = Math.ceil(groupedMerchantFoods.length / RESTAURANT_PAGE_SIZE);
+  const totalRestaurantPages = Math.ceil(groupedMerchantFoods.length / LIMITS.ADMIN_RESTAURANT_GROUP_PAGE_SIZE);
   const activeRestaurantPage = Math.min(Math.max(1, currentPage), totalRestaurantPages || 1);
 
   const paginatedRestaurants = useMemo(() => {
-    const start = (activeRestaurantPage - 1) * RESTAURANT_PAGE_SIZE;
-    return groupedMerchantFoods.slice(start, start + RESTAURANT_PAGE_SIZE);
+    const start = (activeRestaurantPage - 1) * LIMITS.ADMIN_RESTAURANT_GROUP_PAGE_SIZE;
+    return groupedMerchantFoods.slice(start, start + LIMITS.ADMIN_RESTAURANT_GROUP_PAGE_SIZE);
   }, [groupedMerchantFoods, activeRestaurantPage]);
 
   return (
@@ -112,9 +112,9 @@ export const AdminMerchantFoodTable = ({
             return true;
           });
 
-          const totalPages = Math.ceil(filteredFoodsOfRestaurant.length / PAGE_SIZE);
-          const startIndex = (curPage - 1) * PAGE_SIZE;
-          const paginatedFoods = filteredFoodsOfRestaurant.slice(startIndex, startIndex + PAGE_SIZE);
+          const totalPages = Math.ceil(filteredFoodsOfRestaurant.length / LIMITS.ADMIN_PAGE_SIZE);
+          const startIndex = (curPage - 1) * LIMITS.ADMIN_PAGE_SIZE;
+          const paginatedFoods = filteredFoodsOfRestaurant.slice(startIndex, startIndex + LIMITS.ADMIN_PAGE_SIZE);
 
           return (
             <div 

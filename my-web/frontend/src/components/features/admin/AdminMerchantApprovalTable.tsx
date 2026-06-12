@@ -12,6 +12,7 @@ import { LABELS } from '@/constants/labels';
 import { formatDate } from '@/utils/formatters';
 import { User, UserStatus } from '@/types/user';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
+import { LIMITS } from '@/constants/limits.constant';
 
 interface AdminMerchantApprovalTableProps {
   filteredData: User[];
@@ -20,7 +21,7 @@ interface AdminMerchantApprovalTableProps {
   };
 }
 
-const PAGE_SIZE = 5;
+
 
 export const AdminMerchantApprovalTable = ({
   filteredData,
@@ -29,12 +30,12 @@ export const AdminMerchantApprovalTable = ({
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredData.length / LIMITS.ADMIN_PAGE_SIZE);
   const activePage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const paginatedData = useMemo(() => {
-    const start = (activePage - 1) * PAGE_SIZE;
-    return filteredData.slice(start, start + PAGE_SIZE);
+    const start = (activePage - 1) * LIMITS.ADMIN_PAGE_SIZE;
+    return filteredData.slice(start, start + LIMITS.ADMIN_PAGE_SIZE);
   }, [filteredData, activePage]);
 
   return (

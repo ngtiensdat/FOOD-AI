@@ -11,6 +11,7 @@ import { restaurantService } from '@/services/restaurant.service';
 import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { Restaurant } from '@/types/restaurant';
 import { useDebounce } from '@/hooks/useDebounce';
+import { LIMITS } from '@/constants/limits.constant';
 
 interface ExploreResponse {
   restaurants?: Restaurant[];
@@ -59,20 +60,20 @@ export const useExploreActions = () => {
           district: selectedDistrict || undefined,
           search: debouncedSearchQuery || undefined,
           page: currentPage,
-          pageSize: 6,
+          pageSize: LIMITS.EXPLORE_RESTAURANTS_PAGE_SIZE,
         });
         
         const response = res as unknown as ExploreResponse | Restaurant[];
 
         if (response && !Array.isArray(response) && Array.isArray(response.restaurants)) {
           setRestaurants(response.restaurants);
-          setTotalPages(Math.ceil((response.total || 0) / 6));
+          setTotalPages(Math.ceil((response.total || 0) / LIMITS.EXPLORE_RESTAURANTS_PAGE_SIZE));
         } else if (Array.isArray(response)) {
           setRestaurants(response);
           setTotalPages(1);
         } else if (response && !Array.isArray(response) && Array.isArray(response.data)) {
           setRestaurants(response.data);
-          setTotalPages(Math.ceil((response.total || 0) / 6));
+          setTotalPages(Math.ceil((response.total || 0) / LIMITS.EXPLORE_RESTAURANTS_PAGE_SIZE));
         } else {
           setRestaurants([]);
           setTotalPages(1);

@@ -6,6 +6,7 @@ import { restaurantService } from '@/services/restaurant.service';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { LIMITS } from '@/constants/limits.constant';
 
 export const useRestaurantProfile = () => {
   const params = useParams();
@@ -68,7 +69,7 @@ export const useRestaurantProfile = () => {
     if (!restaurantId) return;
     setLoadingFoods(true);
     try {
-      const pageSize = 8;
+      const pageSize = LIMITS.PUBLIC_RESTAURANT_FOODS_PAGE_SIZE;
       const res: any = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page, pageSize);
       if (res && Array.isArray(res.items)) {
         setFoodsData(prev => append ? [...prev, ...res.items] : res.items);

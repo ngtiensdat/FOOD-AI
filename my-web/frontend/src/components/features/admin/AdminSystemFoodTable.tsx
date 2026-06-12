@@ -12,6 +12,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { AdminFoodItem } from '@/types/food';
 import { UpdateFoodPayload } from '@/hooks/useAdminActions';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
+import { LIMITS } from '@/constants/limits.constant';
 
 interface AdminSystemFoodTableProps {
   filteredData: AdminFoodItem[];
@@ -24,7 +25,7 @@ interface AdminSystemFoodTableProps {
   };
 }
 
-const PAGE_SIZE = 5;
+
 
 export const AdminSystemFoodTable = ({
   filteredData,
@@ -32,12 +33,12 @@ export const AdminSystemFoodTable = ({
 }: AdminSystemFoodTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredData.length / LIMITS.ADMIN_PAGE_SIZE);
   const activePage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const paginatedData = useMemo(() => {
-    const start = (activePage - 1) * PAGE_SIZE;
-    return filteredData.slice(start, start + PAGE_SIZE);
+    const start = (activePage - 1) * LIMITS.ADMIN_PAGE_SIZE;
+    return filteredData.slice(start, start + LIMITS.ADMIN_PAGE_SIZE);
   }, [filteredData, activePage]);
 
   return (

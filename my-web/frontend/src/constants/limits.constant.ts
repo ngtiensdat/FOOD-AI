@@ -68,4 +68,25 @@ export const LIMITS = {
    * Số ký tự tối đa hiển thị label trục X trong biểu đồ SVG
    */
   CHART_X_LABEL_MAX_CHARS: 10,
+
+  /**
+   * Kích thước trang mặc định cho danh sách nhà hàng tại trang Khám phá
+   */
+  EXPLORE_RESTAURANTS_PAGE_SIZE: 6,
+
+  /**
+   * Kích thước trang mặc định cho danh sách món ăn của nhà hàng công khai
+   */
+  PUBLIC_RESTAURANT_FOODS_PAGE_SIZE: 8,
+
+  /**
+   * Kích thước trang mặc định cho bảng quản trị viên (Admin Tables)
+   */
+  ADMIN_PAGE_SIZE: 5,
+
+  /**
+   * Kích thước trang mặc định cho phân trang theo nhà hàng trong quản lý món ăn đối tác của Admin
+   */
+  ADMIN_RESTAURANT_GROUP_PAGE_SIZE: 5,
 };
+
