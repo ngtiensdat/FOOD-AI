@@ -6,6 +6,7 @@
 
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './database/prisma.module';
@@ -22,6 +23,7 @@ import { VoucherModule } from './modules/voucher/voucher.module';
 import { OfferModule } from './modules/offer/offer.module';
 import { BadgeModule } from './modules/badge/badge.module';
 import { ReportModule } from './modules/report/report.module';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 @Module({
   imports: [
@@ -39,14 +41,21 @@ import { ReportModule } from './modules/report/report.module';
     ReportModule,
     ThrottlerModule.forRoot([
       {
-        ttl: 600000,
-        limit: 5,
+        name: 'default',
+        ttl: 60000,
+        limit: 100,
       },
     ]),
     CategoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

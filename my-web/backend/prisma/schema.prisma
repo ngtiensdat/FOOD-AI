@@ -95,6 +95,7 @@ model Restaurant {
   owner          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
+  @@index([isActive])
   @@map("restaurants")
 }
 
@@ -147,6 +148,8 @@ model Food {
   aiFeedbacks        AiFeedback[]
 
   @@index([restaurantId, status])
+  @@index([isActive, status])
+  @@index([categoryId])
   @@map("foods")
 }
 
@@ -274,6 +277,7 @@ model Favorite {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, foodId])
+  @@index([foodId])
   @@map("favorites")
 }
 
@@ -288,6 +292,7 @@ model History {
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, visitedAt])
+  @@index([foodId])
   @@map("histories")
 }
 
@@ -300,6 +305,7 @@ model Conversation {
   messages  Message[]
   aiFeedbacks AiFeedback[]
 
+  @@index([userId])
   @@map("conversations")
 }
 

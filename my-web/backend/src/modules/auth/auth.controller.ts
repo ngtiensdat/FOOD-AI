@@ -30,7 +30,7 @@ import { Throttle } from '@nestjs/throttler';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @UseGuards(CustomThrottlerGuard)
   @Post('register')
   async register(

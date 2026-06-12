@@ -5,10 +5,21 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, PostType, PostStatus } from '@prisma/client';
+import DOMPurify from 'isomorphic-dompurify';
+import { MESSAGES } from '../../common/constants/messages.constant';
+import { LIMITS } from '../../common/constants/limits.constant';
+import {
+  DEFAULT_BADGE_CONFIGS,
+  POINTS_PER_LEVEL,
+} from '../../common/constants/badge.constant';
+import { CacheService } from '../../common/services/cache.service';
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cacheService: CacheService,
+  ) {}
 
   async awardPoints(
     userId: number,
@@ -24,7 +35,7 @@ export class PostService {
     const nextPoints = user.points + pointsAmount;
 
     // Level calculation
-    const nextLevel = Math.floor(nextPoints / 1000) + 1;
+    const nextLevel = Math.floor(nextPoints / POINTS_PER_LEVEL) + 1;
 
     // Badge calculation
     const badges = await prisma.badgeConfig.findMany({
@@ -37,18 +48,10 @@ export class PostService {
       const matched = sorted.find((b) => nextPoints >= b.points);
       nextBadge = matched ? matched.title : null;
     } else {
-      // Fallback defaults
-      const defaults = [
-        { role: 'CUSTOMER', title: 'Thực Khách Năng Động', points: 300 },
-        { role: 'CUSTOMER', title: 'Chuyên Gia Ẩm Thực', points: 1000 },
-        { role: 'CUSTOMER', title: 'Thánh Review Cao Cấp', points: 3000 },
-        { role: 'RESTAURANT', title: 'Đối Tác Tiềm Năng', points: 500 },
-        { role: 'RESTAURANT', title: 'Đối Tác Uy Tín', points: 2000 },
-        { role: 'RESTAURANT', title: 'Thương Hiệu Xuất Sắc', points: 5000 },
-      ];
-      const sorted = defaults
-        .filter((b) => b.role === user.role)
-        .sort((a, b) => b.points - a.points);
+      // Fallback defaults từ constants
+      const sorted = DEFAULT_BADGE_CONFIGS.filter(
+        (b) => b.role === user.role,
+      ).sort((a, b) => b.points - a.points);
       const matched = sorted.find((b) => nextPoints >= b.points);
       nextBadge = matched ? matched.title : null;
     }
@@ -63,7 +66,12 @@ export class PostService {
     });
   }
 
-  async getAllPosts(viewerId?: number, authorId?: number) {
+  async getAllPosts(
+    viewerId?: number,
+    authorId?: number,
+    page: number = 1,
+    pageSize: number = LIMITS.POSTS_DEFAULT_PAGE_SIZE,
+  ) {
     const where: Prisma.PostWhereInput = {
       deletedAt: null,
       status: PostStatus.APPROVED,
@@ -73,34 +81,30 @@ export class PostService {
       where.authorId = authorId;
     }
 
-    const posts = await this.prisma.post.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            level: true,
-            badgeTitle: true,
-            profile: { select: { avatar: true } },
-          },
-        },
-        food: { select: { id: true, name: true } },
-        restaurant: { select: { id: true, name: true } },
-        likes: true,
-        comments: {
-          orderBy: { createdAt: 'asc' },
+    const cacheKey = `posts:list:${authorId || 'all'}:${page}:${pageSize}`;
+    const cached = await this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        const posts = await this.prisma.post.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
           include: {
-            user: {
+            author: {
               select: {
                 id: true,
                 name: true,
+                role: true,
+                level: true,
+                badgeTitle: true,
                 profile: { select: { avatar: true } },
               },
             },
-            replies: {
+            food: { select: { id: true, name: true } },
+            restaurant: { select: { id: true, name: true } },
+            likes: true,
+            comments: {
               orderBy: { createdAt: 'asc' },
               include: {
                 user: {
@@ -110,32 +114,46 @@ export class PostService {
                     profile: { select: { avatar: true } },
                   },
                 },
+                replies: {
+                  orderBy: { createdAt: 'asc' },
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        profile: { select: { avatar: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            sharedFrom: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profile: { select: { avatar: true } },
+                  },
+                },
               },
             },
           },
-        },
-        sharedFrom: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { avatar: true } },
-              },
-            },
-          },
-        },
-      },
-    });
+        });
 
-    // Format posts to match frontend's expected properties
-    return posts.map((post) => {
+        const total = await this.prisma.post.count({ where });
+        return { posts, total };
+      },
+      120, // 2 minutes TTL
+    );
+
+    // Format posts to match frontend's expected properties, checking likes dynamically
+    const formattedPosts = cached.posts.map((post) => {
       const isLiked = viewerId
         ? post.likes.some((like) => like.userId === viewerId)
         : false;
 
-      // Parse comment hierarchy (separate parent comments and replies if not already nested)
-      // Note: prisma include replies is already recursive for one level which is enough for comment replies
       const parentComments = post.comments
         .filter((c) => !c.parentId)
         .map((c) => ({
@@ -192,11 +210,20 @@ export class PostService {
             0,
           ),
         isLiked,
-        likedByUsers: post.likes.map((l) => ({ id: l.userId })), // Simplified for frontend checklist
+        likedByUsers: post.likes.map((l) => ({ id: l.userId })),
         comments: parentComments,
         createdAt: post.createdAt.toISOString(),
       };
     });
+
+    return {
+      data: formattedPosts,
+      meta: {
+        total: cached.total,
+        page,
+        pageSize,
+      },
+    };
   }
 
   async createPost(
@@ -213,11 +240,14 @@ export class PostService {
       sharedFromId?: number;
     },
   ) {
+    const sanitizedContent = dto.content
+      ? DOMPurify.sanitize(dto.content)
+      : dto.content;
     const post = await this.prisma.post.create({
       data: {
         authorId: userId,
         title: dto.title,
-        content: dto.content,
+        content: sanitizedContent,
         image: dto.image,
         rating: dto.rating ? Number(dto.rating) : null,
         postType: dto.postType || PostType.NORMAL,
@@ -231,6 +261,7 @@ export class PostService {
 
     // Award 50 points
     await this.awardPoints(userId, 50);
+    await this.cacheService.invalidatePattern('posts:*');
 
     return post;
   }
@@ -254,6 +285,7 @@ export class PostService {
           },
         },
       });
+      await this.cacheService.invalidatePattern('posts:*');
       return { isLiked: false };
     } else {
       await this.prisma.like.create({
@@ -265,6 +297,7 @@ export class PostService {
 
       // Award 5 points
       await this.awardPoints(userId, 5);
+      await this.cacheService.invalidatePattern('posts:*');
       return { isLiked: true };
     }
   }
@@ -274,11 +307,14 @@ export class PostService {
     postId: number,
     dto: { content: string; parentId?: number },
   ) {
+    const sanitizedContent = dto.content
+      ? DOMPurify.sanitize(dto.content)
+      : dto.content;
     const comment = await this.prisma.comment.create({
       data: {
         userId,
         postId,
-        content: dto.content,
+        content: sanitizedContent,
         parentId: dto.parentId ? Number(dto.parentId) : null,
       },
       include: {
@@ -294,6 +330,7 @@ export class PostService {
     // Award 10 points for parent comment, 5 points for reply
     const points = dto.parentId ? 5 : 10;
     await this.awardPoints(userId, points);
+    await this.cacheService.invalidatePattern('posts:*');
 
     return {
       id: comment.id,
@@ -313,17 +350,21 @@ export class PostService {
     });
 
     if (!comment) {
-      throw new NotFoundException('Không tìm thấy bình luận');
+      throw new NotFoundException(MESSAGES.SOCIAL.COMMENT_NOT_FOUND);
     }
 
     // Check ownership: commenter or post author
     if (comment.userId !== userId && comment.post.authorId !== userId) {
-      throw new ForbiddenException('Bạn không có quyền xóa bình luận này');
+      throw new ForbiddenException(
+        MESSAGES.SOCIAL.NO_DELETE_COMMENT_PERMISSION,
+      );
     }
 
     await this.prisma.comment.delete({
       where: { id: commentId },
     });
+
+    await this.cacheService.invalidatePattern('posts:*');
 
     return { success: true };
   }

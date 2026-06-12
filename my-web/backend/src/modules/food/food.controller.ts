@@ -58,8 +58,14 @@ export class FoodController {
   @Get('my-foods')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
-  getMerchantFoods(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getMerchantFoods(user);
+  getMerchantFoods(
+    @GetUser() user: PrismaClient.User,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    const p = page ? Number(page) : undefined;
+    const ps = pageSize ? Number(pageSize) : undefined;
+    return this.foodService.getMerchantFoods(user, p, ps);
   }
 
   @Get('search')

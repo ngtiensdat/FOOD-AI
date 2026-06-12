@@ -347,4 +347,15 @@ export const MESSAGES = {
       );
     },
   },
+  SOCIAL: {
+    get COMMENT_NOT_FOUND() {
+      return t('SOCIAL.COMMENT_NOT_FOUND', 'Không tìm thấy bình luận');
+    },
+    get NO_DELETE_COMMENT_PERMISSION() {
+      return t(
+        'SOCIAL.NO_DELETE_COMMENT_PERMISSION',
+        'Bạn không có quyền xóa bình luận này',
+      );
+    },
+  },
 };

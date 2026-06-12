@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { ReportStatus } from '@prisma/client';
+import { CacheService } from '../../common/services/cache.service';
 
 @Injectable()
 export class ReportService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cacheService: CacheService,
+  ) {}
 
   async createReport(
     userId: number,
@@ -49,9 +53,10 @@ export class ReportService {
     // Resolve report by deleting target content
     await this.prisma.$transaction(async (tx) => {
       if (report.targetType === 'POST') {
-        // Delete post
-        await tx.post.deleteMany({
+        // Soft delete post
+        await tx.post.updateMany({
           where: { id: report.targetId },
+          data: { deletedAt: new Date() },
         });
       } else if (report.targetType === 'COMMENT') {
         // Delete comment
@@ -65,6 +70,10 @@ export class ReportService {
         data: { status: ReportStatus.RESOLVED },
       });
     });
+
+    if (report.targetType === 'POST' || report.targetType === 'COMMENT') {
+      await this.cacheService.invalidatePattern('posts:*');
+    }
 
     return { success: true };
   }

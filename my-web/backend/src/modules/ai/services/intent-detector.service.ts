@@ -1,13 +1,10 @@
-/**
- * Mục đích: Service thực hiện phân tích ý định và trích xuất thực thể (slots) từ tin nhắn của người dùng sử dụng LLM.
- * File quan hệ: Được gọi bởi AiService ở đầu luồng hội thoại.
- */
-
 import { Injectable, Logger } from '@nestjs/common';
 import { FoodIntent } from '../constants/food-intent.enum';
 import { INTENT_ANALYZER_PROMPT_TEMPLATE } from '../prompts/intent-analyzer.prompt';
 import { OpenAIService } from './openai.service';
 import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
+import { RedisService } from './redis.service';
+import * as crypto from 'crypto';
 
 interface ParsedIntentResponse {
   needs?: Record<string, number>;
@@ -20,7 +17,10 @@ interface ParsedIntentResponse {
 export class IntentDetectorService {
   private readonly logger = new Logger(IntentDetectorService.name);
 
-  constructor(private readonly openaiService: OpenAIService) {}
+  constructor(
+    private readonly openaiService: OpenAIService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async detectIntentAndSlots(message: string): Promise<{
     intent: FoodIntent;
@@ -29,6 +29,19 @@ export class IntentDetectorService {
     searchQuery: string;
     reasoning: string;
   }> {
+    const normalized = message.toLowerCase().trim();
+    const hash = crypto.createHash('sha256').update(normalized).digest('hex');
+    const cacheKey = `intent:cache:v1:${hash}`;
+
+    try {
+      const cached = await this.redisService.get(cacheKey);
+      if (cached) {
+        this.logger.log(`Intent cache HIT for message: "${message}"`);
+        return JSON.parse(cached);
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to retrieve intent from cache: ${err}`);
+    }
     try {
       const responseText = await this.openaiService.chatCompletion(
         INTENT_ANALYZER_PROMPT_TEMPLATE,
@@ -79,13 +92,21 @@ export class IntentDetectorService {
         allergies: slots.allergies || undefined,
       };
 
-      return {
+      const result = {
         intent,
         slots: slotsResult,
         needs,
         searchQuery: parsed.searchQuery || message,
         reasoning,
       };
+
+      try {
+        await this.redisService.set(cacheKey, JSON.stringify(result), 14400); // 4 hours TTL
+      } catch (err) {
+        this.logger.warn(`Failed to write intent to cache: ${err}`);
+      }
+
+      return result;
     } catch (error) {
       this.logger.error(
         'Error during intent analysis, falling back to UNKNOWN.',

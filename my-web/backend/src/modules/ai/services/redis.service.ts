@@ -25,6 +25,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     string,
     { count: number; resetTime: number }
   >();
+  private readonly memoryQueues = new Map<string, string[]>();
 
   async onModuleInit() {
     const config = appConfig();
@@ -168,6 +169,37 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.memoryCache.delete(key);
   }
 
+  async delPattern(pattern: string): Promise<void> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        const stream = this.redisClient.scanStream({
+          match: pattern,
+          count: 100,
+        });
+
+        for await (const resultKeys of stream) {
+          if (resultKeys.length > 0) {
+            await this.redisClient.del(...resultKeys);
+          }
+        }
+        return;
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Redis delPattern failed for: ${pattern}. Error: ${errMsg}`,
+        );
+      }
+    }
+
+    // In-memory fallback
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    for (const key of this.memoryCache.keys()) {
+      if (regex.test(key)) {
+        this.memoryCache.delete(key);
+      }
+    }
+  }
+
   async ttl(key: string): Promise<number> {
     if (this.isRedisAvailable && this.redisClient) {
       try {
@@ -199,6 +231,38 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     attempts += 1;
     this.memoryCache.set(key, attempts.toString());
     if (attempts === 1 && ttlSeconds) {
+      setTimeout(() => {
+        this.memoryCache.delete(key);
+      }, ttlSeconds * 1000);
+    }
+    return attempts;
+  }
+
+  async incrBy(
+    key: string,
+    value: number,
+    ttlSeconds?: number,
+  ): Promise<number> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        const count = await this.redisClient.incrby(key, value);
+        if (count === value && ttlSeconds) {
+          await this.redisClient.expire(key, ttlSeconds);
+        }
+        return count;
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Redis INCRBY failed for key: ${key}. Error: ${errMsg}`,
+        );
+      }
+    }
+    // Dev Fallback
+    const attemptsStr = this.memoryCache.get(key);
+    let attempts = attemptsStr ? parseInt(attemptsStr, 10) : 0;
+    attempts += value;
+    this.memoryCache.set(key, attempts.toString());
+    if (attempts === value && ttlSeconds) {
       setTimeout(() => {
         this.memoryCache.delete(key);
       }, ttlSeconds * 1000);
@@ -318,5 +382,50 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       return true; // Rate limited
     }
     return false;
+  }
+
+  // QUEUE OPERATIONS (Dead Letter Queue)
+  async rpush(key: string, value: string): Promise<void> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        await this.redisClient.rpush(key, value);
+        return;
+      } catch (err) {
+        this.logger.warn(
+          `Redis RPUSH failed for key: ${key}. Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+    if (!this.memoryQueues.has(key)) {
+      this.memoryQueues.set(key, []);
+    }
+    this.memoryQueues.get(key)!.push(value);
+  }
+
+  async lpop(key: string): Promise<string | null> {
+    if (this.isRedisAvailable && this.redisClient) {
+      try {
+        return await this.redisClient.lpop(key);
+      } catch (err) {
+        this.logger.warn(
+          `Redis LPOP failed for key: ${key}. Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+    const queue = this.memoryQueues.get(key);
+    if (!queue || queue.length === 0) return null;
+    return queue.shift() || null;
+  }
+
+  async ping(): Promise<boolean> {
+    if (!this.isRedisAvailable || !this.redisClient) {
+      return false;
+    }
+    try {
+      const result = await this.redisClient.ping();
+      return result === 'PONG';
+    } catch {
+      return false;
+    }
   }
 }

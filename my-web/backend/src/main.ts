@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { StructuredLogger } from './common/logger/structured-logger.service';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ThrottlerExceptionFilter } from './common/filters/throttler-exception.filter';
@@ -11,11 +13,20 @@ import { Request, Response, NextFunction } from 'express';
 import { appConfig } from './config/app.config';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const logger = new StructuredLogger('Bootstrap');
+  const app = await NestFactory.create(AppModule, {
+    logger: new StructuredLogger(),
+  });
   const config = appConfig();
+  const isProduction = process.env.NODE_ENV === 'production';
 
   app.use(cookieParser());
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProduction ? undefined : false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,40 +42,50 @@ async function bootstrap() {
     new ThrottlerExceptionFilter(),
   );
 
-  // Thêm logger đơn giản để kiểm tra request có đến được server không
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    logger.log(
-      `[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`,
-    );
-    next();
-  });
+  // Request logger — chỉ log trong dev để tránh leak sensitive data trên production
+  if (!isProduction) {
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      logger.log(
+        `[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin || 'none'}`,
+      );
+      next();
+    });
+  }
 
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [config.frontendUrl, 'http://127.0.0.1:3000'];
 
-      // Cho phép localhost, 127.0.0.1 và các dải IP cục bộ trong môi trường dev
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:') ||
-        /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
-        /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
-        /^http:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+(:\d+)?$/.test(origin)
-      ) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return;
       }
+
+      // Cho phép localhost và dải IP cục bộ CHỈ trong dev
+      if (!isProduction) {
+        if (
+          origin.startsWith('http://localhost:') ||
+          origin.startsWith('http://127.0.0.1:') ||
+          /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
+          /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
+          /^http:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+(:\d+)?$/.test(origin)
+        ) {
+          callback(null, true);
+          return;
+        }
+      }
+
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
   });
+
+  // Graceful shutdown — đóng Prisma/Redis connections sạch sẽ khi container bị kill
+  app.enableShutdownHooks();
 
   await app.listen(config.port);
   logger.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
 bootstrap().catch((err) => {
-  new Logger('Bootstrap').error('Error during bootstrap:', err);
+  new StructuredLogger('Bootstrap').error('Error during bootstrap:', err);
 });
-// Trigger clean reload

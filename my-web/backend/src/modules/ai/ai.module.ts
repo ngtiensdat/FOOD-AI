@@ -27,6 +27,8 @@ import { FoodRetrievalService } from './services/food-retrieval.service';
 import { ResponseGeneratorService } from './services/response-generator.service';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService } from './services/weather.service';
+import { RetryQueueService } from '../../common/services/retry-queue.service';
+import { BudgetTrackerService } from './services/budget-tracker.service';
 
 @Module({
   imports: [PrismaModule, ConfigModule.forFeature(aiConfig)],
@@ -50,6 +52,8 @@ import { WeatherService } from './services/weather.service';
     ResponseGeneratorService,
     AiLearningService,
     WeatherService,
+    RetryQueueService,
+    BudgetTrackerService,
   ],
   exports: [
     AiService,
@@ -70,6 +74,8 @@ import { WeatherService } from './services/weather.service';
     ResponseGeneratorService,
     AiLearningService,
     WeatherService,
+    RetryQueueService,
+    BudgetTrackerService,
   ],
 })
 export class AiModule {}
