@@ -42,7 +42,9 @@ export class PrismaService
                 'groupBy',
               ].includes(operation)
             ) {
-              const queryArgs = args || {};
+              const queryArgs = (args || {}) as unknown as {
+                where?: { deletedAt?: Date | null };
+              };
               const argWhere = queryArgs.where || {};
               if (argWhere.deletedAt === undefined) {
                 queryArgs.where = {
@@ -50,6 +52,7 @@ export class PrismaService
                   deletedAt: null,
                 };
               }
+              return query(queryArgs);
             }
             return query(args);
           },
