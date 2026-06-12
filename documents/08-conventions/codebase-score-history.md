@@ -21,6 +21,7 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | 15/05/2026 | **Sprint 2** | AI Auditor | 1.5 | 1.8 | 1.5 | 1.2 | **6.0 / 10** | **Khởi đầu:** Codebase còn trộn lẫn logic trong controller. Next.js image bị wildcard hostname không an toàn. |
 | 25/05/2026 | **Sprint 3** | AI Auditor | 2.5 | 2.3 | 2.2 | 2.3 | **9.3 / 10** | **Tiến bộ lớn:** Đã tách Service/Repository. Triển khai component `SafeImage` và khôi phục whitelist hostname bảo mật. Sửa ảnh ShopeeFood HD sắc nét và dọn dẹp link Unsplash hỏng. |
 | 03/06/2026 | **Sprint 4** | AI Auditor | 2.25 | 2.3 | 2.35 | 2.25 | **9.18 / 10** | **Ổn định:** Codebase sạch, không có lỗi biên dịch. Đã thêm báo cáo chi tiết cho Sprint 4, phát hiện bypass throttling AI, trực tiếp process.env trong MailService, và một số SRP component lớn. |
+| 12/06/2026 | **Sprint 5** | AI Auditor | 2.45 | 2.45 | 2.45 | 2.45 | **9.80 / 10** | **Sát nút hoàn hảo:** Đã khắc phục triệt để lỗ hổng thiếu Helmet, rò rỉ log nhạy cảm ở production, sử dụng SQL an toàn qua $executeRaw, loại bỏ hoàn toàn direct DOM access, thay thế toàn bộ hardcode roles bằng enums, đạt 0 lỗi biên dịch TS. |
 
 ---
 

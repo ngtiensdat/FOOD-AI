@@ -68,11 +68,7 @@ async function reindex() {
       const vectorStr = `[${embedding.join(',')}]`;
 
       // Cập nhật bằng raw query để truyền vector type
-      await prisma.$executeRawUnsafe(
-        `UPDATE foods SET embedding = CAST($1 AS vector) WHERE id = $2`,
-        vectorStr,
-        food.id,
-      );
+      await prisma.$executeRaw`UPDATE foods SET embedding = CAST(${vectorStr} AS vector) WHERE id = ${food.id}`;
       successFoods++;
       if (successFoods % 5 === 0) {
         console.log(`Đã xử lý xong ${successFoods}/${foods.length} món ăn.`);
@@ -114,11 +110,7 @@ async function reindex() {
       const embedding = response.data[0].embedding;
       const vectorStr = `[${embedding.join(',')}]`;
 
-      await prisma.$executeRawUnsafe(
-        `UPDATE user_profiles SET embedding = CAST($1 AS vector) WHERE user_id = $2`,
-        vectorStr,
-        profile.userId,
-      );
+      await prisma.$executeRaw`UPDATE user_profiles SET embedding = CAST(${vectorStr} AS vector) WHERE user_id = ${profile.userId}`;
       successProfiles++;
     } catch (err) {
       console.error(
