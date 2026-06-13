@@ -13,6 +13,7 @@ import { Info, Plus, Star } from 'lucide-react';
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocialActions } from '@/hooks/useSocialActions';
 import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
@@ -60,11 +61,6 @@ function ProfileContent() {
   // Social Feed local states
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  
-  // Report Modal states
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [reportTargetId, setReportTargetId] = useState<number | null>(null);
-  const [reportTargetType, setReportTargetType] = useState<'POST' | 'COMMENT'>('POST');
 
   // Load posts
   useEffect(() => {
@@ -84,6 +80,35 @@ function ProfileContent() {
 
 
 
+  // Centralized social interactions & reports hook
+  const {
+    isReportModalOpen,
+    setIsReportModalOpen,
+    reportTargetId,
+    setReportTargetId,
+    reportTargetType,
+    setReportTargetType,
+    handleCreatePost,
+    handleLike,
+    handleComment,
+    handleOpenReport,
+    handleReportSubmitted,
+    handleShare,
+    handleDeleteComment,
+    handleReplyComment,
+    handleDeleteReply,
+    handleDeletePost,
+  } = useSocialActions({
+    posts,
+    setPosts,
+    profile,
+    me,
+    actions,
+    login,
+    isProfilePage: true,
+    targetId,
+  });
+
   if (!profile) return (
     <div className="page-loading">
       <div className="loading-spinner h-12 w-12"></div>
@@ -92,41 +117,6 @@ function ProfileContent() {
   );
 
   const user = profile;
-
-  // Gamification helper to award points and handle level-ups
-  const awardPoints = async (pointsAmount: number, reason: string) => {
-    if (!profile) return;
-    if (profile.role !== UserRole.CUSTOMER && profile.role !== UserRole.RESTAURANT) return;
-
-    try {
-      const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);
-      if (updatedProfile) {
-        if (profile.level && updatedProfile.level > profile.level) {
-          toast.success(LABELS.LOYALTY.LEVEL_UP_SUCCESS(updatedProfile.level));
-          addNotification(
-            profile.id,
-            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_TITLE,
-            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_BODY(updatedProfile.level),
-            'LEVEL_UP',
-            '/trophy.png'
-          );
-        }
-        actions.setProfile(updatedProfile);
-        if (me && me.id === profile.id) {
-          login({
-            ...me,
-            points: updatedProfile.points,
-            level: updatedProfile.level,
-            badgeTitle: updatedProfile.badgeTitle,
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Lỗi khi làm mới profile:', err);
-    }
-
-    toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(pointsAmount, reason));
-  };
 
   // Point update callback from Voucher Mall
   const handleUpdatePointsFromRedeem = async (newPoints: number) => {
@@ -150,219 +140,7 @@ function ProfileContent() {
     }
   };
 
-  // Social interactions handlers
-  const handleCreatePost = async (newPost: any) => {
-    toast.success(LABELS.SOCIAL.POST_SUCCESS);
-    const idToFetch = targetId ? parseInt(targetId) : me?.id;
-    if (idToFetch) {
-      try {
-        const data = await socialService.getPosts(idToFetch);
-        setPosts(data || []);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    awardPoints(50, 'Đăng bài viết mới');
-  };
 
-  const handleLike = async (postId: number, isLiked: boolean) => {
-    try {
-      await socialService.toggleLike(postId);
-      if (isLiked) {
-        awardPoints(5, 'Thả tim bài đăng');
-        const targetPost = posts.find(p => p.id === postId);
-        if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
-          addNotification(
-            targetPost.author.id,
-            LABELS.SOCIAL.NOTIFICATIONS.LIKE_TITLE,
-            LABELS.SOCIAL.NOTIFICATIONS.LIKE_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-            'LIKE',
-            me?.avatar || undefined
-          );
-        }
-      } else {
-        awardPoints(0, 'Bỏ thích bài đăng');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.INTERACTION_ERROR);
-    }
-  };
-
-  const handleComment = async (postId: number, commentContent: string) => {
-    try {
-      const newComment = await socialService.createComment(postId, { content: commentContent });
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: p.commentsCount + 1,
-            comments: [...p.comments, newComment]
-          };
-        }
-        return p;
-      }));
-
-      awardPoints(10, 'Bình luận bài viết');
-      const targetPost = posts.find(p => p.id === postId);
-      if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
-        addNotification(
-          targetPost.author.id,
-          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_TITLE,
-          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-          'COMMENT',
-          me?.avatar || undefined
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.COMMENT_ERROR);
-    }
-  };
-
-  const handleOpenReport = (targetId: number, targetType: 'POST' | 'COMMENT') => {
-    setReportTargetId(targetId);
-    setReportTargetType(targetType);
-    setIsReportModalOpen(true);
-  };
-
-  const handleReportSubmitted = () => {
-    toast.success(LABELS.MODERATION.REPORT_SUBMITTED);
-  };
-
-  const handleShare = async (postToShare: PostData) => {
-    if (!profile) return;
-
-    try {
-      await socialService.createPost({
-        title: postToShare.title,
-        content: postToShare.content,
-        postType: postToShare.postType,
-        rating: postToShare.rating || undefined,
-        image: postToShare.image || undefined,
-        restaurantId: postToShare.restaurant?.id || undefined,
-        foodId: postToShare.food?.id || undefined,
-        isShared: true,
-        sharedFromId: postToShare.id
-      });
-
-      toast.success(LABELS.SOCIAL.TOAST.SHARE_SUCCESS);
-      
-      const idToFetch = targetId ? parseInt(targetId) : me?.id;
-      if (idToFetch) {
-        const data = await socialService.getPosts(idToFetch);
-        setPosts(data || []);
-      }
-
-      awardPoints(15, 'Chia sẻ bài viết');
-
-      if (postToShare.author?.id && postToShare.author.id !== me?.id) {
-        addNotification(
-          postToShare.author.id,
-          LABELS.SOCIAL.NOTIFICATIONS.SHARE_TITLE,
-          LABELS.SOCIAL.NOTIFICATIONS.SHARE_BODY(me?.name || 'Ai đó', postToShare.title || ''),
-          'SHARE',
-          me?.avatar || undefined
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.SHARE_ERROR);
-    }
-  };
-
-  const handleDeleteComment = async (postId: number, commentId: number) => {
-    try {
-      await socialService.deleteComment(commentId);
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          const comment = p.comments.find(c => c.id === commentId);
-          const repliesCount = comment?.replies?.length || 0;
-          return {
-            ...p,
-            commentsCount: Math.max(0, p.commentsCount - 1 - repliesCount),
-            comments: p.comments.filter(c => c.id !== commentId)
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.COMMENT_DELETE_SUCCESS);
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.COMMENT_DELETE_ERROR);
-    }
-  };
-
-  const handleReplyComment = async (postId: number, commentId: number, replyContent: string) => {
-    try {
-      const newReply = await socialService.createComment(postId, { content: replyContent, parentId: commentId });
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: p.commentsCount + 1,
-            comments: p.comments.map(c => {
-              if (c.id === commentId) {
-                return {
-                  ...c,
-                  replies: [...(c.replies || []), newReply]
-                };
-              }
-              return c;
-            })
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.REPLY_SUCCESS);
-      awardPoints(5, 'Trả lời bình luận');
-
-      const targetPost = posts.find(p => p.id === postId);
-      if (targetPost) {
-        const targetComment = targetPost.comments.find(c => c.id === commentId);
-        if (targetComment && targetComment.userId && targetComment.userId !== me?.id) {
-          addNotification(
-            targetComment.userId,
-            LABELS.SOCIAL.NOTIFICATIONS.REPLY_TITLE,
-            LABELS.SOCIAL.NOTIFICATIONS.REPLY_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-            'REPLY',
-            me?.avatar || undefined
-          );
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.REPLY_ERROR);
-    }
-  };
-
-  const handleDeleteReply = async (postId: number, commentId: number, replyId: number) => {
-    try {
-      await socialService.deleteComment(replyId);
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: Math.max(0, p.commentsCount - 1),
-            comments: p.comments.map(c => {
-              if (c.id === commentId) {
-                return {
-                  ...c,
-                  replies: (c.replies || []).filter(r => r.id !== replyId)
-                };
-              }
-              return c;
-            })
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.REPLY_DELETE_SUCCESS);
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.REPLY_DELETE_ERROR);
-    }
-  };
 
   return (
     <div className="page-container min-h-screen">
@@ -463,6 +241,7 @@ function ProfileContent() {
                         onDeleteComment={handleDeleteComment}
                         onReplyComment={handleReplyComment}
                         onDeleteReply={handleDeleteReply}
+                        onDeletePost={handleDeletePost}
                       />
                     ))}
                   </div>

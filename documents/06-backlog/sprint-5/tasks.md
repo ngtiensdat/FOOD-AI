@@ -21,7 +21,7 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 ### [Backend]
 - [x] Task 2.1: API Like/Unlike cho Bài viết và Món ăn.
 - [x] Task 2.2: API CRUD bình luận (Comment system).
-- [ ] Task 2.3: Tích hợp WebSocket (Socket.io) để gửi thông báo Real-time.
+- [x] Task 2.3: Tích hợp WebSocket (Socket.io) để gửi thông báo Real-time.
 
 ### [Frontend]
 - [x] Task 2.4: UI cho cụm tương tác Like/Comment trên PostCard.

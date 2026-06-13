@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { OfferService } from './offer.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -33,5 +43,15 @@ export class OfferController {
     },
   ) {
     return this.offerService.createOffer(userId, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async deleteOffer(
+    @GetUser('id') userId: number,
+    @GetUser('role') role: UserRole,
+    @Param('id', ParseIntPipe) offerId: number,
+  ) {
+    return this.offerService.deleteOffer(userId, role, offerId);
   }
 }

@@ -13,7 +13,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { FoodService } from './food.service';
+import { RestaurantService } from './restaurant.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
@@ -22,7 +22,7 @@ import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 @Controller('restaurants')
 export class RestaurantPublicController {
-  constructor(private readonly foodService: FoodService) {}
+  constructor(private readonly restaurantService: RestaurantService) {}
 
   @Get()
   getPublicRestaurants(
@@ -33,7 +33,7 @@ export class RestaurantPublicController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.foodService.getPublicRestaurants({
+    return this.restaurantService.getPublicRestaurants({
       search,
       city,
       district,
@@ -46,7 +46,7 @@ export class RestaurantPublicController {
   @Get('nearby')
   @UseGuards(JwtAuthOptionalGuard)
   getNearbyRestaurants(@Query() query: RestaurantNearbyQueryDto) {
-    return this.foodService.getNearbyRestaurants(query);
+    return this.restaurantService.getNearbyRestaurants(query);
   }
 
   @Get(':id/public')
@@ -55,7 +55,7 @@ export class RestaurantPublicController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: PrismaClient.User | null,
   ) {
-    return this.foodService.getPublicRestaurant(id, user || undefined);
+    return this.restaurantService.getPublicRestaurant(id, user || undefined);
   }
 
   @Get(':id/foods')
@@ -66,7 +66,7 @@ export class RestaurantPublicController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.foodService.getPublicRestaurantFoods(
+    return this.restaurantService.getPublicRestaurantFoods(
       id,
       categoryId ? parseInt(categoryId, 10) : undefined,
       page ? parseInt(page, 10) : 1,
@@ -80,7 +80,7 @@ export class RestaurantPublicController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: PrismaClient.User | null,
   ) {
-    return this.foodService.getRestaurantFollowers(id, user || undefined);
+    return this.restaurantService.getRestaurantFollowers(id, user || undefined);
   }
 
   @Get(':id/following')
@@ -89,7 +89,7 @@ export class RestaurantPublicController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: PrismaClient.User | null,
   ) {
-    return this.foodService.getMerchantFollowing(id, user || undefined);
+    return this.restaurantService.getMerchantFollowing(id, user || undefined);
   }
 
   @Post(':id/follow')
@@ -98,6 +98,6 @@ export class RestaurantPublicController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: PrismaClient.User,
   ) {
-    return this.foodService.toggleFollowRestaurant(user.id, id);
+    return this.restaurantService.toggleFollowRestaurant(user.id, id);
   }
 }

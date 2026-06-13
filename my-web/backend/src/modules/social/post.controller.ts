@@ -13,7 +13,7 @@ import { PostService } from './post.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
-import { PostType } from '@prisma/client';
+import { PostType, UserRole } from '@prisma/client';
 
 @Controller('posts')
 export class PostController {
@@ -72,8 +72,34 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   async deleteComment(
     @GetUser('id') userId: number,
+    @GetUser('role') role: UserRole,
     @Param('id', ParseIntPipe) commentId: number,
   ) {
-    return this.postService.deleteComment(userId, commentId);
+    return this.postService.deleteComment(userId, role, commentId);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async deletePost(
+    @GetUser('id') userId: number,
+    @GetUser('role') role: UserRole,
+    @Param('id', ParseIntPipe) postId: number,
+  ) {
+    return this.postService.deletePost(userId, role, postId);
+  }
+
+  @Post(':id/save')
+  @UseGuards(JwtAuthGuard)
+  async toggleSave(
+    @GetUser('id') userId: number,
+    @Param('id', ParseIntPipe) postId: number,
+  ) {
+    return this.postService.toggleSavePost(userId, postId);
+  }
+
+  @Get('saved')
+  @UseGuards(JwtAuthGuard)
+  async getSaved(@GetUser('id') userId: number) {
+    return this.postService.getSavedPosts(userId);
   }
 }

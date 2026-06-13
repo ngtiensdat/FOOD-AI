@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/providers/socket-provider';
+import { notificationService } from '@/services/notification.service';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
@@ -55,6 +57,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const pathname = usePathname();
   const router = useRouter();
 
+  const { socket } = useSocket();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeNotification, setActiveNotification] = useState<any | null>(null);
@@ -62,47 +65,64 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
   useEffect(() => {
     if (user?.id) {
-      const loadNotifications = () => {
-        const stored = localStorage.getItem(`foodai_notifications_${user.id}`);
-        if (stored) {
-          try {
-            setNotifications(JSON.parse(stored));
-          } catch (e) {}
+      const fetchNotifications = async () => {
+        try {
+          const res = await notificationService.getNotifications(1, 50);
+          setNotifications(res || []);
+        } catch (e) {
+          console.error('Lỗi khi tải thông báo:', e);
         }
       };
-      loadNotifications();
-      window.addEventListener('storage', loadNotifications);
-      window.addEventListener('foodai_notifications_updated', loadNotifications);
-      return () => {
-        window.removeEventListener('storage', loadNotifications);
-        window.removeEventListener('foodai_notifications_updated', loadNotifications);
-      };
+      fetchNotifications();
+    } else {
+      setNotifications([]);
     }
   }, [user?.id]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (notif: any) => {
+      setNotifications((prev) => [notif, ...prev]);
+      toast.success(notif.title || 'Thông báo mới');
+    };
+
+    socket.on('notification', handleNewNotification);
+
+    return () => {
+      socket.off('notification', handleNewNotification);
+    };
+  }, [socket]);
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  const handleNotificationClick = (notifId: number) => {
-    if (!user) return;
-    const updated = notifications.map(n => n.id === notifId ? { ...n, isRead: true } : n);
-    setNotifications(updated);
-    localStorage.setItem(`foodai_notifications_${user.id}`, JSON.stringify(updated));
-    window.dispatchEvent(new Event('foodai_notifications_updated'));
+  const handleNotificationClick = async (notifId: string) => {
+    try {
+      await notificationService.markAsRead(notifId);
+      const updated = notifications.map(n => n.id === notifId ? { ...n, isRead: true } : n);
+      setNotifications(updated);
+    } catch (e) {
+      console.error('Lỗi khi đọc thông báo:', e);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    if (!user) return;
-    const updated = notifications.map(n => ({ ...n, isRead: true }));
-    setNotifications(updated);
-    localStorage.setItem(`foodai_notifications_${user.id}`, JSON.stringify(updated));
-    window.dispatchEvent(new Event('foodai_notifications_updated'));
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      const updated = notifications.map(n => ({ ...n, isRead: true }));
+      setNotifications(updated);
+    } catch (e) {
+      console.error('Lỗi khi đọc tất cả thông báo:', e);
+    }
   };
 
-  const handleClearAll = () => {
-    if (!user) return;
-    setNotifications([]);
-    localStorage.setItem(`foodai_notifications_${user.id}`, JSON.stringify([]));
-    window.dispatchEvent(new Event('foodai_notifications_updated'));
+  const handleClearAll = async () => {
+    try {
+      await notificationService.clearAll();
+      setNotifications([]);
+    } catch (e) {
+      console.error('Lỗi khi xoá tất cả thông báo:', e);
+    }
   };
 
   useEffect(() => {
@@ -254,17 +274,17 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowNotifications(false)} />
                   <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-900 rounded-2xl shadow-xl z-50 p-4 space-y-3">
                     <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-900 pb-2">
-                      <span className="font-extrabold text-sm text-gray-900 dark:text-white">Thông báo</span>
+                      <span className="font-extrabold text-sm text-gray-900 dark:text-white">{LABELS.NAV.NOTIFICATIONS.TITLE}</span>
                       <div className="flex gap-2 text-[10px] font-bold text-primary">
-                        <button onClick={handleMarkAllAsRead} className="hover:underline">Đã đọc tất cả</button>
+                        <button onClick={handleMarkAllAsRead} className="hover:underline">{LABELS.NAV.NOTIFICATIONS.MARK_ALL_READ}</button>
                         <span className="text-gray-300">|</span>
-                        <button onClick={handleClearAll} className="hover:underline text-rose-500">Xóa hết</button>
+                        <button onClick={handleClearAll} className="hover:underline text-rose-500">{LABELS.NAV.NOTIFICATIONS.CLEAR_ALL}</button>
                       </div>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto space-y-2 pr-1 text-xs">
                       {notifications.length === 0 ? (
-                        <p className="text-center text-gray-400 py-6 font-bold">Bạn chưa có thông báo nào.</p>
+                        <p className="text-center text-gray-400 py-6 font-bold">{LABELS.NAV.NOTIFICATIONS.EMPTY}</p>
                       ) : (
                         notifications.map((notif) => (
                           <div
@@ -364,19 +384,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
             {/* Top category label & close button */}
             <div className="flex justify-between items-center border-b border-gray-50 dark:border-slate-900 pb-3">
               <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 dark:bg-primary/10 px-3 py-1 rounded-full">
-                {activeNotification.type === 'LIKE' && 'Tương tác Thả tim'}
-                {activeNotification.type === 'COMMENT' && 'Bình luận mới'}
-                {activeNotification.type === 'REPLY' && 'Phản hồi bình luận'}
-                {activeNotification.type === 'SHARE' && 'Chia sẻ bài viết'}
-                {activeNotification.type === 'LEVEL_UP' && 'Thăng cấp độ'}
-                {activeNotification.type === 'PROFILE_UPDATE' && 'Tài khoản cập nhật'}
-                {activeNotification.type === 'MODERATION_REMOVE' && 'Kiểm duyệt nội dung'}
-                {activeNotification.type === 'MODERATION_RESOLVE' && 'Báo cáo xử lý'}
-                {activeNotification.type === 'MODERATION_DISMISS' && 'Báo cáo từ chối'}
-                {activeNotification.type === 'SYSTEM' && 'Thông báo hệ thống'}
-                {activeNotification.type === 'WARNING' && 'Cảnh báo hệ thống'}
-                {activeNotification.type === 'PROMOTION' && 'Khuyến mại hệ thống'}
-                {!['LIKE', 'COMMENT', 'REPLY', 'SHARE', 'LEVEL_UP', 'PROFILE_UPDATE', 'MODERATION_REMOVE', 'MODERATION_RESOLVE', 'MODERATION_DISMISS', 'SYSTEM', 'WARNING', 'PROMOTION'].includes(activeNotification.type) && 'Thông báo'}
+                {LABELS.NAV.NOTIFICATIONS.TYPES[activeNotification.type as keyof typeof LABELS.NAV.NOTIFICATIONS.TYPES] || LABELS.NAV.NOTIFICATIONS.TYPES.DEFAULT}
               </span>
               <button 
                 onClick={() => setShowDetailModal(false)}
@@ -409,7 +417,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                 )}
               </div>
               <span className="text-[10px] text-gray-400 font-bold mt-2">
-                Gửi lúc {new Date(activeNotification.createdAt).toLocaleString('vi-VN')}
+                {LABELS.NAV.NOTIFICATIONS.SENT_AT(new Date(activeNotification.createdAt).toLocaleString(typeof window !== 'undefined' && localStorage.getItem('lang') === 'en' ? 'en-US' : 'vi-VN'))}
               </span>
             </div>
 
@@ -424,13 +432,38 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
             </div>
 
             {/* Actions */}
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col gap-2">
+              {activeNotification.postId && ['LIKE', 'COMMENT', 'REPLY'].includes(activeNotification.type) && (
+                <Button
+                  variant="primary"
+                  className="w-full py-3 rounded-2xl shadow-lg shadow-primary/10 font-bold bg-gradient-to-r from-orange-500 to-rose-600 text-white"
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    const targetHash = `#post-${activeNotification.postId}`;
+                    if (pathname === '/forum') {
+                      window.location.hash = targetHash;
+                      const element = document.getElementById(`post-${activeNotification.postId}`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        element.classList.add('ring-4', 'ring-primary', 'ring-offset-2');
+                        setTimeout(() => {
+                          element.classList.remove('ring-4', 'ring-primary', 'ring-offset-2');
+                        }, 3000);
+                      }
+                    } else {
+                      router.push(`/forum${targetHash}`);
+                    }
+                  }}
+                >
+                  {LABELS.NAV.NOTIFICATIONS.GO_TO_POST}
+                </Button>
+              )}
               <Button
-                variant="primary"
-                className="w-full py-3 rounded-2xl shadow-lg shadow-primary/10 font-bold"
+                variant={activeNotification.postId && ['LIKE', 'COMMENT', 'REPLY'].includes(activeNotification.type) ? 'outline' : 'primary'}
+                className="w-full py-3 rounded-2xl font-bold"
                 onClick={() => setShowDetailModal(false)}
               >
-                Đã hiểu
+                {LABELS.NAV.NOTIFICATIONS.DISMISS}
               </Button>
             </div>
           </div>

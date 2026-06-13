@@ -17,4 +17,8 @@ export const offerService = {
   }) {
     return apiClient.post('/offers', dto);
   },
+
+  async deleteOffer(offerId: number) {
+    return apiClient.delete(`/offers/${offerId}`);
+  },
 };

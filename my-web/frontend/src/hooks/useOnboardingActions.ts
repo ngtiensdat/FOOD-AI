@@ -41,7 +41,7 @@ export interface OnboardingSubmitData {
 }
 
 interface UseOnboardingActionsProps {
-  user: User;
+  user: Partial<User>;
   onComplete: (data: OnboardingSubmitData) => void;
 }
 

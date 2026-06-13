@@ -14,7 +14,7 @@ import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { User } from '@/types/user';
 
 interface OnboardingModalProps {
-  user: User;
+  user: Partial<User>;
   onComplete: (data: OnboardingSubmitData) => void;
   show?: boolean; // Cho phép force show từ Dashboard
   onClose?: () => void; // Cho phép đóng khi đang ở Dashboard

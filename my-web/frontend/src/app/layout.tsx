@@ -13,6 +13,7 @@ import { LABELS } from "@/constants/labels";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { LanguageProvider } from "@/providers/language-provider";
+import { SocketProvider } from "@/providers/socket-provider";
 import { AssistiveTouchMenu } from "@/components/features/assistive-touch/AssistiveTouchMenu";
 
 const geistSans = Geist({
@@ -56,8 +57,10 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <LanguageProvider lang={lang}>
           <ThemeProvider>
-            {children}
-            <AssistiveTouchMenu />
+            <SocketProvider>
+              {children}
+              <AssistiveTouchMenu />
+            </SocketProvider>
           </ThemeProvider>
         </LanguageProvider>
         <ToastContainer />

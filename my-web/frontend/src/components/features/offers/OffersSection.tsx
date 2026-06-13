@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Tag, Plus, Calendar, Store, Gift, Flame, Percent, Sparkles, X, ChevronRight } from 'lucide-react';
+import { Tag, Plus, Calendar, Store, Gift, Flame, Percent, Sparkles, X, ChevronRight, Trash2 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { toast } from '@/store/useToastStore';
@@ -9,6 +9,7 @@ import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { offerService } from '@/services/offer.service';
 import { useAuth } from '@/hooks/useAuth';
+import { User, UserRole } from '@/types/user';
 
 interface OfferData {
   id: number;
@@ -24,8 +25,8 @@ interface OfferData {
 }
 
 interface OffersSectionProps {
-  user: any;
-  setActiveTab: (tab: any) => void;
+  user: Partial<User> | null;
+  setActiveTab: (tab: string) => void;
 }
 
 export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
@@ -112,6 +113,18 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
+    }
+  };
+
+  const handleDeleteOffer = async (offerId: number) => {
+    if (!window.confirm(LABELS.OFFERS.TOAST.DELETE_CONFIRM)) return;
+    try {
+      await offerService.deleteOffer(offerId);
+      setPromotions(prev => prev.filter(p => p.id !== offerId));
+      toast.success(LABELS.OFFERS.TOAST.DELETE_SUCCESS);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || LABELS.OFFERS.TOAST.DELETE_ERROR);
     }
   };
 
@@ -225,6 +238,21 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 <span className={`absolute top-4 left-4 text-[10px] font-black tracking-widest px-3 py-1 rounded-full shadow-md ${getPromoBadgeColor(offer.promoType)}`}>
                   {getPromoLabel(offer.promoType)}
                 </span>
+
+                {/* Delete button (Trash2) */}
+                {(user?.role === UserRole.ADMIN || (user?.role === UserRole.RESTAURANT && offer.restaurantId === user?.id)) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteOffer(offer.id);
+                    }}
+                    className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-rose-500 hover:text-white dark:bg-slate-950/90 text-rose-500 rounded-xl transition-all shadow-md backdrop-blur-sm border border-rose-500/10 cursor-pointer"
+                    title={LABELS.OFFERS.DELETE_BTN}
+                    aria-label={LABELS.OFFERS.DELETE_BTN}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
 
                 {/* Discount Value tag */}
                 <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm text-primary text-xs font-black px-3 py-1.5 rounded-xl border border-primary/20 shadow-md flex items-center gap-1">

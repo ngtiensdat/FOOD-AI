@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
       "boundaries": boundaries,
     },
     settings: {
+      "next": {
+        "rootDir": "my-web/frontend/"
+      },
       "boundaries/elements": [
         { type: "base-components", pattern: "src/components/base/*" },
         { type: "features", pattern: "src/components/features/*" },

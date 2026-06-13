@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Bell, Send, Users, User, AlertCircle, Megaphone, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
-import { User as UserType } from '@/types/user';
+import { User as UserType, isAdmin } from '@/types/user';
 import { addNotification } from '@/utils/notifications';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
@@ -23,7 +23,7 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
   const [loading, setLoading] = useState(false);
 
   // Filter out admin users from recipient list
-  const recipients = allUsers.filter(u => u.role !== 'ADMIN');
+  const recipients = allUsers.filter(u => !isAdmin(u));
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();

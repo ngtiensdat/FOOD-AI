@@ -7,11 +7,14 @@ import { PostService } from './post.service';
 import { PrismaService } from '../../database/prisma.service';
 import { CacheService } from '../../common/services/cache.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 describe('PostService', () => {
   let service: PostService;
   let prisma: any;
   let cacheService: any;
+  let notificationGateway: any;
 
   beforeEach(async () => {
     const mockPrismaService = {
@@ -44,17 +47,23 @@ describe('PostService', () => {
       invalidatePattern: jest.fn(),
     };
 
+    const mockNotificationGateway = {
+      sendNotificationToUser: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PostService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: CacheService, useValue: mockCacheService },
+        { provide: NotificationGateway, useValue: mockNotificationGateway },
       ],
     }).compile();
 
     service = module.get<PostService>(PostService);
     prisma = module.get(PrismaService);
     cacheService = module.get(CacheService);
+    notificationGateway = module.get(NotificationGateway);
   });
 
   it('should be defined', () => {
@@ -91,9 +100,9 @@ describe('PostService', () => {
   describe('deleteComment', () => {
     it('should throw NotFoundException if comment does not exist', async () => {
       prisma.comment.findUnique.mockResolvedValue(null);
-      await expect(service.deleteComment(1, 999)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.deleteComment(1, UserRole.CUSTOMER, 999),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not author or commenter', async () => {
@@ -103,9 +112,9 @@ describe('PostService', () => {
         post: { authorId: 3 },
       } as any);
 
-      await expect(service.deleteComment(1, 1)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.deleteComment(1, UserRole.CUSTOMER, 1),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should successfully delete comment and invalidate cache', async () => {
@@ -116,7 +125,7 @@ describe('PostService', () => {
       } as any);
       prisma.comment.delete.mockResolvedValue({ id: 1 } as any);
 
-      const result = await service.deleteComment(1, 1);
+      const result = await service.deleteComment(1, UserRole.CUSTOMER, 1);
       expect(result.success).toBe(true);
       expect(prisma.comment.delete).toHaveBeenCalledWith({ where: { id: 1 } });
       expect(cacheService.invalidatePattern).toHaveBeenCalledWith('posts:*');

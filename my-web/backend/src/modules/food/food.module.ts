@@ -13,6 +13,8 @@ import { AiModule } from '../ai/ai.module';
 import { AuthModule } from '../auth/auth.module';
 import { FoodService } from './food.service';
 import { FoodRepository } from './food.repository';
+import { RestaurantService } from './restaurant.service';
+import { RestaurantRepository } from './restaurant.repository';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import { CommonCacheModule } from '../../common/cache.module';
 
@@ -23,7 +25,13 @@ import { CommonCacheModule } from '../../common/cache.module';
     RestaurantController,
     RestaurantPublicController,
   ],
-  providers: [FoodService, FoodRepository, AuthorizationService],
-  exports: [FoodService],
+  providers: [
+    FoodService,
+    FoodRepository,
+    RestaurantService,
+    RestaurantRepository,
+    AuthorizationService,
+  ],
+  exports: [FoodService, RestaurantService],
 })
 export class FoodModule {}

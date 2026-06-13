@@ -5,7 +5,7 @@
 // Các biến, hàm đặc biệt: getMyRestaurant(), getMyBranches(), updateRestaurantStatus(), updateRestaurantProfile().
 
 import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
-import { FoodService } from './food.service';
+import { RestaurantService } from './restaurant.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -18,16 +18,16 @@ import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto'
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(PrismaClient.UserRole.RESTAURANT)
 export class RestaurantController {
-  constructor(private readonly foodService: FoodService) {}
+  constructor(private readonly restaurantService: RestaurantService) {}
 
   @Get('my-restaurant')
   getMyRestaurant(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getMyRestaurant(user);
+    return this.restaurantService.getMyRestaurant(user);
   }
 
   @Get('my-branches')
   getMyBranches(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getMyBranches(user);
+    return this.restaurantService.getMyBranches(user);
   }
 
   @Patch('my-restaurant/status')
@@ -35,7 +35,7 @@ export class RestaurantController {
     @GetUser() user: PrismaClient.User,
     @Body() dto: UpdateRestaurantStatusDto,
   ) {
-    return this.foodService.updateMyRestaurantStatus(user, dto.isActive);
+    return this.restaurantService.updateMyRestaurantStatus(user, dto.isActive);
   }
 
   @Patch('my-restaurant/profile')
@@ -43,11 +43,11 @@ export class RestaurantController {
     @GetUser() user: PrismaClient.User,
     @Body() dto: UpdateRestaurantProfileDto,
   ) {
-    return this.foodService.updateMyRestaurantProfile(user, dto);
+    return this.restaurantService.updateMyRestaurantProfile(user, dto);
   }
 
   @Get('my-analytics')
   getMyAnalytics(@GetUser() user: PrismaClient.User) {
-    return this.foodService.getMyAnalytics(user);
+    return this.restaurantService.getMyAnalytics(user);
   }
 }

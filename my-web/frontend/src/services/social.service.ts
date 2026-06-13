@@ -32,4 +32,16 @@ export const socialService = {
   async deleteComment(commentId: number) {
     return apiClient.delete(`/posts/comments/${commentId}`);
   },
+
+  async toggleSavePost(postId: number) {
+    return apiClient.post(`/posts/${postId}/save`);
+  },
+
+  async getSavedPosts() {
+    return apiClient.get('/posts/saved');
+  },
+
+  async deletePost(postId: number) {
+    return apiClient.delete(`/posts/${postId}`);
+  },
 };

@@ -1,5 +1,10 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class OfferService {
@@ -54,5 +59,38 @@ export class OfferService {
     });
 
     return offer;
+  }
+
+  async deleteOffer(userId: number, role: UserRole, offerId: number) {
+    const offer = await this.prisma.offer.findUnique({
+      where: { id: offerId },
+    });
+
+    if (!offer) {
+      throw new NotFoundException('Không tìm thấy khuyến mãi');
+    }
+
+    let isAuthorized = false;
+    if (role === UserRole.ADMIN) {
+      isAuthorized = true;
+    } else if (offer.restaurantId) {
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: offer.restaurantId },
+        select: { ownerId: true },
+      });
+      if (restaurant && restaurant.ownerId === userId) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      throw new ForbiddenException('Bạn không có quyền xóa khuyến mãi này');
+    }
+
+    await this.prisma.offer.delete({
+      where: { id: offerId },
+    });
+
+    return { success: true };
   }
 }

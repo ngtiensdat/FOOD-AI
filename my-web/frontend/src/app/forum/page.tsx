@@ -8,6 +8,7 @@ import { Info, Plus, Award, Star, Flame, Trophy, Shield, Clock } from 'lucide-re
 // Services & Components
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileData } from '@/hooks/useProfileData';
+import { useSocialActions } from '@/hooks/useSocialActions';
 import { userService } from '@/services/user.service';
 import { authService } from '@/services/auth.service';
 import { socialService } from '@/services/social.service';
@@ -37,11 +38,6 @@ export default function ForumPage() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [followingIds, setFollowingIds] = useState<number[]>([]);
-
-  // Report Modal states
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [reportTargetId, setReportTargetId] = useState<number | null>(null);
-  const [reportTargetType, setReportTargetType] = useState<'POST' | 'COMMENT'>('POST');
 
   // Load posts
   useEffect(() => {
@@ -85,251 +81,33 @@ export default function ForumPage() {
     fetchLeaderboard();
   }, []);
 
-  // Gamification helper to award points and handle level-ups
-  const awardPoints = async (pointsAmount: number, reason: string) => {
-    if (!profile) return;
-    if (profile.role !== UserRole.CUSTOMER && profile.role !== UserRole.RESTAURANT) return;
-
-    try {
-      const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);
-      if (updatedProfile) {
-        if (profile.level && updatedProfile.level > profile.level) {
-          toast.success(LABELS.LOYALTY.LEVEL_UP_SUCCESS(updatedProfile.level));
-          addNotification(
-            profile.id,
-            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_TITLE,
-            LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_BODY(updatedProfile.level),
-            'LEVEL_UP',
-            '/trophy.png'
-          );
-        }
-        actions.setProfile(updatedProfile);
-        if (me && me.id === profile.id) {
-          login({
-            ...me,
-            points: updatedProfile.points,
-            level: updatedProfile.level,
-            badgeTitle: updatedProfile.badgeTitle,
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Lỗi khi làm mới profile:', err);
-    }
-
-    toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(pointsAmount, reason));
-  };
-
-  // Social interactions handlers
-  const handleCreatePost = async (newPost: any) => {
-    toast.success(LABELS.SOCIAL.POST_SUCCESS);
-    try {
-      const data = await socialService.getPosts();
-      setPosts(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-    awardPoints(50, 'Đăng bài viết mới');
-  };
-
-  const handleLike = async (postId: number, isLiked: boolean) => {
-    try {
-      await socialService.toggleLike(postId);
-      if (isLiked) {
-        awardPoints(5, 'Thả tim bài đăng');
-        const targetPost = posts.find(p => p.id === postId);
-        if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
-          addNotification(
-            targetPost.author.id,
-            LABELS.SOCIAL.NOTIFICATIONS.LIKE_TITLE,
-            LABELS.SOCIAL.NOTIFICATIONS.LIKE_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-            'LIKE',
-            me?.avatar || undefined
-          );
-        }
-      } else {
-        awardPoints(0, 'Bỏ thích bài đăng');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.INTERACTION_ERROR);
-    }
-  };
-
-  const handleComment = async (postId: number, commentContent: string) => {
-    try {
-      const newComment = await socialService.createComment(postId, { content: commentContent });
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: p.commentsCount + 1,
-            comments: [...p.comments, newComment]
-          };
-        }
-        return p;
-      }));
-
-      awardPoints(10, 'Bình luận bài viết');
-      const targetPost = posts.find(p => p.id === postId);
-      if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
-        addNotification(
-          targetPost.author.id,
-          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_TITLE,
-          LABELS.SOCIAL.NOTIFICATIONS.COMMENT_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-          'COMMENT',
-          me?.avatar || undefined
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.COMMENT_ERROR);
-    }
-  };
-
-  const handleOpenReport = (targetId: number, targetType: 'POST' | 'COMMENT') => {
-    setReportTargetId(targetId);
-    setReportTargetType(targetType);
-    setIsReportModalOpen(true);
-  };
-
-  const handleReportSubmitted = () => {
-    toast.success(LABELS.MODERATION.REPORT_SUBMITTED);
-  };
-
-  const handleShare = async (postToShare: PostData) => {
-    if (!profile) {
-      toast.error(LABELS.SOCIAL.TOAST.LOGIN_REQUIRED_SHARE);
-      return;
-    }
-
-    try {
-      await socialService.createPost({
-        title: postToShare.title,
-        content: postToShare.content,
-        postType: postToShare.postType,
-        rating: postToShare.rating || undefined,
-        image: postToShare.image || undefined,
-        restaurantId: postToShare.restaurant?.id || undefined,
-        foodId: postToShare.food?.id || undefined,
-        isShared: true,
-        sharedFromId: postToShare.id
-      });
-
-      toast.success(LABELS.SOCIAL.TOAST.SHARE_SUCCESS);
-      
-      const data = await socialService.getPosts();
-      setPosts(data || []);
-
-      awardPoints(15, 'Chia sẻ bài viết');
-
-      if (postToShare.author?.id && postToShare.author.id !== me?.id) {
-        addNotification(
-          postToShare.author.id,
-          LABELS.SOCIAL.NOTIFICATIONS.SHARE_TITLE,
-          LABELS.SOCIAL.NOTIFICATIONS.SHARE_BODY(me?.name || 'Ai đó', postToShare.title || ''),
-          'SHARE',
-          me?.avatar || undefined
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.SHARE_ERROR);
-    }
-  };
-
-  const handleDeleteComment = async (postId: number, commentId: number) => {
-    try {
-      await socialService.deleteComment(commentId);
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          const comment = p.comments.find(c => c.id === commentId);
-          const repliesCount = comment?.replies?.length || 0;
-          return {
-            ...p,
-            commentsCount: Math.max(0, p.commentsCount - 1 - repliesCount),
-            comments: p.comments.filter(c => c.id !== commentId)
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.COMMENT_DELETE_SUCCESS);
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.COMMENT_DELETE_ERROR);
-    }
-  };
-
-  const handleReplyComment = async (postId: number, commentId: number, replyContent: string) => {
-    try {
-      const newReply = await socialService.createComment(postId, { content: replyContent, parentId: commentId });
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: p.commentsCount + 1,
-            comments: p.comments.map(c => {
-              if (c.id === commentId) {
-                return {
-                  ...c,
-                  replies: [...(c.replies || []), newReply]
-                };
-              }
-              return c;
-            })
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.REPLY_SUCCESS);
-      awardPoints(5, 'Trả lời bình luận');
-
-      const targetPost = posts.find(p => p.id === postId);
-      if (targetPost) {
-        const targetComment = targetPost.comments.find(c => c.id === commentId);
-        if (targetComment && targetComment.userId && targetComment.userId !== me?.id) {
-          addNotification(
-            targetComment.userId,
-            LABELS.SOCIAL.NOTIFICATIONS.REPLY_TITLE,
-            LABELS.SOCIAL.NOTIFICATIONS.REPLY_BODY(me?.name || 'Ai đó', targetPost.title || ''),
-            'REPLY',
-            me?.avatar || undefined
-          );
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.REPLY_ERROR);
-    }
-  };
-
-  const handleDeleteReply = async (postId: number, commentId: number, replyId: number) => {
-    try {
-      await socialService.deleteComment(replyId);
-      setPosts(prevPosts => prevPosts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            commentsCount: Math.max(0, p.commentsCount - 1),
-            comments: p.comments.map(c => {
-              if (c.id === commentId) {
-                return {
-                  ...c,
-                  replies: (c.replies || []).filter(r => r.id !== replyId)
-                };
-              }
-              return c;
-            })
-          };
-        }
-        return p;
-      }));
-      toast.success(LABELS.SOCIAL.TOAST.REPLY_DELETE_SUCCESS);
-    } catch (err) {
-      console.error(err);
-      toast.error(LABELS.SOCIAL.TOAST.REPLY_DELETE_ERROR);
-    }
-  };
+  // Centralized social interactions & reports hook
+  const {
+    isReportModalOpen,
+    setIsReportModalOpen,
+    reportTargetId,
+    setReportTargetId,
+    reportTargetType,
+    setReportTargetType,
+    handleCreatePost,
+    handleLike,
+    handleComment,
+    handleOpenReport,
+    handleReportSubmitted,
+    handleShare,
+    handleDeleteComment,
+    handleReplyComment,
+    handleDeleteReply,
+    handleDeletePost,
+  } = useSocialActions({
+    posts,
+    setPosts,
+    profile,
+    me,
+    actions,
+    login,
+    isProfilePage: false,
+  });
 
   return (
     <div className="page-container min-h-screen">
@@ -353,7 +131,7 @@ export default function ForumPage() {
               className="px-6 py-3 bg-primary text-white rounded-full font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
               <Plus size={20} />
-              Chia sẻ trải nghiệm
+              {LABELS.SOCIAL.CREATE_POST}
             </button>
           )}
         </div>
@@ -374,7 +152,7 @@ export default function ForumPage() {
                     onClick={() => setIsPostModalOpen(true)}
                     className="flex-1 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full px-6 py-2.5 text-left text-gray-500 transition-all text-small font-bold flex items-center justify-between border border-gray-100 dark:border-slate-800"
                   >
-                    <span>{me?.name} ơi, hôm nay bạn ăn món gì ngon thế?</span>
+                    <span>{LABELS.SETTINGS.PROFILE.POSTS.THINKING(me?.name || '')}</span>
                     <Plus size={18} className="text-primary" />
                   </button>
                 </div>
@@ -397,8 +175,8 @@ export default function ForumPage() {
               return forumPosts.length === 0 ? (
                 <div className="card-container !p-16 text-center border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-2xl">
                   <Info size={48} className="mx-auto text-gray-300 mb-4 animate-bounce" />
-                  <h3 className="text-lg font-bold text-gray-400">Diễn đàn chưa có bài đăng nào</h3>
-                  <p className="text-gray-400 text-small mt-1">Theo dõi thêm thực khách khác hoặc viết review quán để xem tin mới!</p>
+                  <h3 className="text-lg font-bold text-gray-400">{LABELS.SOCIAL.FEED_EMPTY}</h3>
+                  <p className="text-gray-400 text-small mt-1">{LABELS.SOCIAL.FEED_EMPTY_DESC}</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -414,6 +192,7 @@ export default function ForumPage() {
                       onDeleteComment={handleDeleteComment}
                       onReplyComment={handleReplyComment}
                       onDeleteReply={handleDeleteReply}
+                      onDeletePost={handleDeletePost}
                     />
                   ))}
                 </div>
@@ -432,25 +211,25 @@ export default function ForumPage() {
                   <div className="min-w-0 flex-1">
                     <h4 className="font-extrabold text-gray-800 dark:text-white truncate text-base">{me?.name}</h4>
                     <span className="text-mini font-bold uppercase tracking-wider text-primary px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md mt-1 inline-block">
-                      ✨ {profile.badgeTitle || 'Thành viên mới'}
+                      ✨ {profile.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW_MEMBER}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="bg-gray-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">Cấp Độ</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">{LABELS.SOCIAL.SIDEBAR.LEVEL}</span>
                     <span className="text-xl font-black text-gray-800 dark:text-white mt-1 block">Lv. {profile.level || 1}</span>
                   </div>
                   <div className="bg-gray-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">Điểm tích lũy</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">{LABELS.SOCIAL.SIDEBAR.POINTS}</span>
                     <span className="text-xl font-black text-amber-500 mt-1 block">⭐ {profile.points || 0}</span>
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-mini text-gray-500 mb-1.5 font-bold">
-                    <span>Tiến độ cấp độ</span>
+                    <span>{LABELS.SOCIAL.SIDEBAR.LEVEL_PROGRESS}</span>
                     <span>{(profile.points || 0) % 1000} / 1000 XP</span>
                   </div>
                   <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden border border-gray-200/50 dark:border-slate-700">
@@ -464,13 +243,13 @@ export default function ForumPage() {
             ) : (
               <div className="card-premium p-6 text-center space-y-4">
                 <Info size={32} className="text-gray-300 mx-auto" />
-                <h4 className="font-bold text-gray-700">Tham gia cộng đồng</h4>
-                <p className="text-xs text-gray-400">Đăng nhập tài khoản của bạn để viết bài, thả tim và thảo luận cùng các thực khách khác.</p>
+                <h4 className="font-bold text-gray-700">{LABELS.SOCIAL.SIDEBAR.JOIN_COMMUNITY}</h4>
+                <p className="text-xs text-gray-400">{LABELS.SOCIAL.SIDEBAR.JOIN_COMMUNITY_DESC}</p>
                 <button
                   onClick={() => router.push('/login')}
                   className="w-full py-2.5 bg-primary text-white rounded-xl font-bold shadow hover:shadow-md transition-all text-xs"
                 >
-                  Đăng nhập ngay
+                  {LABELS.SOCIAL.SIDEBAR.LOGIN_NOW}
                 </button>
               </div>
             )}
@@ -479,7 +258,7 @@ export default function ForumPage() {
             <div className="card-premium p-6 space-y-5">
               <h3 className="text-body font-black text-gray-800 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
                 <Trophy className="text-yellow-500 animate-bounce" size={20} />
-                Thực Thần Tiêu Biểu
+                {LABELS.SOCIAL.SIDEBAR.LEADERBOARD_TITLE}
               </h3>
 
               {loadingLeaderboard ? (
@@ -496,7 +275,7 @@ export default function ForumPage() {
                   ))}
                 </div>
               ) : leaderboard.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4 text-center">Chưa có bảng xếp hạng.</p>
+                <p className="text-xs text-gray-400 py-4 text-center">{LABELS.SOCIAL.SIDEBAR.LEADERBOARD_EMPTY}</p>
               ) : (
                 <div className="space-y-4">
                   {leaderboard.map((item, idx) => {
@@ -518,7 +297,7 @@ export default function ForumPage() {
                           <div className="min-w-0">
                             <h4 className="font-extrabold text-gray-800 dark:text-white truncate text-xs">{item.name}</h4>
                             <span className="text-[10px] text-gray-400 font-bold block">
-                              Lv. {item.level || 1} • {item.badgeTitle || 'Mới'}
+                              Lv. {item.level || 1} • {item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}
                             </span>
                           </div>
                         </div>

@@ -181,7 +181,7 @@ export default function Home() {
 
       {/* Modal hiện onboarding khi user chưa cập nhật sở thích, chỉ hiện 1 lần trong lần đầu tiên login*/}
       {showOnboarding && user && (
-        <OnboardingModal user={user as User} onComplete={handleOnboardingComplete} />
+        <OnboardingModal user={user} onComplete={handleOnboardingComplete} />
       )}
 
       <Footer />

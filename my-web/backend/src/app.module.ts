@@ -23,6 +23,8 @@ import { VoucherModule } from './modules/voucher/voucher.module';
 import { OfferModule } from './modules/offer/offer.module';
 import { BadgeModule } from './modules/badge/badge.module';
 import { ReportModule } from './modules/report/report.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { BugReportModule } from './modules/bug-report/bug-report.module';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 @Module({
@@ -39,6 +41,8 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     OfferModule,
     BadgeModule,
     ReportModule,
+    NotificationModule,
+    BugReportModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

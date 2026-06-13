@@ -4,7 +4,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, PostType, PostStatus } from '@prisma/client';
+import {
+  Prisma,
+  PostType,
+  PostStatus,
+  NotificationType,
+  UserRole,
+} from '@prisma/client';
 import DOMPurify from 'isomorphic-dompurify';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { LIMITS } from '../../common/constants/limits.constant';
@@ -13,12 +19,14 @@ import {
   POINTS_PER_LEVEL,
 } from '../../common/constants/badge.constant';
 import { CacheService } from '../../common/services/cache.service';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class PostService {
   constructor(
     private prisma: PrismaService,
     private cacheService: CacheService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async awardPoints(
@@ -104,6 +112,7 @@ export class PostService {
             food: { select: { id: true, name: true } },
             restaurant: { select: { id: true, name: true } },
             likes: true,
+            savedPosts: true,
             comments: {
               orderBy: { createdAt: 'asc' },
               include: {
@@ -152,6 +161,10 @@ export class PostService {
     const formattedPosts = cached.posts.map((post) => {
       const isLiked = viewerId
         ? post.likes.some((like) => like.userId === viewerId)
+        : false;
+
+      const isSaved = viewerId
+        ? post.savedPosts?.some((s: any) => s.userId === viewerId) || false
         : false;
 
       const parentComments = post.comments
@@ -210,6 +223,7 @@ export class PostService {
             0,
           ),
         isLiked,
+        isSaved,
         likedByUsers: post.likes.map((l) => ({ id: l.userId })),
         comments: parentComments,
         createdAt: new Date(post.createdAt).toISOString(),
@@ -266,6 +280,29 @@ export class PostService {
     return post;
   }
 
+  async deletePost(userId: number, role: UserRole, postId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
+    if (post.authorId !== userId && role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Bạn không có quyền xóa bài viết này');
+    }
+
+    await this.prisma.post.update({
+      where: { id: postId },
+      data: { deletedAt: new Date() },
+    });
+
+    await this.cacheService.invalidatePattern('posts:*');
+
+    return { success: true };
+  }
+
   async toggleLike(userId: number, postId: number) {
     const existing = await this.prisma.like.findUnique({
       where: {
@@ -294,6 +331,26 @@ export class PostService {
           postId,
         },
       });
+
+      // Gửi thông báo real-time & lưu DB cho tác giả bài viết
+      const post = await this.prisma.post.findUnique({
+        where: { id: postId },
+        select: { authorId: true, title: true },
+      });
+      if (post && post.authorId !== userId) {
+        const liker = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { name: true },
+        });
+        const likerName = liker?.name || 'Ai đó';
+        await this.notificationGateway.sendNotificationToUser(post.authorId, {
+          type: NotificationType.LIKE,
+          title: 'Lượt thích mới',
+          content: `${likerName} đã thích bài viết "${post.title || 'không có tiêu đề'}" của bạn.`,
+          senderId: userId,
+          postId: postId,
+        });
+      }
 
       // Award 5 points
       await this.awardPoints(userId, 5);
@@ -327,6 +384,22 @@ export class PostService {
       },
     });
 
+    // Gửi thông báo real-time & lưu DB cho tác giả bài viết
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true, title: true },
+    });
+    if (post && post.authorId !== userId) {
+      const commenterName = comment.user.name || 'Ai đó';
+      await this.notificationGateway.sendNotificationToUser(post.authorId, {
+        type: NotificationType.COMMENT,
+        title: dto.parentId ? 'Phản hồi bình luận mới' : 'Bình luận mới',
+        content: `${commenterName} đã bình luận bài viết "${post.title || 'không có tiêu đề'}" của bạn.`,
+        senderId: userId,
+        postId: postId,
+      });
+    }
+
     // Award 10 points for parent comment, 5 points for reply
     const points = dto.parentId ? 5 : 10;
     await this.awardPoints(userId, points);
@@ -343,7 +416,7 @@ export class PostService {
     };
   }
 
-  async deleteComment(userId: number, commentId: number) {
+  async deleteComment(userId: number, role: UserRole, commentId: number) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
       include: { post: true },
@@ -353,8 +426,12 @@ export class PostService {
       throw new NotFoundException(MESSAGES.SOCIAL.COMMENT_NOT_FOUND);
     }
 
-    // Check ownership: commenter or post author
-    if (comment.userId !== userId && comment.post.authorId !== userId) {
+    // Check ownership: commenter or post author or admin
+    if (
+      comment.userId !== userId &&
+      comment.post.authorId !== userId &&
+      role !== UserRole.ADMIN
+    ) {
       throw new ForbiddenException(
         MESSAGES.SOCIAL.NO_DELETE_COMMENT_PERMISSION,
       );
@@ -367,5 +444,165 @@ export class PostService {
     await this.cacheService.invalidatePattern('posts:*');
 
     return { success: true };
+  }
+
+  async toggleSavePost(userId: number, postId: number) {
+    const existing = await this.prisma.savedPost.findUnique({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
+      },
+    });
+
+    if (existing) {
+      await this.prisma.savedPost.delete({
+        where: {
+          userId_postId: {
+            userId,
+            postId,
+          },
+        },
+      });
+      return { isSaved: false };
+    } else {
+      await this.prisma.savedPost.create({
+        data: {
+          userId,
+          postId,
+        },
+      });
+      return { isSaved: true };
+    }
+  }
+
+  async getSavedPosts(userId: number) {
+    const saved = await this.prisma.savedPost.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                role: true,
+                level: true,
+                badgeTitle: true,
+                profile: { select: { avatar: true } },
+              },
+            },
+            food: { select: { id: true, name: true } },
+            restaurant: { select: { id: true, name: true } },
+            likes: true,
+            savedPosts: true,
+            comments: {
+              orderBy: { createdAt: 'asc' },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profile: { select: { avatar: true } },
+                  },
+                },
+                replies: {
+                  orderBy: { createdAt: 'asc' },
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        profile: { select: { avatar: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            sharedFrom: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profile: { select: { avatar: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return saved.map((s) => {
+      const post = s.post;
+      const isLiked = post.likes.some((like) => like.userId === userId);
+
+      const parentComments = post.comments
+        .filter((c) => !c.parentId)
+        .map((c) => ({
+          id: c.id,
+          userId: c.userId,
+          userName: c.user.name,
+          userAvatar: c.user.profile?.avatar || '',
+          content: c.content,
+          createdAt: new Date(c.createdAt).toISOString(),
+          replies: c.replies.map((r) => ({
+            id: r.id,
+            userId: r.userId,
+            userName: r.user.name,
+            userAvatar: r.user.profile?.avatar || '',
+            content: r.content,
+            createdAt: new Date(r.createdAt).toISOString(),
+          })),
+        }));
+
+      return {
+        id: post.id,
+        author: {
+          id: post.author.id,
+          name: post.author.name,
+          avatar: post.author.profile?.avatar || '',
+          level: post.author.level,
+          badgeTitle: post.author.badgeTitle,
+        },
+        restaurantId: post.restaurantId,
+        restaurantName: post.restaurant?.name || null,
+        foodId: post.foodId,
+        foodName: post.food?.name || null,
+        title: post.title,
+        content: post.content,
+        image: post.image,
+        rating: post.rating,
+        postType: post.postType,
+        isShared: post.isShared,
+        sharedFrom: post.sharedFrom
+          ? {
+              id: post.sharedFrom.id,
+              name: post.sharedFrom.author.name,
+              avatar: post.sharedFrom.author.profile?.avatar || '',
+              title: post.sharedFrom.title,
+              content: post.sharedFrom.content,
+              image: post.sharedFrom.image,
+            }
+          : null,
+        likesCount: post.likes.length,
+        commentsCount:
+          parentComments.length +
+          parentComments.reduce(
+            (acc, curr) => acc + (curr.replies?.length || 0),
+            0,
+          ),
+        isLiked,
+        isSaved: true,
+        likedByUsers: post.likes.map((l) => ({ id: l.userId })),
+        comments: parentComments,
+        createdAt: new Date(post.createdAt).toISOString(),
+      };
+    });
   }
 }

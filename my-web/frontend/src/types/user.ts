@@ -9,6 +9,10 @@ export enum UserRole {
   ADMIN = 'ADMIN',
 }
 
+export const isAdmin = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.ADMIN;
+export const isRestaurant = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.RESTAURANT;
+export const isCustomer = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.CUSTOMER;
+
 export enum UserStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FoodService } from './food.service';
 import { FoodRepository } from './food.repository';
+import { RestaurantRepository } from './restaurant.repository';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../../database/prisma.service';
 import { AiLearningService } from '../ai/services/ai-learning.service';
@@ -12,6 +13,7 @@ describe('FoodService', () => {
   let service: FoodService;
   let repository: any;
   let cacheService: any;
+  let restaurantRepository: any;
 
   beforeEach(async () => {
     const mockFoodRepository = {
@@ -20,6 +22,11 @@ describe('FoodService', () => {
       findById: jest.fn(),
       delete: jest.fn(),
       update: jest.fn(),
+    };
+
+    const mockRestaurantRepository = {
+      findRestaurantById: jest.fn(),
+      findRestaurantByOwnerId: jest.fn(),
     };
 
     const mockCacheService = {
@@ -31,6 +38,7 @@ describe('FoodService', () => {
       providers: [
         FoodService,
         { provide: FoodRepository, useValue: mockFoodRepository },
+        { provide: RestaurantRepository, useValue: mockRestaurantRepository },
         { provide: AiService, useValue: {} },
         { provide: PrismaService, useValue: {} },
         { provide: AiLearningService, useValue: {} },
@@ -41,6 +49,7 @@ describe('FoodService', () => {
     service = module.get<FoodService>(FoodService);
     repository = module.get(FoodRepository);
     cacheService = module.get(CacheService);
+    restaurantRepository = module.get(RestaurantRepository);
   });
 
   it('should be defined', () => {

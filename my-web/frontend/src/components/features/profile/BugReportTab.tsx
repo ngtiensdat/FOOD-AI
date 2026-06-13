@@ -10,6 +10,7 @@ import { Bug, Image as ImageIcon, CheckCircle2, AlertTriangle, Sparkles } from '
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
+import { bugReportService } from '@/services/bug-report.service';
 
 export const BugReportTab = () => {
   const [category, setCategory] = useState<'AI' | 'UI' | 'PERFORMANCE' | 'OTHER'>('UI');
@@ -19,7 +20,7 @@ export const BugReportTab = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
@@ -31,34 +32,22 @@ export const BugReportTab = () => {
 
     setLoading(true);
 
-    const report = {
-      id: Date.now(),
-      category,
-      description: description.trim(),
-      imageUrl: imageUrl.trim() || null,
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await bugReportService.createBugReport({
+        category,
+        description: description.trim(),
+        imageUrl: imageUrl.trim() || undefined,
+      });
 
-    setTimeout(() => {
-      // Save report in localStorage
-      const existing = localStorage.getItem('foodai_bug_reports');
-      let reportsList = [];
-      if (existing) {
-        try {
-          reportsList = JSON.parse(existing);
-        } catch (err) {
-          console.error(err);
-        }
-      }
-      reportsList.push(report);
-      localStorage.setItem('foodai_bug_reports', JSON.stringify(reportsList));
-
-      setLoading(false);
       setSuccess(true);
       setDescription('');
       setImageUrl('');
-    }, LIMITS.MOCK_SUBMIT_DELAY_MS);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || LABELS.BUG_REPORT.SUBMIT_ERROR);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

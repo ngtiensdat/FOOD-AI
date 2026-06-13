@@ -3,9 +3,10 @@ import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { PrismaModule } from '../../database/prisma.module';
 import { CommonCacheModule } from '../../common/cache.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [PrismaModule, CommonCacheModule],
+  imports: [PrismaModule, CommonCacheModule, NotificationModule],
   controllers: [PostController],
   providers: [PostService],
   exports: [PostService],
