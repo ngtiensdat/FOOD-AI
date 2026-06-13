@@ -7,12 +7,12 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 ### [Backend]
 - [x] Task 1.1: Luồng Onboarding lưu sở thích vào UserProfile.
 - [x] Task 1.2: Tích hợp OpenAI Embeddings API.
-- [ ] Task 1.3: Logic AI lọc món theo Thời gian thực (Sáng/Trưa/Tối).
-- [ ] Task 1.4: Tích hợp Weather API để AI đưa ra gợi ý theo thời tiết.
+- [x] Task 1.3: Logic AI lọc món theo Thời gian thực (Sáng/Trưa/Tối).
+- [x] Task 1.4: Tích hợp Weather API để AI đưa ra gợi ý theo thời tiết.
 
 ### [Frontend]
 - [x] Task 1.5: UI Modal Onboarding hỏi sở thích người dùng.
-- [ ] Task 1.6: Hiển thị thông tin thời tiết hiện tại trong phần gợi ý AI.
+- [x] Task 1.6: Hiển thị thông tin thời tiết hiện tại trong phần gợi ý AI.
 
 ---
 
@@ -24,4 +24,5 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 
 ### [Frontend]
 - [x] Task 2.3: Tích hợp kết quả gợi ý AI vào phần Hero.
-- [ ] Task 2.4: UI Chat Assistant (Giai đoạn sơ khai).
+- [x] Task 2.4: UI Chat Assistant (Giai đoạn sơ khai).
+
