@@ -5,7 +5,7 @@
  */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy } from 'lucide-react';
@@ -26,6 +26,32 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const { user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const prevScrollPos = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      
+      // Nếu cuộn gần sát top (dưới 10px), luôn hiển thị Navbar
+      if (currentScrollPos < 10) {
+        setVisible(true);
+        prevScrollPos.current = currentScrollPos;
+        return;
+      }
+      
+      const isScrollingDown = currentScrollPos > prevScrollPos.current;
+      
+      // Chỉ kích hoạt ẩn hiện nếu cuộn di chuyển lớn hơn 5px để tránh nhấp nháy
+      if (Math.abs(currentScrollPos - prevScrollPos.current) > 5) {
+        setVisible(!isScrollingDown);
+        prevScrollPos.current = currentScrollPos;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -169,15 +195,17 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 flex items-center justify-between border-b border-gray-50 dark:border-slate-900">
-      <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+      <nav className={`fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 grid grid-cols-3 items-center border-b border-gray-50 dark:border-slate-900 transition-transform duration-300 ease-in-out ${
+        visible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
+      <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity justify-self-start">
         <div className="relative w-10 h-10">
           <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="40px" className="object-contain" />
         </div>
         <span className="text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
       </Link>
 
-      <div className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest">
+      <div className="hidden md:flex items-center justify-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest justify-self-center">
         {tabs.map((tab) => (
           <button
             suppressHydrationWarning
@@ -191,7 +219,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         ))}
       </div>
 
-      <div className="flex items-center gap-4 relative">
+      <div className="flex items-center justify-end gap-4 relative justify-self-end">
         <ThemeToggle />
         <Button
           variant="ghost"

@@ -8,6 +8,7 @@ import { toast } from '@/store/useToastStore';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { offerService } from '@/services/offer.service';
+import { useAuth } from '@/hooks/useAuth';
 
 interface OfferData {
   id: number;
@@ -59,7 +60,8 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
     loadOffers();
   }, []);
 
-  const isMerchant = user?.role === 'RESTAURANT';
+  const { isRestaurant } = useAuth();
+  const isMerchant = isRestaurant;
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();

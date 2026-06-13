@@ -23,42 +23,31 @@ import { LIMITS } from '@/constants/limits.constant';
 import { SafeImage } from '@/components/base/SafeImage';
 import Link from 'next/link';
 import { Avatar } from '@/components/base/Avatar';
+import { useRouter } from 'next/navigation';
 
 // Feature Components
 import { MenuTable } from '@/components/features/restaurant/MenuTable';
 import { FoodFormModal } from '@/components/features/food/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { CategoryManager } from '@/components/features/restaurant/CategoryManager';
-import { UploadExcelModal } from '@/components/features/admin/UploadExcelModal';
+import { UploadExcelModal } from '@/components/features/restaurant/UploadExcelModal';
 import { EditRestaurantModal } from '@/components/features/restaurant/EditRestaurantModal';
 import { MerchantAnalytics } from '@/components/features/restaurant/MerchantAnalytics';
 
 export default function RestaurantDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isRestaurant, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải RESTAURANT / ADMIN
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const authData = localStorage.getItem('auth-storage');
-      if (authData) {
-        try {
-          const parsed = JSON.parse(authData);
-          const loggedInUser = parsed?.state?.user;
-          if (!loggedInUser) {
-            window.location.href = '/login';
-            return;
-          }
-          if (loggedInUser.role !== 'RESTAURANT' && loggedInUser.role !== 'ADMIN') {
-            window.location.href = '/';
-          }
-        } catch {
-          window.location.href = '/login';
-        }
-      } else {
-        window.location.href = '/login';
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!isRestaurant && !isAdmin) {
+        router.push('/');
       }
     }
-  }, []);
+  }, [user, authLoading, isAdmin, isRestaurant, router]);
 
   const {
     myFoods,

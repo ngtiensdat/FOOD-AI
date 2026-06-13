@@ -13,6 +13,7 @@ import { LABELS } from "@/constants/labels";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { LanguageProvider } from "@/providers/language-provider";
+import { AssistiveTouchMenu } from "@/components/features/assistive-touch/AssistiveTouchMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,7 @@ export default async function RootLayout({
         <LanguageProvider lang={lang}>
           <ThemeProvider>
             {children}
+            <AssistiveTouchMenu />
           </ThemeProvider>
         </LanguageProvider>
         <ToastContainer />

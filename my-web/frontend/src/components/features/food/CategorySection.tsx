@@ -39,7 +39,7 @@ interface CategorySectionProps {
 export const CategorySection = ({ handleCategoryClick, selectedCategory }: CategorySectionProps) => {
   return (
     <Section id="categories">
-      <div className="text-center mb-12">
+      <div className="text-center mb-6">
         <h2 className="text-h2 text-gray-900 mb-4">{LABELS.EXPLORE.TITLE}</h2>
 
         {/* Thanh tìm kiếm Tag */}
@@ -59,7 +59,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
         </div>
 
         {/* Gợi ý Tag */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
           <span className="text-small text-gray-400 dark:text-gray-400 font-bold mr-2 self-center">{LABELS.EXPLORE.SUGGESTED_TAGS}</span>
           {SUGGESTED_TAGS.map(t => (
             <button

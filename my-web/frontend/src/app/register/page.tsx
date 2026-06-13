@@ -185,7 +185,14 @@ export default function RegisterPage() {
                 <div className="flex items-start gap-3 p-1">
                   <input suppressHydrationWarning type="checkbox" required className="mt-1 accent-primary h-4 w-4" />
                   <label className="text-xs text-gray-500 leading-relaxed">
-                    {LABELS.AUTH.AGREE_TERMS}
+                    {LABELS.AUTH.AGREE_TERMS_PREFIX}
+                    <Link href="/terms" className="text-primary hover:underline font-bold">
+                      {LABELS.AUTH.AGREE_TERMS_LINK}
+                    </Link>
+                    {LABELS.AUTH.AGREE_TERMS_AND}
+                    <Link href="/policy" className="text-primary hover:underline font-bold">
+                      {LABELS.AUTH.AGREE_POLICY_LINK}
+                    </Link>
                   </label>
                 </div>
 

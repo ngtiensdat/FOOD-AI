@@ -1,5 +1,5 @@
 // Mục đích file này để làm gì: Component Modal hỗ trợ chủ nhà hàng tải lên danh sách món ăn hàng loạt từ file Excel.
-// Các file khác hay file này có ý nghĩa như nào: Được gọi từ trang Quản lý thực đơn (Admin), giúp tối ưu thời gian nhập liệu thay vì tạo từng món.
+// Các file khác hay file này có ý nghĩa như nào: Được gọi từ trang Quản lý thực đơn (Dashboard nhà hàng), giúp tối ưu thời gian nhập liệu thay vì tạo từng món.
 // Các chức năng đặc biệt: Đọc và parse file Excel ngay dưới local, tự động map các cột tương ứng, chọn chi nhánh và danh mục trước khi upload, tải file mẫu.
 // Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Client-side Excel parsing, Separation of Concerns.
 // Các biến, hàm đặc biệt trong file: handleFileUpload (parse Excel), handleSubmit (gửi API), previewData (hiển thị trước data).

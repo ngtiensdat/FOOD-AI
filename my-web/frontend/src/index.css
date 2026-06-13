@@ -118,8 +118,8 @@ html.mixed,
   --radius-button: 16px;
   --radius-input: 12px;
 
-  --spacing-layout: 5rem;
-  /* py-20 */
+  --spacing-layout: 1.5rem;
+  /* py-6 */
 }
 
 @utility p-layout {

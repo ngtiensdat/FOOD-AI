@@ -8,6 +8,7 @@
 import React from 'react';
 import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown, ShieldAlert, Award, Bell } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
@@ -29,31 +30,19 @@ import { LevelBadgeManagerTab } from '@/components/features/admin/LevelBadgeMana
 import { AdminNotificationTab } from '@/components/features/admin/AdminNotificationTab';
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải ADMIN
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const authData = localStorage.getItem('auth-storage');
-      if (authData) {
-        try {
-          const parsed = JSON.parse(authData);
-          const loggedInUser = parsed?.state?.user;
-          if (!loggedInUser) {
-            window.location.href = '/login';
-            return;
-          }
-          if (loggedInUser.role !== 'ADMIN') {
-            window.location.href = '/';
-          }
-        } catch {
-          window.location.href = '/login';
-        }
-      } else {
-        window.location.href = '/login';
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!isAdmin) {
+        router.push('/');
       }
     }
-  }, []);
+  }, [user, authLoading, isAdmin, router]);
 
   const adminData = useAdminData();
   const [showImportModal, setShowImportModal] = React.useState(false);

@@ -66,7 +66,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
   return (
     <section className={`p-layout transition-colors duration-300 ${bgStyles[bg]}`}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-12">
+        <div className="flex justify-between items-end mb-6">
           <div>
             <h2 className="text-h2 flex items-center gap-3">
               {icon}
@@ -88,7 +88,7 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
           className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
         >
           {React.Children.map(children, (child) => (
-            <div className="min-w-[280px] md:min-w-[320px] snap-start">
+            <div className="min-w-[250px] md:min-w-[290px] snap-start">
               {child}
             </div>
           ))}
