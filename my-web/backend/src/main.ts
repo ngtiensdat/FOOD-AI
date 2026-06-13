@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { StructuredLogger } from './common/logger/structured-logger.service';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -12,11 +13,19 @@ import { Request, Response, NextFunction } from 'express';
 import { appConfig } from './config/app.config';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const logger = new StructuredLogger('Bootstrap');
+  const app = await NestFactory.create(AppModule, {
+    logger: new StructuredLogger(),
+  });
   const config = appConfig();
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProduction ? undefined : false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(cookieParser());
 
   app.useGlobalPipes(
@@ -60,17 +69,20 @@ async function bootstrap() {
             /^http:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+(:\d+)?$/.test(origin)))
       ) {
         callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return;
       }
+
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
   });
+
+  // Graceful shutdown — đóng Prisma/Redis connections sạch sẽ khi container bị kill
+  app.enableShutdownHooks();
 
   await app.listen(config.port);
   logger.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
 bootstrap().catch((err) => {
-  new Logger('Bootstrap').error('Error during bootstrap:', err);
+  new StructuredLogger('Bootstrap').error('Error during bootstrap:', err);
 });
-// Trigger clean reload

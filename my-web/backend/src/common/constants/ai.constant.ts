@@ -6,7 +6,7 @@
 export const AI_CONSTANTS = {
   MODELS: {
     EMBEDDING: 'text-embedding-3-small',
-    CHAT: 'gpt-4o-mini',
+    CHAT: 'gpt-4.1-mini',
   },
   CACHE: {
     MAX_SIZE: 1000,
@@ -14,7 +14,7 @@ export const AI_CONSTANTS = {
   RATE_LIMIT: {
     CHAT_MS: 5000,
   },
-  DEFAULT_TEMPERATURE: 0.2,
+  DEFAULT_TEMPERATURE: 0.55,
   GOAL_MAP: {
     muscle_gain: 'Tăng cơ',
     weight_loss: 'Giảm cân',

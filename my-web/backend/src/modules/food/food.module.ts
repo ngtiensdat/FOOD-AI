@@ -14,9 +14,10 @@ import { AuthModule } from '../auth/auth.module';
 import { FoodService } from './food.service';
 import { FoodRepository } from './food.repository';
 import { AuthorizationService } from '../../common/services/authorization.service';
+import { CommonCacheModule } from '../../common/cache.module';
 
 @Module({
-  imports: [PrismaModule, AiModule, AuthModule],
+  imports: [PrismaModule, AiModule, AuthModule, CommonCacheModule],
   controllers: [
     FoodController,
     RestaurantController,

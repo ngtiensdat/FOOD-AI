@@ -9,6 +9,7 @@ import {
 import { Response, Request } from 'express';
 import { MESSAGES } from '../constants/messages.constant';
 import { ErrorCodes } from '../constants/error-codes.constant';
+import { randomUUID } from 'crypto';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -18,6 +19,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    const requestId =
+      (request.headers['x-request-id'] as string) || randomUUID();
 
     const status =
       exception instanceof HttpException
@@ -37,12 +40,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = responseBody;
       }
       this.logger.warn(
-        `HttpException: [${request.method}] ${request.url} - Status: ${status} - Msg: ${JSON.stringify(message)}`,
+        `HttpException: [${requestId}] [${request.method}] ${request.url} - Status: ${status} - Msg: ${JSON.stringify(message)}`,
       );
     } else {
       // Ghi nhận chi tiết lỗi kèm stack trace trên terminal server phục vụ debug
       this.logger.error(
-        `Unhandled Exception: [${request.method}] ${request.url}`,
+        `Unhandled Exception: [${requestId}] [${request.method}] ${request.url}`,
         exception instanceof Error ? exception.stack : String(exception),
       );
       // Giữ nguyên message mặc định là MESSAGES.SYSTEM.INTERNAL_SERVER_ERROR để bảo mật thông tin DB/hệ thống
@@ -55,6 +58,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(status).json({
       data: null,
       meta: {
+        requestId,
         timestamp: new Date().toISOString(),
         path: request.url,
         statusCode: status,

@@ -203,6 +203,8 @@ export class UserService {
           select: {
             id: true,
             name: true,
+            address: true,
+            mapUrl: true,
             profile: {
               select: {
                 coverImage: true,
@@ -254,5 +256,31 @@ export class UserService {
       });
       return { isFollowing: true };
     }
+  }
+
+  async getLeaderboard() {
+    return this.prisma.user.findMany({
+      where: {
+        role: { not: UserRole.ADMIN },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        points: true,
+        level: true,
+        badgeTitle: true,
+        profile: {
+          select: {
+            avatar: true,
+          },
+        },
+      },
+      orderBy: {
+        points: 'desc',
+      },
+      take: 5,
+    });
   }
 }

@@ -6,6 +6,7 @@
 
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './database/prisma.module';
@@ -17,6 +18,12 @@ import { CategoryModule } from './modules/category/category.module';
 import { UserModule } from './modules/user/user.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { I18nMiddleware } from './common/i18n/i18n.middleware';
+import { SocialModule } from './modules/social/social.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
+import { OfferModule } from './modules/offer/offer.module';
+import { BadgeModule } from './modules/badge/badge.module';
+import { ReportModule } from './modules/report/report.module';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 @Module({
   imports: [
@@ -27,16 +34,28 @@ import { I18nMiddleware } from './common/i18n/i18n.middleware';
     AdminModule,
     AiModule,
     FoodModule,
+    SocialModule,
+    VoucherModule,
+    OfferModule,
+    BadgeModule,
+    ReportModule,
     ThrottlerModule.forRoot([
       {
-        ttl: 600000,
-        limit: 5,
+        name: 'default',
+        ttl: 60000,
+        limit: 100,
       },
     ]),
     CategoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

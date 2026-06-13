@@ -45,4 +45,9 @@ export class RestaurantController {
   ) {
     return this.foodService.updateMyRestaurantProfile(user, dto);
   }
+
+  @Get('my-analytics')
+  getMyAnalytics(@GetUser() user: PrismaClient.User) {
+    return this.foodService.getMyAnalytics(user);
+  }
 }

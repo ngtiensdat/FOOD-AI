@@ -22,7 +22,18 @@ const KM_PER_LATITUDE_DEGREE = 111.045;
 export class FoodRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(where: Prisma.FoodWhereInput) {
+  async findAll(
+    where: Prisma.FoodWhereInput,
+    page?: number,
+    pageSize?: number,
+  ) {
+    const skip = page && pageSize ? (page - 1) * pageSize : undefined;
+    const take = pageSize
+      ? pageSize
+      : page
+        ? LIMITS.FOOD_LIST_PAGINATION
+        : undefined;
+
     const [data, total] = await Promise.all([
       this.prisma.food.findMany({
         where,
@@ -32,6 +43,7 @@ export class FoodRepository {
               id: true,
               name: true,
               address: true,
+              mapUrl: true,
               ownerId: true,
               isActive: true,
               profile: {
@@ -41,7 +53,8 @@ export class FoodRepository {
           },
         },
         orderBy: { createdAt: 'desc' },
-        take: LIMITS.FOOD_LIST_PAGINATION,
+        skip,
+        take,
       }),
       this.prisma.food.count({ where }),
     ]);
@@ -54,6 +67,23 @@ export class FoodRepository {
       where: { id: foodId },
       select: { restaurantId: true },
     });
+
+    // Deduplicate: nếu đã xem cùng món trong 30 phút gần đây, chỉ update visitedAt
+    const recentThreshold = new Date(Date.now() - 30 * 60 * 1000);
+    const recentView = await this.prisma.history.findFirst({
+      where: {
+        userId,
+        foodId,
+        visitedAt: { gte: recentThreshold },
+      },
+    });
+
+    if (recentView) {
+      return this.prisma.history.update({
+        where: { id: recentView.id },
+        data: { visitedAt: new Date() },
+      });
+    }
 
     return this.prisma.history.create({
       data: {
@@ -130,6 +160,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             ownerId: true,
             isActive: true,
             profile: {
@@ -183,6 +214,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             ownerId: true,
             isActive: true,
             profile: {
@@ -299,16 +331,31 @@ export class FoodRepository {
     });
   }
 
-  async findAllFoodsWithRestaurant() {
-    return this.prisma.food.findMany({
-      where: { deletedAt: null },
-      include: {
-        restaurant: {
-          select: { name: true },
+  async findAllFoodsWithRestaurant(page?: number, pageSize?: number) {
+    const skip = page && pageSize ? (page - 1) * pageSize : undefined;
+    const take = pageSize
+      ? pageSize
+      : page
+        ? LIMITS.ADMIN_FOODS_PAGE_SIZE
+        : undefined;
+
+    const [data, total] = await Promise.all([
+      this.prisma.food.findMany({
+        where: { deletedAt: null },
+        include: {
+          restaurant: {
+            select: { name: true },
+          },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.food.count({
+        where: { deletedAt: null },
+      }),
+    ]);
+    return { data, total };
   }
 
   async findRestaurantByOwnerId(ownerId: number) {
@@ -401,6 +448,7 @@ export class FoodRepository {
             id: true,
             name: true,
             address: true,
+            mapUrl: true,
             profile: {
               select: {
                 coverImage: true,

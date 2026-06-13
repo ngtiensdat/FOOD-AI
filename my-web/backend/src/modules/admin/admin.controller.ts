@@ -50,8 +50,13 @@ export class AdminController {
   }
 
   @Get('all-foods')
-  getAllFoods() {
-    return this.adminService.getAllFoods();
+  getAllFoods(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    const p = page ? Number(page) : undefined;
+    const ps = pageSize ? Number(pageSize) : undefined;
+    return this.adminService.getAllFoods(p, ps);
   }
 
   @Patch('update-food/:id')

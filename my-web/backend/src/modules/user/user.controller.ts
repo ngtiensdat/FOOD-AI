@@ -63,4 +63,9 @@ export class UserController {
   async getFollowing(@Param('id') id: string, @GetUser('id') userId?: number) {
     return this.userService.getFollowing(parseInt(id), userId);
   }
+
+  @Get('leaderboard')
+  async getLeaderboard() {
+    return this.userService.getLeaderboard();
+  }
 }
