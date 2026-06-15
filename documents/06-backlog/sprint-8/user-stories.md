@@ -12,7 +12,7 @@
 - **So that** dữ liệu của người dùng được an toàn và ứng dụng tránh bị khai thác lỗi bảo mật.
 
 **Acceptance Criteria (AC):**
-- [ ] Cấu hình **Helmet middleware** bảo vệ ứng dụng NestJS khỏi các lỗ hổng HTTP headers phổ biến.
+- [x] Cấu hình **Helmet middleware** bảo vệ ứng dụng NestJS khỏi các lỗ hổng HTTP headers phổ biến.
 - [ ] Cấu hình cơ chế bảo mật **CSRF protection** (hoặc Double Submit Cookie) đối với các request thay đổi trạng thái (POST, PUT, DELETE) do hệ thống sử dụng HttpOnly Cookie.
 - [ ] Áp dụng **Class-validator** và **Sanitization Pipe** ở Backend để tự động lọc sạch và loại bỏ các thẻ HTML độc hại trong dữ liệu nhập vào (chống XSS).
 - [ ] Đảm bảo Prisma ORM luôn sử dụng parameterized queries để ngăn chặn hoàn toàn SQL Injection.

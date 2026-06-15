@@ -71,3 +71,15 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
   - Cập nhật Grid hiển thị để kết xuất danh sách `RestaurantCard` thay vì `FoodCard`.
 - [x] **Task 3.13 [Profile Integration]**: Thêm checkbox **"Đồng bộ ảnh đại diện này làm Logo của quán ăn"** và **"Đồng bộ ảnh bìa này làm ảnh bìa của quán ăn"** vào `EditProfileModal` tại trang cá nhân `/profile` để đồng bộ ngược lại từ phía cá nhân sang nhà hàng.
 
+---
+
+## 4. Category Hierarchy (Phân loại thực đơn đa cấp)
+
+### [Backend]
+- [x] **Task 4.1 [Database]**: Cấu hình Prisma schema cho model `CategoryGroup` và `Category`.
+- [x] **Task 4.2 [API Controller]**: Triển khai `CategoryGroupController` và `CategoryController` với các API CRUD và phân quyền `RolesGuard('RESTAURANT')`.
+
+### [Frontend]
+- [x] **Task 4.3 [UI Sidebar]**: Thiết kế và tích hợp component `RestaurantMenuSidebar` hiển thị cây danh mục phân cấp (tối đa 4 cấp) tại trang công khai nhà hàng.
+
+

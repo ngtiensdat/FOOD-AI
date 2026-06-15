@@ -48,3 +48,13 @@ Danh sách các tính năng và yêu cầu người dùng (User Stories) đượ
 | **42** | **System/UX** | Đa ngôn ngữ (Localization - Tiếng Việt & Tiếng Anh) | Trung bình |
 | **43** | **System/UX** | Tốc độ tải nhanh, Responsive & Giao diện thẩm mỹ | Cao |
 | **44** | **System/UX** | Báo lỗi kỹ thuật | Thấp |
+| **45** | **Social Interaction** | Lưu bài viết vào bộ sưu tập cá nhân (Saved Posts) | Trung bình |
+| **46** | **Social Interaction** | Chia sẻ nội bộ bài viết lên trang cá nhân | Trung bình |
+| **47** | **AI Suggestion** | Ghi nhận phản hồi Like/Dislike cho gợi ý AI để cá nhân hóa | Cao |
+| **48** | **AI Assistant** | Quản lý lịch sử hội thoại AI dài hạn (Conversation History) | Cao |
+| **49** | **Merchant Hub** | Tạo và quản lý chương trình khuyến mãi/ưu đãi của quán (Offers) | Trung bình |
+| **50** | **Merchant Hub** | Import danh sách món ăn hàng loạt bằng Excel | Trung bình |
+| **51** | **Admin** | Import danh sách Merchant hàng loạt bằng Excel | Trung bình |
+| **52** | **Operations** | Cache, retry, circuit breaker, structured logging, health checks và kiểm soát chi phí API | Cao |
+| **53** | **Merchant Hub** | Phân loại thực đơn đa cấp cho Nhà hàng (Category Hierarchy - tối đa 4 cấp) | Cao |
+

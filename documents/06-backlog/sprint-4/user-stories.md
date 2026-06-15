@@ -37,6 +37,6 @@
 
 **Acceptance Criteria (AC):**
 - [x] API Chat kết nối OpenAI gpt-4o-mini với ngữ cảnh món ăn thực tế.
-- [ ] UI Chat Assistant (Floating button hoặc Chat page) toàn diện.
-- [ ] Gợi ý các món ăn cụ thể ngay trong nội dung trò chuyện của AI.
-- [ ] Lưu trữ và quản lý lịch sử trò chuyện lâu dài.
+- [x] UI Chat Assistant (Floating button hoặc Chat page) toàn diện.
+- [x] Gợi ý các món ăn cụ thể ngay trong nội dung trò chuyện của AI.
+- [x] Lưu trữ và quản lý lịch sử trò chuyện lâu dài.

@@ -12,10 +12,10 @@
 - **So that** tôi cảm thấy được ghi nhận đóng góp và tăng uy tín cá nhân trên mạng xã hội.
 
 **Acceptance Criteria (AC):**
-- [ ] Tích lũy XP khi đăng bài review (+50 XP), comment (+10 XP), like (+5 XP).
-- [ ] Thăng cấp (Level up) khi đạt đủ mốc XP quy định.
+- [x] Tích lũy XP khi đăng bài review (+50 XP), comment (+10 XP), like (+5 XP).
+- [x] Thăng cấp (Level up) khi đạt đủ mốc XP quy định.
 - [ ] Tự động trao danh hiệu dựa trên mốc hoạt động (ví dụ: "Thánh ăn" khi review > 10 món, "Chiến thần review" khi có > 500 lượt thích bài viết).
-- [ ] Hiển thị Cấp độ và Danh hiệu nổi bật trên trang cá nhân của người dùng.
+- [x] Hiển thị Cấp độ và Danh hiệu nổi bật trên trang cá nhân của người dùng.
 
 ### US-22: Danh hiệu dành cho Thương gia (Merchant Badges)
 - **As a** đối tác nhà hàng (Merchant)
@@ -37,9 +37,9 @@
 - **So that** tôi nhận được lợi ích kinh tế thực tế khi hoạt động tích cực trên app.
 
 **Acceptance Criteria (AC):**
-- [ ] Trang "Voucher Market" hiển thị danh sách voucher có sẵn kèm điều kiện đổi (Ví dụ: Level >= 5, hoặc đổi bằng điểm).
-- [ ] Trừ điểm cống hiến/kiểm tra cấp độ khi người dùng nhấn "Đổi Voucher".
-- [ ] Lưu mã Voucher đã đổi vào ví cá nhân và có thể sử dụng khi đặt món.
+- [x] Trang "Voucher Market" hiển thị danh sách voucher có sẵn kèm điều kiện đổi (Ví dụ: Level >= 5, hoặc đổi bằng điểm).
+- [x] Trừ điểm cống hiến/kiểm tra cấp độ khi người dùng nhấn "Đổi Voucher".
+- [x] Lưu mã Voucher đã đổi vào ví cá nhân và có thể sử dụng khi đặt món.
 
 ### US-24: Lưu món ăn yêu thích (Food Favorites)
 - **As a** người dùng
@@ -47,5 +47,5 @@
 - **So that** tôi có thể tìm lại và xem nhanh bất cứ lúc nào.
 
 **Acceptance Criteria (AC):**
-- [ ] Nút Thả tim (Like) trên Food Card lưu món ăn đó vào danh sách "Yêu thích" cá nhân.
-- [ ] Trang "Món ăn đã lưu" (Favorites) hiển thị đầy đủ danh sách các món ăn đã thả tim.
+- [x] Nút Thả tim (Like) trên Food Card lưu món ăn đó vào danh sách "Yêu thích" cá nhân.
+- [x] Trang "Món ăn đã lưu" (Favorites) hiển thị đầy đủ danh sách các món ăn đã thả tim.
