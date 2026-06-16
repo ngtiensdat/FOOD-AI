@@ -1,14 +1,14 @@
-/**
- * Mục đích: Service gửi prompt hoàn thiện lên OpenAI để sinh phản hồi JSON chuẩn hóa.
- * File quan hệ: Được gọi bởi AiService ở cuối luồng hội thoại.
- */
+// Mục đích file này để làm gì: Sinh ra câu trả lời hội thoại và đề xuất món ăn ở dạng JSON có cấu trúc.
+// Các file khác hay file này có ý nghĩa như nào: Được gọi bởi AiService ở cuối luồng xử lý hội thoại để chuẩn bị phản hồi cho người dùng.
+// Các chức năng đặc biệt: Tích hợp LangChain .withStructuredOutput() để sinh JSON theo đúng schema, xác thực danh sách món ăn đề xuất tránh ảo giác (hallucination).
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Single Responsibility, Dependency Injection.
+// Các biến, hàm đặc biệt trong file: ResponseGeneratorService.
 
 import { Injectable, Logger } from '@nestjs/common';
-import { OpenAIService } from './openai.service';
 import { SearchResult } from '../vector.repository';
 import { MESSAGES } from '../../../common/constants/messages.constant';
 import { DialogueState } from '../interfaces/dialogue-state.interface';
-import OpenAI from 'openai';
+import { LangchainService } from './langchain.service';
 
 interface ParsedOpenAiResponse {
   reply?: string;
@@ -30,11 +30,11 @@ interface ParsedOpenAiResponse {
 export class ResponseGeneratorService {
   private readonly logger = new Logger(ResponseGeneratorService.name);
 
-  constructor(private readonly openaiService: OpenAIService) {}
+  constructor(private readonly langchainService: LangchainService) {}
 
   async generateResponse(
     systemPrompt: string,
-    chatHistory: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+    chatHistory: Array<{ role: string; content: string }>,
     candidates: SearchResult[],
   ): Promise<{
     reply: string;
@@ -51,20 +51,112 @@ export class ResponseGeneratorService {
       explanation: string;
     };
   }> {
-    const responseText = await this.openaiService.chatCompletion(
-      systemPrompt,
-      chatHistory,
+    const structuredLlm = this.langchainService.chatModel.withStructuredOutput(
+      {
+        type: 'object',
+        properties: {
+          slots: {
+            type: 'object',
+            properties: {
+              cuisineType: { type: 'string' },
+              category: { type: 'string', enum: ['FOOD', 'DRINK', 'ALL'] },
+              budget: { type: 'number' },
+              companion: {
+                type: 'string',
+                enum: ['SINGLE', 'FAMILY', 'DATE', 'FRIENDS'],
+              },
+              mobility: { type: 'string', enum: ['LAZY', 'EXPLORE', 'NORMAL'] },
+              emotion: {
+                type: 'string',
+                enum: ['TIRED', 'REWARD', 'STRESSED', 'NORMAL'],
+              },
+              allergies: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+            },
+          },
+          current_stage: {
+            type: 'string',
+            enum: ['COLLECTING', 'RECOMMENDED', 'FEEDBACK'],
+          },
+          rejected_food_ids: {
+            type: 'array',
+            items: { type: 'number' },
+          },
+          title: { type: 'string' },
+          reply: { type: 'string' },
+          suggestedFoodIds: {
+            type: 'array',
+            items: { type: 'number' },
+          },
+          quickReplies: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                text: { type: 'string' },
+              },
+              required: ['label', 'text'],
+            },
+          },
+          assessment: {
+            type: 'object',
+            properties: {
+              mainNeed: { type: 'string' },
+              secondaryNeeds: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+              confidence: { type: 'number' },
+              explanation: { type: 'string' },
+            },
+            required: [
+              'mainNeed',
+              'secondaryNeeds',
+              'confidence',
+              'explanation',
+            ],
+          },
+        },
+        required: [
+          'slots',
+          'current_stage',
+          'reply',
+          'suggestedFoodIds',
+          'quickReplies',
+        ],
+      },
+      {
+        name: 'response_generator',
+      },
     );
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory.map((m) => ({
+        role:
+          m.role === 'assistant'
+            ? 'assistant'
+            : m.role === 'system'
+              ? 'system'
+              : 'user',
+        content:
+          typeof m.content === 'string' ? m.content : JSON.stringify(m.content),
+      })),
+    ];
 
     let parsed: ParsedOpenAiResponse;
     try {
-      parsed = JSON.parse(responseText);
+      parsed = await structuredLlm.invoke(messages);
     } catch (err) {
       this.logger.error(
-        'Failed to parse OpenAI response as JSON, falling back to text wrapper.',
+        'Failed to generate response using LangChain structured LLM, falling back to empty response.',
+        err,
       );
       parsed = {
-        reply: responseText,
+        reply: MESSAGES.AI.SYSTEM_ERROR_FALLBACK,
         suggestedFoodIds: [],
         quickReplies: [],
         slots: {},

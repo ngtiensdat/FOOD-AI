@@ -23,6 +23,8 @@
     "archive-conversations": "ts-node src/scripts/archive-old-conversations.ts"
   },
   "dependencies": {
+    "@langchain/core": "^1.1.49",
+    "@langchain/openai": "^1.4.7",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",

@@ -1,10 +1,12 @@
-/**
- * Mục đích: Service chịu trách nhiệm xây dựng prompt hệ thống tổng hợp tất cả bối cảnh khách hàng, dị ứng, địa lý và candidates.
- * File quan hệ: Được gọi bởi AiService để chuẩn bị prompt gửi lên OpenAI.
- */
+// Mục đích file này để làm gì: Xây dựng các nội dung prompt hệ thống động (tổng hợp bối cảnh, dị ứng, địa lý, món ăn gợi ý).
+// Các file khác hay file này có ý nghĩa như nào: Được gọi bởi AiService để sinh các prompt chỉ dẫn trước khi gửi cho LLM.
+// Các chức năng đặc biệt: Tích hợp LangChain PromptTemplate để format prompt động và quản lý placeholders.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Single Responsibility, Dependency Injection.
+// Các biến, hàm đặc biệt trong file: PromptBuilderService.
 
 import { Injectable } from '@nestjs/common';
 import { Favorite, History, UserProfile } from '@prisma/client';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { SYSTEM_PROMPT_TEMPLATE } from '../prompts/system.prompt';
 import { RECOMMENDATION_PROMPT_TEMPLATE } from '../prompts/recommendation.prompt';
 import { SLOT_FILLING_PROMPT_TEMPLATE } from '../prompts/slot-filling.prompt';
@@ -95,8 +97,11 @@ export class PromptBuilderService {
     return contextStr;
   }
 
-  buildRecommendationPrompt(): string {
-    return RECOMMENDATION_PROMPT_TEMPLATE;
+  async buildRecommendationPrompt(): Promise<string> {
+    const template = PromptTemplate.fromTemplate(
+      RECOMMENDATION_PROMPT_TEMPLATE,
+    );
+    return template.format({});
   }
 
   buildCandidatesSection(
@@ -131,30 +136,27 @@ export class PromptBuilderService {
     return JSON.stringify(optimized, null, 2);
   }
 
-  buildSlotFillingPrompt(missingSlots: string[]): string {
-    return SLOT_FILLING_PROMPT_TEMPLATE.replace(
-      '{missingSlots}',
-      missingSlots.join(', '),
-    );
+  async buildSlotFillingPrompt(missingSlots: string[]): Promise<string> {
+    const template = PromptTemplate.fromTemplate(SLOT_FILLING_PROMPT_TEMPLATE);
+    return template.format({
+      missingSlots: missingSlots.join(', '),
+    });
   }
 
-  buildSystemPrompt(
+  async buildSystemPrompt(
     currentDayTimeStr: string,
     userPrefContext: string,
     promptInstructions: string,
     currentSlotsJson: string,
     candidatesSection: string,
-  ): string {
-    return SYSTEM_PROMPT_TEMPLATE.replace(
-      '{currentDayTimeStr}',
+  ): Promise<string> {
+    const template = PromptTemplate.fromTemplate(SYSTEM_PROMPT_TEMPLATE);
+    return template.format({
       currentDayTimeStr,
-    )
-      .replace(
-        '{userPrefContext}',
-        userPrefContext || '- Chưa có thông tin sở thích',
-      )
-      .replace('{promptInstructions}', promptInstructions)
-      .replace('{currentSlotsJson}', currentSlotsJson)
-      .replace('{candidatesSection}', candidatesSection);
+      userPrefContext: userPrefContext || '- Chưa có thông tin sở thích',
+      promptInstructions,
+      currentSlotsJson,
+      candidatesSection,
+    });
   }
 }

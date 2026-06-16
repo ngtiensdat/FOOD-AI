@@ -75,8 +75,8 @@ describe('PromptBuilderService', () => {
   });
 
   describe('buildSystemPrompt (Đóng gói System Prompt)', () => {
-    it('nên thay thế đúng các placeholders trong mẫu system prompt', () => {
-      const systemPrompt = service.buildSystemPrompt(
+    it('nên thay thế đúng các placeholders trong mẫu system prompt', async () => {
+      const systemPrompt = await service.buildSystemPrompt(
         'Bây giờ là 12:00',
         'Ngữ cảnh test',
         'Chỉ dẫn test',

@@ -1,9 +1,15 @@
+// Mục đích file này để làm gì: Phân tích ý định (intent) và trích xuất các thông tin (slots) từ tin nhắn của người dùng.
+// Các file khác hay file này có ý nghĩa như nào: Được gọi bởi AiService trong luồng xử lý hội thoại chính để định hướng hội thoại.
+// Các chức năng đặc biệt: Tích hợp LangChain .withStructuredOutput() để lấy kết quả dạng JSON định hình sẵn, kết hợp cache Redis.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Single Responsibility, Dependency Injection.
+// Các biến, hàm đặc biệt trong file: IntentDetectorService.
+
 import { Injectable, Logger } from '@nestjs/common';
 import { FoodIntent } from '../constants/food-intent.enum';
 import { INTENT_ANALYZER_PROMPT_TEMPLATE } from '../prompts/intent-analyzer.prompt';
-import { OpenAIService } from './openai.service';
 import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
 import { RedisService } from './redis.service';
+import { LangchainService } from './langchain.service';
 import * as crypto from 'crypto';
 
 interface ParsedIntentResponse {
@@ -18,8 +24,8 @@ export class IntentDetectorService {
   private readonly logger = new Logger(IntentDetectorService.name);
 
   constructor(
-    private readonly openaiService: OpenAIService,
     private readonly redisService: RedisService,
+    private readonly langchainService: LangchainService,
   ) {}
 
   async detectIntentAndSlots(message: string): Promise<{
@@ -43,20 +49,52 @@ export class IntentDetectorService {
       this.logger.warn(`Failed to retrieve intent from cache: ${err}`);
     }
     try {
-      const responseText = await this.openaiService.chatCompletion(
-        INTENT_ANALYZER_PROMPT_TEMPLATE,
-        [{ role: 'user', content: message }],
-      );
-
-      let parsed: ParsedIntentResponse;
-      try {
-        parsed = JSON.parse(responseText) as ParsedIntentResponse;
-      } catch (err) {
-        this.logger.error(
-          'Failed to parse intent JSON, falling back to heuristics.',
+      const structuredLlm =
+        this.langchainService.chatModel.withStructuredOutput(
+          {
+            type: 'object',
+            properties: {
+              needs: {
+                type: 'object',
+                properties: {
+                  cuisine: { type: 'number' },
+                  distance: { type: 'number' },
+                  price: { type: 'number' },
+                  weather: { type: 'number' },
+                  emotion: { type: 'number' },
+                  companion: { type: 'number' },
+                  popularity: { type: 'number' },
+                  health: { type: 'number' },
+                  speed: { type: 'number' },
+                },
+              },
+              slots: {
+                type: 'object',
+                properties: {
+                  cuisineType: { type: 'string' },
+                  budget: { type: 'number' },
+                  emotion: { type: 'string' },
+                  companion: { type: 'string' },
+                  allergies: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
+                },
+              },
+              searchQuery: { type: 'string' },
+              reasoning: { type: 'string' },
+            },
+            required: ['needs', 'slots', 'searchQuery', 'reasoning'],
+          },
+          {
+            name: 'intent_detector',
+          },
         );
-        parsed = { needs: {}, slots: {}, reasoning: 'Lỗi parse JSON' };
-      }
+
+      const parsed = (await structuredLlm.invoke([
+        { role: 'system', content: INTENT_ANALYZER_PROMPT_TEMPLATE },
+        { role: 'user', content: message },
+      ])) as ParsedIntentResponse;
 
       const needs = parsed.needs || {};
       const slots = parsed.slots || {};

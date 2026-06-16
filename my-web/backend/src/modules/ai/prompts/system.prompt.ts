@@ -57,8 +57,8 @@ NHIỆM VỤ THỰC THI (BẮT BUỘC TRẢ VỀ DẠNG JSON):
 Bạn phải trả về một đối tượng JSON khớp chính xác với cấu trúc dưới đây. Đảm bảo cập nhật chính xác trạng thái slots của người dùng dựa trên tin nhắn mới nhất và lịch sử hội thoại trước đó.
 
 CẤU TRÚC JSON PHẢN HỒI YÊU CẦU:
-{
-  "slots": {
+{{
+  "slots": {{
     "cuisineType": "hương vị, cách chế biến (ví dụ: cay, ngọt, món nước, món khô, nướng, lẩu, chay...). Giữ nguyên giá trị cũ từ cấu trúc slots hiện tại nếu không có thông tin mới.",
     "category": "FOOD" | "DRINK" | "ALL",
     "budget": "số tiền tối đa khách muốn chi trả dưới dạng số (ví dụ: 100000). Giữ nguyên giá trị cũ từ thông tin cũ nếu không có thông tin mới.",
@@ -66,22 +66,22 @@ CẤU TRÚC JSON PHẢN HỒI YÊU CẦU:
     "mobility": "LAZY" | "EXPLORE" | "NORMAL",
     "emotion": "TIRED" | "REWARD" | "STRESSED" | "NORMAL",
     "allergies": "mảng các chất gây dị ứng của người dùng dưới dạng chuỗi (ví dụ: ['tôm', 'lạc']). Giữ nguyên giá trị cũ từ cấu trúc slots hiện tại nếu không có thông tin mới."
-  },
+  }},
   "current_stage": "COLLECTING" | "RECOMMENDED" | "FEEDBACK",
   "rejected_food_ids": [mảng các ID món ăn mà người dùng từ chối/không thích trong câu chat này (nếu có)],
   "title": "Tự động sinh hoặc cập nhật tiêu đề hội thoại ngắn gọn bằng tiếng Việt (tối đa 4-5 từ, không dùng dấu chấm hay ký tự đặc biệt, ví dụ: 'Thèm bún bò Huế', 'Trà sữa ngon ngọt', 'Tìm lẩu thái đêm')",
   "reply": "Câu trả lời vui vẻ, dí dỏm, sống động gửi cho khách hàng. Mô tả món ăn hấp dẫn, dùng emoji sáng tạo, mở đầu bất ngờ, thêm fun fact nếu phù hợp. Tuyệt đối không nhàm chán hay lặp lại.",
   "suggestedFoodIds": [các ID món ăn được chọn từ danh sách CANDIDATES ở trên, nếu không có thì để mảng rỗng],
   "quickReplies": [
-    { "label": "Nhãn nút bấm ngắn kèm emoji (ví dụ: Cơm trưa 🍚)", "text": "Nội dung tin nhắn gửi đi khi click (ví dụ: Tôi muốn ăn cơm trưa)" }
+    {{ "label": "Nhãn nút bấm ngắn kèm emoji (ví dụ: Cơm trưa 🍚)", "text": "Nội dung tin nhắn gửi đi khi click (ví dụ: Tôi muốn ăn cơm trưa)" }}
   ],
-  "assessment": {
+  "assessment": {{
     "mainNeed": "Người dùng thực sự đang cần gì?",
     "secondaryNeeds": ["Các nhu cầu phụ/khác nếu có"],
     "confidence": 0.0-1.0 (ví dụ: 0.95),
     "explanation": "Giải thích ngắn gọn vì sao nhu cầu này được ưu tiên"
-  }
-}
+  }}
+}}
 
 Hãy điền các thông tin slots hiện tại vào slots:
 {currentSlotsJson}`;

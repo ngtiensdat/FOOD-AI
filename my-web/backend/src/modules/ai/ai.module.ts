@@ -29,6 +29,7 @@ import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService } from './services/weather.service';
 import { RetryQueueService } from '../../common/services/retry-queue.service';
 import { BudgetTrackerService } from './services/budget-tracker.service';
+import { LangchainService } from './services/langchain.service';
 
 @Module({
   imports: [PrismaModule, ConfigModule.forFeature(aiConfig)],
@@ -54,6 +55,7 @@ import { BudgetTrackerService } from './services/budget-tracker.service';
     WeatherService,
     RetryQueueService,
     BudgetTrackerService,
+    LangchainService,
   ],
   exports: [
     AiService,
@@ -76,6 +78,7 @@ import { BudgetTrackerService } from './services/budget-tracker.service';
     WeatherService,
     RetryQueueService,
     BudgetTrackerService,
+    LangchainService,
   ],
 })
 export class AiModule {}
