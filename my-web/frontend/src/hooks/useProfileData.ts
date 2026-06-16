@@ -64,8 +64,16 @@ export const useProfileData = (targetId?: string | null) => {
     if (idToFetch) {
       fetchProfileData(idToFetch, me?.id).then((data) => {
         if (active && data) {
-
           setProfile(data);
+          // Sync profile to auth store if it is the current user to ensure points/level are initialized
+          if (me?.id === data.id) {
+            updateMe({
+              ...me,
+              points: data.points,
+              level: data.level,
+              badgeTitle: data.badgeTitle,
+            });
+          }
         }
       });
     }
@@ -122,10 +130,10 @@ export const useProfileData = (targetId?: string | null) => {
       toast.success(LABELS.SETTINGS.PROFILE.SAVE_SUCCESS);
       addNotification(
         profile.id,
-        'Cập nhật tài khoản',
-        'Thông tin tài khoản của bạn đã được cập nhật thành công.',
+        LABELS.SETTINGS.PROFILE.NOTIFICATIONS.UPDATE_TITLE,
+        LABELS.SETTINGS.PROFILE.NOTIFICATIONS.UPDATE_BODY,
         'PROFILE_UPDATE',
-        '/settings.png'
+        '/chibi linh vật/nháy mắt.png'
       );
     } catch (error) {
       console.error('Lỗi cập nhật profile:', error);

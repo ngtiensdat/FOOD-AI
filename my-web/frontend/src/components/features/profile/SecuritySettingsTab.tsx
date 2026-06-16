@@ -8,6 +8,7 @@
 import React from 'react';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
 interface SecuritySettingsTabProps {
@@ -84,21 +85,24 @@ export const SecuritySettingsTab = ({
             <label className="text-small font-semibold text-gray-700 ml-1">{field.label}</label>
             <div className="relative group">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
-              <input
+              <Input
                 type={field.show ? 'text' : 'password'}
                 required
                 placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
-                className="form-input py-4 pl-12 pr-12 text-sm"
+                variant="none"
+                className="form-input py-4 pl-12 pr-12 text-sm w-full"
                 value={field.value}
-                onChange={(e) => field.setter(e.target.value)}
+                onChange={(e) => field.setter((e.target as HTMLInputElement).value)}
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => field.toggle(!field.show)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                variant="none"
+                size="none"
               >
                 {field.show ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+              </Button>
             </div>
           </div>
         ))}

@@ -10,6 +10,8 @@ import { motion } from 'framer-motion';
 import { Thermometer, MapPin, Wind, Droplets, CloudRain, Sun, Loader2 } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { WeatherData } from '@/hooks/useAiChat';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 
 interface ChatConfigDrawerProps {
   showConfig: boolean;
@@ -105,37 +107,41 @@ export function ChatConfigDrawer({
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div className="flex flex-col gap-1">
               <span className="text-[10px] text-gray-500">{LABELS.AI_CHAT.CONFIG.LATITUDE}</span>
-              <input
+              <Input
+                variant="none"
                 type="number"
                 step="0.0001"
                 value={lat}
-                onChange={(e) => setLat(Number(e.target.value))}
+                onChange={(e) => setLat(Number((e.target as HTMLInputElement).value))}
                 className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
               />
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-[10px] text-gray-500">{LABELS.AI_CHAT.CONFIG.LONGITUDE}</span>
-              <input
+              <Input
+                variant="none"
                 type="number"
                 step="0.0001"
                 value={lng}
-                onChange={(e) => setLng(Number(e.target.value))}
+                onChange={(e) => setLng(Number((e.target as HTMLInputElement).value))}
                 className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-2 py-1 rounded-lg font-mono text-xs text-gray-700 dark:text-slate-200 focus:outline-none"
               />
             </div>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-gray-500">{LABELS.AI_CHAT.CONFIG.GPS_COORDS}:</span>
-            <button
+            <Button
               type="button"
               title={LABELS.AI_CHAT.CONFIG.UPDATE_GPS}
               aria-label={LABELS.AI_CHAT.CONFIG.UPDATE_GPS}
               onClick={refreshGps}
+              variant="none"
+              size="none"
               className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-primary transition-colors font-bold text-[10px]"
             >
               <MapPin size={12} />
               {LABELS.AI_CHAT.CONFIG.UPDATE_BTN}
-            </button>
+            </Button>
           </div>
         </div>
 

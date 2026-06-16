@@ -1,12 +1,7 @@
-/**
- * Mục đích file này để làm gì: Component chính điều phối Thống kê và Phân tích dành cho Chủ nhà hàng (MerchantAnalytics).
- * Các file khác hay file này có ý nghĩa như nào: Đóng vai trò là entrypoint/wrapper sạch sẽ của phân hệ Analytics, gọi custom hook và kết hợp các presentational subcomponents.
- */
-'use client';
-
 import React from 'react';
 import { BarChart3 } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { Button } from '@/components/base/Button';
 
 // Hooks
 import { useMerchantAnalytics } from '@/hooks/useMerchantAnalytics';
@@ -89,7 +84,7 @@ export const MerchantAnalytics = () => {
                   {data.map((food) => {
                     const isSelected = selectedFoodIds.includes(food.id);
                     return (
-                      <button
+                      <Button
                         key={food.id}
                         onClick={() => handleToggleFood(food.id)}
                         aria-pressed={isSelected}
@@ -98,9 +93,11 @@ export const MerchantAnalytics = () => {
                             ? 'bg-primary/10 text-primary border-primary/30 dark:bg-primary/20 dark:border-primary/40 font-black scale-95'
                             : 'bg-gray-50/50 dark:bg-slate-900/50 border-gray-100 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-900'
                         }`}
+                        variant="none"
+                        size="none"
                       >
                         {food.name}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>

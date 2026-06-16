@@ -5,7 +5,16 @@ export const badgeService = {
     return apiClient.get('/badges');
   },
 
-  async createBadge(dto: { role: 'CUSTOMER' | 'RESTAURANT'; title: string; points: number }) {
+  async createBadge(dto: {
+    role: 'CUSTOMER' | 'RESTAURANT';
+    title: string;
+    points: number;
+    minReviews?: number | null;
+    minPostLikes?: number | null;
+    minRatingAvg?: number | null;
+    minRatingCount?: number | null;
+    minFollowers?: number | null;
+  }) {
     return apiClient.post('/badges', dto);
   },
 

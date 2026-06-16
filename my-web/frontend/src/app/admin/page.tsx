@@ -93,15 +93,15 @@ export default function AdminDashboard() {
       <main className="admin-main">
         <header className="flex justify-between items-center mb-12">
           <div className="flex flex-col">
-              <h2 className="text-h2 text-gray-800">
-                {activeTab === 'merchants' ? LABELS.ADMIN.APPROVE_MERCHANTS :
-                  activeTab === 'menu' ? LABELS.ADMIN.MANAGE_MENU :
-                    activeTab === 'users' ? LABELS.ADMIN.MANAGE_MERCHANTS :
-                      activeTab === 'moderation' ? LABELS.MODERATION.TITLE :
-                        activeTab === 'levels' ? LABELS.ADMIN.MANAGE_LEVEL_BADGES :
-                          activeTab === 'notifications' ? LABELS.ADMIN.SEND_NOTIFICATION :
-                            LABELS.ADMIN.MANAGE_CUSTOMERS}
-              </h2>
+            <h2 className="text-h2 text-gray-800">
+              {activeTab === 'merchants' ? LABELS.ADMIN.APPROVE_MERCHANTS :
+                activeTab === 'menu' ? LABELS.ADMIN.MANAGE_MENU :
+                  activeTab === 'users' ? LABELS.ADMIN.MANAGE_MERCHANTS :
+                    activeTab === 'moderation' ? LABELS.MODERATION.TITLE :
+                      activeTab === 'levels' ? LABELS.ADMIN.MANAGE_LEVEL_BADGES :
+                        activeTab === 'notifications' ? LABELS.ADMIN.SEND_NOTIFICATION :
+                          LABELS.ADMIN.MANAGE_CUSTOMERS}
+            </h2>
 
             {activeTab === 'menu' && (
               <div className="flex gap-6 mt-4 text-small font-bold">
@@ -109,13 +109,15 @@ export default function AdminDashboard() {
                   { id: 'merchant', label: LABELS.ADMIN.MERCHANT_FOOD },
                   { id: 'system', label: LABELS.ADMIN.SYSTEM_FOOD }
                 ].map(tab => (
-                  <button
+                  <Button
                     key={tab.id}
                     onClick={() => setFoodSubTab(tab.id as 'system' | 'merchant')}
                     className={`pb-2 border-b-2 transition-all ${foodSubTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                    variant="none"
+                    size="none"
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -143,10 +145,12 @@ export default function AdminDashboard() {
             )}
             {user && (
               <div className="flex items-center gap-3 relative">
-                <button
+                <Button
                   onClick={() => setShowMenu(!showMenu)}
                   className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
                   aria-label={LABELS.NAV.USER_MENU}
+                  variant="none"
+                  size="none"
                 >
                   <Avatar
                     src={user.avatar}
@@ -154,20 +158,19 @@ export default function AdminDashboard() {
                     size={40}
                     className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
                   />
-                  <ChevronDown 
-                    size={16} 
-                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${
-                      showMenu ? 'rotate-180 text-primary' : ''
-                    }`} 
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
+                      }`}
                   />
-                </button>
+                </Button>
 
                 {showMenu && (
                   <>
                     {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
-                    <div 
-                      className="fixed inset-0 z-40 bg-transparent cursor-default" 
-                      onClick={() => setShowMenu(false)} 
+                    <div
+                      className="fixed inset-0 z-40 bg-transparent cursor-default"
+                      onClick={() => setShowMenu(false)}
                     />
                     <UserDropdown
                       user={user}

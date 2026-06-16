@@ -9,6 +9,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { Section } from '@/components/base/Section';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
 const CATEGORIES = [
@@ -45,7 +47,8 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
         {/* Thanh tìm kiếm Tag */}
         <div className="max-w-xl mx-auto mb-6 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
-          <input
+          <Input
+            variant="none"
             suppressHydrationWarning
             type="text"
             placeholder={LABELS.EXPLORE.TAG_PLACEHOLDER}
@@ -62,14 +65,16 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           <span className="text-small text-gray-400 dark:text-gray-400 font-bold mr-2 self-center">{LABELS.EXPLORE.SUGGESTED_TAGS}</span>
           {SUGGESTED_TAGS.map(t => (
-            <button
+            <Button
               suppressHydrationWarning
               key={t}
               onClick={() => handleCategoryClick(t)}
+              variant="none"
+              size="none"
               className="px-4 py-1.5 bg-gray-100 dark:bg-gray-200 text-gray-600 dark:text-gray-900 rounded-full text-xs font-bold hover:bg-orange-100 hover:text-primary transition-all border border-transparent hover:border-orange-200 capitalize"
             >
               #{t}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

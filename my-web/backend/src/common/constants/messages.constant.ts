@@ -358,4 +358,24 @@ export const MESSAGES = {
       );
     },
   },
+  LOYALTY: {
+    get LEVEL_UP_TITLE() {
+      return t('LOYALTY.LEVEL_UP_TITLE', 'Thăng cấp độ mới! 🎉');
+    },
+    LEVEL_UP_BODY: (level: number) =>
+      t(
+        'LOYALTY.LEVEL_UP_BODY',
+        `Chúc mừng bạn đã đạt cấp độ Lv. ${level}! Tiếp tục đóng góp và nhận nhiều ưu đãi nhé.`,
+        level,
+      ),
+    get NEW_BADGE_TITLE() {
+      return t('LOYALTY.NEW_BADGE_TITLE', 'Đạt danh hiệu mới! ✨');
+    },
+    NEW_BADGE_BODY: (badge: string) =>
+      t(
+        'LOYALTY.NEW_BADGE_BODY',
+        `Chúc mừng bạn đã đạt danh hiệu "${badge}"!`,
+        badge,
+      ),
+  },
 };

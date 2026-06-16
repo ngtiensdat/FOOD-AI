@@ -142,12 +142,14 @@ export default function ContactPage() {
 
               <div>
                 <label htmlFor="message" className="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">{LABELS.CONTACT_PAGE.INPUT_MESSAGE}</label>
-                <textarea
+                <Input
+                  isTextArea
+                  variant="none"
                   id="message"
                   rows={4}
                   placeholder={LABELS.CONTACT_PAGE.INPUT_MESSAGE_PLACEHOLDER}
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => setMessage((e.target as HTMLTextAreaElement).value)}
                   className="w-full bg-gray-50/50 dark:bg-slate-900/40 border border-gray-200 dark:border-slate-800 rounded-xl p-4 text-sm font-semibold outline-none focus:border-primary transition-all duration-150 focus:ring-4 focus:ring-primary/5"
                   required
                 />

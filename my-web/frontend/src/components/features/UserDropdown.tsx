@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { UserRole } from '@/types/user';
+import { Button } from '@/components/base/Button';
 
 interface UserDropdownProps {
   user: { name?: string; role?: string; avatar?: string | null; [key: string]: unknown };
@@ -67,19 +68,23 @@ export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserD
         <User size={18} className="text-primary" /> {LABELS.NAV.DASHBOARD}
       </Link>
 
-      <button
+      <Button
         onClick={(e) => handleItemClick(e, onSettingsClick)}
         className="w-full dropdown-item text-left cursor-pointer"
+        variant="none"
+        size="none"
       >
         <Settings size={18} className="text-primary" /> {LABELS.NAV.SETTINGS}
-      </button>
+      </Button>
 
-      <button
+      <Button
         onClick={(e) => handleItemClick(e, onLogout)}
         className="w-full dropdown-item text-left text-red-500 mt-1 border-t border-gray-50 dark:border-gray-200 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+        variant="none"
+        size="none"
       >
         <LogOut size={18} /> {LABELS.COMMON.LOGOUT}
-      </button>
+      </Button>
     </motion.div>
   );
 };

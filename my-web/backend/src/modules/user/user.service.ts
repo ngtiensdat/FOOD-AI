@@ -280,7 +280,7 @@ export class UserService {
       orderBy: {
         points: 'desc',
       },
-      take: 5,
+      take: 10,
     });
   }
 }

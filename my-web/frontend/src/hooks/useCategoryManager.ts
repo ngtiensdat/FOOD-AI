@@ -96,8 +96,7 @@ export const useCategoryManager = (restaurantId: number) => {
       fetchHierarchy();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string | string[] } } };
-      console.error('Error submitting group:', err.response?.data || error);
-      const msg = err.response?.data?.message || 'Có lỗi xảy ra';
+      const msg = err.response?.data?.message || LABELS.COMMON.ERROR;
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };
@@ -158,8 +157,7 @@ export const useCategoryManager = (restaurantId: number) => {
       fetchHierarchy();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string | string[] } } };
-      console.error('Error submitting category:', err.response?.data || error);
-      const msg = err.response?.data?.message || 'Có lỗi xảy ra';
+      const msg = err.response?.data?.message || LABELS.COMMON.ERROR;
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };

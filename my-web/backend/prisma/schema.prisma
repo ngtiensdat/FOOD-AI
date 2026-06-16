@@ -462,13 +462,31 @@ model Offer {
 }
 
 model BadgeConfig {
-  id     String   @id @default(uuid())
-  role   UserRole
-  title  String
-  points Int
+  id             String    @id @default(uuid())
+  role           UserRole
+  title          String
+  points         Int
+  minReviews     Int?      @map("min_reviews")
+  minPostLikes   Int?      @map("min_post_likes")
+  minRatingAvg   Float?    @map("min_rating_avg")
+  minRatingCount Int?      @map("min_rating_count")
+  minFollowers   Int?      @map("min_followers")
 
   @@map("badge_configs")
 }
+
+model GamificationConfig {
+  id                  String   @id @default("singleton")
+  pointsPerLevel      Int      @default(1000) @map("points_per_level")
+  postReviewPoints    Int      @default(50) @map("post_review_points")
+  commentPoints       Int      @default(10) @map("comment_points")
+  likePoints          Int      @default(5) @map("like_points")
+  deductionMultiplier Float    @default(1.0) @map("deduction_multiplier")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("gamification_configs")
+}
+
 
 enum NotificationType {
   LIKE

@@ -157,8 +157,10 @@ export default function RestaurantProfilePage() {
       <div className="max-w-7xl mx-auto px-6 mt-12 pb-12">
         {/* Tab Selection */}
         <div className="flex border-b border-gray-200 dark:border-slate-800 mb-8">
-          <button
+          <Button
             onClick={() => setActiveTab('menu')}
+            variant="none"
+            size="none"
             className={`pb-4 px-6 font-extrabold text-body transition-all duration-300 flex items-center gap-2 border-b-2 -mb-[2px] ${
               activeTab === 'menu'
                 ? 'border-primary text-primary'
@@ -167,9 +169,11 @@ export default function RestaurantProfilePage() {
           >
             <Utensils size={18} />
             <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MENU_TAB}</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('info')}
+            variant="none"
+            size="none"
             className={`pb-4 px-6 font-extrabold text-body transition-all duration-300 flex items-center gap-2 border-b-2 -mb-[2px] ${
               activeTab === 'info'
                 ? 'border-primary text-primary'
@@ -178,7 +182,7 @@ export default function RestaurantProfilePage() {
           >
             <Info size={18} />
             <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.INFO_TAB}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Tab Contents */}

@@ -105,4 +105,12 @@ export const en = {
     NEW_PASSWORD_REQUIRED: 'New password cannot be empty',
     NEW_PASSWORD_MIN_LENGTH: 'New password must be at least 8 characters long',
   },
+  LOYALTY: {
+    LEVEL_UP_TITLE: 'New Level Reached! 🎉',
+    LEVEL_UP_BODY: (level: number) =>
+      `Congratulations! You have reached level Lv. ${level}! Continue contributing to receive more rewards.`,
+    NEW_BADGE_TITLE: 'New Badge Unlocked! ✨',
+    NEW_BADGE_BODY: (badge: string) =>
+      `Congratulations! You have earned the "${badge}" badge!`,
+  },
 };

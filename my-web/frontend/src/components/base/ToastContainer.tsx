@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useToastStore } from '@/store/useToastStore';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { Button } from '@/components/base/Button';
 
 export const ToastContainer = () => {
   const { toasts, removeToast } = useToastStore();
@@ -34,13 +35,15 @@ export const ToastContainer = () => {
 
             <p className="flex-1 font-bold text-body leading-tight">{toast.message}</p>
 
-            <button
+            <Button
               onClick={() => removeToast(toast.id)}
+              variant="none"
+              size="none"
               className="p-1 hover:bg-black/5 rounded-full transition-colors"
               aria-label={LABELS.COMMON.CLOSE}
             >
               <X size={18} />
-            </button>
+            </Button>
           </motion.div>
         ))}
       </AnimatePresence>

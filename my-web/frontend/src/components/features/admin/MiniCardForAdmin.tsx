@@ -7,6 +7,7 @@ import React from 'react';
 import SafeImage from '@/components/base/SafeImage';
 import { ShoppingBag } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/helpers';
+import { Button } from '@/components/base/Button';
 
 export interface AdminCardAction {
   label: string;
@@ -165,15 +166,17 @@ export function MiniCardForAdmin({
       {actions.length > 0 && (
         <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           {actions.map((action, idx) => (
-            <button
+            <Button
               key={`act-${idx}`}
               onClick={action.onClick}
+              variant="none"
+              size="none"
               className={getActionButtonClass(action)}
               aria-label={action.label}
               title={action.title || action.label}
             >
               {action.icon}
-            </button>
+            </Button>
           ))}
         </div>
       )}

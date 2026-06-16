@@ -22,11 +22,26 @@ export class BadgeController {
     return this.badgeService.getAllBadges();
   }
 
+  @Get('rules')
+  async getRules() {
+    return this.badgeService.getGamificationConfig();
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async createBadge(
-    @Body() dto: { role: UserRole; title: string; points: number },
+    @Body()
+    dto: {
+      role: UserRole;
+      title: string;
+      points: number;
+      minReviews?: number;
+      minPostLikes?: number;
+      minRatingAvg?: number;
+      minRatingCount?: number;
+      minFollowers?: number;
+    },
   ) {
     return this.badgeService.createBadge(dto);
   }

@@ -10,6 +10,7 @@ import { Plus, PanelLeftClose, MessageSquare, Trash2, Settings } from 'lucide-re
 import { LABELS } from '@/constants/labels';
 import { SafeImage } from '@/components/base/SafeImage';
 import { User } from '@/types/user';
+import { Button } from '@/components/base/Button';
 
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
@@ -53,26 +54,30 @@ export function ChatSidebar({
     >
       {/* Header Sidebar */}
       <div className="p-4 border-b border-slate-800/40 flex items-center justify-between gap-2 shrink-0">
-        <button
+        <Button
           id="chat-sidebar-new-chat-button"
           type="button"
           onClick={handleCreateNewChat}
+          variant="none"
+          size="none"
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-primary hover:from-orange-600 hover:to-orange-600 text-white text-xs font-extrabold transition-all shadow-md hover:shadow-lg"
         >
           <Plus size={14} />
           {LABELS.AI_CHAT.SIDEBAR.NEW_CHAT}
-        </button>
+        </Button>
 
-        <button
+        <Button
           id="chat-sidebar-close-button"
           type="button"
           onClick={() => setIsSidebarOpen(false)}
           title={LABELS.AI_CHAT.SIDEBAR.CLOSE_SIDEBAR}
           aria-label={LABELS.AI_CHAT.SIDEBAR.CLOSE_SIDEBAR}
+          variant="none"
+          size="none"
           className="p-2.5 rounded-xl hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
         >
           <PanelLeftClose size={16} />
-        </button>
+        </Button>
       </div>
 
       {/* Danh sách các đoạn chat gần đây */}
@@ -100,16 +105,18 @@ export function ChatSidebar({
                 <MessageSquare size={14} className="shrink-0 text-orange-500" />
                 <span className="truncate">{conv.title}</span>
               </div>
-              <button
+              <Button
                 id={`chat-sidebar-delete-button-${conv.id}`}
                 type="button"
                 onClick={(e) => handleDeleteChat(e, conv.id)}
                 title={LABELS.AI_CHAT.SIDEBAR.DELETE_CHAT}
                 aria-label={LABELS.AI_CHAT.SIDEBAR.DELETE_CHAT}
+                variant="none"
+                size="none"
                 className="p-1 rounded-md hover:bg-slate-700 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             </div>
           ))
         )}
@@ -142,16 +149,18 @@ export function ChatSidebar({
           </div>
         </div>
 
-        <button
+        <Button
           id="chat-sidebar-settings-button"
           type="button"
           onClick={onOpenSettings}
           title={LABELS.AI_CHAT.PREFERENCES.TITLE}
           aria-label={LABELS.AI_CHAT.PREFERENCES.TITLE}
+          variant="none"
+          size="none"
           className="p-2 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-white transition-colors"
         >
           <Settings size={14} />
-        </button>
+        </Button>
       </div>
     </div>
   );

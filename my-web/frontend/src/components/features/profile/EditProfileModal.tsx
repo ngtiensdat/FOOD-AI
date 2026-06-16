@@ -57,13 +57,15 @@ export const EditProfileModal = ({
       >
         <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
           <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{LABELS.SETTINGS.PROFILE.EDIT_MODAL.TITLE}</h3>
-          <button 
+          <Button 
             onClick={onClose} 
             aria-label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.CLOSE_SETTINGS}
             className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+            variant="none"
+            size="none"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[70vh] space-y-4">
@@ -100,19 +102,21 @@ export const EditProfileModal = ({
               </h4>
               <div className="flex flex-col sm:flex-row gap-4">
                 <label className="flex items-center gap-2.5 cursor-pointer text-small font-semibold text-gray-700 dark:text-slate-300 hover:text-primary transition-colors">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={editData.syncWithRestaurantLogo || false}
-                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantLogo: e.target.checked })}
+                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantLogo: (e.target as HTMLInputElement).checked })}
+                    variant="none"
                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                   />
                   <span>{LABELS.SETTINGS.PROFILE.EDIT_MODAL.SYNC_AVATAR}</span>
                 </label>
                 <label className="flex items-center gap-2.5 cursor-pointer text-small font-semibold text-gray-700 dark:text-slate-300 hover:text-primary transition-colors">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={editData.syncWithRestaurantCover || false}
-                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantCover: e.target.checked })}
+                    onChange={(e) => setEditData({ ...editData, syncWithRestaurantCover: (e.target as HTMLInputElement).checked })}
+                    variant="none"
                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                   />
                   <span>{LABELS.SETTINGS.PROFILE.EDIT_MODAL.SYNC_COVER}</span>

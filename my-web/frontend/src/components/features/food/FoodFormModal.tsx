@@ -104,9 +104,9 @@ export const FoodFormModal = ({
             {editingFood ? <Edit className="text-blue-500" /> : <Plus className="text-primary" />} 
             {editingFood ? LABELS.RESTAURANT.MODAL.EDIT_TITLE : LABELS.RESTAURANT.MODAL.ADD_TITLE}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all">
+          <Button onClick={onClose} variant="none" size="none" className="text-gray-400 hover:text-gray-600 transition-all">
             <XCircle size={32} />
-          </button>
+          </Button>
         </div>
         
         <form onSubmit={onSubmit} className="space-y-4">

@@ -37,6 +37,7 @@ export class UserRepository {
             follows: true,
             userFollowers: true,
             userFollowing: true,
+            posts: true,
           },
         },
       },

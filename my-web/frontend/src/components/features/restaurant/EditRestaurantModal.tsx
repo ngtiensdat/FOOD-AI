@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { X, Store } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Alert } from '@/components/base/Alert';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { LABELS } from '@/constants/labels';
@@ -101,20 +102,21 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
               </h3>
               <p className="text-xs text-gray-500 dark:text-slate-400">{LABELS.RESTAURANT.EDIT_MODAL.SUBTITLE}</p>
             </div>
-            <button
+            <Button
               onClick={onClose}
               aria-label={LABELS.RESTAURANT.EDIT_MODAL.CLOSE_SETTINGS}
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              variant="none"
+              size="none"
             >
               <X size={20} className="text-gray-500" />
-            </button>
+            </Button>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="alert-box-rose mb-4 rounded-card text-xs font-semibold">
+            <Alert type="error" className="mb-4">
               {error}
-            </div>
+            </Alert>
           )}
 
           {/* Form Content */}
@@ -122,7 +124,7 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
             {/* Tabs Navigation */}
             <div className="flex gap-2 mb-6 border-b border-gray-50 dark:border-slate-800 pb-3">
               {(['info', 'images', 'contact'] as const).map((tab) => (
-                <button
+                <Button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
@@ -131,11 +133,13 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'
                   }`}
+                  variant="none"
+                  size="none"
                 >
                   {tab === 'info' && LABELS.RESTAURANT.EDIT_MODAL.TAB_INFO}
                   {tab === 'images' && LABELS.RESTAURANT.EDIT_MODAL.TAB_IMAGES}
                   {tab === 'contact' && LABELS.RESTAURANT.EDIT_MODAL.TAB_CONTACT}
-                </button>
+                </Button>
               ))}
             </div>
 

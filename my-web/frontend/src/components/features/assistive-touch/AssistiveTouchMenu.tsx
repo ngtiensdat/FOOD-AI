@@ -11,6 +11,7 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAssistiveTouch } from '@/hooks/useAssistiveTouch';
+import { Button } from '@/components/base/Button';
 import { AiChatWindow } from '@/components/features/ai/AiChatWindow';
 import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
 import { LABELS } from '@/constants/labels';
@@ -79,12 +80,14 @@ export const AssistiveTouchMenu = () => {
         }}
       >
         {/* Bong bóng AssistiveTouch chính (Luôn hiển thị và đóng vai trò neo giữ) */}
-        <motion.button
+        <Button
           type="button"
           onClick={toggleMenu}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+          variant="none"
+          size="none"
           className={`w-20 h-20 rounded-full shadow-2xl flex items-center justify-center cursor-pointer bg-white/95 dark:bg-slate-950/95 border-2 ${
             isOpen 
               ? 'border-primary scale-95 shadow-primary/25' 
@@ -104,7 +107,7 @@ export const AssistiveTouchMenu = () => {
               }`}
             />
           </div>
-        </motion.button>
+        </Button>
 
         {/* Ô vuông tính năng bo góc mở rộng (Hộp hội thoại chui ra từ bong bóng) */}
         <AnimatePresence>
@@ -210,18 +213,20 @@ export const AssistiveTouchMenu = () => {
                       {content}
                     </Link>
                   ) : (
-                    <button
+                    <Button
                       key={item.id}
                       type="button"
                       onClick={() => {
                         setIsOpen(false);
                         if (itemWithHref.action) itemWithHref.action();
                       }}
+                      variant="none"
+                      size="none"
                       className="flex flex-col items-center justify-center gap-1 p-1.5 rounded-2xl transition-all duration-150 group active:scale-90 cursor-pointer bg-transparent border-none outline-none"
                       aria-label={item.label}
                     >
                       {content}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

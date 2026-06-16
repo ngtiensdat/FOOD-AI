@@ -4,10 +4,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { GamificationQueueService } from '../badge/gamification-queue.service';
 
 @Injectable()
 export class VoucherService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gamificationQueue: GamificationQueueService,
+  ) {}
 
   async getAllVouchers() {
     return this.prisma.voucher.findMany({
@@ -53,36 +57,6 @@ export class VoucherService {
       );
     }
 
-    const nextPoints = user.points - voucher.pointsCost;
-
-    // Recalculate level and badge title based on new points
-    const nextLevel = Math.max(1, Math.floor(nextPoints / 1000) + 1);
-
-    const badges = await this.prisma.badgeConfig.findMany({
-      where: { role: user.role },
-    });
-
-    let nextBadge = user.badgeTitle;
-    if (badges.length > 0) {
-      const sorted = badges.sort((a, b) => b.points - a.points);
-      const matched = sorted.find((b) => nextPoints >= b.points);
-      nextBadge = matched ? matched.title : null;
-    } else {
-      const defaults = [
-        { role: 'CUSTOMER', title: 'Thực Khách Năng Động', points: 300 },
-        { role: 'CUSTOMER', title: 'Chuyên Gia Ẩm Thực', points: 1000 },
-        { role: 'CUSTOMER', title: 'Thánh Review Cao Cấp', points: 3000 },
-        { role: 'RESTAURANT', title: 'Đối Tác Tiềm Năng', points: 500 },
-        { role: 'RESTAURANT', title: 'Đối Tác Uy Tín', points: 2000 },
-        { role: 'RESTAURANT', title: 'Thương Hiệu Xuất Sắc', points: 5000 },
-      ];
-      const sorted = defaults
-        .filter((b) => b.role === user.role)
-        .sort((a, b) => b.points - a.points);
-      const matched = sorted.find((b) => nextPoints >= b.points);
-      nextBadge = matched ? matched.title : null;
-    }
-
     // Generate random 4-char suffix
     const randomSuffix = Math.random()
       .toString(36)
@@ -90,32 +64,27 @@ export class VoucherService {
       .toUpperCase();
     const uniqueCode = `${voucher.code}-${randomSuffix}`;
 
-    return this.prisma.$transaction(async (tx) => {
-      // 1. Deduct user points
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          points: nextPoints,
-          level: nextLevel,
-          badgeTitle: nextBadge,
-        },
-      });
+    // Call gamificationQueue to deduct points, update level/badge
+    const gamificationResult = await this.gamificationQueue.addJob(
+      userId,
+      'REDEEM_VOUCHER',
+      voucher.pointsCost,
+    );
 
-      // 2. Create redeemed log
-      const userVoucher = await tx.userVoucher.create({
-        data: {
-          userId,
-          voucherId,
-          code: uniqueCode,
-        },
-      });
-
-      return {
+    // Create redeemed log
+    await this.prisma.userVoucher.create({
+      data: {
+        userId,
+        voucherId,
         code: uniqueCode,
-        nextPoints,
-        level: nextLevel,
-        badgeTitle: nextBadge,
-      };
+      },
     });
+
+    return {
+      code: uniqueCode,
+      nextPoints: gamificationResult.points,
+      level: gamificationResult.level,
+      badgeTitle: gamificationResult.badgeTitle,
+    };
   }
 }

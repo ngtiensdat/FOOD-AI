@@ -14,12 +14,10 @@ import {
 import DOMPurify from 'isomorphic-dompurify';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { LIMITS } from '../../common/constants/limits.constant';
-import {
-  DEFAULT_BADGE_CONFIGS,
-  POINTS_PER_LEVEL,
-} from '../../common/constants/badge.constant';
+import { POINTS_PER_LEVEL } from '../../common/constants/badge.constant';
 import { CacheService } from '../../common/services/cache.service';
 import { NotificationGateway } from '../notification/notification.gateway';
+import { GamificationQueueService } from '../badge/gamification-queue.service';
 
 @Injectable()
 export class PostService {
@@ -27,6 +25,7 @@ export class PostService {
     private prisma: PrismaService,
     private cacheService: CacheService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly gamificationQueue: GamificationQueueService,
   ) {}
 
   async awardPoints(
@@ -34,44 +33,27 @@ export class PostService {
     pointsAmount: number,
     prismaTx?: Prisma.TransactionClient,
   ) {
-    const prisma = prismaTx || this.prisma;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true, level: true, role: true, badgeTitle: true },
-    });
-    if (!user) return;
-    const nextPoints = user.points + pointsAmount;
-
-    // Level calculation
-    const nextLevel = Math.floor(nextPoints / POINTS_PER_LEVEL) + 1;
-
-    // Badge calculation
-    const badges = await prisma.badgeConfig.findMany({
-      where: { role: user.role },
-    });
-
-    let nextBadge = user.badgeTitle;
-    if (badges.length > 0) {
-      const sorted = badges.sort((a, b) => b.points - a.points);
-      const matched = sorted.find((b) => nextPoints >= b.points);
-      nextBadge = matched ? matched.title : null;
+    if (prismaTx) {
+      const user = await prismaTx.user.findUnique({
+        where: { id: userId },
+        select: { points: true, level: true },
+      });
+      if (!user) return;
+      const nextPoints = Math.max(0, user.points + pointsAmount);
+      const nextLevel = Math.floor(nextPoints / POINTS_PER_LEVEL) + 1;
+      await prismaTx.user.update({
+        where: { id: userId },
+        data: {
+          points: nextPoints,
+          level: nextLevel,
+        },
+      });
     } else {
-      // Fallback defaults từ constants
-      const sorted = DEFAULT_BADGE_CONFIGS.filter(
-        (b) => b.role === user.role,
-      ).sort((a, b) => b.points - a.points);
-      const matched = sorted.find((b) => nextPoints >= b.points);
-      nextBadge = matched ? matched.title : null;
+      await this.gamificationQueue.addJob(
+        userId,
+        pointsAmount > 0 ? 'LIKE' : 'UNDO_LIKE',
+      );
     }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        points: nextPoints,
-        level: nextLevel,
-        badgeTitle: nextBadge,
-      },
-    });
   }
 
   async getAllPosts(
@@ -273,8 +255,8 @@ export class PostService {
       },
     });
 
-    // Award 50 points
-    await this.awardPoints(userId, 50);
+    // Queue points update
+    await this.gamificationQueue.addJob(userId, 'POST_REVIEW');
     await this.cacheService.invalidatePattern('posts:*');
 
     return post;
@@ -297,6 +279,9 @@ export class PostService {
       where: { id: postId },
       data: { deletedAt: new Date() },
     });
+
+    // Deduct points
+    await this.gamificationQueue.addJob(post.authorId, 'UNDO_POST_REVIEW');
 
     await this.cacheService.invalidatePattern('posts:*');
 
@@ -322,6 +307,8 @@ export class PostService {
           },
         },
       });
+      // Deduct points
+      await this.gamificationQueue.addJob(userId, 'UNDO_LIKE');
       await this.cacheService.invalidatePattern('posts:*');
       return { isLiked: false };
     } else {
@@ -352,8 +339,8 @@ export class PostService {
         });
       }
 
-      // Award 5 points
-      await this.awardPoints(userId, 5);
+      // Queue points update
+      await this.gamificationQueue.addJob(userId, 'LIKE');
       await this.cacheService.invalidatePattern('posts:*');
       return { isLiked: true };
     }
@@ -400,9 +387,12 @@ export class PostService {
       });
     }
 
-    // Award 10 points for parent comment, 5 points for reply
-    const points = dto.parentId ? 5 : 10;
-    await this.awardPoints(userId, points);
+    // Queue points update
+    if (dto.parentId) {
+      await this.gamificationQueue.addJob(userId, 'REPLY');
+    } else {
+      await this.gamificationQueue.addJob(userId, 'COMMENT');
+    }
     await this.cacheService.invalidatePattern('posts:*');
 
     return {
@@ -440,6 +430,13 @@ export class PostService {
     await this.prisma.comment.delete({
       where: { id: commentId },
     });
+
+    // Deduct points
+    if (comment.parentId) {
+      await this.gamificationQueue.addJob(comment.userId, 'UNDO_REPLY');
+    } else {
+      await this.gamificationQueue.addJob(comment.userId, 'UNDO_COMMENT');
+    }
 
     await this.cacheService.invalidatePattern('posts:*');
 

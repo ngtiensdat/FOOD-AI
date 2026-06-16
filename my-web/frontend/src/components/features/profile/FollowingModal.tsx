@@ -11,6 +11,7 @@ import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { User, UserRole } from '@/types/user';
+import { Button } from '@/components/base/Button';
 
 export type FollowingRestaurant = User & { address?: string; mapUrl?: string };
 
@@ -64,12 +65,14 @@ export const FollowingModal = ({
         exit={{ scale: 0.95, opacity: 0 }}
         className="modal-card max-w-md w-full !p-6"
       >
-        <button 
+        <Button 
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+          variant="none"
+          size="none"
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <h3 className="text-h3 font-black text-gray-900 dark:text-white mb-6 flex items-center gap-2">
           <Users size={22} className="text-primary" />

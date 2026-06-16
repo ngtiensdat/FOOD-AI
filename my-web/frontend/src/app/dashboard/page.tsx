@@ -94,8 +94,10 @@ export default function CustomerDashboard() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{profile?.role}</p>
                 </div>
 
-                <button
+                <Button
                   onClick={() => setShowMenu(!showMenu)}
+                  variant="none"
+                  size="none"
                   className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
                   aria-label={LABELS.NAV.USER_MENU}
                 >
@@ -110,7 +112,7 @@ export default function CustomerDashboard() {
                     className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
                       }`}
                   />
-                </button>
+                </Button>
 
                 {showMenu && (
                   <>
@@ -168,7 +170,7 @@ export default function CustomerDashboard() {
                   {LABELS.CUSTOMER.NO_HISTORY}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid items-stretch grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET).map((item) => (
                     <FoodCard key={item.id} food={item.food} onViewDetail={setSelectedFood} />
                   ))}

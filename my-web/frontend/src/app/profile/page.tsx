@@ -17,11 +17,13 @@ import { useSocialActions } from '@/hooks/useSocialActions';
 import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
+import { LevelUpModal } from '@/components/features/badges/LevelUpModal';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { toast } from '@/store/useToastStore';
 import { addNotification } from '@/utils/notifications';
 import { socialService } from '@/services/social.service';
+import { Button } from '@/components/base/Button';
 
 // Modular Feature Components
 import { ProfileHeader } from '@/components/features/profile/ProfileHeader';
@@ -98,6 +100,9 @@ function ProfileContent() {
     handleReplyComment,
     handleDeleteReply,
     handleDeletePost,
+    isLevelUpModalOpen,
+    setIsLevelUpModalOpen,
+    levelUpData,
   } = useSocialActions({
     posts,
     setPosts,
@@ -170,9 +175,11 @@ function ProfileContent() {
             // Only show loyalty tab for Customer role
             if (tab.id === 'loyalty' && profile.role !== 'CUSTOMER') return null;
             return (
-              <button
+              <Button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                variant="none"
+                size="none"
                 className={`px-4 md:px-8 py-4 font-bold text-small transition-all border-b-4 ${
                   activeTab === tab.id 
                     ? 'border-primary text-primary' 
@@ -180,7 +187,7 @@ function ProfileContent() {
                 }`}
               >
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -207,13 +214,15 @@ function ProfileContent() {
                 <div className="card-container !p-6">
                   <div className="flex gap-4">
                     <Avatar src={profile.profile?.avatar} name={user.name} size={40} />
-                    <button 
+                    <Button 
                       onClick={() => setIsPostModalOpen(true)}
+                      variant="none"
+                      size="none"
                       className="flex-1 bg-gray-50 hover:bg-gray-100 rounded-full px-6 py-2.5 text-left text-gray-500 transition-all text-small font-bold flex items-center justify-between border border-gray-100 hover:border-gray-200"
                     >
                       <span>{LABELS.SETTINGS.PROFILE.POSTS.THINKING(user.name)}</span>
                       <Plus size={18} className="text-primary" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -343,6 +352,13 @@ function ProfileContent() {
           />
         )}
       </AnimatePresence>
+
+      <LevelUpModal
+        isOpen={isLevelUpModalOpen}
+        onClose={() => setIsLevelUpModalOpen(false)}
+        level={levelUpData?.level || 1}
+        badge={levelUpData?.badge}
+      />
 
       <Footer />
     </div>

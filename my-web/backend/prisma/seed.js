@@ -113,17 +113,22 @@ async function main() {
     }
   }
 
-  // 4. Khởi tạo BadgeConfig mẫu
+  // 4. Khởi tạo BadgeConfig mẫu với các điều kiện nâng cấp mới
   console.log('- Đang khởi tạo BadgeConfigs...');
   const badgeConfigsData = [
-    { role: 'CUSTOMER', title: 'Thực thần Tập sự', points: 0 },
-    { role: 'CUSTOMER', title: 'Thực thần Đồng', points: 100 },
-    { role: 'CUSTOMER', title: 'Thực thần Bạc', points: 300 },
-    { role: 'CUSTOMER', title: 'Thực thần Vàng', points: 600 },
-    { role: 'CUSTOMER', title: 'Thực thần Kim Cương', points: 1000 },
+    { role: 'CUSTOMER', title: 'Người mới', points: 0 },
+    { role: 'CUSTOMER', title: 'Người sành ăn', points: 100 },
+    { role: 'CUSTOMER', title: 'Thực thần Đồng', points: 300 },
+    { role: 'CUSTOMER', title: 'Thực thần Bạc', points: 600 },
+    { role: 'CUSTOMER', title: 'Thực thần Vàng', points: 1000 },
+    { role: 'CUSTOMER', title: 'Thánh review', points: 3000, minReviews: 10, minPostLikes: 500, minFollowers: 50 },
+    { role: 'CUSTOMER', title: 'Chiến thần review', points: 10000, minReviews: 100, minFollowers: 1000, minPostLikes: 1000 },
     { role: 'RESTAURANT', title: 'Cửa hàng Mới', points: 0 },
-    { role: 'RESTAURANT', title: 'Cửa hàng Uy tín', points: 500 },
-    { role: 'RESTAURANT', title: 'Cửa hàng Đối tác Vàng', points: 1500 }
+    { role: 'RESTAURANT', title: 'Cửa hàng được nhiều người biết đến', points: 500, minFollowers: 100 },
+    { role: 'RESTAURANT', title: 'Cửa hàng Uy tín', points: 2000, minRatingAvg: 4.5, minRatingCount: 100 },
+    { role: 'RESTAURANT', title: 'Cửa hàng Đối tác tin cậy', points: 10000, minRatingAvg: 4.8, minRatingCount: 500 },
+    { role: 'RESTAURANT', title: 'Chuẩn mi che lin', points: 20000, minRatingAvg: 4.9, minRatingCount: 1000 },
+
   ];
 
   for (const bc of badgeConfigsData) {
@@ -132,8 +137,29 @@ async function main() {
     });
     if (!existing) {
       await prisma.badgeConfig.create({ data: bc });
+    } else {
+      // Cập nhật lại các điều kiện nếu đã có
+      await prisma.badgeConfig.update({
+        where: { id: existing.id },
+        data: bc
+      });
     }
   }
+
+  // 5. Khởi tạo GamificationConfig mặc định
+  console.log('- Đang khởi tạo GamificationConfig...');
+  await prisma.gamificationConfig.upsert({
+    where: { id: 'singleton' },
+    update: {},
+    create: {
+      id: 'singleton',
+      pointsPerLevel: 1000,
+      postReviewPoints: 50,
+      commentPoints: 10,
+      likePoints: 5,
+      deductionMultiplier: 1.0
+    }
+  });
 
   console.log('--- HOÀN TẤT: HỆ THỐNG ĐÃ SẴN SÀNG ---');
 }

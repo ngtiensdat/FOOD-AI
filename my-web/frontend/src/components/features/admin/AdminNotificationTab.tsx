@@ -101,9 +101,11 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
             <div className="space-y-2">
               <label className="block text-gray-500 font-semibold mb-1">{LABELS.ADMIN.NOTIFICATION_TAB.RECIPIENT_LABEL}</label>
               <div className="flex gap-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setTargetType('ALL')}
+                  variant="none"
+                  size="none"
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
                     targetType === 'ALL'
                       ? 'border-primary bg-primary/5 text-primary'
@@ -112,10 +114,12 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
                 >
                   <Users size={16} />
                   <span>{LABELS.ADMIN.NOTIFICATION_TAB.RECIPIENT_ALL(recipients.length)}</span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setTargetType('SPECIFIC')}
+                  variant="none"
+                  size="none"
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
                     targetType === 'SPECIFIC'
                       ? 'border-primary bg-primary/5 text-primary'
@@ -124,7 +128,7 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
                 >
                   <User size={16} />
                   <span>{LABELS.ADMIN.NOTIFICATION_TAB.RECIPIENT_SPECIFIC}</span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -174,11 +178,13 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
             {/* Content */}
             <div className="space-y-1.5">
               <label className="block text-gray-500 font-semibold">{LABELS.ADMIN.NOTIFICATION_TAB.CONTENT_LABEL}</label>
-              <textarea
+              <Input
+                isTextArea
+                variant="none"
                 rows={4}
                 placeholder={LABELS.ADMIN.NOTIFICATION_TAB.CONTENT_PLACEHOLDER}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => setContent((e.target as HTMLTextAreaElement).value)}
                 className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700 dark:text-slate-200 font-medium"
               />
             </div>

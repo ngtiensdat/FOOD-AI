@@ -64,12 +64,14 @@ export const RestaurantHeaderCard = ({
       {isOwner && (
         <div className="bg-primary/10 border-b border-primary/20 text-primary py-3.5 px-6 text-center text-small font-bold flex items-center justify-center gap-2 mt-20 relative z-10 transition-colors">
           <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.VIEWING_AS_GUEST}</span>
-          <button 
+          <Button 
             onClick={() => window.location.href = '/restaurant-admin'}
             className="underline hover:text-primary-dark transition-colors font-extrabold"
+            variant="none"
+            size="none"
           >
             {LABELS.RESTAURANT.PUBLIC_PROFILE.GO_TO_ADMIN}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -157,27 +159,31 @@ export const RestaurantHeaderCard = ({
             <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
               {/* Follow Stats Container */}
               <div className="flex items-center gap-6 bg-gray-50 dark:bg-slate-800/50 px-6 py-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                <button 
+                <Button 
                   onClick={openFollowersModal}
                   className="flex flex-col items-center hover:opacity-80 transition-opacity"
+                  variant="none"
+                  size="none"
                 >
                   <span className="text-h3 font-black text-gray-900">{followersCount}</span>
                   <span className="text-small text-gray-400 font-bold flex items-center gap-1">
                     {showFollowList ? <Users size={12} /> : <Lock size={12} />}
                     {LABELS.SETTINGS.PROFILE.FOLLOWERS}
                   </span>
-                </button>
+                </Button>
                 <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
-                <button 
+                <Button 
                   onClick={openFollowingModal}
                   className="flex flex-col items-center hover:opacity-80 transition-opacity"
+                  variant="none"
+                  size="none"
                 >
                   <span className="text-h3 font-black text-gray-900">{followingCount}</span>
                   <span className="text-small text-gray-400 font-bold flex items-center gap-1">
                     {showFollowList ? <Users size={12} /> : <Lock size={12} />}
                     {LABELS.SETTINGS.PROFILE.FOLLOWING}
                   </span>
-                </button>
+                </Button>
               </div>
 
               {/* Follow Action Button or Manage Button */}

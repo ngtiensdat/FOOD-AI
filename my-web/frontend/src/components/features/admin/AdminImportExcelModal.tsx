@@ -8,6 +8,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, X, FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { adminService } from '@/services/admin.service';
 import { useToastStore } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
@@ -101,9 +102,9 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
               <FileSpreadsheet className="w-6 h-6 text-primary" />
               {LABELS.IMPORT_EXCEL.UI.TITLE}
             </h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
+            <Button onClick={onClose} variant="none" size="none" className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
 
           <div className="p-6">
@@ -125,9 +126,10 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
-              <input
+              <Input
+                variant="none"
                 type="file"
-                ref={fileInputRef}
+                ref={fileInputRef as any}
                 className="hidden"
                 accept=".xlsx, .xls, .csv"
                 onChange={handleFileChange}
@@ -140,12 +142,14 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
                   </div>
                   <p className="font-semibold text-gray-800 dark:text-slate-200">{file.name}</p>
                   <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{(file.size / 1024).toFixed(2)} KB</p>
-                  <button
+                  <Button
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                    variant="none"
+                    size="none"
                     className="mt-4 text-sm text-red-500 hover:text-red-700 font-medium"
                   >
                     {LABELS.IMPORT_EXCEL.UI.BTN_REMOVE_FILE}
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">

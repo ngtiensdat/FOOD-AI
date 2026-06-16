@@ -86,11 +86,13 @@ export default function RegisterPage() {
                   <label className="text-small font-semibold text-gray-700 dark:text-gray-800 ml-1">{LABELS.AUTH.WHO_ARE_YOU}</label>
                   <div className="grid grid-cols-2 gap-4">
                     {[UserRole.CUSTOMER, UserRole.RESTAURANT].map((r) => (
-                      <button
+                      <Button
                         suppressHydrationWarning
                         key={r}
                         type="button"
                         onClick={() => setRole(r)}
+                        variant="none"
+                        size="none"
                         className={`py-3 rounded-xl border-2 font-bold transition-all text-small ${
                           role === r
                             ? 'border-primary bg-orange-50 dark:bg-primary-light/10 text-primary'
@@ -98,7 +100,7 @@ export default function RegisterPage() {
                         }`}
                       >
                         {r === UserRole.CUSTOMER ? LABELS.AUTH.CUSTOMER : LABELS.AUTH.RESTAURANT}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -136,14 +138,16 @@ export default function RegisterPage() {
                     error={errors.password}
                     className="pr-12"
                   />
-                  <button
+                  <Button
                     suppressHydrationWarning
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    variant="none"
+                    size="none"
                     className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="relative group">
@@ -158,14 +162,16 @@ export default function RegisterPage() {
                     error={errors.confirmPassword}
                     className="pr-12"
                   />
-                  <button
+                  <Button
                     suppressHydrationWarning
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    variant="none"
+                    size="none"
                     className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
+                  </Button>
                 </div>
 
                 {role === UserRole.RESTAURANT && (
@@ -183,7 +189,7 @@ export default function RegisterPage() {
                 )}
 
                 <div className="flex items-start gap-3 p-1">
-                  <input suppressHydrationWarning type="checkbox" required className="mt-1 accent-primary h-4 w-4" />
+                  <Input suppressHydrationWarning variant="none" type="checkbox" required className="mt-1 accent-primary h-4 w-4" />
                   <label className="text-xs text-gray-500 leading-relaxed">
                     {LABELS.AUTH.AGREE_TERMS_PREFIX}
                     <Link href="/terms" className="text-primary hover:underline font-bold">

@@ -81,7 +81,7 @@ export const RestaurantFoodGrid = ({
             {selectedCatName}
           </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid items-stretch grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {foodsData.map((food: FoodCardData) => (
             <MiniFoodCard 
               key={food.id} 
@@ -121,7 +121,7 @@ export const RestaurantFoodGrid = ({
               {category.name}
             </h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid items-stretch grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {categoryFoods.map((food: FoodCardData) => (
               <MiniFoodCard 
                 key={food.id} 
@@ -154,7 +154,7 @@ export const RestaurantFoodGrid = ({
             {LABELS.FOOD.UNCATEGORIZED}
           </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid items-stretch grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {uncategorizedFoods.map((food: FoodCardData) => (
             <MiniFoodCard 
               key={food.id} 

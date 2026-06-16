@@ -22,6 +22,7 @@ export type ProfileData = User & {
     userFollowers?: number;
     userFollowing?: number;
     follows?: number;
+    posts?: number;
   };
   restaurants?: Array<{
     isActive?: boolean;
@@ -123,13 +124,15 @@ export const ProfileHeader = ({
               />
             </div>
             {me?.id === user?.id && (
-              <button
+              <Button
                 onClick={onEdit}
                 className="absolute bottom-2 right-2 p-2 bg-gray-100 rounded-full border-2 border-white hover:bg-gray-200 transition-all z-10"
                 aria-label={LABELS.COMMON.EDIT}
+                variant="none"
+                size="none"
               >
                 <Camera size={20} />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -137,16 +140,26 @@ export const ProfileHeader = ({
             <h1 className="text-h1 !text-4xl md:!text-5xl text-gray-900 mb-2 flex flex-wrap justify-center md:justify-start items-center gap-3">
               {user?.name}
               {showLevel && (user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
-                <span className="text-xs font-extrabold px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full shadow-md animate-pulse shrink-0">
+                <Button
+                  onClick={() => router.push('/badges')}
+                  className="text-xs font-extrabold px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full shadow-md animate-pulse shrink-0 hover:from-amber-600 hover:to-orange-700 transition-all cursor-pointer"
+                  variant="none"
+                  size="none"
+                >
                   Lv. {profile?.level || 1}
-                </span>
+                </Button>
               )}
             </h1>
             {showBadgeTitle && profile?.badgeTitle && (
               <div className="flex justify-center md:justify-start mt-1 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md shadow-sm">
+                <Button
+                  onClick={() => router.push('/badges')}
+                  className="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md shadow-sm hover:bg-primary/20 transition-all cursor-pointer"
+                  variant="none"
+                  size="none"
+                >
                   ✨ {profile.badgeTitle}
-                </span>
+                </Button>
               </div>
             )}
             <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-small font-bold text-gray-500 mb-4">
@@ -172,21 +185,33 @@ export const ProfileHeader = ({
                     </div>
                   )}
                   <div className="flex flex-wrap items-center gap-3">
+                    {(user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
+                      <>
+                        <span className="text-gray-500">
+                          {profile?._count?.posts || 0} bài đăng
+                        </span>
+                        <span>•</span>
+                      </>
+                    )}
                     {showFollowList ? (
                       <>
-                        <button
+                        <Button
                           onClick={onShowFollowers}
                           className="hover:text-primary transition-colors cursor-pointer"
+                          variant="none"
+                          size="none"
                         >
                           {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
-                        </button>
+                        </Button>
                         <span>•</span>
-                        <button
+                        <Button
                           onClick={onShowFollowing}
                           className="hover:text-primary transition-colors cursor-pointer"
+                          variant="none"
+                          size="none"
                         >
                           {(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}
-                        </button>
+                        </Button>
                       </>
                     ) : (
                       <span className="text-xs text-gray-400 italic">{LABELS.SETTINGS.PROFILE.FOLLOW_LIST_PRIVATE}</span>
