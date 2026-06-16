@@ -7,20 +7,38 @@ import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { LIMITS } from '@/constants/limits.constant';
+import { Restaurant } from '@/types/restaurant';
+import { Food } from '@/types/food';
+import { CategoryGroup } from '@/services/category.service';
+import { FoodCardData } from '@/components/features/food/FoodCard';
+import { FollowerItem } from '@/components/features/profile/FollowersModal';
+import { FollowingRestaurant } from '@/components/features/profile/FollowingModal';
+
+interface PublicRestaurant extends Restaurant {
+  ownerId?: number;
+  [key: string]: unknown;
+}
+
+interface RestaurantFoodsResponse {
+  items: FoodCardData[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 export const useRestaurantProfile = () => {
   const params = useParams();
   const restaurantId = Number(params?.id);
   const { user, isAuthenticated } = useAuth();
 
-  const [restaurantData, setRestaurantData] = useState<any>(null);
+  const [restaurantData, setRestaurantData] = useState<PublicRestaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'menu' | 'info'>('menu');
   
   // Category & Foods state
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [foodsData, setFoodsData] = useState<any[]>([]);
+  const [foodsData, setFoodsData] = useState<FoodCardData[]>([]);
   const [foodPage, setFoodPage] = useState(1);
   const [hasMoreFoods, setHasMoreFoods] = useState(false);
   const [loadingFoods, setLoadingFoods] = useState(false);
@@ -34,15 +52,15 @@ export const useRestaurantProfile = () => {
   // Modal States
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followersList, setFollowersList] = useState<any[]>([]);
-  const [followingList, setFollowingList] = useState<any[]>([]);
+  const [followersList, setFollowersList] = useState<FollowerItem[]>([]);
+  const [followingList, setFollowingList] = useState<{ restaurant: FollowingRestaurant }[]>([]);
   const [loadingFollowers, setLoadingFollowers] = useState(false);
   const [loadingFollowing, setLoadingFollowing] = useState(false);
   const [errorFollowers, setErrorFollowers] = useState<string | null>(null);
   const [errorFollowing, setErrorFollowing] = useState<string | null>(null);
 
   // Food detail modal state
-  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [selectedFood, setSelectedFood] = useState<FoodCardData | null>(null);
 
   const fetchProfile = async () => {
     if (!restaurantId) return;
@@ -70,7 +88,7 @@ export const useRestaurantProfile = () => {
     setLoadingFoods(true);
     try {
       const pageSize = LIMITS.PUBLIC_RESTAURANT_FOODS_PAGE_SIZE;
-      const res: any = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page, pageSize);
+      const res = await restaurantService.getPublicRestaurantFoods(restaurantId, catId || undefined, page, pageSize) as RestaurantFoodsResponse;
       if (res && Array.isArray(res.items)) {
         setFoodsData(prev => append ? [...prev, ...res.items] : res.items);
         const hasNext = (res.page * res.pageSize) < res.total;
@@ -144,9 +162,10 @@ export const useRestaurantProfile = () => {
     setErrorFollowers(null);
     try {
       const data = await restaurantService.getFollowers(restaurantId);
-      setFollowersList(data || []);
-    } catch (err: any) {
-      setErrorFollowers(err.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
+      setFollowersList((data as FollowerUser[]) || []);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setErrorFollowers(error.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
     } finally {
       setLoadingFollowers(false);
     }
@@ -162,9 +181,10 @@ export const useRestaurantProfile = () => {
     setErrorFollowing(null);
     try {
       const data = await restaurantService.getFollowing(restaurantId);
-      setFollowingList(data || []);
-    } catch (err: any) {
-      setErrorFollowing(err.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
+      setFollowingList((data as FollowerUser[]) || []);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setErrorFollowing(error.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
     } finally {
       setLoadingFollowing(false);
     }

@@ -26,8 +26,8 @@ interface RestaurantHeaderCardProps {
     ratingAvg?: number | null;
     ratingCount?: number | null;
     profile?: {
-      coverImage?: string;
-    };
+      coverImage?: string | null;
+    } | null;
     [key: string]: unknown;
   };
   isOwner: boolean;

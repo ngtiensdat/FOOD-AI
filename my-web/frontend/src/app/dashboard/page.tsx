@@ -18,8 +18,8 @@ import { Avatar } from '@/components/base/Avatar';
 import { AiSuggestionBanner } from '@/components/features/ai/AiSuggestionBanner';
 import { UserProfileDetail } from '@/components/features/profile/UserProfileDetail';
 import { RecentFoodsList } from '@/components/features/food/RecentFoodsList';
-import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
-import { FoodCard } from '@/components/features/food/FoodCard';
+import { FoodDetailModal, FoodDetailData } from '@/components/features/food/FoodDetailModal';
+import { FoodCard, FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 
@@ -171,9 +171,16 @@ export default function CustomerDashboard() {
                 </div>
               ) : (
                 <div className="grid items-stretch grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET).map((item) => (
-                    <FoodCard key={item.id} food={item.food} onViewDetail={setSelectedFood} />
-                  ))}
+                  {recentViews
+                    .slice(0, LIMITS.RECENT_VIEWS_WIDGET)
+                    .filter((item) => !!item.food)
+                    .map((item) => (
+                      <FoodCard
+                        key={item.id}
+                        food={item.food as unknown as FoodCardData}
+                        onViewDetail={setSelectedFood}
+                      />
+                    ))}
                 </div>
               )}
             </div>
@@ -206,7 +213,7 @@ export default function CustomerDashboard() {
       </main>
 
       {/* Modal Onboarding để cập nhật sở thích */}
-      {showOnboarding && (
+      {showOnboarding && profile && (
         <OnboardingModal
           user={profile}
           onComplete={handleOnboardingComplete}
@@ -217,7 +224,7 @@ export default function CustomerDashboard() {
 
       {selectedFood && (
         <FoodDetailModal
-          food={selectedFood}
+          food={selectedFood as unknown as FoodDetailData}
           onClose={() => setSelectedFood(null)}
         />
       )}

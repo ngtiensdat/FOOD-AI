@@ -18,11 +18,11 @@ interface RestaurantInfoTabProps {
   restaurantData: {
     mapUrl?: string;
     profile?: {
-      openingHours?: string;
-      contactPhone?: string;
-      contactEmail?: string;
-      bio?: string;
-    };
+      openingHours?: string | null;
+      contactPhone?: string | null;
+      contactEmail?: string | null;
+      bio?: string | null;
+    } | null;
     [key: string]: unknown;
   };
 }

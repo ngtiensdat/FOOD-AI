@@ -4,7 +4,7 @@ import { FoodCardData } from '@/components/features/food/FoodCard';
 import { MiniFoodCard } from '@/components/features/food/MiniFoodCard';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
-import { MenuGroup } from './RestaurantMenuSidebar';
+import { MenuGroup, MenuCategory } from './RestaurantMenuSidebar';
 
 interface RestaurantFoodGridProps {
   foodsData: FoodCardData[];
@@ -25,7 +25,7 @@ interface FlatCategory {
 // Helper to extract flat list of categories defined outside component to prevent re-creation on render
 const getFlatCategories = (groups: MenuGroup[]): FlatCategory[] => {
   const list: FlatCategory[] = [];
-  const traverse = (cat: any) => {
+  const traverse = (cat: MenuCategory) => {
     list.push({ id: cat.id, name: cat.name });
     if (cat.children && cat.children.length > 0) {
       cat.children.forEach(traverse);
