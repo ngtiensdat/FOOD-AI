@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, FoodStatus } from '@prisma/client';
+import { Prisma, FoodStatus, Food } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 
 export interface NearbyResult {
@@ -310,7 +310,7 @@ export class FoodRepository {
     }[],
   ) {
     return this.prisma.$transaction(async (tx) => {
-      const updatedFoods: any[] = [];
+      const updatedFoods: Food[] = [];
       for (const update of updates) {
         const { id, ...data } = update;
         const updated = await tx.food.update({

@@ -31,7 +31,10 @@ export class SlotExtractorService {
     }
 
     // 3. Trích xuất các thuộc tính khác sử dụng Synonym Dictionary & Fuzzy Matching
-    const synonyms = this.getParam<any>('synonyms', AI_PARAMETERS.SYNONYMS);
+    const synonyms = this.getParam<typeof AI_PARAMETERS.SYNONYMS>(
+      'synonyms',
+      AI_PARAMETERS.SYNONYMS,
+    );
     const companion = this.findFuzzySlot<
       'SINGLE' | 'FAMILY' | 'DATE' | 'FRIENDS'
     >(msgLower, synonyms.companion);

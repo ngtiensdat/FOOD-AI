@@ -146,7 +146,9 @@ export class PostService {
         : false;
 
       const isSaved = viewerId
-        ? post.savedPosts?.some((s: any) => s.userId === viewerId) || false
+        ? post.savedPosts?.some(
+            (s: { userId: number }) => s.userId === viewerId,
+          ) || false
         : false;
 
       const parentComments = post.comments

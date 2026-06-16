@@ -12,6 +12,13 @@ import {
 import { DEFAULT_BADGE_CONFIGS } from '../../common/constants/badge.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 
+export interface GamificationResult {
+  points: number;
+  level: number;
+  badgeTitle: string | null;
+  pointsChanged: number;
+}
+
 export interface GamificationJob {
   userId: number;
   action:
@@ -25,8 +32,8 @@ export interface GamificationJob {
     | 'UNDO_LIKE'
     | 'REDEEM_VOUCHER';
   voucherPointsCost?: number;
-  resolve: (value: any) => void;
-  reject: (reason: any) => void;
+  resolve: (value: GamificationResult) => void;
+  reject: (reason: unknown) => void;
 }
 
 @Injectable()
@@ -63,8 +70,8 @@ export class GamificationQueueService implements OnModuleInit {
     userId: number,
     action: GamificationJob['action'],
     voucherPointsCost?: number,
-  ): Promise<any> {
-    return new Promise((resolve, reject) => {
+  ): Promise<GamificationResult> {
+    return new Promise<GamificationResult>((resolve, reject) => {
       this.queue$.next({ userId, action, voucherPointsCost, resolve, reject });
     });
   }

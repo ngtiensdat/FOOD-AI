@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 
 @Injectable()
 export class OfferService {
   constructor(private prisma: PrismaService) {}
 
   async getAllOffers(promoType?: string) {
-    const where: any = {};
+    const where: Prisma.OfferWhereInput = {};
     if (promoType && promoType !== 'ALL') {
       where.promoType = promoType;
     }

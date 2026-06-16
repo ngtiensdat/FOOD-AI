@@ -54,7 +54,7 @@ export class CategoryService {
         groupId: dto.groupId,
         parentId: dto.parentId,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'

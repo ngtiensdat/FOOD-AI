@@ -372,7 +372,7 @@ export class RerankingService {
       // 8.5. Emotion REWARD (luxury) price adjustments
       let emotionPriceAdjust = 0.0;
       if (state.slots.emotion === 'REWARD') {
-        const priceLimits = this.getParam<any>(
+        const priceLimits = this.getParam<typeof AI_PARAMETERS.PRICE_LIMITS>(
           'priceLimits',
           AI_PARAMETERS.PRICE_LIMITS,
         );
