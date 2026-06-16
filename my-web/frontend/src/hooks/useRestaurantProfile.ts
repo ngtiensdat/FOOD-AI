@@ -162,7 +162,7 @@ export const useRestaurantProfile = () => {
     setErrorFollowers(null);
     try {
       const data = await restaurantService.getFollowers(restaurantId);
-      setFollowersList((data as FollowerUser[]) || []);
+      setFollowersList((data as FollowerItem[]) || []);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setErrorFollowers(error.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
@@ -181,7 +181,7 @@ export const useRestaurantProfile = () => {
     setErrorFollowing(null);
     try {
       const data = await restaurantService.getFollowing(restaurantId);
-      setFollowingList((data as FollowerUser[]) || []);
+      setFollowingList((data as { restaurant: FollowingRestaurant }[]) || []);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setErrorFollowing(error.response?.data?.message || LABELS.RESTAURANT.PUBLIC_PROFILE.LOAD_ERROR);
