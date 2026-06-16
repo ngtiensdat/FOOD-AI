@@ -15,11 +15,12 @@ import { LIMITS } from '@/constants/limits.constant';
 import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
 import { socialService } from '@/services/social.service';
+import { PostData } from './PostCard';
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated: (post: any) => void;
+  onCreated: (post: PostData) => void;
 }
 
 export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalProps) => {
@@ -29,8 +30,17 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
   const [rating, setRating] = useState(5);
   const [imageUrl, setImageUrl] = useState('');
   
-  const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [foods, setFoods] = useState<any[]>([]);
+  interface LinkableRestaurant {
+    id: number;
+    name: string;
+  }
+  interface LinkableFood {
+    id: number;
+    name: string;
+  }
+
+  const [restaurants, setRestaurants] = useState<LinkableRestaurant[]>([]);
+  const [foods, setFoods] = useState<LinkableFood[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
   const [selectedFoodId, setSelectedFoodId] = useState('');
   
@@ -139,13 +149,13 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             </label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { type: 'NORMAL', label: LABELS.SOCIAL.POST_TYPE_NORMAL },
-                { type: 'REVIEW', label: LABELS.SOCIAL.POST_TYPE_REVIEW }
+                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL },
+                { type: 'REVIEW' as const, label: LABELS.SOCIAL.POST_TYPE_REVIEW }
               ].map((item) => (
                 <Button
                   key={item.type}
                   type="button"
-                  onClick={() => setPostType(item.type as any)}
+                  onClick={() => setPostType(item.type)}
                   className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${
                     postType === item.type
                       ? 'border-primary bg-primary/10 text-primary shadow-sm'

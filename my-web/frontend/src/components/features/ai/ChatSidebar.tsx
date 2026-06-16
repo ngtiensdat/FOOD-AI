@@ -12,10 +12,15 @@ import { SafeImage } from '@/components/base/SafeImage';
 import { User } from '@/types/user';
 import { Button } from '@/components/base/Button';
 
+interface SidebarConversation {
+  id: number;
+  title: string;
+}
+
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (val: boolean) => void;
-  conversations: any[];
+  conversations: SidebarConversation[];
   activeConversationId: number | null;
   setActiveConversationId: (id: number) => void;
   handleCreateNewChat: () => void;

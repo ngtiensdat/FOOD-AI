@@ -59,8 +59,9 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
       onSuccess();
       onClose();
       setFile(null);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || LABELS.IMPORT_EXCEL.MESSAGES.IMPORT_ERROR_DEFAULT;
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { message?: string } } };
+      const msg = errorResponse.response?.data?.message || LABELS.IMPORT_EXCEL.MESSAGES.IMPORT_ERROR_DEFAULT;
       addToast(msg, 'error');
     } finally {
       setLoading(false);
@@ -129,7 +130,7 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
               <Input
                 variant="none"
                 type="file"
-                ref={fileInputRef as any}
+                ref={fileInputRef as unknown as React.Ref<HTMLInputElement | HTMLTextAreaElement>}
                 className="hidden"
                 accept=".xlsx, .xls, .csv"
                 onChange={handleFileChange}

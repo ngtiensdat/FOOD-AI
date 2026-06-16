@@ -44,9 +44,10 @@ export const BugReportTab = () => {
       setSuccess(true);
       setDescription('');
       setImageUrl('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || LABELS.BUG_REPORT.SUBMIT_ERROR);
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.BUG_REPORT.SUBMIT_ERROR);
     } finally {
       setLoading(false);
     }
@@ -85,7 +86,7 @@ export const BugReportTab = () => {
           <select
             className="form-input bg-none"
             value={category}
-            onChange={(e) => setCategory(e.target.value as any)}
+            onChange={(e) => setCategory(e.target.value as 'AI' | 'UI' | 'PERFORMANCE' | 'OTHER')}
             disabled={loading}
           >
             <option value="AI">{LABELS.BUG_REPORT.CATEGORIES.AI}</option>

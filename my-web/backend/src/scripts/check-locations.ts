@@ -31,15 +31,21 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+interface LocationCountResult {
+  city?: string | null;
+  district?: string | null;
+  count: number;
+}
+
 async function check() {
-  const foodCities: any =
-    await prisma.$queryRaw`SELECT city, COUNT(*)::int as count FROM foods GROUP BY city`;
-  const foodDistricts: any =
-    await prisma.$queryRaw`SELECT district, COUNT(*)::int as count FROM foods GROUP BY district`;
-  const restCities: any =
-    await prisma.$queryRaw`SELECT city, COUNT(*)::int as count FROM restaurants GROUP BY city`;
-  const restDistricts: any =
-    await prisma.$queryRaw`SELECT district, COUNT(*)::int as count FROM restaurants GROUP BY district`;
+  const foodCities =
+    (await prisma.$queryRaw`SELECT city, COUNT(*)::int as count FROM foods GROUP BY city`) as LocationCountResult[];
+  const foodDistricts =
+    (await prisma.$queryRaw`SELECT district, COUNT(*)::int as count FROM foods GROUP BY district`) as LocationCountResult[];
+  const restCities =
+    (await prisma.$queryRaw`SELECT city, COUNT(*)::int as count FROM restaurants GROUP BY city`) as LocationCountResult[];
+  const restDistricts =
+    (await prisma.$queryRaw`SELECT district, COUNT(*)::int as count FROM restaurants GROUP BY district`) as LocationCountResult[];
 
   console.log('Food Cities:', foodCities);
   console.log('Food Districts:', foodDistricts);

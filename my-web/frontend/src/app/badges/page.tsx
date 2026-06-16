@@ -59,13 +59,32 @@ interface GamificationRules {
   deductionMultiplier: number;
 }
 
+interface GamificationProfile {
+  id: number;
+  email: string;
+  name: string;
+  role: UserRole;
+  points: number;
+  level: number;
+  badgeTitle: string | null;
+  _count?: {
+    posts?: number;
+    userFollowers?: number;
+  };
+  restaurants?: Array<{
+    _count?: {
+      followers?: number;
+    };
+  }>;
+}
+
 export default function BadgesPage() {
   const { user: me, isAuthenticated } = useAuth();
   const router = useRouter();
   const labels = LABELS.LOYALTY.BADGES_PAGE;
 
   // API states
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<GamificationProfile | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [badges, setBadges] = useState<BadgeConfig[]>([]);
   const [rules, setRules] = useState<GamificationRules | null>(null);

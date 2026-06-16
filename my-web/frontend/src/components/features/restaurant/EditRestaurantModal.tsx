@@ -21,7 +21,7 @@ interface EditRestaurantModalProps {
   isOpen: boolean;
   onClose: () => void;
   restaurant: Restaurant | null | undefined;
-  onSave: (data: UpdateRestaurantInput) => Promise<any>;
+  onSave: (data: UpdateRestaurantInput) => Promise<boolean>;
 }
 
 export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({

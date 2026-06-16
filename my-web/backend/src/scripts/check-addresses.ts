@@ -31,9 +31,16 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+interface RestaurantAddress {
+  name: string;
+  address: string;
+  city: string | null;
+  district: string | null;
+}
+
 async function check() {
-  const addresses: any =
-    await prisma.$queryRaw`SELECT name, address, city, district FROM restaurants`;
+  const addresses =
+    (await prisma.$queryRaw`SELECT name, address, city, district FROM restaurants`) as RestaurantAddress[];
   console.table(addresses);
 }
 

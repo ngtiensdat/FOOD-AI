@@ -111,7 +111,7 @@ export const SettingsSection = ({
           ].map((tab) => (
             <Button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id as any)}
+              onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone')}
               className={`pb-3 transition-all flex items-center gap-2 ${settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
                 }`}
               variant="none"

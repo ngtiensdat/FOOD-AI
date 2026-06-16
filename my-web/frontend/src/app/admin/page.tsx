@@ -193,7 +193,7 @@ export default function AdminDashboard() {
           <AdminNotificationTab allUsers={adminData.allUsers} adminAvatar={user?.avatar || undefined} />
         ) : (
           <AdminTable
-            activeTab={activeTab as any}
+            activeTab={activeTab as 'merchants' | 'users' | 'menu' | 'customers' | 'moderation'}
             foodSubTab={foodSubTab}
             loading={loading}
             merchants={filteredMerchants}

@@ -19,11 +19,12 @@ import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
 import { FollowersModal } from '@/components/features/profile/FollowersModal';
-import { FollowingModal } from '@/components/features/profile/FollowingModal';
+import { FollowingModal, FollowingRestaurant } from '@/components/features/profile/FollowingModal';
 import { RestaurantHeaderCard } from '@/components/features/restaurant/RestaurantHeaderCard';
 import { RestaurantInfoTab } from '@/components/features/restaurant/RestaurantInfoTab';
 import { RestaurantMenuSidebar } from '@/components/features/restaurant/RestaurantMenuSidebar';
 import { RestaurantFoodGrid } from '@/components/features/restaurant/RestaurantFoodGrid';
+import { User } from '@/types/user';
 
 export default function RestaurantProfilePage() {
   const router = useRouter();
@@ -236,7 +237,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowers}
             error={errorFollowers}
             followersList={followersList}
-            onItemClick={(followerUser: any) => {
+            onItemClick={(followerUser: User) => {
               setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
@@ -253,7 +254,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowing}
             error={errorFollowing}
             restaurants={followingList.map((item) => item.restaurant)}
-            onRestaurantClick={(restaurantItem: any) => {
+            onRestaurantClick={(restaurantItem: FollowingRestaurant) => {
               setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}

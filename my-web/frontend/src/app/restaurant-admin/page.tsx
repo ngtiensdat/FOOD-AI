@@ -316,7 +316,19 @@ export default function RestaurantDashboard() {
             onClose={() => setIsAddingFood(false)}
             editingFood={editingFood}
             formData={formData}
-            setFormData={setFormData as any}
+            setFormData={(data) => setFormData({
+              name: String(data.name ?? ''),
+              price: String(data.price ?? ''),
+              description: String(data.description ?? ''),
+              image: String(data.image ?? ''),
+              tags: String(data.tags ?? ''),
+              address: String(data.address ?? ''),
+              mapUrl: String(data.mapUrl ?? ''),
+              lat: String(data.lat ?? ''),
+              lng: String(data.lng ?? ''),
+              restaurantId: String(data.restaurantId ?? ''),
+              categoryId: String(data.categoryId ?? ''),
+            })}
             onSubmit={actions.handleSubmit}
             myBranches={myBranches}
             onSelectBranch={actions.handleSelectBranch}

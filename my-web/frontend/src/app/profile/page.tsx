@@ -155,7 +155,7 @@ function ProfileContent() {
         <ProfileHeader
           user={user}
           profile={profile}
-          me={me as any}
+          me={me}
           isFollowLoading={isFollowLoading}
           onEdit={() => setIsEditing(true)}
           onFollow={actions.toggleFollow}

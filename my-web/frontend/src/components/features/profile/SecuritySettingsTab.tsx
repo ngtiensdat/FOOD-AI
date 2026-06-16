@@ -125,7 +125,7 @@ export const SecuritySettingsTab = ({
         variant="warning"
         onConfirm={() => {
           setShowConfirm(false);
-          onPasswordSubmit({ preventDefault: () => {} } as any);
+          onPasswordSubmit({ preventDefault: () => {} } as React.FormEvent);
         }}
         onCancel={() => {
           setShowConfirm(false);

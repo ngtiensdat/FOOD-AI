@@ -46,9 +46,17 @@ export const VoucherMallTab = ({ currentPoints, onUpdatePoints }: VoucherMallTab
           voucherService.getVouchers(),
           voucherService.getMyVouchers()
         ]);
+        interface RedeemedVoucherResponse {
+          code: string;
+          voucher?: {
+            title?: string;
+          };
+          redeemedAt?: string;
+          createdAt?: string;
+        }
         setAvailableVouchers(availList || []);
         // Format redeemed list to match { code, title, redeemedAt }
-        const formatted = (redeemedList || []).map((uv: any) => ({
+        const formatted = (redeemedList || []).map((uv: RedeemedVoucherResponse) => ({
           code: uv.code,
           title: uv.voucher?.title || 'Voucher',
           redeemedAt: formatDateTime(uv.redeemedAt || uv.createdAt)
@@ -90,9 +98,10 @@ export const VoucherMallTab = ({ currentPoints, onUpdatePoints }: VoucherMallTab
 
       setSuccessMsg(LABELS.LOYALTY.REDEEM_SUCCESS_WITH_CODE(redeemed.code));
       setTimeout(() => setSuccessMsg(null), LIMITS.SUCCESS_MSG_AUTO_HIDE_MS);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message || 'Lỗi khi đổi điểm lấy voucher!');
+      const errorResponse = err as { message?: string };
+      setErrorMsg(errorResponse.message || 'Lỗi khi đổi điểm lấy voucher!');
       setTimeout(() => setErrorMsg(null), LIMITS.ERROR_MSG_AUTO_HIDE_MS);
     }
   };

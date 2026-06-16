@@ -110,9 +110,10 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       setDescription('');
       setSelectedTemplate(LABELS.OFFERS.DEFAULT_TEMPLATES[0].url);
       setIsOpenModal(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
+      const errorResponse = err as { message?: string };
+      toast.error(errorResponse.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
     }
   };
 
@@ -122,9 +123,10 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       await offerService.deleteOffer(offerId);
       setPromotions(prev => prev.filter(p => p.id !== offerId));
       toast.success(LABELS.OFFERS.TOAST.DELETE_SUCCESS);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || LABELS.OFFERS.TOAST.DELETE_ERROR);
+      const errorResponse = err as { message?: string };
+      toast.error(errorResponse.message || LABELS.OFFERS.TOAST.DELETE_ERROR);
     }
   };
 
@@ -344,7 +346,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                   <label className="block text-gray-400">{LABELS.OFFERS.FORM.TYPE_LABEL}</label>
                   <select
                     value={promoType}
-                    onChange={(e) => setPromoType(e.target.value as any)}
+                    onChange={(e) => setPromoType(e.target.value as 'DISCOUNT' | 'COMBO' | 'GIFT' | 'OTHER')}
                     className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700 dark:text-slate-200 font-bold"
                   >
                     <option value="DISCOUNT">{LABELS.OFFERS.FORM.TYPE_OPTIONS.DISCOUNT}</option>
@@ -404,7 +406,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
               <div className="space-y-2">
                 <label className="block text-gray-400">{LABELS.OFFERS.FORM.IMAGE_LABEL}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {LABELS.OFFERS.DEFAULT_TEMPLATES.map((tpl: any) => (
+                  {LABELS.OFFERS.DEFAULT_TEMPLATES.map((tpl: { name: string; url: string }) => (
                     <div
                       key={tpl.name}
                       onClick={() => setSelectedTemplate(tpl.url)}

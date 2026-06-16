@@ -58,9 +58,21 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const router = useRouter();
 
   const { socket } = useSocket();
-  const [notifications, setNotifications] = useState<any[]>([]);
+
+  interface NotificationItem {
+    id: string;
+    title: string;
+    content: string;
+    type: 'LIKE' | 'COMMENT' | 'REPLY' | 'SHARE' | 'LEVEL_UP' | 'PROFILE_UPDATE' | 'SYSTEM' | 'WARNING' | 'PROMOTION' | 'MODERATION_REMOVE' | 'MODERATION_RESOLVE' | 'MODERATION_DISMISS' | string;
+    isRead: boolean;
+    senderAvatar?: string;
+    createdAt: string;
+    postId?: number;
+  }
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [activeNotification, setActiveNotification] = useState<any | null>(null);
+  const [activeNotification, setActiveNotification] = useState<NotificationItem | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
@@ -82,7 +94,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewNotification = (notif: any) => {
+    const handleNewNotification = (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
       toast.success(notif.title || 'Thông báo mới');
     };
@@ -130,7 +142,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     setMounted(true);
   }, []);
 
-  const renderNotificationAvatar = (notif: any, size = 32) => {
+  const renderNotificationAvatar = (notif: NotificationItem, size = 32) => {
     const fallbackClasses = `rounded-full flex items-center justify-center bg-gray-100 dark:bg-slate-900 shrink-0`;
     
     if (notif.senderAvatar) {

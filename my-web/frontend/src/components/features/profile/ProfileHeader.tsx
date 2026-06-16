@@ -38,7 +38,7 @@ export type ProfileData = User & {
 interface ProfileHeaderProps {
   user: User | null;
   profile: ProfileData;
-  me: User | null;
+  me: Partial<User> | null;
   isFollowLoading: boolean;
   onEdit: () => void;
   onFollow: () => void;

@@ -50,9 +50,17 @@ async function bootstrap() {
       );
       console.log('AI REPLY:', result.reply);
       console.log('SUGGESTIONS COUNT:', result.suggestions.length);
+      interface ChatBotSuggestion {
+        id: number;
+        name: string;
+        price: number;
+        restaurantName: string;
+        similarity?: number;
+      }
+
       console.log(
         'SUGGESTIONS:',
-        result.suggestions.map((s: any) => ({
+        result.suggestions.map((s: ChatBotSuggestion) => ({
           id: s.id,
           name: s.name,
           price: s.price,

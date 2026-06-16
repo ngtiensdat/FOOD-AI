@@ -61,7 +61,7 @@ export const ReportModal = ({
       // Reset form state
       setSelectedReason(reportReasons[0]);
       setCustomDetails('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       const { toast } = await import('@/store/useToastStore');
       toast.error(LABELS.MODERATION.TOAST_REPORT_ERROR);

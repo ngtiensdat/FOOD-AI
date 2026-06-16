@@ -144,7 +144,7 @@ export function PreferenceSettingsModal({
         console.error('Lỗi khi xóa tất cả phản hồi:', err);
         toast.error(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_ERROR);
       } finally {
-        setClearingFeedbacks(null as any);
+        setClearingFeedbacks(false);
       }
     }
   };
@@ -258,7 +258,7 @@ export function PreferenceSettingsModal({
                       <select
                         id="preference-modal-theme-select"
                         value={theme}
-                        onChange={(e) => setTheme(e.target.value as any)}
+                        onChange={(e) => setTheme(e.target.value as 'mixed' | 'light' | 'dark')}
                         className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
                       >
                         <option value="mixed">{LABELS.AI_CHAT.PREFERENCES.THEME_MIXED}</option>
@@ -278,7 +278,7 @@ export function PreferenceSettingsModal({
                         id="preference-modal-lang-select"
                         value={lang}
                         onChange={(e) => {
-                          setPendingLang(e.target.value as any);
+                          setPendingLang(e.target.value as 'auto' | 'vi' | 'en');
                           setShowConfirmLang(true);
                         }}
                         className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"

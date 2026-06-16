@@ -75,7 +75,7 @@ export const VerificationSettingsTab = ({
         variant="info"
         onConfirm={() => {
           setShowConfirm(false);
-          onVerifySubmit({ preventDefault: () => {} } as any);
+          onVerifySubmit({ preventDefault: () => {} } as React.FormEvent);
         }}
         onCancel={() => {
           setShowConfirm(false);

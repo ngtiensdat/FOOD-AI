@@ -6,7 +6,7 @@ import { LABELS } from '@/constants/labels';
 interface UseEditRestaurantProps {
   restaurant: Restaurant | null | undefined;
   isOpen: boolean;
-  onSave: (data: UpdateRestaurantInput) => Promise<void>;
+  onSave: (data: UpdateRestaurantInput) => Promise<boolean>;
   onClose: () => void;
 }
 
