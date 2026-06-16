@@ -8,8 +8,9 @@ async function main() {
     try {
       await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"${table}"', 'id'), coalesce(max(id), 0) + 1, false) FROM "${table}";`);
       console.log('Fixed sequence for ' + table);
-    } catch (e: any) {
-      console.error('Failed to fix ' + table, e.message);
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error('Failed to fix ' + table, error.message);
     }
   }
 }

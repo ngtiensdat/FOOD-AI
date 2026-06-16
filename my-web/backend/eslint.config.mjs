@@ -8,7 +8,15 @@ import boundaries from 'eslint-plugin-boundaries';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'dist'],
+    ignores: [
+      'eslint.config.mjs',
+      'dist',
+      '*.ts',
+      '*.js',
+      'prisma/**/*',
+      'scratch/**/*',
+      'scripts/**/*',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

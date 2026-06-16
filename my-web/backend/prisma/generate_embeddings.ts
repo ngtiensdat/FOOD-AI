@@ -16,8 +16,9 @@ async function getEmbedding(text: string) {
             input: text,
         });
         return response.data[0].embedding;
-    } catch (err: any) {
-        console.error('❌ Lỗi tạo Vector (OpenAI):', err.message);
+    } catch (err: unknown) {
+        const error = err as Error;
+        console.error('❌ Lỗi tạo Vector (OpenAI):', error.message);
         return null;
     }
 }

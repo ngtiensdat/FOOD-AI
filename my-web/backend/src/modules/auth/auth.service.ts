@@ -332,11 +332,11 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: appConfig().jwtAccessExpiration,
+      expiresIn: appConfig().jwtAccessExpiration as '1d',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: appConfig().jwtRefreshExpiration,
+      expiresIn: appConfig().jwtRefreshExpiration as '1d',
     });
 
     const hashedRefreshToken = await BcryptHelper.hash(refreshToken, 10);

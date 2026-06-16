@@ -27,7 +27,7 @@ import { UserModule } from '../user/user.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: appConfig().jwtSecret,
-        signOptions: { expiresIn: appConfig().jwtAccessExpiration },
+        signOptions: { expiresIn: appConfig().jwtAccessExpiration as '1d' },
       }),
       inject: [ConfigService],
     }),
