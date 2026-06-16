@@ -22,7 +22,7 @@ export const categoryService = {
   // --- Category Groups ---
   async getCategoryGroups(): Promise<CategoryGroup[]> {
     return apiClient.get('/merchant/category-groups')
-      .then((res: any) => res || [])
+      .then((res: unknown) => (res as CategoryGroup[]) || [])
       .catch(() => []);
   },
 
@@ -41,7 +41,7 @@ export const categoryService = {
   // --- Categories ---
   async getCategoriesByGroup(groupId: number): Promise<Category[]> {
     return apiClient.get('/merchant/categories', { params: { groupId } })
-      .then((res: any) => res || [])
+      .then((res: unknown) => (res as Category[]) || [])
       .catch(() => []);
   },
 
@@ -60,7 +60,7 @@ export const categoryService = {
   // --- Public Hierarchy ---
   async getPublicHierarchy(restaurantId: number): Promise<CategoryGroup[]> {
     return apiClient.get(`/public/restaurants/${restaurantId}/categories/hierarchy`)
-      .then((res: any) => res || [])
+      .then((res: unknown) => (res as CategoryGroup[]) || [])
       .catch(() => []);
   }
 };
