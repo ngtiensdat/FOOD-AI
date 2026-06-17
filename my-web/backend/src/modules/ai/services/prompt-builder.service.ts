@@ -114,7 +114,10 @@ export class PromptBuilderService {
       return '- Không có món ăn nào phù hợp trong cơ sở dữ liệu hiện tại.';
     }
 
-    const optimized = candidates.map((c) => ({
+    // Tối ưu hóa: chỉ gửi tối đa top 5 ứng viên tương đồng nhất để tiết kiệm token
+    const topCandidates = candidates.slice(0, 5);
+
+    const optimized = topCandidates.map((c) => ({
       id: c.id,
       name: c.name,
       price: c.price,

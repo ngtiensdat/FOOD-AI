@@ -8,6 +8,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from './redis.service';
+import { CircuitBreaker } from '../../../common/utils/circuit-breaker';
 
 /** Kết quả thời tiết đã xử lý, trả về cho AI pipeline và frontend */
 export interface WeatherData {
@@ -102,13 +103,67 @@ const WMO_DESCRIPTIONS: Record<number, string> = {
 @Injectable()
 export class WeatherService {
   private readonly logger = new Logger(WeatherService.name);
+  private readonly weatherBreaker: CircuitBreaker<
+    [number, number],
+    WeatherData
+  >;
 
-  constructor(private readonly redisService: RedisService) {}
+  constructor(private readonly redisService: RedisService) {
+    this.weatherBreaker = new CircuitBreaker(
+      async (lat: number, lng: number) => {
+        const url =
+          `${OPEN_METEO_BASE_URL}` +
+          `?latitude=${lat.toFixed(4)}` +
+          `&longitude=${lng.toFixed(4)}` +
+          `&current=${CURRENT_WEATHER_VARIABLES}` +
+          `&timezone=Asia/Ho_Chi_Minh`;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(
+          () => controller.abort(),
+          WEATHER_API_TIMEOUT_MS,
+        );
+
+        let response: Response;
+        try {
+          response = await fetch(url, { signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            `Open-Meteo responded with status ${response.status}`,
+          );
+        }
+
+        const data = (await response.json()) as OpenMeteoCurrentResponse;
+        const current = data.current;
+
+        return {
+          temperature: Math.round(current.temperature_2m * 10) / 10,
+          apparentTemperature:
+            Math.round(current.apparent_temperature * 10) / 10,
+          humidity: Math.round(current.relative_humidity_2m),
+          isRaining: current.rain > 0 || current.weather_code >= 51,
+          rainMm: Math.round(current.rain * 100) / 100,
+          windSpeedKmh: Math.round(current.wind_speed_10m * 10) / 10,
+          weatherCode: current.weather_code,
+          description: this.getWeatherDescription(current.weather_code),
+        };
+      },
+      {
+        failureThreshold: 3,
+        cooldownPeriodMs: 60000,
+        fallbackValue: DEFAULT_WEATHER,
+      },
+    );
+  }
 
   /**
    * Lấy thời tiết hiện tại theo tọa độ GPS.
    * - Kiểm tra cache Redis trước (key: `weather:{lat}:{lng}` làm tròn 2 chữ số ≈ 1.1km)
-   * - Gọi Open-Meteo API nếu cache miss
+   * - Gọi Open-Meteo API qua Circuit Breaker nếu cache miss
    * - Graceful fallback nếu API lỗi hoặc timeout
    */
   async getCurrentWeather(lat: number, lng: number): Promise<WeatherData> {
@@ -127,60 +182,26 @@ export class WeatherService {
       );
     }
 
-    // 2. Fetch from Open-Meteo API
+    // 2. Fetch from Open-Meteo API via Circuit Breaker
     try {
-      const url =
-        `${OPEN_METEO_BASE_URL}` +
-        `?latitude=${lat.toFixed(4)}` +
-        `&longitude=${lng.toFixed(4)}` +
-        `&current=${CURRENT_WEATHER_VARIABLES}` +
-        `&timezone=Asia/Ho_Chi_Minh`;
+      const weatherData = await this.weatherBreaker.execute(lat, lng);
 
-      const controller = new AbortController();
-      const timeout = setTimeout(
-        () => controller.abort(),
-        WEATHER_API_TIMEOUT_MS,
-      );
-
-      let response: Response;
-      try {
-        response = await fetch(url, { signal: controller.signal });
-      } finally {
-        clearTimeout(timeout);
-      }
-
-      if (!response.ok) {
-        throw new Error(`Open-Meteo responded with status ${response.status}`);
-      }
-
-      const data = (await response.json()) as OpenMeteoCurrentResponse;
-      const current = data.current;
-
-      const weatherData: WeatherData = {
-        temperature: Math.round(current.temperature_2m * 10) / 10,
-        apparentTemperature: Math.round(current.apparent_temperature * 10) / 10,
-        humidity: Math.round(current.relative_humidity_2m),
-        isRaining: current.rain > 0 || current.weather_code >= 51,
-        rainMm: Math.round(current.rain * 100) / 100,
-        windSpeedKmh: Math.round(current.wind_speed_10m * 10) / 10,
-        weatherCode: current.weather_code,
-        description: this.getWeatherDescription(current.weather_code),
-      };
-
-      // 3. Cache result in Redis (30 phút)
-      try {
-        await this.redisService.set(
-          cacheKey,
-          JSON.stringify(weatherData),
-          WEATHER_CACHE_TTL_SECONDS,
-        );
-        this.logger.debug(
-          `Weather cached for ${cacheKey}: ${weatherData.temperature}°C, ${weatherData.description}`,
-        );
-      } catch (cacheErr) {
-        this.logger.warn(
-          `Weather cache write error: ${cacheErr instanceof Error ? cacheErr.message : String(cacheErr)}`,
-        );
+      // 3. Cache result in Redis (30 phút) - chỉ cache nếu dữ liệu hợp lệ (không phải fallback mặc định)
+      if (weatherData.description !== DEFAULT_WEATHER.description) {
+        try {
+          await this.redisService.set(
+            cacheKey,
+            JSON.stringify(weatherData),
+            WEATHER_CACHE_TTL_SECONDS,
+          );
+          this.logger.debug(
+            `Weather cached for ${cacheKey}: ${weatherData.temperature}°C, ${weatherData.description}`,
+          );
+        } catch (cacheErr) {
+          this.logger.warn(
+            `Weather cache write error: ${cacheErr instanceof Error ? cacheErr.message : String(cacheErr)}`,
+          );
+        }
       }
 
       return weatherData;

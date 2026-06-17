@@ -13,6 +13,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
+import DOMPurify from 'isomorphic-dompurify';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { JwtService } from '@nestjs/jwt';
@@ -50,6 +51,9 @@ export class AuthService {
       throw new ConflictException(MESSAGES.AUTH.USER_EXISTS);
     }
 
+    const sanitizedName = dto.name
+      ? DOMPurify.sanitize(dto.name, { ALLOWED_TAGS: [] })
+      : dto.name;
     const hashedPassword = await BcryptHelper.hash(dto.password, 10);
     const status =
       dto.role === UserRole.RESTAURANT
@@ -59,13 +63,13 @@ export class AuthService {
     const user = await this.userRepository.create({
       email: dto.email,
       password: hashedPassword,
-      name: dto.name,
+      name: sanitizedName,
       role: dto.role || UserRole.CUSTOMER,
       status,
       isEmailVerified: true,
       profile: {
         create: {
-          fullName: dto.name,
+          fullName: sanitizedName,
         },
       },
       ...(dto.role === UserRole.RESTAURANT
@@ -280,9 +284,23 @@ export class AuthService {
       throw new UnauthorizedException(MESSAGES.AUTH.PASSWORD_INCORRECT_DELETE);
     }
 
-    // Nhờ cấu hình onDelete: Cascade trong schema.prisma, việc xóa User sẽ tự động xóa sạch các dữ liệu liên quan ở tầng DB
-    await this.prisma.user.delete({
-      where: { id: userId },
+    // Soft delete: đánh dấu xóa thay vì xóa vĩnh viễn (cho phục hồi & audit)
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Đánh dấu user đã bị xóa
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          deletedAt: new Date(),
+          refreshToken: null,
+          email: `deleted_${userId}_${user.email}`, // Giải phóng email để người khác đăng ký
+        },
+      });
+
+      // 2. Vô hiệu hóa tất cả restaurants của user
+      await tx.restaurant.updateMany({
+        where: { ownerId: userId },
+        data: { isActive: false, deletedAt: new Date() },
+      });
     });
 
     return {
@@ -295,7 +313,12 @@ export class AuthService {
       const payload = this.jwtService.verify<JwtPayload>(token);
       const user = await this.userRepository.findById(Number(payload.sub));
 
-      if (!user || user.refreshToken !== token) {
+      if (!user || !user.refreshToken) {
+        throw new UnauthorizedException(MESSAGES.AUTH.INVALID_TOKEN);
+      }
+
+      const isMatch = await BcryptHelper.compare(token, user.refreshToken);
+      if (!isMatch) {
         throw new UnauthorizedException(MESSAGES.AUTH.INVALID_TOKEN);
       }
 
@@ -318,7 +341,8 @@ export class AuthService {
       expiresIn: appConfig().jwtRefreshExpiration as any,
     });
 
-    await this.userRepository.updateRefreshToken(user.id, refreshToken);
+    const hashedRefreshToken = await BcryptHelper.hash(refreshToken, 10);
+    await this.userRepository.updateRefreshToken(user.id, hashedRefreshToken);
 
     return {
       accessToken,

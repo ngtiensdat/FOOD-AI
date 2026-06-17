@@ -7,10 +7,11 @@ import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { badgeService } from '@/services/badge.service';
+import { UserRole } from '@/types/user';
 
 export interface BadgeConfig {
   id: string;
-  role: 'CUSTOMER' | 'RESTAURANT';
+  role: UserRole;
   title: string;
   points: number;
 }
@@ -18,7 +19,7 @@ export interface BadgeConfig {
 
 export const LevelBadgeManagerTab = () => {
   const [badges, setBadges] = useState<BadgeConfig[]>([]);
-  const [role, setRole] = useState<'CUSTOMER' | 'RESTAURANT'>('CUSTOMER');
+  const [role, setRole] = useState<UserRole.CUSTOMER | UserRole.RESTAURANT>(UserRole.CUSTOMER);
   const [title, setTitle] = useState('');
   const [points, setPoints] = useState('');
 
@@ -61,7 +62,7 @@ export const LevelBadgeManagerTab = () => {
 
       setTitle('');
       setPoints('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error(LABELS.ADMIN.BADGES_MANAGER.CREATE_ERROR);
     }
@@ -73,15 +74,15 @@ export const LevelBadgeManagerTab = () => {
         await badgeService.deleteBadge(id);
         setBadges(prev => prev.filter((b) => b.id !== id));
         toast.success(LABELS.ADMIN.DELETE_SUCCESS);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
         toast.error(LABELS.ADMIN.BADGES_MANAGER.DELETE_ERROR);
       }
     }
   };
 
-  const customerBadges = badges.filter((b) => b.role === 'CUSTOMER');
-  const restaurantBadges = badges.filter((b) => b.role === 'RESTAURANT');
+  const customerBadges = badges.filter((b) => b.role === UserRole.CUSTOMER);
+  const restaurantBadges = badges.filter((b) => b.role === UserRole.RESTAURANT);
 
   return (
     <div className="space-y-8 fade-in">
@@ -109,10 +110,10 @@ export const LevelBadgeManagerTab = () => {
               <select
                 className="form-input bg-none"
                 value={role}
-                onChange={(e) => setRole(e.target.value as any)}
+                onChange={(e) => setRole(e.target.value as UserRole.CUSTOMER | UserRole.RESTAURANT)}
               >
-                <option value="CUSTOMER">{LABELS.AUTH.CUSTOMER}</option>
-                <option value="RESTAURANT">{LABELS.AUTH.RESTAURANT}</option>
+                <option value={UserRole.CUSTOMER}>{LABELS.AUTH.CUSTOMER}</option>
+                <option value={UserRole.RESTAURANT}>{LABELS.AUTH.RESTAURANT}</option>
               </select>
             </div>
 

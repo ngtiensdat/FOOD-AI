@@ -1,17 +1,13 @@
-// Mục đích: Cung cấp dịch vụ quản lý thực đơn món ăn (Food) và các hành vi tương tác liên quan đến nhà hàng (Theo dõi, hồ sơ nhà hàng).
-// File quan hệ: Gọi FoodRepository, AiService và được gọi bởi FoodController, RestaurantController, RestaurantPublicController.
-// Chức năng đặc biệt: Xử lý tìm kiếm món ăn lân cận, bộ lọc theo thẻ (tags) và địa phương (thành phố, quận), CRUD món ăn (gán quyền sở hữu tương ứng, chống IDOR), tạo hàng loạt (bulk create) món ăn có trigger cập nhật vector embedding tương ứng trong background.
-// Kiến thức/Design Pattern: Service Layer Pattern, SOLID (Single Responsibility - Điều phối logic thực đơn, Dependency Inversion), Ownership Check (IDOR protection), Background Processing Pattern.
-// Các biến, hàm đặc biệt: getAllFoods(), trackView(), getRecentFoods(), getNearbyFoods(), getFeaturedToday(), getFeaturedWeekly(), getRecommended(), getMerchantFoods(), search(), createFood(), createBulk(), updateFood(), deleteFood(), toggleRecommend(), approveFood(), getRestaurant(), updateRestaurantProfile(), getRestaurantFollowers(), followRestaurant(), unfollowRestaurant(), checkFollowStatus(), getFollowingCount().
-
 import {
   Injectable,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { FoodRepository } from './food.repository';
+import { RestaurantRepository } from './restaurant.repository';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../../database/prisma.service';
+import { CacheService } from '../../common/services/cache.service';
 import { AiLearningService } from '../ai/services/ai-learning.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
@@ -20,8 +16,6 @@ import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
-import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
-import { RestaurantNearbyQueryDto } from './dto/restaurant-nearby-query.dto';
 
 const FOOD_DISPLAY_LIMIT = 20;
 
@@ -29,73 +23,87 @@ const FOOD_DISPLAY_LIMIT = 20;
 export class FoodService {
   constructor(
     private repository: FoodRepository,
+    private restaurantRepository: RestaurantRepository,
     private aiService: AiService,
     private prisma: PrismaService,
     private aiLearningService: AiLearningService,
+    private cacheService: CacheService,
   ) {}
 
   async getAllFoods(query: FoodQueryDto) {
-    const { tag, city, district } = query;
-    const where: Prisma.FoodWhereInput = {
-      isActive: true,
-      status: FoodStatus.APPROVED,
-      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
-    };
+    const cacheKey = `foods:list:${JSON.stringify(query)}`;
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        const { tag, city, district } = query;
+        const where: Prisma.FoodWhereInput = {
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          OR: [
+            { restaurantId: null },
+            { restaurant: { is: { isActive: true } } },
+          ],
+        };
 
-    const andFilters: Prisma.FoodWhereInput[] = [];
+        const andFilters: Prisma.FoodWhereInput[] = [];
 
-    if (city) {
-      andFilters.push({
-        OR: [
-          { address: { contains: city, mode: 'insensitive' } },
-          {
-            restaurant: {
-              is: { address: { contains: city, mode: 'insensitive' } },
-            },
+        if (city) {
+          andFilters.push({
+            OR: [
+              { address: { contains: city, mode: 'insensitive' } },
+              {
+                restaurant: {
+                  is: { address: { contains: city, mode: 'insensitive' } },
+                },
+              },
+            ],
+          });
+        }
+
+        if (district) {
+          andFilters.push({
+            OR: [
+              { address: { contains: district, mode: 'insensitive' } },
+              {
+                restaurant: {
+                  is: { address: { contains: district, mode: 'insensitive' } },
+                },
+              },
+            ],
+          });
+        }
+
+        if (tag) {
+          const searchTags = tag
+            .split(',')
+            .map((t) => t.trim().toLowerCase())
+            .filter((t) => t);
+          if (searchTags.length > 0) {
+            andFilters.push({
+              tags: {
+                hasEvery: searchTags,
+              },
+            });
+          }
+        }
+
+        if (andFilters.length > 0) {
+          where.AND = andFilters;
+        }
+
+        const result = await this.repository.findAll(where);
+        const foods = result.data;
+
+        return {
+          data: foods.slice(0, FOOD_DISPLAY_LIMIT),
+          meta: {
+            total: result.total,
+            limit: FOOD_DISPLAY_LIMIT,
           },
-        ],
-      });
-    }
-
-    if (district) {
-      andFilters.push({
-        OR: [
-          { address: { contains: district, mode: 'insensitive' } },
-          {
-            restaurant: {
-              is: { address: { contains: district, mode: 'insensitive' } },
-            },
-          },
-        ],
-      });
-    }
-
-    if (andFilters.length > 0) {
-      where.AND = andFilters;
-    }
-
-    const result = await this.repository.findAll(where);
-    let foods = result.data;
-
-    if (tag) {
-      const searchTags = tag
-        .split(',')
-        .map((t) => t.trim().toLowerCase())
-        .filter((t) => t);
-
-      foods = foods.filter((food) => {
-        const foodTagsLower = food.tags.map((t) => t.toLowerCase());
-        return searchTags.every((st) => foodTagsLower.includes(st));
-      });
-    }
-
-    return {
-      data: foods.slice(0, FOOD_DISPLAY_LIMIT),
-      meta: {
-        total: tag ? foods.length : result.total,
-        limit: FOOD_DISPLAY_LIMIT,
+        };
       },
-    };
+      300, // 5 minutes TTL
+    );
   }
 
   async trackView(user: User, id: number) {
@@ -106,7 +114,6 @@ export class FoodService {
   async toggleFavorite(userId: number, foodId: number) {
     const isFavorite = await this.repository.toggleFavorite(userId, foodId);
 
-    // Sync with AI Feedback Learning: find or create the user's latest conversation
     let conversation = await this.prisma.conversation.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -128,7 +135,6 @@ export class FoodService {
     }
 
     if (isFavorite) {
-      // Favorite -> Add LIKE feedback
       await this.prisma.aiFeedback.upsert({
         where: {
           userId_foodId: {
@@ -148,7 +154,6 @@ export class FoodService {
         },
       });
     } else {
-      // Unfavorite -> Remove LIKE feedback if it exists
       const existingFeedback = await this.prisma.aiFeedback.findUnique({
         where: {
           userId_foodId: {
@@ -169,7 +174,6 @@ export class FoodService {
       }
     }
 
-    // Trigger background embedding update to keep preferences synced
     this.aiLearningService
       .updateUserEmbeddingWithFeedback(userId)
       .catch((err: unknown) => {
@@ -219,19 +223,8 @@ export class FoodService {
     return foods;
   }
 
-  async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
-    const { lat, lng, radius } = query;
-    if (lat === undefined || lng === undefined) return [];
-    return this.repository.findNearbyRestaurants(
-      lat,
-      lng,
-      radius || LIMITS.DEFAULT_NEARBY_RADIUS,
-    );
-  }
-
   async createFood(user: User, dto: CreateFoodDto) {
-    // 1. Kiểm tra xem cơ sở (Restaurant) được chọn có thuộc quyền sở hữu của Merchant không
-    const restaurant = await this.repository.findRestaurantById(
+    const restaurant = await this.restaurantRepository.findRestaurantById(
       dto.restaurantId,
     );
     if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
@@ -240,7 +233,6 @@ export class FoodService {
       throw new ForbiddenException(MESSAGES.FOOD.NO_POST_PERMISSION);
     }
 
-    // 2. Tự động sao chép thông tin địa chỉ từ chi nhánh (Onboarding) sang món ăn
     let lat = dto.lat;
     let lng = dto.lng;
     let address = dto.address;
@@ -253,7 +245,6 @@ export class FoodService {
       mapUrl = mapUrl || restaurant.mapUrl || undefined;
     }
 
-    // 3. Tạo món ăn trong DB liên kết với chi nhánh tương ứng
     const food = await this.repository.create({
       name: dto.name,
       price: dto.price,
@@ -272,11 +263,12 @@ export class FoodService {
     });
 
     void this.aiService.updateFoodEmbedding(food.id);
+    await this.cacheService.invalidatePattern('foods:*');
     return food;
   }
 
   async createBulk(user: User, dto: BulkCreateFoodDto) {
-    const restaurant = await this.repository.findRestaurantById(
+    const restaurant = await this.restaurantRepository.findRestaurantById(
       dto.restaurantId,
     );
     if (!restaurant) throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
@@ -309,6 +301,7 @@ export class FoodService {
     }));
 
     const result = await this.repository.createMany(dataToInsert);
+    await this.cacheService.invalidatePattern('foods:*');
     return { count: result.count };
   }
 
@@ -316,14 +309,12 @@ export class FoodService {
     const food = await this.repository.findById(id);
     if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
-    // Kiểm tra quyền sở hữu (Rule 5 - Security & Ownership)
     if (user.role === UserRole.RESTAURANT) {
       if (food.restaurant?.ownerId !== user.id) {
         throw new ForbiddenException(MESSAGES.FOOD.NO_EDIT_PERMISSION);
       }
     }
 
-    // Check if any fields actually changed (Generic Check - avoids manual comparison errors)
     const keysToCheck = Object.keys(dto) as Array<keyof UpdateFoodDto>;
     const hasChanges = keysToCheck.some((key) => {
       const dtoValue = dto[key];
@@ -331,7 +322,6 @@ export class FoodService {
 
       if (dtoValue === undefined) return false;
 
-      // Handle array comparison (e.g. tags)
       if (Array.isArray(dtoValue) && Array.isArray(dbValue)) {
         return (
           dtoValue.length !== dbValue.length ||
@@ -339,13 +329,11 @@ export class FoodService {
         );
       }
 
-      // Normalize empty comparison (null / undefined / empty string)
       const normalizedDto =
         dtoValue === null || dtoValue === undefined ? '' : dtoValue;
       const normalizedDb =
         dbValue === null || dbValue === undefined ? '' : dbValue;
 
-      // Handle numbers comparison (e.g. price, lat, lng)
       if (
         typeof normalizedDto === 'number' ||
         typeof normalizedDb === 'number'
@@ -363,6 +351,7 @@ export class FoodService {
 
     const updatedFood = await this.repository.update(id, data);
     void this.aiService.updateFoodEmbedding(updatedFood.id);
+    await this.cacheService.invalidatePattern('foods:*');
     return updatedFood;
   }
 
@@ -370,39 +359,68 @@ export class FoodService {
     const food = await this.repository.findById(id);
     if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
-    return this.repository.update(id, {
+    const updated = await this.repository.update(id, {
       isAdminRecommended: !food.isAdminRecommended,
     });
+    await this.cacheService.invalidatePattern('foods:*');
+    return updated;
   }
 
   async getFeaturedToday() {
-    const result = await this.repository.findAll({
-      isFeaturedToday: true,
-      isActive: true,
-      status: FoodStatus.APPROVED,
-      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
-    });
-    return result.data;
+    return this.cacheService.wrap(
+      'foods:featured-today',
+      async () => {
+        const result = await this.repository.findAll({
+          isFeaturedToday: true,
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          OR: [
+            { restaurantId: null },
+            { restaurant: { is: { isActive: true } } },
+          ],
+        });
+        return result.data;
+      },
+      900, // 15 minutes TTL
+    );
   }
 
   async getFeaturedWeekly() {
-    const result = await this.repository.findAll({
-      isFeaturedWeekly: true,
-      isActive: true,
-      status: FoodStatus.APPROVED,
-      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
-    });
-    return result.data;
+    return this.cacheService.wrap(
+      'foods:featured-weekly',
+      async () => {
+        const result = await this.repository.findAll({
+          isFeaturedWeekly: true,
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          OR: [
+            { restaurantId: null },
+            { restaurant: { is: { isActive: true } } },
+          ],
+        });
+        return result.data;
+      },
+      900, // 15 minutes TTL
+    );
   }
 
   async getRecommended() {
-    const result = await this.repository.findAll({
-      isAdminRecommended: true,
-      isActive: true,
-      status: FoodStatus.APPROVED,
-      OR: [{ restaurantId: null }, { restaurant: { is: { isActive: true } } }],
-    });
-    return result.data;
+    return this.cacheService.wrap(
+      'foods:recommended',
+      async () => {
+        const result = await this.repository.findAll({
+          isAdminRecommended: true,
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          OR: [
+            { restaurantId: null },
+            { restaurant: { is: { isActive: true } } },
+          ],
+        });
+        return result.data;
+      },
+      900, // 15 minutes TTL
+    );
   }
 
   async search(query: string) {
@@ -437,13 +455,31 @@ export class FoodService {
     return result;
   }
 
-  async getMerchantFoods(user: User) {
+  async getMerchantFoods(user: User, page?: number, pageSize?: number) {
     const where: Prisma.FoodWhereInput = { deletedAt: null };
     if (user.role === UserRole.RESTAURANT) {
-      const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
-      if (!restaurant) return [];
+      const restaurant =
+        await this.restaurantRepository.findRestaurantByOwnerId(user.id);
+      if (!restaurant) {
+        return page && pageSize
+          ? { data: [], meta: { total: 0, page, pageSize } }
+          : [];
+      }
       where.restaurantId = restaurant.id;
     }
+
+    if (page && pageSize) {
+      const result = await this.repository.findAll(where, page, pageSize);
+      return {
+        data: result.data,
+        meta: {
+          total: result.total,
+          page,
+          pageSize,
+        },
+      };
+    }
+
     const result = await this.repository.findAll(where);
     return result.data;
   }
@@ -452,7 +488,6 @@ export class FoodService {
     const food = await this.repository.findById(id);
     if (!food) throw new NotFoundException(MESSAGES.FOOD.NOT_FOUND);
 
-    // Rule 5 - Security & Ownership
     if (
       user.role === UserRole.RESTAURANT &&
       food.restaurant?.ownerId !== user.id
@@ -460,192 +495,19 @@ export class FoodService {
       throw new ForbiddenException(MESSAGES.FOOD.NO_DELETE_PERMISSION);
     }
 
-    return this.repository.delete(id);
+    const result = await this.repository.delete(id);
+    await this.cacheService.invalidatePattern('foods:*');
+    return result;
   }
 
   async approveFood(id: number, status: FoodStatus) {
-    return this.repository.update(id, {
+    const result = await this.repository.update(id, {
       status,
       isAdminRecommended: false,
       isFeaturedToday: false,
       isFeaturedWeekly: false,
     });
-  }
-  async getMyRestaurant(user: User) {
-    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
-    }
-    return restaurant;
-  }
-
-  async getMyBranches(user: User) {
-    const branches = await this.repository.findManyRestaurantsByOwnerId(
-      user.id,
-    );
-    if (!branches || branches.length === 0) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
-    }
-    return branches;
-  }
-
-  async updateMyRestaurantStatus(user: User, isActive: boolean) {
-    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
-    }
-    return this.repository.updateRestaurantStatus(restaurant.id, isActive);
-  }
-
-  async updateMyRestaurantProfile(user: User, dto: UpdateRestaurantProfileDto) {
-    const restaurant = await this.repository.findRestaurantByOwnerId(user.id);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_OWNER);
-    }
-    return this.repository.updateRestaurantProfileTransaction(
-      restaurant.id,
-      user.id,
-      dto,
-    );
-  }
-
-  async getPublicRestaurant(id: number, requestingUser?: User) {
-    const restaurant = await this.repository.findPublicRestaurantById(id);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
-    }
-
-    let isFollowing = false;
-    if (requestingUser) {
-      isFollowing = await this.repository.isUserFollowingRestaurant(
-        requestingUser.id,
-        id,
-      );
-    }
-
-    const followingCount = await this.repository.countMerchantFollowing(
-      restaurant.ownerId,
-    );
-
-    const prefs = (await this.repository.getUserPreferences(
-      restaurant.ownerId,
-    )) as { showFollowList?: boolean };
-    const showFollowList = prefs.showFollowList !== false; // mặc định là true
-
-    // Only return first 5 foods by default if categoryId is not applied,
-    // or we just return stats and let frontend fetch foods paginated.
-    // For backward compatibility, we'll keep foods here but maybe limited.
-
-    return {
-      restaurant: {
-        id: restaurant.id,
-        name: restaurant.name,
-        address: restaurant.address,
-        description: restaurant.description,
-        mapUrl: restaurant.mapUrl,
-        isActive: restaurant.isActive,
-        ownerId: restaurant.ownerId,
-        createdAt: restaurant.createdAt,
-        profile: restaurant.profile,
-        foods: restaurant.foods.slice(0, LIMITS.RESTAURANT_INITIAL_FOODS),
-      },
-      stats: {
-        followersCount: restaurant._count.followers,
-        followingCount,
-        showFollowList,
-      },
-      isFollowing,
-    };
-  }
-
-  async getPublicRestaurantFoods(
-    restaurantId: number,
-    categoryId?: number,
-    page: number = 1,
-    pageSize: number = 8,
-  ) {
-    const where: Prisma.FoodWhereInput = {
-      restaurantId,
-      isActive: true,
-      status: FoodStatus.APPROVED,
-    };
-
-    if (categoryId) {
-      where.categoryId = categoryId;
-    }
-
-    const { data, total } = await this.repository.findManyFoodsWithPagination(
-      where,
-      (page - 1) * pageSize,
-      pageSize,
-    );
-
-    return {
-      items: data,
-      total,
-      page,
-      pageSize,
-    };
-  }
-
-  private async checkFollowListVisibility(
-    restaurantId: number,
-    requestingUser?: User,
-  ) {
-    const restaurant = await this.repository.findRestaurantById(restaurantId);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
-    }
-
-    const prefs = (await this.repository.getUserPreferences(
-      restaurant.ownerId,
-    )) as { showFollowList?: boolean };
-    const showFollowList = prefs.showFollowList !== false; // mặc định là true
-
-    if (!showFollowList && requestingUser?.id !== restaurant.ownerId) {
-      throw new ForbiddenException(MESSAGES.RESTAURANT.PRIVATE_FOLLOW_LIST);
-    }
-
-    return restaurant;
-  }
-
-  async getRestaurantFollowers(id: number, requestingUser?: User) {
-    await this.checkFollowListVisibility(id, requestingUser);
-    return this.repository.findRestaurantFollowers(id);
-  }
-
-  async getMerchantFollowing(id: number, requestingUser?: User) {
-    const restaurant = await this.checkFollowListVisibility(id, requestingUser);
-    return this.repository.findMerchantFollowing(restaurant.ownerId);
-  }
-
-  async toggleFollowRestaurant(userId: number, restaurantId: number) {
-    const restaurant = await this.repository.findRestaurantById(restaurantId);
-    if (!restaurant) {
-      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
-    }
-
-    const isFollowing = await this.repository.isUserFollowingRestaurant(
-      userId,
-      restaurantId,
-    );
-    if (isFollowing) {
-      await this.repository.unfollowRestaurant(userId, restaurantId);
-      return { followed: false };
-    } else {
-      await this.repository.followRestaurant(userId, restaurantId);
-      return { followed: true };
-    }
-  }
-
-  async getPublicRestaurants(filters: {
-    search?: string;
-    city?: string;
-    district?: string;
-    tag?: string;
-    page?: number;
-    pageSize?: number;
-  }) {
-    return this.repository.findManyPublicRestaurants(filters);
+    await this.cacheService.invalidatePattern('foods:*');
+    return result;
   }
 }

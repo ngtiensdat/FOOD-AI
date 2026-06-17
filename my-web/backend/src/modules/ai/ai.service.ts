@@ -4,9 +4,15 @@
 // Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Orchestrator Pattern, Dependency Injection, Separation of Concerns.
 // Các biến, hàm đặc biệt trong file: chat(), getConversations(), createConversation(), deleteConversation(), getConversationDetail().
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
+import { RetryQueueService } from '../../common/services/retry-queue.service';
 import { VectorRepository, SearchResult } from './vector.repository';
 import { UserRole, MessageRole } from '@prisma/client';
 
@@ -43,6 +49,7 @@ import { MESSAGES } from '../../common/constants/messages.constant';
 import { AI_PARAMETERS } from './constants/ai-parameters.constant';
 import { OpenAIService } from './services/openai.service';
 import { PromptBuilderService } from './services/prompt-builder.service';
+import { retry } from '../../common/utils/retry.helper';
 import { DialogueStateManagerService } from './services/dialogue-state-manager.service';
 import { IntentDetectorService } from './services/intent-detector.service';
 import { FoodKnowledgeService } from './services/food-knowledge.service';
@@ -54,7 +61,7 @@ import { WeatherService, WeatherData } from './services/weather.service';
 import { SlotExtractorService } from './services/slot-extractor.service';
 
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   private readonly logger = new Logger(AiService.name);
 
   constructor(
@@ -72,7 +79,18 @@ export class AiService {
     private readonly aiLearningService: AiLearningService,
     private readonly weatherService: WeatherService,
     private readonly slotExtractor: SlotExtractorService,
+    private readonly retryQueueService: RetryQueueService,
   ) {}
+
+  onModuleInit() {
+    this.retryQueueService.registerHandler(async (job) => {
+      if (job.type === 'food') {
+        await this.updateFoodEmbedding(job.id);
+      } else if (job.type === 'user') {
+        await this.updateUserEmbedding(job.id);
+      }
+    });
+  }
 
   private getParam<T>(path: string, defaultValue: T): T {
     return this.configService.get<T>(`ai.${path}`) ?? defaultValue;
@@ -154,6 +172,63 @@ export class AiService {
           },
         },
       });
+    }
+
+    // 2.5 Local Fallback cho các tin nhắn đơn giản (greetings/thanks) để tránh chi phí OpenAI
+    const lowercaseMsg = cleanMessage.toLowerCase().trim();
+    const greetings = [
+      'hello',
+      'hi',
+      'xin chào',
+      'chào bạn',
+      'chào',
+      'halo',
+      'helo',
+    ];
+    const thanks = [
+      'cảm ơn',
+      'cám ơn',
+      'thank you',
+      'thanks',
+      'cảm ơn bạn',
+      'tks',
+      'ty',
+    ];
+
+    let localReply = '';
+    if (greetings.includes(lowercaseMsg)) {
+      localReply =
+        'Xin chào! Tôi là AI tư vấn ẩm thực của bạn. Hôm nay tôi có thể giúp gì cho bạn? Bạn muốn tìm món ăn ngon hay quán ăn lân cận?';
+    } else if (thanks.includes(lowercaseMsg)) {
+      localReply =
+        'Rất sẵn lòng! Chúc bạn có những trải nghiệm ẩm thực ngon miệng và thú vị!';
+    }
+
+    if (localReply) {
+      const releaseLock = await this.redisService.acquireLock(
+        `lock:conversation:${conversation.id}`,
+        CONVERSATION_LOCK_TTL_MS,
+        CONVERSATION_LOCK_RETRIES,
+        CONVERSATION_LOCK_RETRY_DELAY_MS,
+      );
+      try {
+        await this.stateManager.saveMessage(
+          conversation.id,
+          MessageRole.USER,
+          cleanMessage,
+        );
+        await this.stateManager.saveMessage(
+          conversation.id,
+          MessageRole.SYSTEM,
+          localReply,
+        );
+        return {
+          reply: localReply,
+          suggestions: [],
+        };
+      } finally {
+        await releaseLock();
+      }
     }
 
     // 3. Centralized Distributed Lock via RedisService
@@ -595,7 +670,11 @@ export class AiService {
     return { message: MESSAGES.AI.CHAT_HISTORY_CLEARED };
   }
 
-  async getConversations(userId: number) {
+  /**
+   * Dọn dẹp các conversation rỗng (không có message) thừa.
+   * Giữ lại tối đa 1 conversation rỗng, xóa các bản trùng.
+   */
+  private async cleanupEmptyConversations(userId: number) {
     const emptyConversations = await this.prisma.conversation.findMany({
       where: {
         userId,
@@ -610,6 +689,12 @@ export class AiService {
         where: { id: { in: toDelete } },
       });
     }
+
+    return emptyConversations;
+  }
+
+  async getConversations(userId: number) {
+    await this.cleanupEmptyConversations(userId);
 
     const list = await this.prisma.conversation.findMany({
       where: { userId },
@@ -649,21 +734,9 @@ export class AiService {
   }
 
   async createConversation(userId: number) {
-    const emptyConversations = await this.prisma.conversation.findMany({
-      where: {
-        userId,
-        messages: { none: {} },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const emptyConversations = await this.cleanupEmptyConversations(userId);
 
     if (emptyConversations.length > 0) {
-      if (emptyConversations.length > 1) {
-        const toDelete = emptyConversations.slice(1).map((c) => c.id);
-        await this.prisma.conversation.deleteMany({
-          where: { id: { in: toDelete } },
-        });
-      }
       return emptyConversations[0];
     }
 
@@ -732,46 +805,66 @@ export class AiService {
 
   async updateFoodEmbedding(foodId: number) {
     try {
-      const food = await this.prisma.food.findUnique({
-        where: { id: foodId },
-        include: { restaurant: true, category: true },
-      });
-      if (!food) return;
-      const tagsStr =
-        food.tags && food.tags.length > 0
-          ? food.tags.join(', ')
-          : AI_CONSTANTS.EMBEDDING_LABELS.NO_TAGS;
-      const categoryName =
-        food.category?.name || AI_CONSTANTS.EMBEDDING_LABELS.CATEGORY_OTHER;
-      const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
-      const embedding = await this.getEmbedding(textToEmbed);
-      await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+      await retry(
+        async () => {
+          const food = await this.prisma.food.findUnique({
+            where: { id: foodId },
+            include: { restaurant: true, category: true },
+          });
+          if (!food) return;
+          const tagsStr =
+            food.tags && food.tags.length > 0
+              ? food.tags.join(', ')
+              : AI_CONSTANTS.EMBEDDING_LABELS.NO_TAGS;
+          const categoryName =
+            food.category?.name || AI_CONSTANTS.EMBEDDING_LABELS.CATEGORY_OTHER;
+          const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
+          const embedding = await this.getEmbedding(textToEmbed);
+          await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
+        },
+        3, // 3 retries
+        500, // delay 500ms
+        2, // exponential backoff
+      );
     } catch (error) {
       this.logger.error(
-        'LỖI CẬP NHẬT EMBEDDING MÓN ĂN:',
+        'LỖI CẬP NHẬT EMBEDDING MÓN ĂN (ĐÃ RETRY 3 LẦN):',
         error instanceof Error ? error.stack : error,
       );
+      await this.retryQueueService.pushToQueue('food', foodId).catch((qErr) => {
+        this.logger.error('Failed to push food embedding to DLQ:', qErr);
+      });
     }
   }
 
   async updateUserEmbedding(userId: number) {
     try {
-      const profile = await this.prisma.userProfile.findUnique({
-        where: { userId },
-      });
-      if (!profile || !profile.preferences) return;
-      const prefs = profile.preferences as Record<string, string>;
-      const goalStr = prefs.goal
-        ? AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal
-        : AI_CONSTANTS.EMBEDDING_LABELS.NO_GOAL;
-      const textToEmbed = `Người dùng thích ${prefs.cuisine || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_CUISINE}. Ngân sách ${prefs.budget || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_BUDGET}. Mục tiêu sức khỏe: ${goalStr}.`;
-      const embedding = await this.getEmbedding(textToEmbed);
-      await this.vectorRepository.updateUserEmbedding(userId, embedding);
+      await retry(
+        async () => {
+          const profile = await this.prisma.userProfile.findUnique({
+            where: { userId },
+          });
+          if (!profile || !profile.preferences) return;
+          const prefs = profile.preferences as Record<string, string>;
+          const goalStr = prefs.goal
+            ? AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal
+            : AI_CONSTANTS.EMBEDDING_LABELS.NO_GOAL;
+          const textToEmbed = `Người dùng thích ${prefs.cuisine || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_CUISINE}. Ngân sách ${prefs.budget || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_BUDGET}. Mục tiêu sức khỏe: ${goalStr}.`;
+          const embedding = await this.getEmbedding(textToEmbed);
+          await this.vectorRepository.updateUserEmbedding(userId, embedding);
+        },
+        3, // 3 retries
+        500, // delay 500ms
+        2, // exponential backoff
+      );
     } catch (error) {
       this.logger.error(
-        'LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG:',
+        'LỖI CẬP NHẬT EMBEDDING NGƯỜI DÙNG (ĐÃ RETRY 3 LẦN):',
         error instanceof Error ? error.stack : error,
       );
+      await this.retryQueueService.pushToQueue('user', userId).catch((qErr) => {
+        this.logger.error('Failed to push user embedding to DLQ:', qErr);
+      });
     }
   }
 }

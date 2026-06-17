@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LABELS } from '@/constants/labels';
+import { UserRole } from '@/types/user';
 
 export const loginSchema = z.object({
   email: z.string()
@@ -25,7 +26,7 @@ export const registerSchema = z.object({
   message: LABELS.FORM.CONFIRM_PASSWORD_MISMATCH,
   path: ['confirmPassword'],
 }).refine((data) => {
-  if (data.role === 'RESTAURANT') {
+  if (data.role === UserRole.RESTAURANT) {
     return !!data.legalDocuments && data.legalDocuments.trim().length >= 10;
   }
   return true;

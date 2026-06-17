@@ -71,8 +71,8 @@
 - **So that** thông tin trang công khai của quán tôi luôn hiển thị chính xác nhất cho thực khách.
 
 **Acceptance Criteria (AC):**
-- [ ] Cập nhật đồng bộ các trường của Restaurant và RestaurantProfile.
-- [ ] Modal chỉnh sửa giao diện đẹp mắt tại trang dashboard quản lý.
+- [x] Cập nhật đồng bộ các trường của Restaurant và RestaurantProfile.
+- [x] Modal chỉnh sửa giao diện đẹp mắt tại trang dashboard quản lý.
 
 ### US-15: Khám phá tìm kiếm trang cửa hàng công khai
 - **As a** người dùng
@@ -80,7 +80,18 @@
 - **So that** tôi có thể truy cập trang chi tiết công khai của nhà hàng và xem menu món ăn.
 
 **Acceptance Criteria (AC):**
-- [ ] Trang Explore hiển thị danh sách các RestaurantCard công khai.
-- [ ] Thanh tìm kiếm theo tên nhà hàng.
-- [ ] Hỗ trợ lọc theo tag (danh mục món ăn của quán).
-- [ ] Hỗ trợ lọc theo khu vực thành phố, quận/huyện.
+- [x] Trang Explore hiển thị danh sách các RestaurantCard công khai.
+- [x] Thanh tìm kiếm theo tên nhà hàng.
+- [x] Hỗ trợ lọc theo tag (danh mục món ăn của quán).
+- [x] Hỗ trợ lọc theo khu vực thành phố, quận/huyện.
+
+### US-16: Phân loại thực đơn đa cấp cho Nhà hàng (Category Hierarchy)
+- **As a** chủ quán ăn (Merchant)
+- **I want** tạo cấu trúc phân cấp thực đơn (Nhóm -> Danh mục -> Phân loại -> Cấp 4)
+- **So that** tôi có thể sắp xếp và hiển thị thực đơn một cách khoa học trên trang công khai của quán.
+
+**Acceptance Criteria (AC):**
+- [x] Cấu trúc phân cấp menu lên đến tối đa 4 cấp con thuộc sở hữu riêng của nhà hàng.
+- [x] Admin/Merchant thực hiện CRUD nhóm danh mục qua các REST APIs.
+- [x] Đồng bộ hiển thị cây danh mục phân cấp trên trang công khai của nhà hàng (/restaurant/[id]).
+

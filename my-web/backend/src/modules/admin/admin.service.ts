@@ -44,8 +44,27 @@ export class AdminService {
     return updatedUser;
   }
 
-  async getAllFoods() {
-    return this.foodRepository.findAllFoodsWithRestaurant();
+  async getAllFoods(page?: number, pageSize?: number) {
+    if (page && pageSize) {
+      const result = await this.foodRepository.findAllFoodsWithRestaurant(
+        page,
+        pageSize,
+      );
+      return {
+        data: result.data,
+        meta: {
+          total: result.total,
+          page,
+          pageSize,
+        },
+      };
+    }
+
+    const result = await this.foodRepository.findAllFoodsWithRestaurant(
+      undefined,
+      undefined,
+    );
+    return result.data;
   }
 
   async updateFood(

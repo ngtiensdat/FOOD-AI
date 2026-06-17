@@ -170,6 +170,9 @@ async function main() {
 
         const locationData = parseLocation(deliveryDetail.address);
 
+        const contactPhone = deliveryDetail.phones?.[0] || null;
+        const bio = deliveryDetail.short_description || null;
+
         if (!restaurant) {
             restaurant = await prisma.restaurant.create({
                 data: {
@@ -181,16 +184,42 @@ async function main() {
                     longitude: deliveryDetail.position.longitude,
                     ownerId: owner.id,
                     isActive: true,
+                    ratingAvg: deliveryDetail.rating?.avg ?? null,
+                    ratingCount: deliveryDetail.rating?.total_review ?? null,
+                    cuisines: deliveryDetail.cuisines ?? [],
                     profile: {
                         create: {
-                            coverImage: coverImage
+                            coverImage: coverImage,
+                            contactPhone: contactPhone,
+                            bio: bio,
                         }
                     }
                 }
             });
             console.log(`✅ Đã tạo Quán ăn: ${restaurant.name}`);
         } else {
-            console.log(`ℹ️ Quán ăn đã tồn tại: ${restaurant.name}`);
+            restaurant = await prisma.restaurant.update({
+                where: { id: restaurant.id },
+                data: {
+                    ratingAvg: deliveryDetail.rating?.avg ?? null,
+                    ratingCount: deliveryDetail.rating?.total_review ?? null,
+                    cuisines: deliveryDetail.cuisines ?? [],
+                    profile: {
+                        upsert: {
+                            create: {
+                                coverImage: coverImage,
+                                contactPhone: contactPhone,
+                                bio: bio,
+                            },
+                            update: {
+                                contactPhone: contactPhone,
+                                bio: bio,
+                            }
+                        }
+                    }
+                }
+            });
+            console.log(`ℹ️ Quán ăn đã tồn tại và đã cập nhật rating/cuisines/profile: ${restaurant.name}`);
         }
 
         // 3. Lặp qua các danh mục và món ăn
@@ -229,13 +258,24 @@ async function main() {
 
             // Tạo Foods
             for (const dish of categoryData.dishes) {
+                // 🔴 Bỏ qua món đã bị xóa trên ShopeeFood
+                if (dish.is_deleted === true) {
+                    console.log(`  ⚠️ Bỏ qua món đã xóa: ${dish.name}`);
+                    continue;
+                }
+
                 const imageUrlRaw = dish.photos && dish.photos.length > 0 ? dish.photos[0].value : null;
                 const imageUrl = cleanImageUrl(imageUrlRaw);
+
+                // 🟠 isActive phải phản ánh đúng trạng thái từ dataset
+                const isActive = (dish.is_available !== false) && (dish.is_active !== false);
                 
                 // Kiểm tra xem món ăn đã tồn tại chưa để tránh trùng lặp nếu chạy 2 lần
                 let food = await prisma.food.findFirst({
                     where: { name: dish.name, categoryId: category.id }
                 });
+
+                const parsedLike = typeof dish.total_like === 'string' ? (parseInt(dish.total_like) || 0) : (dish.total_like ?? 0);
 
                 if (!food) {
                     await prisma.food.create({
@@ -247,19 +287,30 @@ async function main() {
                             restaurantId: restaurant.id,
                             categoryId: category.id,
                             status: 'APPROVED',
-                            isActive: true,
+                            isActive: isActive,
                             city: locationData.city,
                             district: locationData.district,
                             lat: restaurant.latitude,
                             lng: restaurant.longitude,
+                            totalOrder: dish.total_order ?? 0,
+                            totalLike: parsedLike,
                         }
                     });
                     totalFoods++;
+                } else {
+                    await prisma.food.update({
+                        where: { id: food.id },
+                        data: {
+                            totalOrder: dish.total_order ?? 0,
+                            totalLike: parsedLike,
+                            isActive: isActive,
+                        }
+                    });
                 }
             }
         }
 
-        console.log(`🎉 HOÀN TẤT! Đã thêm mới ${totalFoods} món ăn vào quán ${restaurant.name}!`);
+        console.log(`🎉 HOÀN TẤT! Đã đồng bộ ${totalFoods} món ăn mới/cũ vào quán ${restaurant.name}!`);
     }
 }
 
