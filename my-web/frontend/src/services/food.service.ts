@@ -1,15 +1,8 @@
-// Mục đích: Thực hiện các cuộc gọi API liên quan đến món ăn (Food) bao gồm tìm kiếm, đề xuất, yêu thích và quản lý món ăn.
-// Ý nghĩa: Đóng vai trò là Service Layer xử lý toàn bộ logic tương tác dữ liệu món ăn giữa frontend và backend.
-// Chức năng đặc biệt: Lấy danh sách món ăn nổi bật (ngày/tuần), món ăn lân cận qua tọa độ GPS, theo dõi lượt xem (trackView) và yêu thích món ăn.
-// Design Pattern: Service pattern, API Client encapsulation.
-// Biến, hàm đặc biệt: foodService, getNearbyFoods, trackView, createFood, toggleFavorite.
 import { apiClient } from '@/lib/api-client';
-import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
-import { CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
-  async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
-    return apiClient.get('/foods', { params }).catch(() => []);
+  async getAllFoods(tag?: string) {
+    return apiClient.get('/foods', { params: tag ? { tag } : undefined }).catch(() => []);
   },
 
   async getFeaturedToday() {
@@ -27,40 +20,16 @@ export const foodService = {
   async getRecommendedFoods() {
     return apiClient.get('/foods/recommended').catch(() => []);
   },
-
-  async getNearbyFoods(lat: number, lng: number, radius: number = 5, city?: string, district?: string) {
-    return apiClient.get('/foods/nearby', { params: { lat, lng, radius, city, district } }).catch(() => []);
+  
+  async getNearbyFoods(lat: number, lng: number, radius: number = 5) {
+    return apiClient.get('/foods/nearby', { params: { lat, lng, radius } }).catch(() => []);
   },
 
   async getMyFoods() {
-    return apiClient.get('/foods/my-foods').catch((err) => {
-      console.error('Error fetching my foods:', err);
-      return [];
-    });
+    return apiClient.get('/foods/my-foods').catch(() => []);
   },
-
-  async getMyAnalytics() {
-    return apiClient.get('/restaurants/my-analytics').catch((err) => {
-      console.error('Error fetching my analytics:', err);
-      return [];
-    });
-  },
-
-
-  async getRecentViews(limit?: number) {
-    return apiClient.get('/foods/recent-views', { params: limit ? { limit } : undefined }).catch(() => []);
-  },
-
-  async trackView(id: number) {
-    try {
-      await apiClient.post(`/foods/${id}/view`);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-
-  async createFood(data: CreateFoodInput): Promise<boolean> {
+  
+  async createFood(data: any) {
     try {
       await apiClient.post('/foods', data);
       return true;
@@ -69,40 +38,81 @@ export const foodService = {
     }
   },
 
-  async createBulkFoods(data: CreateBulkFoodsInput): Promise<boolean> {
-    try {
-      await apiClient.post('/foods/bulk', data);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-
-  async updateFood(id: number, data: UpdateFoodInput): Promise<boolean> {
+  async updateFood(id: number, data: any) {
     try {
       await apiClient.patch(`/foods/${id}`, data);
       return true;
     } catch {
       return false;
     }
+  }
+};
+
+export const aiService = {
+  async chat(message: string, lat?: number, lng?: number) {
+    try {
+      return await apiClient.post('/ai/chat', { message, lat, lng });
+    } catch {
+      return { reply: '', suggestions: [] };
+    }
+  }
+};
+
+export const adminService = {
+  async getAllUsers(role?: string) {
+    return apiClient.get('/admin/users', { params: role ? { role } : undefined }).catch(() => []);
   },
 
-  async deleteFood(id: number): Promise<boolean> {
+  async deleteUser(id: number) {
     try {
-      await apiClient.delete(`/foods/${id}`);
+      await apiClient.delete(`/admin/user/${id}`);
       return true;
     } catch {
       return false;
     }
   },
 
-  async toggleFavorite(id: number) {
+  async getAllFoods() {
+    return apiClient.get('/admin/all-foods').catch(() => []);
+  },
+
+  async updateFood(id: number, data: any) {
     try {
-      const response = await apiClient.post(`/foods/${id}/favorite`);
-      return response.data || response;
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-      return { isFavorite: false };
+      await apiClient.patch(`/admin/update-food/${id}`, data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async recommendFood(id: number) {
+    try {
+      await apiClient.patch(`/foods/${id}/recommend`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteFood(id: number) {
+    try {
+      await apiClient.delete(`/admin/food/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async getPendingMerchants() {
+    return apiClient.get('/admin/pending-users').catch(() => []);
+  },
+
+  async updateUserStatus(userId: number, status: string) {
+    try {
+      await apiClient.patch(`/admin/update-status/${userId}`, { status });
+      return true;
+    } catch {
+      return false;
     }
   }
 };

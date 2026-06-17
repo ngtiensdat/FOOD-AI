@@ -1,68 +1,28 @@
-// Mục đích: Quản lý trạng thái và hành động chính ở trang chủ (Home) bao gồm định vị GPS, khảo sát AI, yêu thích món ăn và cài đặt tài khoản.
-// Các file khác hay file này có ý nghĩa như nào: Tách biệt logic kinh doanh của trang chủ và hồ sơ người dùng khỏi phần hiển thị giao diện chính.
-// Các chức năng đặc biệt: Tự động phát hiện vị trí của người dùng bằng GPS, tích hợp tư vấn món ăn qua AI, cập nhật mật khẩu, xác minh email và xóa tài khoản.
-// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Custom Hook pattern, Facade pattern (tổng hợp các service).
-// Các biến, hàm đặc biệt trong file: useHomeActions, handleAiConsult, handleOnboardingComplete, handleToggleFavorite, fetchUserProfile.
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { foodService } from '@/services/food.service';
-import { aiService } from '@/services/ai.service';
+import { aiService } from '@/services/food.service';
 import { authService as authServiceApi } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
-import { LIMITS } from '@/constants/limits.constant';
-import { LABELS } from '@/constants/labels';
-import { toast } from '@/store/useToastStore';
-import { OnboardingData, ChangePasswordData } from '@/types/user';
-import { Food } from '@/types/food';
-import { FoodDetailData } from '@/components/features/food/FoodDetailModal';
-import { AiSuggestedFood } from '@/components/features/ai/AiResponseBox';
-
-import { useGeolocation } from '@/hooks/useGeolocation';
 
 export const useHomeActions = () => {
-  const { user, isAuthenticated, isCustomer, login, logout } = useAuth();
-  const { getPosition } = useGeolocation(21.0285, 105.8542);
-  const [selectedCity, setSelectedCity] = useState('Hà Nội');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
-
+  const { user, isAuthenticated, isCustomer, login } = useAuth();
+  
   const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('home');
-  const [selectedFood, setSelectedFood] = useState<FoodDetailData | null>(null);
+  const [selectedFood, setSelectedFood] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEmailVerifiedInProfile, setIsEmailVerifiedInProfile] = useState<boolean | null>(null);
-
-  const handleCityChange = (city: string) => {
-    setSelectedCity(city);
-    setSelectedDistrict('');
-  };
 
   // AI Section States
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [suggestedFoods, setSuggestedFoods] = useState<AiSuggestedFood[]>([]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (
-        tabParam === 'home' ||
-        tabParam === 'explore' ||
-        tabParam === 'offers' ||
-        tabParam === 'settings'
-      ) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setActiveTab(tabParam);
-      }
-    }
-  }, []);
+  const [suggestedFoods, setSuggestedFoods] = useState<any[]>([]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const isOnboarded = user.hasCompletedOnboarding === true || 
-                          user.profile?.hasCompletedOnboarding === true;
+      const isOnboarded = (user as any).hasCompletedOnboarding === true || 
+                          (user as any).profile?.hasCompletedOnboarding === true;
       if (!isOnboarded) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowOnboarding(true);
@@ -70,19 +30,10 @@ export const useHomeActions = () => {
     }
   }, [isAuthenticated, user]);
 
-  useEffect(() => {
-    if (selectedFood?.id && isAuthenticated) {
-      const foodId = typeof selectedFood.id === 'string' ? parseInt(selectedFood.id, 10) : selectedFood.id;
-      if (!isNaN(foodId)) {
-        foodService.trackView(foodId);
-      }
-    }
-  }, [selectedFood?.id, isAuthenticated]);
-
-  const handleOnboardingComplete = async (onboardingData: OnboardingData) => {
+  const handleOnboardingComplete = async (preferences: any) => {
     if (!user || !user.id) return;
     try {
-      await authServiceApi.completeOnboarding(onboardingData);
+      await authServiceApi.completeOnboarding({ preferences });
       login({ ...user, hasCompletedOnboarding: true });
       setShowOnboarding(false);
       window.location.reload(); 
@@ -96,11 +47,11 @@ export const useHomeActions = () => {
     if (!aiInput.trim()) return;
 
     if (!user || !isAuthenticated) {
-      setAiResponse(LABELS.CUSTOMER.AI_LOGIN_REQUIRED);
+      setAiResponse("Vui lòng đăng nhập để sử dụng tính năng AI tư vấn món ngon bạn nhé! ✨");
       return;
     }
     if (!isCustomer) {
-      setAiResponse(LABELS.CUSTOMER.AI_CUSTOMER_ONLY);
+      setAiResponse("Tính năng AI tư vấn hiện chỉ dành cho khách hàng. Cảm ơn bạn!");
       return;
     }
 
@@ -110,50 +61,35 @@ export const useHomeActions = () => {
 
     try {
       let lat, lng;
-      const pos = await getPosition();
-      if (pos) { 
-        lat = pos.latitude; 
-        lng = pos.longitude; 
+      if (navigator.geolocation) {
+        const pos = await new Promise<GeolocationPosition | null>((res) => {
+          navigator.geolocation.getCurrentPosition(res, () => res(null), { timeout: 5000 });
+        });
+        if (pos) { lat = pos.coords.latitude; lng = pos.coords.longitude; }
       }
 
       if (user?.id) {
-        const aiData = await aiService.chat(aiInput, lat, lng, selectedCity, selectedDistrict);
+        const aiData = await aiService.chat(aiInput, lat, lng);
         setAiResponse(aiData.reply || '');
         setSuggestedFoods(aiData.suggestions || []);
       }
     } catch (error) {
       console.error('Lỗi AI:', error);
-      setAiResponse(LABELS.COMMON.AI_BUSY);
+      setAiResponse('Rất tiếc, AI đang bận. Bạn thử lại sau nhé!');
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent, data: ChangePasswordData) => {
-    e.preventDefault();
+  const handleChangePassword = async (e: React.FormEvent, data: any) => {
     if (!user?.id) return;
-    try {
-      await authServiceApi.changePassword(data);
-      toast.success(LABELS.SETTINGS.SECURITY.CHANGE_SUCCESS);
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Lỗi đổi mật khẩu:', error);
-      toast.error(err.message || LABELS.SETTINGS.SECURITY.CHANGE_PASSWORD_ERROR);
-    }
+    await authServiceApi.changePassword(data);
   };
 
   const handleVerifyEmail = async (e: React.FormEvent, email: string) => {
-    e.preventDefault();
     if (!user?.id) return;
-    try {
-      await authServiceApi.verifyEmail({ email });
-      setIsEmailVerifiedInProfile(true);
-      toast.success(LABELS.SETTINGS.VERIFICATION.SUCCESS);
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Lỗi xác minh email:', error);
-      toast.error(err.message || LABELS.SETTINGS.VERIFICATION.SEND_EMAIL_ERROR);
-    }
+    await authServiceApi.verifyEmail({ email });
+    setIsEmailVerifiedInProfile(true);
   };
 
   const fetchUserProfile = async () => {
@@ -163,30 +99,6 @@ export const useHomeActions = () => {
       setIsEmailVerifiedInProfile(!!profile.isEmailVerified);
     } catch (err) { 
       console.error('Lỗi lấy profile:', err); 
-    }
-  };
-
-  const handleDeleteAccount = async (password: string) => {
-    if (!user?.id) return;
-    try {
-      await authServiceApi.deleteAccount({ password });
-      toast.success(LABELS.SETTINGS.DANGER_ZONE.TOAST_SUCCESS);
-      logout();
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Lỗi xóa tài khoản:', error);
-      toast.error(err.message || LABELS.SETTINGS.DANGER_ZONE.TOAST_ERROR);
-    }
-  };
-
-  const handleToggleFavorite = async (foodId: number): Promise<boolean> => {
-    try {
-      const res = await foodService.toggleFavorite(foodId);
-      return !!res.isFavorite;
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-      toast.error(LABELS.CUSTOMER.FAVORITE_UPDATE_ERROR);
-      return false;
     }
   };
 
@@ -205,16 +117,10 @@ export const useHomeActions = () => {
     aiResponse,
     isAiLoading,
     suggestedFoods,
-    selectedCity,
-    selectedDistrict,
-    setSelectedCity: handleCityChange,
-    setSelectedDistrict,
     handleOnboardingComplete,
     handleAiConsult,
     handleChangePassword,
     handleVerifyEmail,
-    fetchUserProfile,
-    handleDeleteAccount,
-    handleToggleFavorite
+    fetchUserProfile
   };
 };

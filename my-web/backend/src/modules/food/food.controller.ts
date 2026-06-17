@@ -1,9 +1,3 @@
-// Mục đích: Định nghĩa các API cửa ngõ cho việc quản lý, tìm kiếm và thao tác với các món ăn (Food) của cả khách hàng, thương gia và quản trị viên.
-// File quan hệ: Nhận request từ Client, gọi FoodService để xử lý nghiệp vụ, được bảo vệ bằng các Guards phân quyền.
-// Chức năng đặc biệt: Tìm kiếm món ăn thông thường, tìm kiếm món ăn xung quanh địa lý, lọc món ăn hôm nay/tuần nổi bật, xem danh sách món ăn của merchant hiện tại, track lịch sử xem món ăn và CRUD món ăn đơn lẻ hoặc hàng loạt.
-// Kiến thức/Design Pattern: Single Responsibility, Dependency Injection, Guard Pattern (JwtAuthGuard, RolesGuard), Decorator Pattern.
-// Các biến, hàm đặc biệt: getAllFoods(), getFeaturedToday(), getFeaturedWeekly(), getRecommendedFoods(), getNearbyFoods(), getMerchantFoods(), searchFoods(), trackView(), getRecentViews(), createFood(), createBulkFood(), updateFood(), deleteFood(), toggleRecommendFood(), approveFood().
-
 import {
   Controller,
   Get,
@@ -11,7 +5,6 @@ import {
   Body,
   Query,
   Patch,
-  Delete,
   Param,
   UseGuards,
   ParseIntPipe,
@@ -58,14 +51,8 @@ export class FoodController {
   @Get('my-foods')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
-  getMerchantFoods(
-    @GetUser() user: PrismaClient.User,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
-    const p = page ? Number(page) : undefined;
-    const ps = pageSize ? Number(pageSize) : undefined;
-    return this.foodService.getMerchantFoods(user, p, ps);
+  getMerchantFoods(@GetUser() user: PrismaClient.User) {
+    return this.foodService.getMerchantFoods(user);
   }
 
   @Get('search')
@@ -82,23 +69,10 @@ export class FoodController {
     return this.foodService.trackView(user, id);
   }
 
-  @Post(':id/favorite')
-  @UseGuards(JwtAuthGuard)
-  toggleFavorite(
-    @GetUser() user: PrismaClient.User,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.foodService.toggleFavorite(user.id, id);
-  }
-
   @Get('recent-views')
   @UseGuards(JwtAuthGuard)
-  getRecentViews(
-    @GetUser() user: PrismaClient.User,
-    @Query('limit') limit?: string,
-  ) {
-    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
-    return this.foodService.getRecentFoods(user, parsedLimit);
+  getRecentViews(@GetUser() user: PrismaClient.User) {
+    return this.foodService.getRecentFoods(user);
   }
 
   @Post()
@@ -111,16 +85,6 @@ export class FoodController {
     return this.foodService.createFood(user, createFoodDto);
   }
 
-  @Post('bulk')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
-  createBulkFood(
-    @GetUser() user: PrismaClient.User,
-    @Body() bulkDto: import('./dto/bulk-create-food.dto').BulkCreateFoodDto,
-  ) {
-    return this.foodService.createBulk(user, bulkDto);
-  }
-
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
@@ -130,16 +94,6 @@ export class FoodController {
     @Body() updateFoodDto: UpdateFoodDto,
   ) {
     return this.foodService.updateFood(user, id, updateFoodDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
-  deleteFood(
-    @GetUser() user: PrismaClient.User,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.foodService.deleteFood(user, id);
   }
 
   @Patch(':id/recommend')

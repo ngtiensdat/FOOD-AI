@@ -3,13 +3,13 @@ import { UpdateProfileData, OnboardingData } from '@/types/user';
 
 export const userService = {
   async getProfile(userId: number, requesterId?: number) {
-    return apiClient.get(`/user/profile/${userId}`, {
+    return apiClient.get(`/auth/profile/${userId}`, {
       params: requesterId ? { requesterId } : undefined,
     });
   },
 
   async updateProfile(data: UpdateProfileData) {
-    return apiClient.post('/user/update-profile', data);
+    return apiClient.post('/auth/update-profile', data);
   },
 
   async completeOnboarding(data: OnboardingData) {
@@ -17,14 +17,9 @@ export const userService = {
   },
 
   async toggleFollow(followingId: number) {
-    return apiClient.post('/user/toggle-follow-user', {
+    return apiClient.post('/auth/toggle-follow-user', {
       followingId,
     });
   },
-
-  async getLeaderboard() {
-    return apiClient.get('/user/leaderboard');
-  },
 };
-
 

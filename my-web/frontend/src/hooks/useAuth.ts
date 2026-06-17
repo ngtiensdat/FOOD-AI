@@ -31,7 +31,7 @@ export const useAuth = () => {
 
   return {
     user,
-    loading: !mounted,
+    loading: false, // Zustand persist handles loading internally or we can add a state if needed
     isAuthenticated,
     isCustomer,
     isAdmin,

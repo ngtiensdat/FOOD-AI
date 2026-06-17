@@ -1,109 +1,17 @@
-/* Mục đích: Định nghĩa toàn bộ hệ thống phong cách (CSS) của ứng dụng bao gồm các biến theme, Tailwind utilities và glassmorphism. */
-/* Ý nghĩa: Đóng vai trò là file CSS gốc chứa cấu hình theme (light, dark, mixed) và các utility class dùng chung trên toàn FE. */
-/* Chức năng đặc biệt: Định nghĩa chế độ màu mixed (blend) và dark mode ghi đè biến màu Tailwind gray, các utility về scrollbar, glassmorphism. */
-/* Design Pattern: CSS Custom Properties (Variables), Utility-First CSS organization. */
-/* Biến, hàm đặc biệt: --background, --foreground, --primary, dark, mixed, glass, gradient-text. */
-
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
-
-/* Define the custom dark and mixed variants for class-based themes in Tailwind CSS v4 */
-@custom-variant dark (&:where(.dark, .dark *));
-@custom-variant mixed (&:where(.mixed, .mixed *));
 
 :root {
   --background: #ffffff;
   --foreground: #1a1a1a;
-  --primary: #FF8C00;
-  /* Dark Orange */
-  --primary-light: #FFA500;
-  /* Orange */
-  --secondary: #FFD700;
-  /* Gold/Yellow */
-  --accent: #FFF9E6;
-  /* Very Light Yellow */
+  --primary: #FF8C00;      /* Dark Orange */
+  --primary-light: #FFA500; /* Orange */
+  --secondary: #FFD700;    /* Gold/Yellow */
+  --accent: #FFF9E6;       /* Very Light Yellow */
   --text-muted: #666666;
   --shadow: 0 4px 20px rgba(255, 140, 0, 0.1);
   --radius: 12px;
   --radius-lg: 50px;
-}
-
-/* Dark Mode Colors Override */
-:root.dark,
-html.dark,
-.dark {
-  --background: #020b24;
-  /* Cosmic Deep Navy Page Background */
-  --foreground: #f0f3ff;
-  /* Ice White */
-  --accent: #0e2252;
-  /* Card Border/Accent Navy */
-  --text-muted: #6282d3;
-  /* Glowing Soft Blue */
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-
-  /* Curated Premium Navy & Sapphire palette to override standard Tailwind gray variables in dark mode */
-  --color-gray-950: #ffffff;
-  --color-gray-900: #f0f3ff;
-  /* Ice White */
-  --color-gray-800: #d5defc;
-  /* Soft Ice Blue */
-  --color-gray-700: #b0c2f6;
-  /* Light Ice Sapphire */
-  --color-gray-600: #8ba2e6;
-  /* Soft Sky Cobalt */
-  --color-gray-500: #6282d3;
-  /* Glowing Soft Blue */
-  --color-gray-400: #4260a9;
-  /* Cobalt Shadow */
-  --color-gray-300: #203c7e;
-  /* Midnight Sapphire Border */
-  --color-gray-200: #0e2252;
-  /* Card Border Navy */
-  --color-gray-100: #071330;
-  /* Sleek Card Background */
-  --color-gray-50: #020b24;
-  /* Cosmic Navy Page Background */
-}
-
-/* Mixed Mode — "Coffee House" Theme */
-/* Inspired by warm restaurant candlelight: espresso + cream + caramel */
-:root.mixed,
-html.mixed,
-.mixed {
-  --background: #1c1510;
-  /* Deep espresso page background */
-  --foreground: #fef0d6;
-  /* Warm cream text */
-  --accent: #3d2c18;
-  /* Dark wood card border */
-  --text-muted: #c8946a;
-  /* Warm caramel muted text */
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(255, 140, 0, 0.06);
-
-  /* "Coffee House" warm palette — amber/caramel tones tuned for #1c1510 bg */
-  --color-gray-950: #ffffff;
-  --color-gray-900: #fef8ee;
-  /* Ivory white — headings */
-  --color-gray-800: #f5deb3;
-  /* Wheat — body text (~12:1 contrast) */
-  --color-gray-700: #e8c89a;
-  /* Golden cream — secondary text (~8:1) */
-  --color-gray-650: #d4a97a;
-  --color-gray-600: #c8946a;
-  /* Warm tan — label text (~5:1) */
-  --color-gray-500: #a87a55;
-  /* Caramel — muted text (~3.8:1) */
-  --color-gray-400: #7a5a3e;
-  /* Dark caramel — placeholder */
-  --color-gray-300: #4f3820;
-  /* Rich wood — divider */
-  --color-gray-200: #3d2c18;
-  /* Dark wood — visible border */
-  --color-gray-100: #261c10;
-  /* Coffee card bg — distinct from page */
-  --color-gray-50: #1c1510;
-  /* Espresso page background */
 }
 
 @theme inline {
@@ -118,8 +26,7 @@ html.mixed,
   --radius-button: 16px;
   --radius-input: 12px;
 
-  --spacing-layout: 1.5rem;
-  /* py-6 */
+  --spacing-layout: 5rem; /* py-20 */
 }
 
 @utility p-layout {
@@ -130,29 +37,25 @@ html.mixed,
 }
 
 @utility text-h1 {
-  font-size: 4.5rem;
-  /* text-7xl */
+  font-size: 4.5rem; /* text-7xl */
   font-weight: 700;
   line-height: 1.1;
 }
 
 @utility text-h2 {
-  font-size: 2.25rem;
-  /* text-4xl */
+  font-size: 2.25rem; /* text-4xl */
   font-weight: 700;
   line-height: 1.2;
 }
 
 @utility text-body {
-  font-size: 1.125rem;
-  /* text-lg */
+  font-size: 1.125rem; /* text-lg */
   font-weight: 400;
   line-height: 1.6;
 }
 
 @utility text-small {
-  font-size: 0.875rem;
-  /* text-sm */
+  font-size: 0.875rem; /* text-sm */
   font-weight: 500;
 }
 
@@ -174,7 +77,6 @@ body {
 .gradient-text {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -183,15 +85,8 @@ body {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
@@ -211,362 +106,80 @@ body {
 
 @utility admin-layout {
   min-height: 100vh;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #f9fafb; /* bg-gray-50 */
   display: flex;
 }
 
 @utility admin-main {
-  margin-left: 20rem;
-  /* ml-80 */
+  margin-left: 20rem; /* ml-80 */
   flex: 1 1 0%;
-  padding: 3rem;
-  /* p-12 */
+  padding: 3rem; /* p-12 */
 }
 
 @utility card-container {
-  background-color: var(--background);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--accent);
-}
-
-@utility card-premium {
   background-color: white;
-  border: 1px solid var(--color-gray-100);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:where(.dark, .dark *) {
-    background-color: var(--color-gray-100);
-    border-color: var(--color-gray-200);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  }
-
-  &:where(.mixed, .mixed *) {
-    background-color: var(--color-gray-100);
-    border-color: var(--color-gray-200);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 140, 0, 0.05);
-  }
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border: 1px solid #f3f4f6; /* border-gray-100 */
 }
-
-@utility page-container {
-  min-height: 100vh;
-  background-color: var(--background);
-  color: var(--foreground);
-  transition: background-color 300ms, color 300ms;
-}
-
-
-.dark .glass {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mixed .glass {
-  background: rgba(38, 28, 16, 0.85);
-  border: 1px solid rgba(255, 140, 0, 0.12);
-  backdrop-filter: blur(12px);
-}
-
 
 @utility badge-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  /* gap-1.5 */
-  padding: 0.5rem 1rem;
-  /* py-2 px-4 */
-  border-radius: 0.75rem;
-  /* rounded-xl */
+  gap: 0.375rem; /* gap-1.5 */
+  padding: 0.5rem 1rem; /* py-2 px-4 */
+  border-radius: 0.75rem; /* rounded-xl */
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  /* tracking-wider */
+  letter-spacing: 0.05em; /* tracking-wider */
   border: 1px solid transparent;
 }
 
 @utility table-header-row {
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-600);
-  font-size: 0.875rem;
-  /* text-small */
+  background-color: rgba(249, 250, 251, 0.5); /* bg-gray-50/50 */
+  color: #9ca3af; /* text-gray-400 */
+  font-size: 0.875rem; /* text-small */
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  /* tracking-widest */
+  letter-spacing: 0.1em; /* tracking-widest */
 }
 
+@utility modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
 
 @utility modal-card {
   background-color: white;
   border-radius: var(--radius-card);
-  padding: 2.5rem;
-  /* p-10 */
+  padding: 2.5rem; /* p-10 */
   width: 100%;
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid transparent;
-
-  &:where(.dark, .dark *) {
-    background-color: var(--color-gray-100);
-    border-color: var(--color-gray-200);
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.8);
-  }
-
-  &:where(.mixed, .mixed *) {
-    background-color: var(--color-gray-100);
-    /* Coffee card bg #261c10 */
-    border-color: var(--color-gray-200);
-    /* Dark wood border #3d2c18 */
-    color: var(--foreground);
-    /* Warm cream text */
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 140, 0, 0.06);
-  }
 }
 
 @utility dropdown-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  /* gap-3 */
-  padding: 0.75rem 1rem;
-  /* py-3 px-4 */
-  border-radius: 0.75rem;
-  /* rounded-xl */
+  gap: 0.75rem; /* gap-3 */
+  padding: 0.75rem 1rem; /* py-3 px-4 */
+  border-radius: 0.75rem; /* rounded-xl */
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-  font-size: 0.875rem;
-  /* text-sm */
+  font-size: 0.875rem; /* text-sm */
   font-weight: 700;
-  color: var(--color-gray-700);
-  /* text-gray-700 */
-
+  color: #374151; /* text-gray-700 */
+  
   &:hover {
-    background-color: var(--color-orange-50, #fff7ed);
-    /* hover:bg-orange-50 */
+    background-color: #fff7ed; /* hover:bg-orange-50 */
   }
-
-  &:where(.dark, .dark *) {
-    color: var(--color-gray-900);
-
-    &:hover {
-      background-color: var(--color-gray-200);
-    }
-  }
-
-  &:where(.mixed, .mixed *) {
-    color: var(--color-gray-800);
-    /* Wheat text */
-
-    &:hover {
-      background-color: rgba(255, 140, 0, 0.08);
-      /* Subtle amber hover */
-    }
-  }
-}
-
-/* Ẩn nút mũi tên tăng giảm (spinners) của tất cả thẻ input số trong toàn dự án */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type=number] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-@utility text-h3 {
-  font-size: 1.5rem;
-  /* 24px */
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-@utility text-mini {
-  font-size: 0.6875rem;
-  /* 11px */
-  line-height: 1rem;
-}
-
-@utility ai-box {
-  background-color: var(--color-white);
-  border: 1px solid var(--color-orange-100);
-
-  &:where(.dark, .dark *) {
-    background-color: var(--color-slate-950);
-    border-color: var(--color-slate-800);
-  }
-
-  &:where(.mixed, .mixed *) {
-    background-color: rgba(255, 140, 0, 0.05);
-    /* Amber tinted coffee card */
-    border-color: rgba(255, 140, 0, 0.18);
-  }
-}
-
-@utility loading-spinner {
-  border-width: 3px;
-  border-color: var(--primary);
-  border-top-color: transparent;
-  border-radius: 9999px;
-  animation: spin 1s linear infinite;
-}
-
-@utility modal-wrapper {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-@utility modal-overlay {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(2, 11, 36, 0.65);
-  backdrop-filter: blur(4px);
-}
-
-@utility form-input {
-  width: 100%;
-  background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-input);
-  padding: 0.875rem 1.5rem;
-  /* py-3.5 px-6 */
-  outline: none;
-  transition: all 150ms ease;
-  font-size: 0.875rem;
-  font-weight: 600;
-
-  &:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 8%, transparent);
-  }
-
-  &:where(.dark, .dark *) {
-    background-color: var(--color-gray-50);
-    /* maps to #020b24 in dark */
-    border-color: var(--color-gray-200);
-    /* maps to #0e2252 in dark */
-    color: white;
-
-    &:focus {
-      box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.08);
-    }
-  }
-
-  &:where(.mixed, .mixed *) {
-    background-color: var(--color-gray-100);
-    /* Coffee card bg #261c10 */
-    border-color: var(--color-gray-200);
-    /* Dark wood border #3d2c18 */
-    color: var(--foreground);
-
-    /* Warm cream #fef0d6 */
-    &:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.12);
-    }
-  }
-}
-
-@utility page-loading {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--background);
-  color: var(--foreground);
-  gap: 1rem;
-}
-
-@utility alert-box-rose {
-  padding: 1rem;
-  background-color: #fff1f2;
-  /* rose-50 */
-  border: 1px solid #ffe4e6;
-  /* rose-100 */
-  border-radius: 1rem;
-  /* rounded-2xl */
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  color: #e11d48;
-  /* rose-600 */
-
-  &:where(.dark, .dark *) {
-    background-color: rgba(136, 19, 55, 0.12);
-    /* rose-950/20 */
-    border-color: rgba(136, 19, 55, 0.4);
-    /* rose-900/50 */
-    color: #fb7185;
-    /* rose-400 */
-  }
-
-  &:where(.mixed, .mixed *) {
-    background-color: rgba(136, 19, 55, 0.15);
-    border-color: rgba(200, 50, 70, 0.35);
-    color: #fca5a5;
-    /* rose-300 — brighter on dark bg */
-  }
-}
-
-@utility icon-btn-blue {
-  padding: 0.375rem;
-  color: var(--color-blue-500);
-  border-radius: var(--radius-input);
-  transition: all 150ms ease;
-
-  &:hover {
-    background-color: var(--color-blue-50);
-  }
-
-  &:where(.dark, .dark *) {
-    &:hover {
-      background-color: rgba(59, 130, 246, 0.15);
-    }
-  }
-}
-
-@utility icon-btn-rose {
-  padding: 0.375rem;
-  color: var(--color-rose-500);
-  border-radius: var(--radius-input);
-  transition: all 150ms ease;
-
-  &:hover {
-    background-color: var(--color-rose-50);
-  }
-
-  &:where(.dark, .dark *) {
-    &:hover {
-      background-color: rgba(244, 63, 94, 0.15);
-    }
-  }
-}
-
-/* Tối ưu thẩm mỹ: Ẩn thanh cuộn (scrollbar) cho toàn bộ trang và tất cả các danh sách cuộn nội bộ */
-::-webkit-scrollbar {
-  display: none;
-}
-
-* {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-}
-
-*::-webkit-scrollbar {
-  display: none;
 }

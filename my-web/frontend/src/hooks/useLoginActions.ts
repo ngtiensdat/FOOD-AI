@@ -1,45 +1,30 @@
 'use client';
 
-// Mục đích file: Hook quản lý state và logic cho luồng Đăng nhập (Login).
-// Ý nghĩa: Tách biệt logic xử lý form đăng nhập, validate và gọi API ra khỏi component giao diện.
-// Các chức năng đặc biệt: Validate form bằng Zod schema, hiển thị lỗi động, set user vào Zustand store.
-// Các biến, hàm đặc biệt: ApiError, handleLogin, validate.
-
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
-import { loginSchema } from '@/schemas/auth.schema';
-
-interface ApiError {
-  message?: string;
-}
 
 export const useLoginActions = () => {
+  const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      const newErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const path = issue.path[0];
-        if (path) {
-          newErrors[path as string] = issue.message;
-        }
-      });
-      setErrors(newErrors);
-      return false;
-    }
-    setErrors({});
-    return true;
+    const newErrors: any = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) newErrors.email = LABELS.FORM.EMAIL_INVALID;
+    if (password.length < 1) newErrors.password = LABELS.FORM.PASSWORD_REQUIRED;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -52,9 +37,8 @@ export const useLoginActions = () => {
       setUser(data.user);
       toast.success(LABELS.COMMON.SUCCESS);
       window.location.href = '/';
-    } catch (error) {
-      const err = error as ApiError;
-      const msg = err.message || LABELS.COMMON.ERROR;
+    } catch (error: any) {
+      const msg = error.response?.data?.message || LABELS.COMMON.ERROR;
       toast.error(msg);
       setErrors({ form: msg });
     } finally {

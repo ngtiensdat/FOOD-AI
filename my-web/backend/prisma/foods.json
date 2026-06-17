@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Ngũ cốc kiểu Pháp",
+    "price": 199000,
+    "restaurantId": 4,
+    "description": "Ngũ cốc kiểu Pháp thường được làm từ các loại hạt nguyên cám như yến mạch, lúa mạch, diêm mạch kết hợp với trái cây khô, hạt rang và một chút mật ong. Món ngũ cốc này có hương vị thơm ngon, giàu chất xơ, giúp cung cấp năng lượng và hỗ trợ hệ tiêu hóa. Nó rất phù hợp cho bữa sáng hoặc bữa ăn nhẹ lành mạnh.",
+    "image": "https://res.cloudinary.com/dy16ujpkq/image/upload/v1778222690/cld-sample-4.jpg",
+    "address": "Phố Xa La, Phúc La, Hà Đông, Hà Nội",
+    "mapUrl": "https://maps.app.goo.gl/9ReQ78fRECAzBuBx7",
+    "lat": 20.9752273,
+    "lng": 105.7452284,
+    "tags": [
+      "Ngũ cốc",
+      "Ngũ cốc kiểu Pháp"
+    ],
+    "isAdminRecommended": true,
+    "isFeaturedToday": true
+  }
+]

@@ -13,9 +13,6 @@ const eslintConfig = defineConfig([
       "boundaries": boundaries,
     },
     settings: {
-      "next": {
-        "rootDir": "my-web/frontend/"
-      },
       "boundaries/elements": [
         { type: "base-components", pattern: "src/components/base/*" },
         { type: "features", pattern: "src/components/features/*" },
@@ -25,16 +22,15 @@ const eslintConfig = defineConfig([
       ],
     },
     rules: {
-      "react-hooks/set-state-in-effect": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "off",
-      "unused-imports/no-unused-imports": "warn",
+      "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
         { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
       ],
       "boundaries/element-types": [
-        "warn",
+        "error",
         {
           "default": "allow",
           "rules": [

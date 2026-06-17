@@ -1,9 +1,3 @@
-/**
- * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) để hiển thị thông báo (Alert) với các trạng thái màu sắc và icon tương ứng (error, success, info).
- * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI "thuần" (Dumb Component), chỉ nhận Props (type, children) và hiển thị, không chứa business logic. Tái sử dụng linh hoạt khắp ứng dụng.
- * Các chức năng đặc biệt: Dùng `configs` object để ánh xạ chính xác Tailwind classes, tránh lỗi không compile CSS khi nối chuỗi động.
- * Các biến, hàm đặc biệt trong file: `configs` định nghĩa cấu hình style và icon (`lucide-react`) cho từng loại Alert.
- */
 'use client';
 
 import React from 'react';

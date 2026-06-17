@@ -1,14 +1,7 @@
-// Mục đích file này để làm gì: Trang chủ của website FOOD AI, hiển thị Navbar, Hero banner và các danh sách món ăn/nhà hàng.
-// Các file khác hay file này có ý nghĩa như nào: Là điểm truy cập đầu tiên của ứng dụng khách hàng, sử dụng các components chung như FoodCard, RestaurantCard, và OnboardingModal.
-// Các chức năng đặc biệt: Tải dữ liệu trang chủ kèm định vị vị trí người dùng, xử lý onboarding khảo sát sở thích, thay đổi mật khẩu và quản lý popup chi tiết món ăn.
-// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Container/Presenter Component Pattern, Separation of Concerns (logic đóng gói trong useHomeData và useHomeActions).
-// Các biến, hàm đặc biệt trong file: Home component.
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { Sparkles, MapPin, Star } from 'lucide-react';
-import { User } from '@/types/user';
 
 // Hooks
 import { useHomeData } from '@/hooks/useHomeData';
@@ -21,20 +14,17 @@ import { Placeholder } from '@/components/base/Placeholder';
 // Feature Components
 import { Navbar } from '@/components/features/Navbar';
 import { Hero } from '@/components/features/Hero';
-import { CategorySection } from '@/components/features/food/CategorySection';
-import { FoodCard } from '@/components/features/food/FoodCard';
-import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
-import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
-
+import { CategorySection } from '@/components/features/CategorySection';
+import { FoodCard } from '@/components/features/FoodCard';
+import { FoodDetailModal } from '@/components/features/FoodDetailModal';
 import { OnboardingModal } from '@/components/features/OnboardingModal';
 import { SettingsSection } from '@/components/features/SettingsSection';
-import { OffersSection } from '@/components/features/offers/OffersSection';
 import { Footer } from '@/components/features/Footer';
 
 import { LABELS } from '@/constants/labels';
 
 export default function Home() {
-  const router = useRouter();
+  const { nearbyFoods, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData();
   const {
     user,
     isAuthenticated,
@@ -49,33 +39,23 @@ export default function Home() {
     aiResponse,
     isAiLoading,
     suggestedFoods,
-    selectedCity,
-    selectedDistrict,
-    setSelectedCity,
-    setSelectedDistrict,
     handleOnboardingComplete,
     handleAiConsult,
     handleChangePassword,
     handleVerifyEmail,
-    fetchUserProfile,
-    handleDeleteAccount,
-    handleToggleFavorite
+    fetchUserProfile
   } = useHomeActions();
-
-  const { nearbyRestaurants, featuredToday, featuredWeekly, recommendedFoods, realFoods } = useHomeData(selectedCity, selectedDistrict);
 
   // Danh sách các slider hiển thị trên trang chủ
   const sliderSections = [
     {
       id: 'nearby',
-      data: nearbyRestaurants,
+      data: nearbyFoods,
       title: LABELS.HOME.NEARBY_TITLE,
       subtitle: LABELS.HOME.NEARBY_SUBTITLE,
       icon: <MapPin className="text-blue-500" size={32} />,
-      bg: 'blue' as const,
-      isRestaurant: true
+      bg: 'blue' as const
     },
-
     {
       id: 'recommended',
       data: recommendedFoods,
@@ -111,8 +91,8 @@ export default function Home() {
   ];
 
   return (
-    <main className="page-container min-h-screen">
-      <Navbar activeTab={activeTab} setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')} />
+    <main className="min-h-screen bg-white">
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === 'home' ? (
         <>
@@ -125,14 +105,10 @@ export default function Home() {
             suggestedFoods={suggestedFoods}
             setSelectedFood={setSelectedFood}
             isAuthenticated={isAuthenticated}
-            selectedCity={selectedCity}
-            selectedDistrict={selectedDistrict}
-            onCityChange={setSelectedCity}
-            onDistrictChange={setSelectedDistrict}
           />
 
           <CategorySection
-            handleCategoryClick={(cat: string) => router.push(`/explore?tag=${encodeURIComponent(cat)}`)}
+            handleCategoryClick={(cat) => window.location.href = `/explore?tag=${encodeURIComponent(cat)}`}
             selectedCategory={null}
           />
 
@@ -145,33 +121,21 @@ export default function Home() {
                 icon={section.icon}
                 bg={section.bg}
               >
-                {section.isRestaurant
-                  ? section.data.map((restaurant, i) => (
-                      <RestaurantCard key={i} restaurant={restaurant} />
-                    ))
-                  : section.data.map((food, i) => (
-                      <FoodCard key={i} food={food} onViewDetail={setSelectedFood} onToggleFavorite={handleToggleFavorite} />
-                    ))
-                }
+                {section.data.map((food, i) => (
+                  <FoodCard key={i} food={food} onViewDetail={setSelectedFood} />
+                ))}
               </Slider>
             )
           ))}
-
         </>
       ) : activeTab === 'settings' ? (
         <SettingsSection
           user={user}
-          setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')}
+          setActiveTab={setActiveTab}
           handleChangePassword={handleChangePassword}
           handleVerifyEmail={handleVerifyEmail}
           fetchUserProfile={fetchUserProfile}
           isEmailVerified={isEmailVerifiedInProfile}
-          handleDeleteAccount={handleDeleteAccount}
-        />
-      ) : activeTab === 'offers' ? (
-        <OffersSection
-          user={user}
-          setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')}
         />
       ) : (
         <Placeholder onBack={() => setActiveTab('home')} />

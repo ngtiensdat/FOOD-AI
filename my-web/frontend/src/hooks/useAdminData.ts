@@ -1,19 +1,10 @@
-// Mục đích: Cung cấp và đồng bộ hóa dữ liệu trang quản trị viên như danh sách món ăn, người dùng và đối tác chờ duyệt.
-// Ý nghĩa: Đóng vai trò là data-layer của trang admin, gọi dịch vụ API và quản lý state tập trung.
-// Chức năng đặc biệt: Tải dữ liệu bất đồng bộ đồng thời qua Promise.all, tự động cập nhật lại state sau khi thực hiện thao tác xóa/sửa.
-// Design Pattern: Custom Hook pattern, Service-to-Hook data flow.
-// Biến, hàm đặc biệt: useAdminData, fetchData, deleteUser, recommendFood, approveFood.
-
 import { useState, useEffect, useCallback } from 'react';
-import { adminService } from '@/services/admin.service';
-import { User } from '@/types/user';
-import { AdminFoodItem } from '@/types/food';
-import { LABELS } from '@/constants/labels';
+import { adminService } from '@/services/food.service';
 
 export const useAdminData = () => {
-  const [pendingMerchants, setPendingMerchants] = useState<User[]>([]);
-  const [allFoods, setAllFoods] = useState<AdminFoodItem[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [pendingMerchants, setPendingMerchants] = useState<any[]>([]);
+  const [allFoods, setAllFoods] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -28,7 +19,7 @@ export const useAdminData = () => {
       setAllUsers(users);
       setPendingMerchants(pending);
     } catch (error) {
-      console.error(LABELS.UI_MESSAGES.ADMIN.LOAD_ERROR, error);
+      console.error('Lỗi lấy dữ liệu admin:', error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +46,7 @@ export const useAdminData = () => {
     return false;
   };
 
-  const updateFood = async (foodId: number, data: Partial<AdminFoodItem>) => {
+  const updateFood = async (foodId: number, data: any) => {
     if (await adminService.updateFood(foodId, data)) {
       await fetchData();
       return true;
@@ -79,14 +70,6 @@ export const useAdminData = () => {
     return false;
   };
 
-  const approveFood = async (id: number, status: string) => {
-    if (await adminService.approveFood(id, status)) {
-      await fetchData();
-      return true;
-    }
-    return false;
-  };
-
   return {
     pendingMerchants,
     allFoods,
@@ -97,7 +80,6 @@ export const useAdminData = () => {
     updateStatus,
     updateFood,
     deleteFood,
-    recommendFood,
-    approveFood
+    recommendFood
   };
 };

@@ -112,7 +112,19 @@ Reference these guidelines when:
 ## How to Use
 
 Read individual rule files for detailed explanations and code examples:
-- [clean-architecture-rule.md](file:///E:/FOOD_AI_code/.agent/rule/clean-architecture-rule.md)
-- [prisma-rule.md](file:///E:/FOOD_AI_code/.agent/rule/prisma-rule.md)
-- [security-rule.md](file:///E:/FOOD_AI_code/.agent/rule/security-rule.md)
-- [api-response-rule.md](file:///E:/FOOD_AI_code/.agent/rule/api-response-rule.md)
+
+```
+rules/arch-avoid-circular-deps.md
+rules/security-validate-all-input.md
+rules/_sections.md
+```
+
+Each rule file contains:
+- Brief explanation of why it matters
+- Incorrect code example with explanation
+- Correct code example with explanation
+- Additional context and references
+
+## Full Compiled Document
+
+For the complete guide with all rules expanded: `AGENTS.md`

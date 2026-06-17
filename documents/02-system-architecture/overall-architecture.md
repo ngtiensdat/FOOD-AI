@@ -49,27 +49,6 @@ Dự án được tổ chức theo mô hình **Clean Architecture** & **Feature-
 3. **Database:** Thực hiện **Vector Search** trong PostgreSQL bằng `pgvector` để tìm các món ăn có độ tương đồng cao nhất.
 4. **Backend:** Trả về danh sách món ăn kèm theo phản hồi từ AI.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Người dùng
-    participant FE as Frontend (Next.js)
-    participant BE as Backend (NestJS)
-    participant OpenAI as OpenAI API
-    participant DB as Database (PostgreSQL + pgvector)
-
-    User->>FE: Gửi tin nhắn tìm kiếm món ăn
-    FE->>BE: POST /ai/chat (prompt)
-    BE->>OpenAI: Gọi Embedding API (chuyển text -> vector)
-    OpenAI-->>BE: Trả về vector embeddings
-    BE->>DB: Truy vấn Vector Similarity (pgvector)
-    DB-->>BE: Trả về danh sách món ăn tương đồng nhất
-    BE->>OpenAI: Gửi Prompt mở rộng (Augmented Context + Món ăn)
-    OpenAI-->>BE: Trả về câu trả lời tự nhiên (AI response)
-    BE-->>FE: Trả về câu trả lời + danh sách món ăn đề xuất
-    FE-->>User: Hiển thị giao diện ChatBox & danh sách món
-```
-
 ### 2. Luồng Quản trị
 - Admin đăng nhập và truy cập Panel chuyên biệt.
 - Sử dụng Prisma Client để quản lý người dùng, thương gia và bài đăng.

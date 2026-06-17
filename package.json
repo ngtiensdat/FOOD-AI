@@ -12,21 +12,15 @@
     "lint:frontend": "npm run lint --prefix my-web/frontend"
   },
   "lint-staged": {
-    "my-web/backend/src/**/*.ts": [
-      "eslint --config my-web/backend/eslint.config.mjs --fix"
+    "my-web/backend/src/**/*.{ts,js}": [
+      "npm run lint:backend"
     ],
-    "my-web/frontend/src/**/*.{ts,tsx}": [
-      "eslint --config my-web/frontend/eslint.config.mjs"
+    "my-web/frontend/src/**/*.{ts,js,tsx,jsx}": [
+      "npm run lint:frontend"
     ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.0.1",
-    "@commitlint/config-conventional": "^21.0.1",
-    "@prisma/client": "^7.8.0",
     "concurrently": "^9.2.1",
-    "husky": "^9.1.7",
-    "jiti": "^2.7.0",
-    "lint-staged": "^15.4.3",
-    "prisma": "^7.8.0"
+    "husky": "^9.1.7"
   }
 }

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { generateId } from '@/utils/helpers';
-import { LIMITS } from '@/constants/limits.constant';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -24,12 +23,12 @@ export const useToastStore = create<ToastStore>((set) => ({
       toasts: [...state.toasts, { id, message, type }],
     }));
 
-    // Tự động xóa
+    // Tự động xóa sau 3 giây
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id),
       }));
-    }, LIMITS.TOAST_AUTO_REMOVE_DELAY);
+    }, 3000);
   },
   removeToast: (id) =>
     set((state) => ({

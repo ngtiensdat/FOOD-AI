@@ -1,15 +1,8 @@
-/**
- * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) hiển thị Thanh điều hướng bên (Sidebar) và các mục menu con (SidebarItem).
- * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI thuần, cung cấp layout điều hướng cố định (fixed) bên trái. Được dùng chủ yếu trong trang Admin hoặc Dashboard.
- * Các chức năng đặc biệt: `SidebarItem` thông minh tự động nhận diện nếu có truyền `href` thì render thẻ `<Link>` để chuyển trang tối ưu trong Next.js, nếu không sẽ tự động render thẻ `<button>`. Hỗ trợ biến thể `danger` cho các thao tác nguy hiểm (vd: Đăng xuất).
- * Các biến, hàm đặc biệt trong file: Mặc định tự gọi `LABELS.COMMON.BRAND_NAME` cho logo/tên thương hiệu để đảm bảo nguyên tắc Zero Hardcode.
- */
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { LucideIcon, Sparkles } from 'lucide-react';
-import { LABELS } from '@/constants/labels';
 
 export interface SidebarItemProps {
   icon: LucideIcon;
@@ -55,7 +48,7 @@ interface SidebarProps {
   footer?: React.ReactNode;
 }
 
-export const Sidebar = ({ brandIcon: BrandIcon = Sparkles, brandLabel = LABELS.COMMON.BRAND_NAME, children, footer }: SidebarProps) => {
+export const Sidebar = ({ brandIcon: BrandIcon = Sparkles, brandLabel = "Food AI", children, footer }: SidebarProps) => {
   return (
     <aside className="w-80 bg-white border-r border-gray-100 flex flex-col p-8 fixed h-full z-20">
       <div className="flex items-center gap-3 mb-12 px-2">

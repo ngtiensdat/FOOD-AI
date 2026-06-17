@@ -54,13 +54,11 @@ Before designing any API, you must methodically plan and reason about:
     3.1) **Consistent Structure**
         ```json
         {
-          "success": true,
           "data": { ... },
           "meta": { "total": 100, "page": 1 },
-          "errors": null
+          "errors": [ { "code": "INVALID_EMAIL", "message": "..." } ]
         }
         ```
-        - Lưu ý: Backend đang sử dụng `TransformInterceptor` để luôn bọc dữ liệu trong cấu trúc `{ success, data, meta }`. Mọi endpoint REST đều phải tuân thủ.
 
     3.2) **Error Response Format**
         - Include error code (machine-readable)
@@ -77,8 +75,8 @@ Before designing any API, you must methodically plan and reason about:
         - Sử dụng Interceptor để tự động format mọi response về chuẩn 3.1.
         - Sử dụng ValidationPipe để tự động ném lỗi 400/422 kèm theo mảng `errors`. 
 
-### 4) GraphQL Design (Tùy chọn mở rộng tương lai)
-    Hiện tại dự án đang tập trung 100% vào RESTful API. Tuy nhiên, nếu sau này tích hợp GraphQL, cần tuân thủ:
+### 4) GraphQL Design
+
     4.1) **Schema Design**
         - Define clear types for all entities
         - Use nullable fields thoughtfully
