@@ -60,7 +60,7 @@ export const Hero = ({
   };
 
   return (
-    <section className="pt-32 pb-10 px-6 relative overflow-hidden min-h-[480px] flex items-center">
+    <section className="pt-32 pb-10 px-6 relative overflow-hidden min-h-[480px] lg:min-h-screen flex items-center">
       <SafeImage
         src={heroBg.src}
         alt={LABELS.HERO.BG_ALT}
