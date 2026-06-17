@@ -24,3 +24,14 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+~$*.xlsx
+
+# Temporary Linter Log Files
+# Chỉ bỏ qua .vercel ở thư mục gốc, cho phép .vercel trong thư mục con (ví dụ: frontend)
+/.vercel
+# Cho phép frontend/.vercel/project.json cho CI/CD
+!my-web/frontend/.vercel/
+!my-web/frontend/.vercel/project.json

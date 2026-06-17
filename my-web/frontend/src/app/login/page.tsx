@@ -1,8 +1,13 @@
+/**
+ * @fileoverview frontend/src/app/login/page.tsx
+ * @module AuthLogin
+ * @description Trang Đăng nhập của ứng dụng. Đóng vai trò UI Orchestrator chuyên biệt cho việc hiển thị form đăng nhập, toàn bộ logic xử lý trạng thái và gọi API được trừu tượng hoá vào hook `useLoginActions`.
+ */
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/base/SafeImage';
 import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 // Hooks
@@ -35,17 +40,17 @@ export default function LoginPage() {
       >
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-lg overflow-hidden">
-              <Image src="/favicon.ico" alt="Food AI Logo" fill sizes="48px" className="object-contain p-2" />
+            <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
+              <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="48px" className="object-contain p-2" />
             </div>
-            <span className="text-3xl font-bold gradient-text">Food AI</span>
+            <span className="text-3xl font-bold gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
           </Link>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100">
+        <div className="bg-white dark:bg-gray-100 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-200">
           <div className="text-center mb-10">
-            <h1 className="text-h2 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
-            <p className="text-gray-500 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
+            <h1 className="text-h2 text-gray-900 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
+            <p className="text-gray-600 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">

@@ -1,11 +1,24 @@
+// Mục đích: Thực hiện các cuộc gọi API liên quan đến xác thực và quản lý tài khoản người dùng (đăng nhập, đăng ký, đổi mật khẩu, onboarding).
+// Ý nghĩa: Đóng vai trò là cổng giao tiếp dịch vụ (Service Layer) chuyên biệt cho phân hệ Auth của ứng dụng frontend.
+// Chức năng đặc biệt: Xử lý đăng nhập, đăng ký, đăng xuất, cập nhật hồ sơ, theo dõi người theo dõi (followers/following) và xóa tài khoản.
+// Design Pattern: Service pattern, API Client encapsulation.
+// Biến, hàm đặc biệt: authService, login, register, completeOnboarding, changePassword.
+
 import { apiClient } from '@/lib/api-client';
+import {
+  LoginCredentials,
+  RegisterData,
+  UpdateProfileData,
+  OnboardingData,
+  ChangePasswordData,
+} from '@/types/user';
 
 export const authService = {
-  async login(credentials: any) {
+  async login(credentials: LoginCredentials) {
     return apiClient.post('/auth/login', credentials);
   },
 
-  async register(data: any) {
+  async register(data: RegisterData) {
     return apiClient.post('/auth/register', data);
   },
 
@@ -14,18 +27,28 @@ export const authService = {
   },
 
   async getProfile(userId: number, requesterId?: number) {
-    return apiClient.get(`/auth/profile/${userId}`, { params: requesterId ? { requesterId } : undefined });
+    return apiClient.get(`/user/profile/${userId}`, {
+      params: requesterId ? { requesterId } : undefined,
+    });
   },
 
-  async updateProfile(data: any) {
-    return apiClient.post('/auth/update-profile', data);
+  async updateProfile(data: UpdateProfileData) {
+    return apiClient.post('/user/update-profile', data);
   },
 
   async toggleFollowUser(data: { followingId: number }) {
-    return apiClient.post('/auth/toggle-follow-user', data);
+    return apiClient.post('/user/toggle-follow-user', data);
   },
 
-  async completeOnboarding(data: { preferences: any }) {
+  async getFollowers(userId: number) {
+    return apiClient.get(`/user/followers/${userId}`);
+  },
+
+  async getFollowing(userId: number) {
+    return apiClient.get(`/user/following/${userId}`);
+  },
+
+  async completeOnboarding(data: OnboardingData) {
     return apiClient.post('/auth/complete-onboarding', data);
   },
 
@@ -33,7 +56,11 @@ export const authService = {
     return apiClient.post('/auth/verify-profile-email', data);
   },
 
-  async changePassword(data: any) {
+  async changePassword(data: ChangePasswordData) {
     return apiClient.post('/auth/change-password', data);
-  }
+  },
+
+  async deleteAccount(data: { password?: string }) {
+    return apiClient.post('/auth/delete-account', data);
+  },
 };

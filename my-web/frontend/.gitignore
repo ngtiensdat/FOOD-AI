@@ -35,6 +35,8 @@ yarn-error.log*
 
 # vercel
 .vercel
+# Cho phép project.json để CI/CD biết project & org ID
+!.vercel/project.json
 
 # typescript
 *.tsbuildinfo

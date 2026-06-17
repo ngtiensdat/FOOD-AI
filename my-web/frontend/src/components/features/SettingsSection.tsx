@@ -1,19 +1,31 @@
+// Mục đích file này để làm gì: Component giao diện phần Cài đặt tài khoản (Settings) bao gồm Hồ sơ, Bảo mật, Xác thực và Xoá tài khoản.
+// Các file khác hay file này có ý nghĩa như nào: Là một màn hình con trong Dashboard/Profile của người dùng.
+// Các chức năng đặc biệt: Chuyển tab qua lại giữa Profile/Security/Verification, cảnh báo Danger Zone, cập nhật preference.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Separation of Concerns.
+// Các biến, hàm đặc biệt trong file: user prop, handleChangePassword, handleVerifyEmail, handleDeleteAccount, state settingsTab.
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle, Bug } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
-import { toast } from '@/store/useToastStore';
+import { useSettings } from '@/hooks/useSettings';
+import { ProfileSettingsTab } from './profile/ProfileSettingsTab';
+import { SecuritySettingsTab } from './profile/SecuritySettingsTab';
+import { VerificationSettingsTab } from './profile/VerificationSettingsTab';
+import { DangerZoneSection } from './profile/DangerZoneSection';
+import { LanguageSettingsTab } from './profile/LanguageSettingsTab';
+import { BugReportTab } from './profile/BugReportTab';
 
 interface SettingsSectionProps {
-  user: any;
-  setActiveTab: (tab: any) => void;
-  handleChangePassword: (e: React.FormEvent, data: any) => Promise<void>;
+  user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
+  setActiveTab: (tab: string) => void;
+  handleChangePassword: (e: React.FormEvent, data: Record<string, string>) => Promise<void>;
   handleVerifyEmail: (e: React.FormEvent, email: string) => Promise<void>;
-  fetchUserProfile: () => Promise<any>;
+  fetchUserProfile: () => Promise<void | Record<string, unknown>>;
   isEmailVerified: boolean | null;
+  handleDeleteAccount: (password: string) => Promise<void>;
 }
 
 export const SettingsSection = ({
@@ -23,51 +35,43 @@ export const SettingsSection = ({
   handleVerifyEmail,
   fetchUserProfile,
   isEmailVerified,
+  handleDeleteAccount,
 }: SettingsSectionProps) => {
-  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification'>('security');
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-  const [verifyEmail, setVerifyEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const onPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (newPassword !== confirmNewPassword) {
-      toast.error(LABELS.SETTINGS.SECURITY.MISMATCH);
-      return;
-    }
- 
-    setIsLoading(true);
-    try {
-      await handleChangePassword(e, { oldPassword, newPassword });
-      toast.success(LABELS.SETTINGS.SECURITY.CHANGE_SUCCESS);
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-    } catch (err: any) {
-      toast.error(err.message || LABELS.COMMON.ERROR);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const onVerifySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await handleVerifyEmail(e, verifyEmail);
-      toast.success(LABELS.SETTINGS.VERIFICATION.SUCCESS);
-    } catch (err: any) {
-      toast.error(err.message || LABELS.COMMON.ERROR);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    settingsTab,
+    oldPassword,
+    setOldPassword,
+    newPassword,
+    setNewPassword,
+    confirmNewPassword,
+    setConfirmNewPassword,
+    showOldPassword,
+    setShowOldPassword,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmNewPassword,
+    setShowConfirmNewPassword,
+    verifyEmail,
+    setVerifyEmail,
+    isLoading,
+    showDeleteModal,
+    setShowDeleteModal,
+    deletePassword,
+    setDeletePassword,
+    isDeleting,
+    profileData,
+    setProfileData,
+    onDeleteSubmit,
+    onPasswordSubmit,
+    onVerifySubmit,
+    handleTabChange,
+  } = useSettings({
+    user,
+    handleChangePassword,
+    handleVerifyEmail,
+    fetchUserProfile,
+    handleDeleteAccount,
+  });
 
   return (
     <div className="p-layout max-w-4xl mx-auto min-h-[60vh]">
@@ -94,21 +98,20 @@ export const SettingsSection = ({
         </div>
 
         {/* Sub Tabs */}
-        <div className="flex border-b border-gray-100 mb-8 gap-6 text-sm font-bold text-gray-500">
+        <div className="flex flex-wrap border-b border-gray-100 mb-8 gap-6 text-sm font-bold text-gray-500">
           {[
             { id: 'profile', label: LABELS.SETTINGS.TABS.PROFILE, icon: User },
             { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
             { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
+            { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
+            { id: 'bug_report', label: LABELS.BUG_REPORT.TITLE, icon: Bug },
+            { id: 'danger_zone', label: LABELS.SETTINGS.TABS.DANGER_ZONE, icon: AlertTriangle },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
-                setSettingsTab(tab.id as any);
-                if (tab.id === 'verification') fetchUserProfile();
-              }}
-              className={`pb-3 transition-all flex items-center gap-2 ${
-                settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
-              }`}
+              onClick={() => handleTabChange(tab.id as any)}
+              className={`pb-3 transition-all flex items-center gap-2 ${settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
+                }`}
             >
               <tab.icon size={18} />
               {tab.label}
@@ -116,102 +119,60 @@ export const SettingsSection = ({
           ))}
         </div>
 
-
-
         {settingsTab === 'profile' ? (
-          <div className="space-y-6 max-w-2xl">
-            <div className="bg-gray-50 p-6 rounded-card border border-gray-100 space-y-4">
-              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                <User className="text-primary" size={20} /> {LABELS.SETTINGS.PROFILE.TITLE}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-xs text-gray-400 block font-semibold mb-1">{LABELS.SETTINGS.PROFILE.FULL_NAME}</span>
-                  <p className="font-bold text-gray-700 bg-white p-3 rounded-xl border border-gray-100">
-                    {user?.name || LABELS.SETTINGS.PROFILE.NOT_UPDATED}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs text-gray-400 block font-semibold mb-1">Email</span>
-                  <p className="font-bold text-gray-700 bg-white p-3 rounded-xl border border-gray-100">
-                    {user?.email || LABELS.SETTINGS.PROFILE.NOT_UPDATED}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <Button variant="ghost" onClick={() => setActiveTab('home')}>
-              {LABELS.COMMON.BACK_HOME}
-            </Button>
+          <div className="space-y-6">
+            <ProfileSettingsTab
+              user={user}
+              profileData={profileData}
+              setProfileData={setProfileData}
+            />
           </div>
         ) : settingsTab === 'security' ? (
-          <form onSubmit={onPasswordSubmit} className="space-y-6 max-w-2xl">
-            {[
-              { label: LABELS.SETTINGS.SECURITY.CURRENT_PASSWORD, value: oldPassword, setter: setOldPassword, show: showOldPassword, toggle: setShowOldPassword },
-              { label: LABELS.SETTINGS.SECURITY.NEW_PASSWORD, value: newPassword, setter: setNewPassword, show: showNewPassword, toggle: setShowNewPassword },
-              { label: LABELS.SETTINGS.SECURITY.CONFIRM_PASSWORD, value: confirmNewPassword, setter: setConfirmNewPassword, show: showConfirmNewPassword, toggle: setShowConfirmNewPassword },
-            ].map((field, idx) => (
-              <div key={idx} className="space-y-2">
-                <label className="text-small font-semibold text-gray-700 ml-1">{field.label}</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
-                  <input
-                    type={field.show ? 'text' : 'password'}
-                    required
-                    placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-input py-4 pl-12 pr-12 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm"
-                    value={field.value}
-                    onChange={(e) => field.setter(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => field.toggle(!field.show)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
-                  >
-                    {field.show ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button type="submit" loading={isLoading} fullWidth>
-                {LABELS.SETTINGS.SECURITY.CHANGE_PASSWORD}
-              </Button>
-              <Button variant="outline" fullWidth onClick={() => setActiveTab('home')}>
-                {LABELS.COMMON.CANCEL}
-              </Button>
-            </div>
-          </form>
+          <SecuritySettingsTab
+            onPasswordSubmit={onPasswordSubmit}
+            oldPassword={oldPassword}
+            setOldPassword={setOldPassword}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            confirmNewPassword={confirmNewPassword}
+            setConfirmNewPassword={setConfirmNewPassword}
+            showOldPassword={showOldPassword}
+            setShowOldPassword={setShowOldPassword}
+            showNewPassword={showNewPassword}
+            setShowNewPassword={setShowNewPassword}
+            showConfirmNewPassword={showConfirmNewPassword}
+            setShowConfirmNewPassword={setShowConfirmNewPassword}
+            isLoading={isLoading}
+            setActiveTab={setActiveTab}
+          />
+        ) : settingsTab === 'verification' ? (
+          <VerificationSettingsTab
+            onVerifySubmit={onVerifySubmit}
+            isEmailVerified={isEmailVerified}
+            verifyEmail={verifyEmail}
+            setVerifyEmail={setVerifyEmail}
+            isLoading={isLoading}
+          />
+        ) : settingsTab === 'language' ? (
+          <LanguageSettingsTab />
+        ) : settingsTab === 'bug_report' ? (
+          <BugReportTab />
         ) : (
-          <div className="max-w-2xl space-y-6">
-            <div className="bg-gray-50 p-6 rounded-card border border-gray-100 space-y-4">
-              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                <Mail className="text-primary" size={20} /> {LABELS.SETTINGS.VERIFICATION.TITLE}
-              </h3>
-              {isEmailVerified === true ? (
-                <div className="bg-green-50 text-green-600 p-4 rounded-xl border border-green-100 mb-0 font-bold text-sm flex items-center gap-2">
-                  ✅ {LABELS.SETTINGS.VERIFICATION.VERIFIED}
-                </div>
-              ) : (
-                <form onSubmit={onVerifySubmit} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500 font-semibold ml-1">{LABELS.SETTINGS.VERIFICATION.LABEL}</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
-                      className="w-full bg-white border border-gray-200 rounded-input py-3 px-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm font-medium"
-                      value={verifyEmail}
-                      onChange={(e) => setVerifyEmail(e.target.value)}
-                    />
-                  </div>
-                  <Button type="submit" loading={isLoading} fullWidth>
-                    {LABELS.SETTINGS.VERIFICATION.VERIFY_NOW}
-                  </Button>
-                </form>
-              )}
-            </div>
-          </div>
+          <DangerZoneSection
+            onDeleteSubmit={onDeleteSubmit}
+            showDeleteModal={showDeleteModal}
+            setShowDeleteModal={setShowDeleteModal}
+            deletePassword={deletePassword}
+            setDeletePassword={setDeletePassword}
+            isDeleting={isDeleting}
+          />
         )}
+
+        <div className="mt-8">
+          <Button variant="ghost" onClick={() => setActiveTab('home')}>
+            {LABELS.COMMON.BACK_HOME}
+          </Button>
+        </div>
       </motion.div>
     </div>
   );

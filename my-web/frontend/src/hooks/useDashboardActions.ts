@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
+import { foodService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { LIMITS } from '@/constants/limits.constant';
 
 /**
  * Custom Hook: useDashboardActions
@@ -11,29 +13,43 @@ import { LABELS } from '@/constants/labels';
  */
 export const useDashboardActions = (user: any, updateMe: (user: any) => void) => {
   const [profile, setProfile] = useState<any>(null);
+  const [recentViews, setRecentViews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'favorites' | 'history'>('profile');
+  const [selectedFood, setSelectedFood] = useState<any>(null);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchDashboardData = async () => {
       if (!user?.id) return;
       try {
-        const data = await authService.getProfile(user.id);
-        setProfile(data);
+        const [profileData, recentData] = await Promise.all([
+          authService.getProfile(user.id),
+          foodService.getRecentViews(LIMITS.RECENT_VIEWS_HISTORY)
+        ]);
+        setProfile(profileData);
+        setRecentViews(recentData);
       } catch (error) { 
-        console.error('Lỗi lấy profile:', error); 
+        console.error('Lỗi lấy dữ liệu dashboard:', error); 
       } finally { 
         setLoading(false); 
       }
     };
-    fetchProfileData();
+    fetchDashboardData();
   }, [user?.id]);
 
-  const handleOnboardingComplete = async (preferences: any) => {
+  // Theo dõi khi click xem chi tiết trong dashboard để cập nhật trackView
+  useEffect(() => {
+    if (selectedFood?.id && user) {
+      foodService.trackView(selectedFood.id);
+    }
+  }, [selectedFood?.id, user]);
+
+  const handleOnboardingComplete = async (onboardingData: any) => {
     if (!profile) return;
     try {
-      await authService.completeOnboarding({ preferences });
+      await authService.completeOnboarding(onboardingData);
       const updatedUser = { ...profile, hasCompletedOnboarding: true };
       
       // Cập nhật store toàn cục và local state
@@ -50,11 +66,16 @@ export const useDashboardActions = (user: any, updateMe: (user: any) => void) =>
 
   return {
     profile,
+    recentViews,
     loading,
     showOnboarding,
     setShowOnboarding,
     showMenu,
     setShowMenu,
-    handleOnboardingComplete
+    handleOnboardingComplete,
+    activeTab,
+    setActiveTab,
+    selectedFood,
+    setSelectedFood
   };
 };

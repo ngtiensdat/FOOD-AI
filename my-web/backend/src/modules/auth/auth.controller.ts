@@ -1,10 +1,14 @@
+// Mục đích: Định nghĩa các API cửa ngõ xác thực người dùng (đăng nhập, đăng ký, đăng xuất, đổi mật khẩu, onboard chi nhánh, và refresh token).
+// File quan hệ: Nhận request từ Client, gọi AuthService để xử lý nghiệp vụ, sử dụng Cookie và các Guards để bảo mật thông tin.
+// Chức năng đặc biệt: Tự động lưu Access Token và Refresh Token vào HTTP-Only Cookies có thuộc tính bảo mật phù hợp môi trường (production/development).
+// Kiến thức/Design Pattern: Single Responsibility (chỉ xử lý routing, cookies và validate đầu vào), Dependency Injection, Guard Pattern (JwtAuthGuard, CustomThrottlerGuard).
+// Các biến, hàm đặc biệt: register(), login(), logout(), changePassword(), completeOnboarding(), refresh(), checkAuth(), setCookies().
+
 import {
   Controller,
   Post,
   Body,
   Get,
-  Param,
-  Query,
   UseGuards,
   Res,
   Req,
@@ -16,13 +20,18 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
+import { MESSAGES } from '../../common/constants/messages.constant';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
+  @UseGuards(CustomThrottlerGuard)
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -33,6 +42,8 @@ export class AuthController {
     return { user: result.user };
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @UseGuards(CustomThrottlerGuard)
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -45,51 +56,31 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-    return { message: 'Logged out successfully' };
-  }
-
-  @Get('profile/:id')
-  async getProfile(
-    @Param('id') id: string,
-    @Query('requesterId') requesterId?: string,
-  ) {
-    return this.authService.getProfile(
-      parseInt(id),
-      requesterId ? parseInt(requesterId) : undefined,
-    );
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    });
+    return { message: MESSAGES.AUTH.LOGOUT_SUCCESS };
   }
 
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   async changePassword(
     @GetUser('id') userId: number,
-    @Body() body: { oldPassword?: string; newPassword: string },
+    @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(
       userId,
-      body.oldPassword,
-      body.newPassword,
+      dto.oldPassword,
+      dto.newPassword,
     );
-  }
-
-  @Post('update-profile')
-  @UseGuards(JwtAuthGuard)
-  async updateProfile(
-    @GetUser('id') userId: number,
-    @Body() dto: UpdateProfileDto,
-  ) {
-    return this.authService.updateProfile(userId, dto);
-  }
-
-  @Post('toggle-follow-user')
-  @UseGuards(JwtAuthGuard)
-  async toggleFollowUser(
-    @GetUser('id') userId: number,
-    @Body() body: { followingId: number },
-  ) {
-    return this.authService.toggleFollow(userId, body.followingId);
   }
 
   @Post('complete-onboarding')
@@ -98,7 +89,7 @@ export class AuthController {
     @GetUser('id') userId: number,
     @Body() dto: CompleteOnboardingDto,
   ) {
-    return this.authService.completeOnboarding(userId, dto.preferences);
+    return this.authService.completeOnboarding(userId, dto);
   }
 
   @Post('refresh')
@@ -107,24 +98,36 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const refreshToken = req.cookies['refreshToken'] as string | undefined;
-    if (!refreshToken) throw new UnauthorizedException('No refresh token');
+    if (!refreshToken) {
+      throw new UnauthorizedException(MESSAGES.AUTH.NO_REFRESH_TOKEN);
+    }
+
     const result = await this.authService.refreshToken(refreshToken);
     this.setCookies(res, result.accessToken, result.refreshToken);
-    return { user: result.user };
+    return { accessToken: result.accessToken };
+  }
+
+  @Get('check-auth')
+  @UseGuards(JwtAuthGuard)
+  async checkAuth(@GetUser('id') userId: number) {
+    const user = await this.authService.getProfile(userId);
+    return { user };
   }
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 15 * 60 * 1000, // 15 phút
     });
+
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
     });
   }
 }

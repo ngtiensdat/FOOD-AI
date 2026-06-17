@@ -1,41 +1,56 @@
 'use client';
 
+// Mục đích file: Hook quản lý state và logic cho luồng Đăng ký (Register) người dùng/nhà hàng.
+// Ý nghĩa: Tách biệt logic xử lý form đăng ký, validate và gọi API ra khỏi component giao diện.
+// Các chức năng đặc biệt: Hỗ trợ đăng ký nhiều role (Customer/Restaurant), validate động, quản lý giấy tờ cho nhà hàng.
+// Các biến, hàm đặc biệt: ApiError, handleRegister, validate.
+
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth.service';
-import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { registerSchema } from '@/schemas/auth.schema';
+import { UserRole } from '@/types/user';
+
+interface ApiError {
+  message?: string;
+}
 
 export const useRegisterActions = () => {
-  const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
-  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [role, setRole] = useState('CUSTOMER');
+  const [role, setRole] = useState<string>(UserRole.CUSTOMER);
   const [legalDocuments, setLegalDocuments] = useState('');
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
-    const newErrors: any = {};
-    if (name.trim().length < 2) newErrors.name = LABELS.FORM.NAME_REQUIRED;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) newErrors.email = LABELS.FORM.EMAIL_INVALID;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordRegex.test(password)) newErrors.password = LABELS.FORM.PASSWORD_INVALID;
-    if (password !== confirmPassword) newErrors.confirmPassword = LABELS.FORM.CONFIRM_PASSWORD_MISMATCH;
-    if (role === 'RESTAURANT' && legalDocuments.trim().length < 10) {
-      newErrors.legalDocuments = LABELS.FORM.LEGAL_DOCS_REQUIRED;
+    const result = registerSchema.safeParse({
+      name,
+      email,
+      password,
+      confirmPassword,
+      role,
+      legalDocuments,
+    });
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0];
+        if (path) {
+          newErrors[path as string] = issue.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -50,23 +65,24 @@ export const useRegisterActions = () => {
         email,
         password,
         role,
-        legalDocuments: role === 'RESTAURANT' ? legalDocuments : undefined,
+        legalDocuments: role === UserRole.RESTAURANT ? legalDocuments : undefined,
       });
 
-      const msg = role === 'RESTAURANT'
+      const msg = role === UserRole.RESTAURANT
         ? LABELS.AUTH.REGISTER_SUCCESS_PENDING
         : LABELS.AUTH.REGISTER_SUCCESS_VERIFY;
-      
+
       setSuccessMessage(msg);
       toast.success(msg);
 
       // Nếu là khách hàng thì cho login luôn hoặc chờ verify tùy logic backend
       // Ở đây giả định backend trả về user ngay
-      if (role === 'CUSTOMER' && data) {
+      if (role === UserRole.CUSTOMER && data) {
         // setUser(data); // Có thể dùng nếu muốn auto-login
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || LABELS.COMMON.ERROR);
+    } catch (error) {
+      const err = error as ApiError;
+      toast.error(err.message || LABELS.COMMON.ERROR);
     } finally {
       setIsLoading(false);
     }

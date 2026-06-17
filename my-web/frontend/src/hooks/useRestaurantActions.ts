@@ -1,24 +1,35 @@
+// Mục đích: Quản lý trạng thái và các hành động chính của đối tác (Merchant Hub) bao gồm món ăn, chi nhánh và giờ mở cửa.
+// Ý nghĩa: Tách biệt logic quản lý thực đơn và thông tin nhà hàng của đối tác ra khỏi tầng UI hiển thị.
+// Chức năng đặc biệt: Cập nhật giờ mở cửa với định dạng hợp lệ, thay đổi trạng thái hoạt động nhà hàng (mở/đóng cửa), quản lý thực đơn theo chi nhánh.
+// Design Pattern: Custom Hook pattern, Service abstraction.
+// Biến, hàm đặc biệt: useRestaurantActions, toggleRestaurantStatus, updateProfileHours, handleSubmit, handleConfirmDelete.
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { foodService } from '@/services/food.service';
+import { restaurantService } from '@/services/restaurant.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { isValidOpeningHours } from '@/utils/helpers';
+import { User } from '@/types/user';
+import { Food } from '@/types/food';
+import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 
-/**
- * Custom Hook: useRestaurantActions
- * Quản lý logic và trạng thái cho Merchant Hub (Trang chủ nhà hàng).
- */
-export const useRestaurantActions = (user: any) => {
-  const [myFoods, setMyFoods] = useState<any[]>([]);
+export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
+  const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
-  const [editingFood, setEditingFood] = useState<any>(null);
+  const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);
-  
+
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [isRestaurantActive, setIsRestaurantActive] = useState<boolean>(true);
+  const [myBranches, setMyBranches] = useState<Restaurant[]>([]);
+
   const [formData, setFormData] = useState({
-    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: ''
+    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: ''
   });
 
   const fetchMyFoods = async () => {
@@ -32,22 +43,103 @@ export const useRestaurantActions = (user: any) => {
     }
   };
 
+  const fetchRestaurant = async () => {
+    try {
+      const res = await restaurantService.getMyRestaurant();
+      if (res) {
+        setRestaurant(res);
+        setIsRestaurantActive(!!res.isActive);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải thông tin cửa hàng:', error);
+    }
+  };
+
+  const fetchMyBranches = async () => {
+    try {
+      const res = await restaurantService.getMyBranches();
+      if (res) {
+        setMyBranches(res);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách chi nhánh:', error);
+    }
+  };
+
+  const toggleRestaurantStatus = async () => {
+    const nextVal = !isRestaurantActive;
+    setIsRestaurantActive(nextVal); // Optimistic UI update
+    const ok = await restaurantService.updateRestaurantStatus(nextVal);
+    if (ok) {
+      toast.success(
+        nextVal
+          ? LABELS.RESTAURANT.STATUS_OPEN_SUCCESS
+          : LABELS.RESTAURANT.STATUS_CLOSE_SUCCESS
+      );
+    } else {
+      setIsRestaurantActive(!nextVal); // Revert
+      toast.error(LABELS.RESTAURANT.STATUS_UPDATE_ERROR);
+    }
+  };
+
+  const updateProfileHours = async (openingHours: string) => {
+    if (openingHours && openingHours.trim()) {
+      if (!isValidOpeningHours(openingHours)) {
+        toast.error(LABELS.RESTAURANT.HOURS_FORMAT_ERROR);
+        return;
+      }
+    }
+
+    const ok = await restaurantService.updateRestaurantProfile({ openingHours });
+    if (ok) {
+      toast.success(LABELS.RESTAURANT.HOURS_UPDATE_SUCCESS);
+      await fetchRestaurant();
+    } else {
+      toast.error(LABELS.RESTAURANT.HOURS_UPDATE_ERROR);
+    }
+  };
+
+  const updateRestaurantProfile = async (data: UpdateRestaurantInput) => {
+    const ok = await restaurantService.updateRestaurantProfile(data);
+    if (ok) {
+      toast.success(LABELS.SETTINGS.PROFILE.SAVE_SUCCESS);
+      await fetchRestaurant();
+      return true;
+    } else {
+      toast.error(LABELS.COMMON.ERROR);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchMyFoods();
+      fetchRestaurant();
+      fetchMyBranches();
     }
   }, [user]);
 
   const handleOpenAdd = () => {
     setEditingFood(null);
-    setFormData({ 
-      name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '' 
+    const defaultBranch = myBranches[0];
+    setFormData({
+      name: '',
+      price: '',
+      description: '',
+      image: '',
+      tags: '',
+      address: defaultBranch ? defaultBranch.address || '' : '',
+      mapUrl: defaultBranch ? defaultBranch.mapUrl || '' : '',
+      lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '',
+      lng: defaultBranch ? defaultBranch.longitude?.toString() || '' : '',
+      restaurantId: defaultBranch ? defaultBranch.id.toString() : '',
+      categoryId: ''
     });
     setIsAddingFood(true);
   };
 
-  const handleOpenEdit = (food: any) => {
+  const handleOpenEdit = (food: Food) => {
     setEditingFood(food);
     setFormData({
       name: food.name,
@@ -56,44 +148,84 @@ export const useRestaurantActions = (user: any) => {
       image: food.image || '',
       tags: food.tags?.join(', ') || '',
       address: food.address || '',
-      mapUrl: food.mapUrl || food.map_url || '',
+      mapUrl: food.mapUrl || '',
       lat: food.lat?.toString() || '',
-      lng: food.lng?.toString() || ''
+      lng: food.lng?.toString() || '',
+      restaurantId: food.restaurantId?.toString() || '',
+      categoryId: food.categoryId?.toString() || ''
     });
     setIsAddingFood(true);
   };
 
+  const handleSelectBranch = (branchId: number) => {
+    const selected = myBranches.find(b => b.id === branchId);
+    if (selected) {
+      setFormData(prev => ({
+        ...prev,
+        restaurantId: branchId.toString(),
+        address: selected.address || '',
+        mapUrl: selected.mapUrl || '',
+        lat: selected.latitude?.toString() || '',
+        lng: selected.longitude?.toString() || ''
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        restaurantId: '',
+        address: '',
+        mapUrl: '',
+        lat: '',
+        lng: ''
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = { 
-      ...formData, 
-      price: parseFloat(formData.price), 
-      lat: formData.lat ? parseFloat(formData.lat) : null, 
-      lng: formData.lng ? parseFloat(formData.lng) : null, 
-      tags: formData.tags.split(',').map(t => t.trim()).filter(t => t) 
+    if (!formData.restaurantId) {
+      toast.error(LABELS.UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
+      return;
+    }
+    const data = {
+      ...formData,
+      price: parseFloat(formData.price),
+      lat: formData.lat ? parseFloat(formData.lat) : null,
+      lng: formData.lng ? parseFloat(formData.lng) : null,
+      tags: formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
+      restaurantId: parseInt(formData.restaurantId),
+      categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined
     };
 
     try {
-      const ok = editingFood 
-        ? await foodService.updateFood(editingFood.id, data) 
+      const ok = editingFood
+        ? await foodService.updateFood(editingFood.id, data)
         : await foodService.createFood(data);
-      
+
       if (ok) {
         toast.success(editingFood ? LABELS.RESTAURANT.SAVE_SUCCESS_EDIT : LABELS.RESTAURANT.SAVE_SUCCESS_ADD);
         setIsAddingFood(false);
         setEditingFood(null);
         fetchMyFoods();
+      } else {
+        toast.error(LABELS.COMMON.ERROR);
       }
     } catch (error) {
       toast.error(LABELS.COMMON.ERROR);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm(LABELS.ADMIN.CONFIRM.DELETE_FOOD)) {
-      if (await foodService.updateFood(id, { isActive: false })) {
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handleDelete = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmId !== null) {
+      if (await foodService.deleteFood(deleteConfirmId)) {
         fetchMyFoods();
       }
+      setDeleteConfirmId(null);
     }
   };
 
@@ -109,11 +241,22 @@ export const useRestaurantActions = (user: any) => {
     setFormData,
     showMenu,
     setShowMenu,
+    myBranches,
+    restaurant,
+    isRestaurantActive,
+    deleteConfirmId,
+    setDeleteConfirmId,
+    fetchMyFoods,
     actions: {
       handleOpenAdd,
       onEdit: handleOpenEdit,
       onDelete: handleDelete,
-      handleSubmit
+      onConfirmDelete: handleConfirmDelete,
+      handleSubmit,
+      toggleRestaurantStatus,
+      updateProfileHours,
+      updateRestaurantProfile,
+      handleSelectBranch
     }
   };
 };
