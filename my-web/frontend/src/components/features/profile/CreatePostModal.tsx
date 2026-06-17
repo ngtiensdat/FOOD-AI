@@ -16,6 +16,7 @@ import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
 import { socialService } from '@/services/social.service';
 import { PostData } from './PostCard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -24,12 +25,13 @@ interface CreatePostModalProps {
 }
 
 export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalProps) => {
-  const [postType, setPostType] = useState<'NORMAL' | 'REVIEW' | 'PROMOTION'>('NORMAL');
+  // Thêm 'PROMOTION' và 'ANNOUNCEMENT' vào danh sách kiểu dữ liệu
+  const [postType, setPostType] = useState<'NORMAL' | 'REVIEW' | 'PROMOTION' | 'ANNOUNCEMENT'>('NORMAL');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
   const [imageUrl, setImageUrl] = useState('');
-  
+
   interface LinkableRestaurant {
     id: number;
     name: string;
@@ -43,13 +45,20 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
   const [foods, setFoods] = useState<LinkableFood[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
   const [selectedFoodId, setSelectedFoodId] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { user, isAdmin, isRestaurant } = useAuth();
+  const userRole = isAdmin ? 'ADMIN' : isRestaurant ? 'MERCHANT' : 'USER';
 
   // Load restaurants and foods for linking
   useEffect(() => {
     if (isOpen) {
+      if (isAdmin) setPostType('ANNOUNCEMENT');
+      else if (isRestaurant) setPostType('NORMAL');
+      else setPostType('NORMAL');
+
       const loadLinkingData = async () => {
         try {
           const [restRes, foodRes] = await Promise.all([
@@ -65,7 +74,8 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
       };
       loadLinkingData();
     }
-  }, [isOpen]);
+  }, [isOpen, userRole]);
+
 
   if (!isOpen) return null;
 
@@ -93,24 +103,24 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
       restaurantId: selectedRestaurantId ? Number(selectedRestaurantId) : undefined,
       foodId: selectedFoodId ? Number(selectedFoodId) : undefined,
     })
-    .then((createdPost) => {
-      onCreated(createdPost);
-      setLoading(false);
-      onClose();
-      // Reset form
-      setTitle('');
-      setContent('');
-      setPostType('NORMAL');
-      setRating(5);
-      setImageUrl('');
-      setSelectedRestaurantId('');
-      setSelectedFoodId('');
-    })
-    .catch((err) => {
-      console.error(err);
-      setError('Lỗi khi đăng bài viết. Vui lòng thử lại.');
-      setLoading(false);
-    });
+      .then((createdPost) => {
+        onCreated(createdPost);
+        setLoading(false);
+        onClose();
+        // Reset form
+        setTitle('');
+        setContent('');
+        setPostType('NORMAL');
+        setRating(5);
+        setImageUrl('');
+        setSelectedRestaurantId('');
+        setSelectedFoodId('');
+      })
+      .catch((err) => {
+        console.error(err);
+        setError('Lỗi khi đăng bài viết. Vui lòng thử lại.');
+        setLoading(false);
+      });
   };
 
   return (
@@ -123,8 +133,8 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             <MessageSquare className="text-primary" size={24} />
             {LABELS.SOCIAL.CREATE_POST}
           </h2>
-          <Button 
-            onClick={onClose} 
+          <Button
+            onClick={onClose}
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-400 hover:text-gray-600"
             aria-label={LABELS.COMMON.CANCEL}
             variant="none"
@@ -143,32 +153,38 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
           )}
 
           {/* Post Type Selector */}
+          {/* Post Type Selector phân theo mã Role */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {LABELS.SOCIAL.SELECT_POST_TYPE}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL },
-                { type: 'REVIEW' as const, label: LABELS.SOCIAL.POST_TYPE_REVIEW }
-              ].map((item) => (
-                <Button
-                  key={item.type}
-                  type="button"
-                  onClick={() => setPostType(item.type)}
-                  className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${
-                    postType === item.type
+                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL, allowedRoles: ['USER', 'MERCHANT'] },
+                { type: 'REVIEW' as const, label: 'Bài viết đánh giá', allowedRoles: ['USER'] },
+                { type: 'PROMOTION' as const, label: 'Bài viết quảng cáo', allowedRoles: ['MERCHANT'] },
+                { type: 'ANNOUNCEMENT' as const, label: 'Thông báo hệ thống', allowedRoles: ['ADMIN'] }
+              ]
+                // Bộ lọc: Chỉ giữ lại những nút bấm phù hợp với Role hiện tại của người dùng
+                .filter((item) => item.allowedRoles.includes(userRole || 'USER'))
+                .map((item) => (
+                  <Button
+                    key={item.type}
+                    type="button"
+                    onClick={() => setPostType(item.type)}
+                    className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${postType === item.type
                       ? 'border-primary bg-primary/10 text-primary shadow-sm'
                       : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900/50'
-                  }`}
-                  variant="none"
-                  size="none"
-                >
-                  {item.label}
-                </Button>
-              ))}
+                      }`}
+                    variant="none"
+                    size="none"
+                  >
+                    {item.label}
+                  </Button>
+                ))}
             </div>
           </div>
+
 
           {/* Title */}
           <div>
