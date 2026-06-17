@@ -25,12 +25,12 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
   const typicalTags = restaurant.cuisines && restaurant.cuisines.length > 0
     ? restaurant.cuisines.slice(0, 3)
     : Array.from(
-        new Set(foods.flatMap((f) => f.tags || []))
-      ).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
+      new Set(foods.flatMap((f) => f.tags || []))
+    ).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
 
   return (
     <Link href={`/restaurant/${id}`}>
-      <div className="card-restaurant overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-[265px] w-full max-w-[240px] mx-auto cursor-pointer relative">
+      <div className="card-restaurant rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-[265px] w-full max-w-[240px] mx-auto cursor-pointer relative">
         {/* Phần ảnh bìa (Cover Image) */}
         <div className="h-24 bg-gray-200 dark:bg-slate-800 relative overflow-hidden shrink-0">
           {profile?.coverImage ? (
@@ -48,9 +48,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
         </div>
 
         {/* Phần thân thông tin */}
-        <div className="px-3 pb-2 pt-5 relative flex-1 flex flex-col justify-between overflow-hidden">
+        <div className="px-3 pb-2 pt-5 relative flex-1 flex flex-col justify-between">
           {/* Logo hình tròn đặt đè lên góc ảnh bìa */}
-          <div className="absolute -top-6 left-3 w-10 h-10 rounded-lg border-2 border-white dark:border-slate-900 overflow-hidden shadow-sm bg-white shrink-0">
+          <div className="absolute -top-6 left-3 w-10 h-10 z-10 rounded-lg border-2 border-white dark:border-slate-900 overflow-hidden shadow-sm bg-white shrink-0">
             {profile?.logo ? (
               <SafeImage
                 src={profile.logo}

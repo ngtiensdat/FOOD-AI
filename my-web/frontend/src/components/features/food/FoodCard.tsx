@@ -55,12 +55,12 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
     >
       <div className="relative h-28 w-full overflow-hidden shrink-0">
         {food.image ? (
-          <SafeImage 
-            src={getValidImageUrl(food.image)} 
-            alt={food.name} 
-            fill 
+          <SafeImage
+            src={getValidImageUrl(food.image)}
+            alt={food.name}
+            fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-500" 
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
@@ -80,61 +80,64 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
           }}
           variant="none"
           size="none"
-          className={`absolute top-2 right-2 p-1.5 rounded-lg shadow-sm transition-all hover:scale-110 z-10 ${
-            isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-400'
-          }`}
+          className={`absolute top-2 right-2 p-1.5 rounded-lg shadow-sm transition-all hover:scale-110 z-10 ${isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-400'
+            }`}
           aria-label={LABELS.FOOD.ADD_FAVORITE}
         >
           <Heart size={14} fill={isFavorite ? "white" : "none"} />
         </Button>
       </div>
-      <div className="p-2.5 flex flex-1 flex-col justify-between overflow-hidden">
+      <div className="p-3 flex flex-1 flex-col justify-between overflow-hidden">
         <div className="flex flex-col flex-1 justify-between">
           <div>
-            <div className="flex justify-between items-center mb-1 shrink-0">
-              <span className="text-primary font-bold text-xs">{formatCurrency(food.price)}</span>
+            {/* Hàng 1: Tên món ăn (To, rõ ràng, màu xám đậm) */}
+            <h3 className="font-bold text-xs text-gray-800 dark:text-gray-100 mb-0.5 line-clamp-1 group-hover:text-primary transition-colors">
+              {food.name}
+            </h3>
 
-              <div className="flex items-center gap-1.5">
-                {food.distance !== undefined && food.distance !== null && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] font-bold">
-                    <Navigation size={10} />
-                    <span>{formatDistance(food.distance)}</span>
-                  </div>
-                )}
-
-                {mapLink && (
-                  <a
-                    href={mapLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1 bg-gray-50 dark:bg-gray-200 text-gray-500 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
-                    aria-label={LABELS.FOOD.VIEW_MAP}
-                  >
-                    <Navigation size={12} />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            <h3 className="font-bold text-xs mb-0.5 line-clamp-1 text-gray-900">{food.name}</h3>
-
-            <p className="text-primary text-[9px] font-bold mb-0.5 uppercase tracking-wider truncate">
+            {/* Hàng 2: Tên nhà hàng (Chuyển sang màu xám nhạt để đỡ bị rối mắt) */}
+            <p className="text-gray-400 dark:text-slate-400 text-[10px] font-medium mb-1.5 truncate">
               {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
             </p>
 
-            {/* Lượt bán & Lượt thích */}
-            {(food.totalOrder !== undefined || food.totalLike !== undefined) && (
-              <div className="flex gap-2 text-[9px] font-extrabold text-gray-500 dark:text-slate-400 mb-1 shrink-0">
-                {food.totalOrder !== undefined && (
-                  <span>Đã bán {food.totalOrder}</span>
-                )}
-                {food.totalLike !== undefined && (
-                  <span className="flex items-center gap-0.5">❤️ {food.totalLike}</span>
-                )}
-              </div>
-            )}
+            {/* Hàng 3: Giá tiền & Số lượng bán (Đặt ngang hàng bằng flex-row để tiết kiệm diện tích dọc) */}
+            <div className="flex justify-between items-center mt-auto border-t border-gray-50 dark:border-slate-800/50 pt-2 shrink-0">
+              <span className="text-primary font-extrabold text-xs">
+                {formatCurrency(food.price)}
+              </span>
+
+              {food.totalOrder !== undefined && (
+                <span className="text-[9px] text-gray-400 bg-gray-50 dark:bg-slate-800 px-1.5 py-0.5 rounded font-medium">
+                  Đã bán {food.totalOrder}
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Hàng 4: Khoảng cách và Bản đồ (Chỉ hiển thị khi có dữ liệu) */}
+          {(food.distance !== undefined || mapLink) && (
+            <div className="flex items-center justify-between mt-1.5 text-[9px] text-gray-500 dark:text-slate-400">
+              {food.distance !== undefined && food.distance !== null ? (
+                <div className="flex items-center gap-0.5 text-blue-600 dark:text-blue-400 font-semibold">
+                  <Navigation size={9} className="rotate-45" />
+                  <span>{formatDistance(food.distance)}</span>
+                </div>
+              ) : <div />}
+              {mapLink && (
+                <a
+                  href={mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-0.5 hover:text-primary transition-colors"
+                  aria-label={LABELS.FOOD.VIEW_MAP}
+                >
+                  <MapPin size={9} />
+                  <span>Xem bản đồ</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
