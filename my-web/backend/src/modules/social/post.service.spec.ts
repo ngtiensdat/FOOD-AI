@@ -39,6 +39,7 @@ describe('PostService', () => {
         create: jest.fn(),
         findUnique: jest.fn(),
         delete: jest.fn(),
+        update: jest.fn(),
       },
     };
 
@@ -123,11 +124,14 @@ describe('PostService', () => {
         userId: 1,
         post: { authorId: 3 },
       } as any);
-      prisma.comment.delete.mockResolvedValue({ id: 1 } as any);
+      prisma.comment.update.mockResolvedValue({ id: 1 } as any);
 
       const result = await service.deleteComment(1, UserRole.CUSTOMER, 1);
       expect(result.success).toBe(true);
-      expect(prisma.comment.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(prisma.comment.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { deletedAt: expect.any(Date) },
+      });
       expect(cacheService.invalidatePattern).toHaveBeenCalledWith('posts:*');
     });
   });

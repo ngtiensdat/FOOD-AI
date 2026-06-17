@@ -60,7 +60,7 @@ export class NotificationGateway
       }
 
       client.data = { ...client.data, userId };
-      this.activeConnections.set(userId, client.id);
+      client.join(`user_${userId}`);
       this.logger.log(
         `[WebSocket] Authenticated user connected: ID ${userId}, Socket: ${client.id}`,
       );
@@ -75,12 +75,6 @@ export class NotificationGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`[WebSocket] Client disconnected: ${client.id}`);
-    for (const [userId, socketId] of this.activeConnections.entries()) {
-      if (socketId === client.id) {
-        this.activeConnections.delete(userId);
-        break;
-      }
-    }
   }
 
   @SubscribeMessage('register')
@@ -92,7 +86,7 @@ export class NotificationGateway
       );
       return { status: 'error', message: 'Unauthorized' };
     }
-    this.activeConnections.set(Number(userId), client.id);
+    client.join(`user_${userId}`);
     this.logger.log(
       `[WebSocket] User ${userId} registered socket: ${client.id}`,
     );
@@ -151,28 +145,21 @@ export class NotificationGateway
       postId: data.postId,
     });
 
-    // 2. Phát thời gian thực nếu User đang kết nối trực tuyến
-    const socketId = this.activeConnections.get(Number(userId));
-    if (socketId) {
-      this.server.to(socketId).emit('notification', {
-        id: notification.id,
-        userId: notification.userId,
-        title: notification.title,
-        content: notification.content,
-        isRead: notification.isRead,
-        type: notification.type,
-        senderId: notification.senderId,
-        postId: notification.postId,
-        createdAt: notification.createdAt.toISOString(),
-      });
-      this.logger.log(
-        `[WebSocket] Real-time notification sent to User ${userId}`,
-      );
-    } else {
-      this.logger.log(
-        `[WebSocket] User ${userId} offline. Notification saved only in DB.`,
-      );
-    }
+    // 2. Phát thời gian thực cho tất cả các thiết bị/tab của user
+    this.server.to(`user_${userId}`).emit('notification', {
+      id: notification.id,
+      userId: notification.userId,
+      title: notification.title,
+      content: notification.content,
+      isRead: notification.isRead,
+      type: notification.type,
+      senderId: notification.senderId,
+      postId: notification.postId,
+      createdAt: notification.createdAt.toISOString(),
+    });
+    this.logger.log(
+      `[WebSocket] Real-time notification emitted to Room user_${userId}`,
+    );
 
     return notification;
   }
