@@ -1,8 +1,8 @@
-/**
- * Mục đích file này: Component hiển thị trạng thái và biểu mẫu gửi yêu cầu xác minh email tài khoản.
- * Ý nghĩa/Quan hệ: Tab con của SettingsSection, quản lý trạng thái xác thực email hiện tại và nút hành động gửi yêu cầu xác thực.
- * Các biến/Props đặc biệt: onVerifySubmit, isEmailVerified, verifyEmail, setVerifyEmail.
- */
+// Mục đích file này để làm gì: Component hiển thị trạng thái và biểu mẫu gửi yêu cầu xác minh email tài khoản.
+// Các file khác hay file này có ý nghĩa như nào: Tab con của SettingsSection, quản lý trạng thái xác thực email hiện tại và nút hành động gửi yêu cầu xác thực.
+// Các chức năng đặc biệt: Hiển thị trạng thái Đã xác minh/Chưa xác minh trực quan, cho phép gửi link kích hoạt đến email đã nhập kèm modal xác nhận.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, State Management, Confirmation Flow.
+// Các biến, hàm đặc biệt trong file: VerificationSettingsTab component.
 'use client';
 
 import React from 'react';
@@ -18,6 +18,8 @@ interface VerificationSettingsTabProps {
   isLoading: boolean;
 }
 
+import { ConfirmModal } from '@/components/base/ConfirmModal';
+
 export const VerificationSettingsTab = ({
   onVerifySubmit,
   isEmailVerified,
@@ -25,6 +27,13 @@ export const VerificationSettingsTab = ({
   setVerifyEmail,
   isLoading,
 }: VerificationSettingsTabProps) => {
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="bg-gray-50/35 p-6 rounded-card border border-gray-100/50 space-y-4">
@@ -36,7 +45,7 @@ export const VerificationSettingsTab = ({
             ✅ {LABELS.SETTINGS.VERIFICATION.VERIFIED}
           </div>
         ) : (
-          <form onSubmit={onVerifySubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs text-gray-500 font-semibold ml-1">{LABELS.SETTINGS.VERIFICATION.LABEL}</label>
               <input
@@ -54,6 +63,22 @@ export const VerificationSettingsTab = ({
           </form>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={LABELS.SETTINGS.VERIFY_CONFIRM_TITLE}
+        message={LABELS.SETTINGS.VERIFY_CONFIRM_DESC}
+        confirmText={LABELS.SETTINGS.VERIFICATION.VERIFY_NOW}
+        cancelText={LABELS.COMMON.CANCEL}
+        variant="info"
+        onConfirm={() => {
+          setShowConfirm(false);
+          onVerifySubmit({ preventDefault: () => {} } as any);
+        }}
+        onCancel={() => {
+          setShowConfirm(false);
+        }}
+      />
     </div>
   );
 };

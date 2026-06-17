@@ -1,10 +1,12 @@
 // Mục đích: Khai báo đối tượng hằng số LABELS chứa toàn bộ văn bản hiển thị (UI text) tiếng Việt của ứng dụng.
-// Ý nghĩa: Đóng vai trò là nguồn văn bản hiển thị tập trung (Localization/i18n), tránh việc hardcode trực tiếp vào UI.
-// Chức năng đặc biệt: Tổ chức văn bản theo từng phân hệ (Auth, Restaurant, Admin, Customer, Settings, Nav, Footer, Hero, Home, Form, Explore, Food, AI Chat).
-// Design Pattern: Constant pattern, Namespace grouping.
-// Biến, hàm đặc biệt: LABELS.
+// Các file khác hay file này có ý nghĩa như nào: Đóng vai trò là nguồn văn bản hiển thị tập trung (Localization/i18n), tránh việc hardcode trực tiếp vào UI.
+// Các chức năng đặc biệt: Tổ chức văn bản theo từng phân hệ (Auth, Restaurant, Admin, Customer, Settings, Nav, Footer, Hero, Home, Form, Explore, Food, AI Chat).
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Constant pattern, Namespace grouping, Localization/i18n.
+// Các biến, hàm đặc biệt trong file: LABELS.
 
-export const LABELS = {
+import { LABELS_EN } from './labels.en';
+
+const LABELS_VI = {
   COMMON: {
     SAVE: 'Lưu thay đổi',
     CANCEL: 'Hủy',
@@ -115,6 +117,7 @@ export const LABELS = {
     OPERATING_HOURS_LABEL: 'Giờ hoạt động',
     HOURS_PLACEHOLDER: 'Ví dụ: 08:00 - 22:00',
     HOURS_FORMAT_ERROR: 'Giờ hoạt động không đúng định dạng (Ví dụ đúng: 08:00 - 22:00).',
+    EDIT_STORE: 'cửa hàng',
     TABS: {
       OVERVIEW: 'Tổng quan',
       CATEGORIES: 'Danh mục',
@@ -161,6 +164,7 @@ export const LABELS = {
       SAVE_ERROR: 'Lỗi khi cập nhật thông tin cửa hàng',
       CONFIRM_TITLE: 'Xác nhận lưu cài đặt',
       CONFIRM_DESC: 'Bạn có chắc chắn muốn lưu các thay đổi này cho cửa hàng không?',
+      CLOSE_SETTINGS: 'Đóng cài đặt cửa hàng',
     },
     CARD_LABELS: {
       DEFAULT_BIO: 'Hân hạnh được phục vụ quý khách thực đơn món ngon cao cấp.',
@@ -218,6 +222,8 @@ export const LABELS = {
       PRIVACY_SUCCESS: 'Cập nhật quyền riêng tư thành công!',
       PRIVACY_ERROR: 'Lỗi cập nhật cài đặt.',
       MENU_CATEGORIES: 'Danh mục món ăn',
+      COLLAPSE_CATEGORY: 'Thu gọn danh mục',
+      EXPAND_CATEGORY: 'Mở rộng danh mục',
       ALL_FOODS: 'Tất cả món ăn',
       LOADING_FOODS: 'Đang tải món ăn...',
       LOADING_MORE: 'Đang tải...',
@@ -284,7 +290,13 @@ export const LABELS = {
       PREVIEW_TITLE: (count: number) => `Xem trước dữ liệu (${count} món)`,
       SAVING: 'Đang xử lý...',
       SAVE_BTN: (count: number) => `Lưu ${count > 0 ? count + ' món' : ''} vào hệ thống`,
-      OPTIONAL: '(Tuỳ chọn)'
+      OPTIONAL: '(Tuỳ chọn)',
+      GUIDES: {
+        COLS_INFO: 'File Excel phải có đúng các cột:',
+        REQUIRED_INFO: (col1: string, col2: string) => `${col1} và ${col2} là 2 cột bắt buộc.`,
+        TAGS_INFO: 'nhập nhiều giá trị cách nhau bởi dấu phẩy (vd: Ăn vặt, Đồ uống).',
+        NO_FILE: 'Bạn chưa có file? Tải file mẫu về điền vào rồi upload lại.',
+      }
     }
   },
   ADMIN: {
@@ -377,6 +389,7 @@ export const LABELS = {
     GREETING: (name: string) => `Chào bạn, ${name}! 👋`,
     SUBTITLE: 'Hôm nay bạn muốn AI gợi ý món gì cho bữa trưa không?',
     FAVORITES: 'Yêu thích',
+    FAVORITE_UPDATE_ERROR: 'Không thể cập nhật danh sách yêu thích.',
     AI_SUGGESTION: 'Gợi ý AI dành riêng cho bạn',
     AI_SUGGESTION_DESC: (food: string) => `Dựa trên lịch sử ăn uống, chúng tôi đề xuất món ${food} cho hôm nay.`,
     RECENT_FOODS: 'Gần đây bạn đã xem',
@@ -407,19 +420,34 @@ export const LABELS = {
       PROFILE: 'Thông tin',
       SECURITY: 'Bảo mật',
       VERIFICATION: 'Xác minh',
+      LANGUAGE: 'Ngôn ngữ',
+      DANGER_ZONE: 'Vùng nguy hiểm',
     },
+    LANG_DESC: 'Chọn ngôn ngữ hiển thị giao diện và các thông báo từ hệ thống',
+    LANGUAGE_CONFIRM_TITLE: 'Xác nhận thay đổi ngôn ngữ',
+    LANGUAGE_CONFIRM_DESC: 'Bạn có chắc chắn muốn thay đổi ngôn ngữ hiển thị của hệ thống không? Trang web sẽ được tải lại.',
+    SECURITY_CONFIRM_TITLE: 'Xác nhận đổi mật khẩu',
+    SECURITY_CONFIRM_DESC: 'Bạn có chắc chắn muốn thay đổi mật khẩu tài khoản không?',
+    VERIFY_CONFIRM_TITLE: 'Xác nhận yêu cầu xác minh',
+    VERIFY_CONFIRM_DESC: 'Hệ thống sẽ gửi một liên kết xác minh đến email của bạn. Bạn có muốn tiếp tục?',
+    PRIVACY_CONFIRM_TITLE: 'Xác nhận thay đổi quyền riêng tư',
+    PRIVACY_CONFIRM_DESC: 'Bạn có chắc chắn muốn thay đổi trạng thái hiển thị danh sách theo dõi trên trang của mình không?',
+    PROFILE_CONFIRM_TITLE: 'Xác nhận lưu thay đổi',
+    PROFILE_CONFIRM_DESC: 'Bạn có chắc chắn muốn lưu các thay đổi này cho hồ sơ cá nhân của mình không?',
     SECURITY: {
       CURRENT_PASSWORD: 'Mật khẩu hiện tại',
       NEW_PASSWORD: 'Mật khẩu mới',
       CONFIRM_PASSWORD: 'Xác nhận mật khẩu mới',
       CHANGE_PASSWORD: 'Đổi mật khẩu',
       CHANGE_SUCCESS: 'Đổi mật khẩu thành công!',
+      CHANGE_PASSWORD_ERROR: 'Đổi mật khẩu thất bại. Vui lòng thử lại.',
       MISMATCH: 'Mật khẩu mới không trùng khớp.',
     },
     VERIFICATION: {
       TITLE: 'Xác minh tài khoản email của bạn',
       LABEL: 'Nhập email để xác minh',
       SUCCESS: 'Xác minh email thành công!',
+      SEND_EMAIL_ERROR: 'Gửi email xác minh thất bại.',
       VERIFIED: 'Tài khoản đã được xác minh.',
       VERIFY_NOW: 'Xác minh ngay',
     },
@@ -471,6 +499,7 @@ export const LABELS = {
         MERCHANT_SYNC: 'Đồng bộ sang Cửa hàng (Merchant Sync)',
         SYNC_AVATAR: 'Đồng bộ avatar làm Logo quán',
         SYNC_COVER: 'Đồng bộ ảnh bìa sang trang quán',
+        CLOSE_SETTINGS: 'Đóng cài đặt cá nhân',
       },
       MODALS: {
         FOLLOWERS_TITLE: 'Người theo dõi',
@@ -613,6 +642,9 @@ export const LABELS = {
       CATEGORY_ADD_SUCCESS: 'Đã thêm phân loại mới',
       CATEGORY_DELETE_SUCCESS: 'Đã xóa phân loại',
       HAS_FOODS_ERROR: 'Có lỗi xảy ra (có thể danh mục đang có món ăn)',
+      MAX_GROUPS_LIMIT_ERROR: (max: number) => `Bạn chỉ được phép tạo tối đa ${max} Nhóm danh mục để đảm bảo Menu không quá dài.`,
+      GROUP_ORDER_DUPLICATE_ERROR: (order: number) => `Thứ tự hiển thị số ${order} đã bị trùng với nhóm khác. Vui lòng chọn số khác!`,
+      CATEGORY_ORDER_DUPLICATE_ERROR: (order: number) => `Thứ tự số ${order} đã tồn tại trong danh sách này. Vui lòng chọn số khác!`,
     },
     RESTAURANT: {
       SELECT_REQUIRED: 'Vui lòng chọn cơ sở kinh doanh',
@@ -861,3 +893,44 @@ export const LABELS = {
     }
   }
 };
+
+let clientLanguage = 'vi';
+
+// Only use AsyncLocalStorage on the server
+let serverStorage: { enterWith: (val: string) => void; getStore: () => string | undefined } | null = null;
+if (typeof window === 'undefined') {
+  try {
+    const { AsyncLocalStorage } = eval('require')('async_hooks');
+    serverStorage = new AsyncLocalStorage();
+  } catch (e) {}
+}
+
+export const setLanguageForRequest = (lang: string) => {
+  if (typeof window === 'undefined') {
+    if (serverStorage) {
+      serverStorage.enterWith(lang);
+    }
+  } else {
+    clientLanguage = lang;
+  }
+};
+
+const getIsEnglish = () => {
+  if (typeof window === 'undefined') {
+    if (serverStorage) {
+      const lang = serverStorage.getStore();
+      if (lang) return lang === 'en';
+    }
+    return false;
+  }
+  return clientLanguage === 'en';
+};
+
+export const LABELS = new Proxy({}, {
+  get(target, prop) {
+    const isEnglish = getIsEnglish();
+    const dictionary = isEnglish ? LABELS_EN : LABELS_VI;
+    return (dictionary as Record<string | symbol, unknown>)[prop];
+  }
+}) as typeof LABELS_EN;
+

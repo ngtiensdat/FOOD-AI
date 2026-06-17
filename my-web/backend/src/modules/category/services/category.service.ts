@@ -42,9 +42,7 @@ export class CategoryService {
     if (dto.parentId) {
       const parent = await this.categoryRepo.findById(dto.parentId);
       if (!parent || parent.groupId !== dto.groupId) {
-        throw new NotFoundException(
-          'Parent category not found or belongs to a different group',
-        );
+        throw new NotFoundException(MESSAGES.CATEGORY.PARENT_NOT_FOUND);
       }
     }
 
@@ -61,9 +59,7 @@ export class CategoryService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new BadRequestException(
-          'Tên phân loại này đã tồn tại trong nhóm.',
-        );
+        throw new BadRequestException(MESSAGES.CATEGORY.CATEGORY_EXISTS);
       }
       throw error;
     }
@@ -93,9 +89,7 @@ export class CategoryService {
     if (dto.parentId && dto.parentId !== category.parentId) {
       const parent = await this.categoryRepo.findById(dto.parentId);
       if (!parent || parent.groupId !== category.groupId) {
-        throw new NotFoundException(
-          'Parent category not found or belongs to a different group',
-        );
+        throw new NotFoundException(MESSAGES.CATEGORY.PARENT_NOT_FOUND);
       }
     }
 

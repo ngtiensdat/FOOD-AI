@@ -278,7 +278,7 @@ export default function RestaurantDashboard() {
                       className="rounded-xl flex items-center justify-center gap-2 border-gray-200 text-gray-700 dark:text-slate-300 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900"
                     >
                       <Store size={16} />
-                      <span>{LABELS.COMMON.EDIT} cửa hàng</span>
+                      <span>{LABELS.COMMON.EDIT} {LABELS.RESTAURANT.EDIT_STORE}</span>
                     </Button>
                   </div>
                 </div>

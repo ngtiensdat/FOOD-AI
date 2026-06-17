@@ -1,3 +1,9 @@
+// Mục đích file này để làm gì: Custom hook quản lý trạng thái và các thao tác CRUD của nhóm danh mục và danh mục món ăn.
+// Các file khác hay file này có ý nghĩa như nào: Được sử dụng bởi CategoryManager component để quản lý giao diện phân cấp thực đơn.
+// Các chức năng đặc biệt: Tự động kiểm tra trùng lặp thứ tự hiển thị (Order), giới hạn số lượng nhóm tối đa, xử lý các modal Thêm/Sửa/Xóa.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Custom Hook Pattern, Optimistic UI/Toast Alerts, State encapsulation.
+// Các biến, hàm đặc biệt trong file: useCategoryManager, fetchHierarchy, handleSubmitGroup, handleSubmitCategory, handleConfirmDelete.
+
 import { useState, useEffect, useCallback } from 'react';
 import { categoryService, CategoryGroup, Category } from '@/services/category.service';
 import { toast } from '@/store/useToastStore';
@@ -48,7 +54,7 @@ export const useCategoryManager = (restaurantId: number) => {
   // --- Group Actions ---
   const handleOpenAddGroup = () => {
     if (groups.length >= LIMITS.MAX_CATEGORY_GROUPS) {
-      return toast.error(`Bạn chỉ được phép tạo tối đa ${LIMITS.MAX_CATEGORY_GROUPS} Nhóm danh mục để đảm bảo Menu không quá dài.`);
+      return toast.error(LABELS.UI_MESSAGES.CATEGORY.MAX_GROUPS_LIMIT_ERROR(LIMITS.MAX_CATEGORY_GROUPS));
     }
     setEditingGroup(null);
     setGroupFormData({ name: '', order: '0' });
@@ -69,7 +75,7 @@ export const useCategoryManager = (restaurantId: number) => {
     const isDuplicateOrder = groups.some(g => g.order === targetOrder && g.id !== editingGroup?.id);
     
     if (isDuplicateOrder) {
-      return toast.error(`Thứ tự hiển thị số ${targetOrder} đã bị trùng với nhóm khác. Vui lòng chọn số khác!`);
+      return toast.error(LABELS.UI_MESSAGES.CATEGORY.GROUP_ORDER_DUPLICATE_ERROR(targetOrder));
     }
 
     try {
@@ -88,9 +94,10 @@ export const useCategoryManager = (restaurantId: number) => {
       }
       setIsGroupModalOpen(false);
       fetchHierarchy();
-    } catch (error: any) {
-      console.error('Error submitting group:', error.response?.data || error);
-      const msg = error.response?.data?.message || 'Có lỗi xảy ra';
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      console.error('Error submitting group:', err.response?.data || error);
+      const msg = err.response?.data?.message || 'Có lỗi xảy ra';
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };
@@ -128,7 +135,7 @@ export const useCategoryManager = (restaurantId: number) => {
       const siblings = group.categories?.filter(c => c.parentId === targetParentId) || [];
       const isDuplicateOrder = siblings.some(c => c.order === targetOrder && c.id !== editingCategory?.id);
       if (isDuplicateOrder) {
-        return toast.error(`Thứ tự số ${targetOrder} đã tồn tại trong danh sách này. Vui lòng chọn số khác!`);
+        return toast.error(LABELS.UI_MESSAGES.CATEGORY.CATEGORY_ORDER_DUPLICATE_ERROR(targetOrder));
       }
     }
 
@@ -149,9 +156,10 @@ export const useCategoryManager = (restaurantId: number) => {
       }
       setIsCategoryModalOpen(false);
       fetchHierarchy();
-    } catch (error: any) {
-      console.error('Error submitting category:', error.response?.data || error);
-      const msg = error.response?.data?.message || 'Có lỗi xảy ra';
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      console.error('Error submitting category:', err.response?.data || error);
+      const msg = err.response?.data?.message || 'Có lỗi xảy ra';
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };

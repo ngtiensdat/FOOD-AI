@@ -1,8 +1,8 @@
-/**
- * Mục đích file này để làm gì: Component Modal để người dùng chỉnh sửa thông tin cá nhân.
- * Các file khác hay file này có ý nghĩa như nào: Hiển thị popup chứa các form nhập liệu: tên, số điện thoại, avatar, cover, tiểu sử, địa chỉ, công việc.
- * Các chức năng đặc biệt: Tích hợp dánh sách Tỉnh/Thành phố và Quận/Huyện động từ LOCATION_DATA.
- */
+// Mục đích file này để làm gì: Component Modal để người dùng chỉnh sửa thông tin cá nhân.
+// Các file khác hay file này có ý nghĩa như nào: Hiển thị popup chứa các form nhập liệu: tên, số điện thoại, avatar, cover, tiểu sử, địa chỉ, công việc.
+// Các chức năng đặc biệt: Tích hợp dánh sách Tỉnh/Thành phố và Quận/Huyện động từ LOCATION_DATA.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, State Management, Separation of Concerns.
+// Các biến, hàm đặc biệt trong file: EditProfileModal component.
 'use client';
 
 import React from 'react';
@@ -24,6 +24,8 @@ interface EditProfileModalProps {
   role?: string;
 }
 
+import { ConfirmModal } from '@/components/base/ConfirmModal';
+
 export const EditProfileModal = ({
   isOpen,
   onClose,
@@ -33,6 +35,8 @@ export const EditProfileModal = ({
   onSave,
   role
 }: EditProfileModalProps) => {
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
   if (!isOpen) return null;
 
   return (
@@ -54,7 +58,7 @@ export const EditProfileModal = ({
           <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{LABELS.SETTINGS.PROFILE.EDIT_MODAL.TITLE}</h3>
           <button 
             onClick={onClose} 
-            aria-label="Đóng cài đặt cá nhân"
+            aria-label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.CLOSE_SETTINGS}
             className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
           >
             <X size={20} />
@@ -193,11 +197,27 @@ export const EditProfileModal = ({
           <Button variant="outline" fullWidth onClick={onClose}>
             {LABELS.COMMON.CANCEL}
           </Button>
-          <Button variant="primary" fullWidth loading={loading} onClick={onSave}>
+          <Button variant="primary" fullWidth loading={loading} onClick={() => setShowConfirm(true)}>
             <Save size={18} className="mr-2" /> {LABELS.COMMON.SAVE}
           </Button>
         </div>
       </motion.div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={LABELS.SETTINGS.PROFILE_CONFIRM_TITLE}
+        message={LABELS.SETTINGS.PROFILE_CONFIRM_DESC}
+        confirmText={LABELS.COMMON.SAVE}
+        cancelText={LABELS.COMMON.CANCEL}
+        variant="warning"
+        onConfirm={() => {
+          setShowConfirm(false);
+          onSave();
+        }}
+        onCancel={() => {
+          setShowConfirm(false);
+        }}
+      />
     </div>
   );
 };

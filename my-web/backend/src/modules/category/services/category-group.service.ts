@@ -60,9 +60,7 @@ export class CategoryGroupService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new BadRequestException(
-          'Tên nhóm này đã tồn tại trong nhà hàng của bạn.',
-        );
+        throw new BadRequestException(MESSAGES.CATEGORY.GROUP_EXISTS);
       }
       throw error;
     }

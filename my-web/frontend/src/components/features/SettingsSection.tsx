@@ -1,12 +1,13 @@
 // Mục đích file này để làm gì: Component giao diện phần Cài đặt tài khoản (Settings) bao gồm Hồ sơ, Bảo mật, Xác thực và Xoá tài khoản.
 // Các file khác hay file này có ý nghĩa như nào: Là một màn hình con trong Dashboard/Profile của người dùng.
 // Các chức năng đặc biệt: Chuyển tab qua lại giữa Profile/Security/Verification, cảnh báo Danger Zone, cập nhật preference.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Separation of Concerns.
 // Các biến, hàm đặc biệt trong file: user prop, handleChangePassword, handleVerifyEmail, handleDeleteAccount, state settingsTab.
 'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { useSettings } from '@/hooks/useSettings';
@@ -14,6 +15,7 @@ import { ProfileSettingsTab } from './profile/ProfileSettingsTab';
 import { SecuritySettingsTab } from './profile/SecuritySettingsTab';
 import { VerificationSettingsTab } from './profile/VerificationSettingsTab';
 import { DangerZoneSection } from './profile/DangerZoneSection';
+import { LanguageSettingsTab } from './profile/LanguageSettingsTab';
 
 interface SettingsSectionProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
@@ -95,15 +97,17 @@ export const SettingsSection = ({
         </div>
 
         {/* Sub Tabs */}
-        <div className="flex border-b border-gray-100 mb-8 gap-6 text-sm font-bold text-gray-500">
+        <div className="flex flex-wrap border-b border-gray-100 mb-8 gap-6 text-sm font-bold text-gray-500">
           {[
             { id: 'profile', label: LABELS.SETTINGS.TABS.PROFILE, icon: User },
             { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
             { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
+            { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
+            { id: 'danger_zone', label: LABELS.SETTINGS.TABS.DANGER_ZONE, icon: AlertTriangle },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification')}
+              onClick={() => handleTabChange(tab.id as any)}
               className={`pb-3 transition-all flex items-center gap-2 ${settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
                 }`}
             >
@@ -120,19 +124,6 @@ export const SettingsSection = ({
               profileData={profileData}
               setProfileData={setProfileData}
             />
-
-            <DangerZoneSection
-              onDeleteSubmit={onDeleteSubmit}
-              showDeleteModal={showDeleteModal}
-              setShowDeleteModal={setShowDeleteModal}
-              deletePassword={deletePassword}
-              setDeletePassword={setDeletePassword}
-              isDeleting={isDeleting}
-            />
-
-            <Button variant="ghost" onClick={() => setActiveTab('home')}>
-              {LABELS.COMMON.BACK_HOME}
-            </Button>
           </div>
         ) : settingsTab === 'security' ? (
           <SecuritySettingsTab
@@ -152,7 +143,7 @@ export const SettingsSection = ({
             isLoading={isLoading}
             setActiveTab={setActiveTab}
           />
-        ) : (
+        ) : settingsTab === 'verification' ? (
           <VerificationSettingsTab
             onVerifySubmit={onVerifySubmit}
             isEmailVerified={isEmailVerified}
@@ -160,7 +151,24 @@ export const SettingsSection = ({
             setVerifyEmail={setVerifyEmail}
             isLoading={isLoading}
           />
+        ) : settingsTab === 'language' ? (
+          <LanguageSettingsTab />
+        ) : (
+          <DangerZoneSection
+            onDeleteSubmit={onDeleteSubmit}
+            showDeleteModal={showDeleteModal}
+            setShowDeleteModal={setShowDeleteModal}
+            deletePassword={deletePassword}
+            setDeletePassword={setDeletePassword}
+            isDeleting={isDeleting}
+          />
         )}
+
+        <div className="mt-8">
+          <Button variant="ghost" onClick={() => setActiveTab('home')}>
+            {LABELS.COMMON.BACK_HOME}
+          </Button>
+        </div>
       </motion.div>
     </div>
   );

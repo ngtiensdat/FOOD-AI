@@ -1,6 +1,7 @@
 // Mục đích file này để làm gì: Component Sidebar hiển thị danh mục thực đơn của nhà hàng theo dạng cây (tree view).
 // Các file khác hay file này có ý nghĩa như nào: Đóng vai trò làm bộ lọc món ăn theo danh mục ở trang chi tiết nhà hàng, giúp người dùng dễ dàng tìm món.
 // Các chức năng đặc biệt: Render danh mục đa cấp (đệ quy) có thể đóng/mở (collapse/expand), highlight danh mục đang được chọn.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, Recursive Rendering Pattern, Tree Traversal.
 // Các biến, hàm đặc biệt trong file: Hàm đệ quy renderCategoryTree render danh mục con, các state quản lý danh mục đang mở (expandedCategories) và danh mục đang chọn (selectedCategoryId).
 'use client';
 
@@ -73,7 +74,7 @@ export const RestaurantMenuSidebar = ({
                       toggleCategory(cat.id);
                     }}
                     className="p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md"
-                    aria-label={isExpanded ? 'Thu gọn danh mục' : 'Mở rộng danh mục'}
+                    aria-label={isExpanded ? LABELS.RESTAURANT.PUBLIC_PROFILE.COLLAPSE_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.EXPAND_CATEGORY}
                   >
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </button>
