@@ -26,6 +26,9 @@ export interface Restaurant {
   };
   isActive?: boolean;
   distance?: number;
+  ratingAvg?: number | null;
+  ratingCount?: number | null;
+  cuisines?: string[];
 }
 
 

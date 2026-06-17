@@ -13,7 +13,8 @@ import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
+import { getPrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
 
 export type ProfileData = User & {
   _count?: {
@@ -57,6 +58,12 @@ export const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   const router = useRouter();
   const restaurant = profile?.restaurants?.[0];
+  const isOwner = me?.id === user?.id;
+  const showLevel = isOwner ? getPrivacyValue('showLevel') : true;
+  const showBadgeTitle = isOwner ? getPrivacyValue('showBadge') : true;
+  const showPoints = isOwner ? getPrivacyValue('showPoints') : true;
+  const showXpBar = isOwner ? getPrivacyValue('showXpBar') : true;
+  const showFollowList = isOwner ? getPrivacyValue('showFollowList') : true;
   const isOpen = restaurant
     ? isRestaurantCurrentlyOpen(restaurant.profile?.openingHours, restaurant.isActive)
     : true;
@@ -89,7 +96,7 @@ export const ProfileHeader = ({
 
       <div className="px-6 md:px-12 pb-10 pt-8">
         {/* Warning Banner if closed */}
-        {user?.role === 'RESTAURANT' && restaurant && !isOpen && (
+        {user?.role === UserRole.RESTAURANT && restaurant && !isOpen && (
           <div className="alert-box-rose mb-8">
             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
@@ -127,13 +134,27 @@ export const ProfileHeader = ({
           </div>
 
           <div className="text-center md:text-left flex-1">
-            <h1 className="text-h1 !text-4xl md:!text-5xl text-gray-900 mb-2">{user?.name}</h1>
+            <h1 className="text-h1 !text-4xl md:!text-5xl text-gray-900 mb-2 flex flex-wrap justify-center md:justify-start items-center gap-3">
+              {user?.name}
+              {showLevel && (user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
+                <span className="text-xs font-extrabold px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full shadow-md animate-pulse shrink-0">
+                  Lv. {profile?.level || 1}
+                </span>
+              )}
+            </h1>
+            {showBadgeTitle && profile?.badgeTitle && (
+              <div className="flex justify-center md:justify-start mt-1 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md shadow-sm">
+                  ✨ {profile.badgeTitle}
+                </span>
+              </div>
+            )}
             <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-small font-bold text-gray-500 mb-4">
-              {user?.role === 'ADMIN' ? (
+              {user?.role === UserRole.ADMIN ? (
                 <span className="flex items-center gap-1.5"><Shield size={18} className="text-primary" /> {LABELS.AUTH.ADMIN}</span>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {user?.role === 'RESTAURANT' && (
+                <div className="flex flex-col gap-2 w-full">
+                  {user?.role === UserRole.RESTAURANT && (
                     <div className="flex flex-wrap items-center gap-3 mb-1">
                       <span className="flex items-center gap-1.5"><Store size={18} className="text-primary" /> {LABELS.AUTH.RESTAURANT_ROLE}</span>
                       <span className="text-gray-300 dark:text-slate-700">|</span>
@@ -150,21 +171,50 @@ export const ProfileHeader = ({
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={onShowFollowers}
-                      className="hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
-                    </button>
-                    <span>•</span>
-                    <button
-                      onClick={onShowFollowing}
-                      className="hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}
-                    </button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {showFollowList ? (
+                      <>
+                        <button
+                          onClick={onShowFollowers}
+                          className="hover:text-primary transition-colors cursor-pointer"
+                        >
+                          {(profile?.restaurants?.[0]?._count?.followers || 0) + (profile?._count?.userFollowers || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWERS}
+                        </button>
+                        <span>•</span>
+                        <button
+                          onClick={onShowFollowing}
+                          className="hover:text-primary transition-colors cursor-pointer"
+                        >
+                          {(profile?._count?.userFollowing || 0) + (profile?._count?.follows || 0)} {LABELS.SETTINGS.PROFILE.FOLLOWING}
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-gray-400 italic">{LABELS.SETTINGS.PROFILE.FOLLOW_LIST_PRIVATE}</span>
+                    )}
+                    {showPoints && (user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
+                      <>
+                        <span>•</span>
+                        <div className="flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-full text-xs font-extrabold border border-amber-200 dark:border-amber-900/50">
+                          <span>⭐</span>
+                          <span>{profile?.points?.toLocaleString() || 0} {LABELS.LOYALTY.TITLE.split(' & ')[0]}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
+                  {showXpBar && (user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
+                    <div className="mt-1 max-w-xs">
+                      <div className="flex justify-between text-mini text-gray-500 mb-1 font-bold">
+                        <span>{LABELS.LOYALTY.XP_PROGRESS}</span>
+                        <span>{(profile?.points || 0) % 1000} / 1000 XP</span>
+                      </div>
+                      <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-slate-700">
+                        <div 
+                          className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.max(5, ((profile?.points || 0) % 1000) / 10)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -174,7 +224,7 @@ export const ProfileHeader = ({
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
-            {me?.id !== user?.id && user?.role !== 'ADMIN' && me?.role !== 'ADMIN' ? (
+            {me?.id !== user?.id && user?.role !== UserRole.ADMIN && me?.role !== UserRole.ADMIN ? (
               <Button
                 variant={user?.isFollowing ? 'secondary' : 'primary'}
                 onClick={onFollow}
@@ -188,8 +238,8 @@ export const ProfileHeader = ({
                 <Button
                   variant="primary"
                   onClick={() => {
-                    if (me?.role === 'ADMIN') router.push('/admin');
-                    else if (me?.role === 'RESTAURANT') router.push('/restaurant-admin');
+                    if (me?.role === UserRole.ADMIN) router.push('/admin');
+                    else if (me?.role === UserRole.RESTAURANT) router.push('/restaurant-admin');
                     else router.push('/dashboard');
                   }}
                 >

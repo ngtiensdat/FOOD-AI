@@ -17,7 +17,7 @@ import { AdminSystemFoodTable } from './AdminSystemFoodTable';
 import { AdminMerchantFoodTable } from './AdminMerchantFoodTable';
 
 interface AdminTableProps {
-  activeTab: 'merchants' | 'users' | 'menu' | 'customers';
+  activeTab: 'merchants' | 'users' | 'menu' | 'customers' | 'moderation';
   foodSubTab?: 'system' | 'merchant';
   loading: boolean;
   merchants: User[];

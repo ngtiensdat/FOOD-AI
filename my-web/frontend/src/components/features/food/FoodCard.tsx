@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SafeImage from '@/components/base/SafeImage';
-import { ShoppingBag, Navigation, Heart } from 'lucide-react';
+import { ShoppingBag, Navigation, Heart, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDistance } from '@/utils/formatters';
@@ -20,11 +20,14 @@ export interface FoodCardData {
   price?: number;
   image?: string;
   description?: string;
-  restaurant?: { name: string } | null;
+  restaurant?: { name: string; address?: string; mapUrl?: string } | null;
   restaurantName?: string;
   distance?: number;
+  address?: string;
   mapUrl?: string;
   map_url?: string;
+  totalOrder?: number;
+  totalLike?: number;
   [key: string]: unknown;
 }
 
@@ -41,12 +44,15 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
     setIsFavorite(!!food.isFavorite || !!food.is_favorite);
   }, [food.isFavorite, food.is_favorite]);
 
+  const mapLink = food.mapUrl || food.map_url || food.restaurant?.mapUrl;
+  const addressText = food.address || food.restaurant?.address;
+
   return (
     <motion.div
-      whileHover={{ y: -10 }}
-      className="card-premium overflow-hidden hover:shadow-2xl"
+      whileHover={{ y: -8 }}
+      className="card-premium overflow-hidden hover:shadow-xl transition-all duration-300"
     >
-      <div className="relative h-48 sm:h-56 w-full overflow-hidden">
+      <div className="relative h-36 sm:h-44 w-full overflow-hidden">
         {food.image ? (
           <SafeImage 
             src={getValidImageUrl(food.image)} 
@@ -79,9 +85,9 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
           <Heart size={20} fill={isFavorite ? "white" : "none"} />
         </button>
       </div>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-primary font-bold text-lg">{formatCurrency(food.price)}</span>
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-primary font-bold text-base">{formatCurrency(food.price)}</span>
 
           <div className="flex items-center gap-2">
             {food.distance !== undefined && food.distance !== null && (
@@ -91,32 +97,62 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
               </div>
             )}
 
-            {(food.mapUrl || food.map_url) && (
+            {mapLink && (
               <a
-                href={food.mapUrl || food.map_url}
+                href={mapLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-gray-50 dark:bg-gray-200 text-gray-500 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
+                onClick={(e) => e.stopPropagation()}
+                className="p-1.5 bg-gray-50 dark:bg-gray-200 text-gray-500 dark:text-gray-900 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
                 aria-label={LABELS.FOOD.VIEW_MAP}
               >
-                <Navigation size={18} />
+                <Navigation size={15} />
               </a>
             )}
           </div>
         </div>
 
-        <h3 className="font-bold text-xl mb-0.5 line-clamp-1 text-gray-900">{food.name}</h3>
+        <h3 className="font-bold text-base mb-0.5 line-clamp-1 text-gray-900">{food.name}</h3>
 
-        <p className="text-primary text-xs font-bold mb-3 uppercase tracking-wider">
+        <p className="text-primary text-[10px] font-bold mb-1 uppercase tracking-wider">
           {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
         </p>
 
-        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 line-clamp-2 h-10">{food.description}</p>
+        {addressText && (
+          <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-2 truncate" title={addressText}>
+            <MapPin size={11} className="text-primary shrink-0" />
+            {mapLink ? (
+              <a
+                href={mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="hover:text-primary hover:underline cursor-pointer truncate font-medium text-left"
+              >
+                {addressText}
+              </a>
+            ) : (
+              <span className="truncate">{addressText}</span>
+            )}
+          </div>
+        )}
+
+        {/* Lượt bán & Lượt thích */}
+        {(food.totalOrder !== undefined || food.totalLike !== undefined) && (
+          <div className="flex gap-4 text-[11px] font-extrabold text-gray-500 dark:text-slate-400 mb-2">
+            {food.totalOrder !== undefined && (
+              <span>Đã bán {food.totalOrder}</span>
+            )}
+            {food.totalLike !== undefined && (
+              <span className="flex items-center gap-0.5">❤️ {food.totalLike}</span>
+            )}
+          </div>
+        )}
 
         <Button
           fullWidth
           onClick={() => onViewDetail?.(food)}
-          className="py-3"
+          className="py-2 text-xs"
         >
           {LABELS.FOOD.VIEW_DETAIL}
         </Button>

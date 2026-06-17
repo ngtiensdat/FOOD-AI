@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CheckCircle2, X, Plus, Trash2, MapPin, Compass } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { useOnboardingActions, OnboardingSubmitData } from '@/hooks/useOnboardingActions';
-import { LOCATION_DATA } from '@/constants/location.constant';
+import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { User } from '@/types/user';
 
 interface OnboardingModalProps {
@@ -137,7 +137,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             </label>
                             <select
                               required
-                              value={branch.city || 'Hà Nội'}
+                              value={branch.city || DEFAULT_CITY}
                               onChange={(e) => {
                                 handleBranchChange(index, 'city', e.target.value);
                                 handleBranchChange(index, 'district', '');
@@ -166,7 +166,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               <option value="" disabled hidden>
                                 {LABELS.SETTINGS.PROFILE.EDIT_MODAL.DISTRICT_PLACEHOLDER}
                               </option>
-                              {LOCATION_DATA.find((c) => c.value === (branch.city || 'Hà Nội'))
+                              {LOCATION_DATA.find((c) => c.value === (branch.city || DEFAULT_CITY))
                                 ?.districts.map((d) => (
                                   <option key={d.value} value={d.value}>
                                     {d.label}
@@ -308,9 +308,12 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                   {title || currentQuestion?.question}
                 </h2>
                 {title && <p className="text-primary font-bold mb-2">{LABELS.CUSTOMER.QUESTION}: {currentQuestion?.question}</p>}
-                <p className="text-gray-500 mb-10 text-sm md:text-base font-medium">
+                <p className="text-gray-500 mb-4 text-sm md:text-base font-medium">
                   {currentQuestion?.description}
                 </p>
+                <div className="bg-orange-50/80 text-orange-600/90 text-xs px-4 py-2 rounded-xl mx-auto max-w-sm mb-8 font-medium">
+                  {LABELS.CUSTOMER.UPDATE_PREFERENCES2}
+                </div>
 
                 <div className="w-full">
                   {!showOtherInput ? (

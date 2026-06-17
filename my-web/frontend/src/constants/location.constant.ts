@@ -52,6 +52,12 @@ export const LOCATION_DATA: CityOption[] = [
   },
 ];
 
+/**
+ * Thành phố mặc định khi người dùng chưa chọn.
+ * Được lấy từ phần tử đầu tiên của LOCATION_DATA.
+ */
+export const DEFAULT_CITY = LOCATION_DATA[0].value;
+
 export const DEFAULT_COORDINATES = {
   HANOI: {
     lat: 21.0285,

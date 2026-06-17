@@ -39,6 +39,14 @@ export const foodService = {
     });
   },
 
+  async getMyAnalytics() {
+    return apiClient.get('/restaurants/my-analytics').catch((err) => {
+      console.error('Error fetching my analytics:', err);
+      return [];
+    });
+  },
+
+
   async getRecentViews(limit?: number) {
     return apiClient.get('/foods/recent-views', { params: limit ? { limit } : undefined }).catch(() => []);
   },

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle, Bug } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { useSettings } from '@/hooks/useSettings';
@@ -16,6 +16,7 @@ import { SecuritySettingsTab } from './profile/SecuritySettingsTab';
 import { VerificationSettingsTab } from './profile/VerificationSettingsTab';
 import { DangerZoneSection } from './profile/DangerZoneSection';
 import { LanguageSettingsTab } from './profile/LanguageSettingsTab';
+import { BugReportTab } from './profile/BugReportTab';
 
 interface SettingsSectionProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
@@ -103,6 +104,7 @@ export const SettingsSection = ({
             { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
             { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
             { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
+            { id: 'bug_report', label: LABELS.BUG_REPORT.TITLE, icon: Bug },
             { id: 'danger_zone', label: LABELS.SETTINGS.TABS.DANGER_ZONE, icon: AlertTriangle },
           ].map((tab) => (
             <button
@@ -153,6 +155,8 @@ export const SettingsSection = ({
           />
         ) : settingsTab === 'language' ? (
           <LanguageSettingsTab />
+        ) : settingsTab === 'bug_report' ? (
+          <BugReportTab />
         ) : (
           <DangerZoneSection
             onDeleteSubmit={onDeleteSubmit}

@@ -10,6 +10,8 @@ import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { parseAddressString } from '@/utils/helpers';
 import { User, UpdateProfileData } from '@/types/user';
+import { DEFAULT_CITY } from '@/constants/location.constant';
+import { addNotification } from '@/utils/notifications';
 
 export interface ProfileEditState extends Omit<UpdateProfileData, 'id' | 'userId'> {
   name?: string;
@@ -62,6 +64,7 @@ export const useProfileData = (targetId?: string | null) => {
     if (idToFetch) {
       fetchProfileData(idToFetch, me?.id).then((data) => {
         if (active && data) {
+
           setProfile(data);
         }
       });
@@ -87,7 +90,7 @@ export const useProfileData = (targetId?: string | null) => {
           avatar: profile.profile?.avatar || '',
           coverImage: profile.profile?.coverImage || '',
           bio: profile.profile?.bio || '',
-          city: parsedAddress.city || 'Hà Nội',
+          city: parsedAddress.city || DEFAULT_CITY,
           district: parsedAddress.district || '',
           street: parsedAddress.street || '',
           workAt: profile.profile?.workAt || '',
@@ -117,6 +120,13 @@ export const useProfileData = (targetId?: string | null) => {
       
       setIsEditing(false);
       toast.success(LABELS.SETTINGS.PROFILE.SAVE_SUCCESS);
+      addNotification(
+        profile.id,
+        'Cập nhật tài khoản',
+        'Thông tin tài khoản của bạn đã được cập nhật thành công.',
+        'PROFILE_UPDATE',
+        '/settings.png'
+      );
     } catch (error) {
       console.error('Lỗi cập nhật profile:', error);
       toast.error(LABELS.COMMON.ERROR);
@@ -193,6 +203,7 @@ export const useProfileData = (targetId?: string | null) => {
       fetchProfileData,
       openFollowersModal,
       openFollowingModal,
+      setProfile,
     },
     modals: {
       showFollowersModal, setShowFollowersModal,

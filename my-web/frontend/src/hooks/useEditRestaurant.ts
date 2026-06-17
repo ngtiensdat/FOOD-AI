@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LOCATION_DATA } from '@/constants/location.constant';
+import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
 
@@ -24,7 +24,7 @@ export const useEditRestaurant = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState(LOCATION_DATA[0]?.value || 'Hà Nội');
+  const [city, setCity] = useState((LOCATION_DATA[0]?.value) ?? DEFAULT_CITY);
   const [district, setDistrict] = useState('');
   const [mapUrl, setMapUrl] = useState('');
   const [logo, setLogo] = useState('');
@@ -42,7 +42,7 @@ export const useEditRestaurant = ({
       setName(restaurant.name || '');
       setDescription(restaurant.description || '');
       setAddress(restaurant.address || '');
-      setCity(restaurant.city || LOCATION_DATA[0]?.value || 'Hà Nội');
+      setCity(restaurant.city || ((LOCATION_DATA[0]?.value) ?? DEFAULT_CITY));
       setDistrict(restaurant.district || '');
       setMapUrl(restaurant.mapUrl || '');
       setLogo(restaurant.profile?.logo || '');

@@ -29,11 +29,14 @@ export interface FoodDetailData {
     id?: number;
     name: string;
     address?: string;
+    mapUrl?: string;
     isActive?: boolean;
     profile?: {
       openingHours?: string;
     };
   } | null;
+  totalOrder?: number;
+  totalLike?: number;
   [key: string]: unknown;
 }
 
@@ -109,7 +112,19 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
               </div>
             )}
             <h2 className="text-h2 text-gray-800 dark:text-slate-100 mb-2 mt-4">{food.name}</h2>
-            <p className="text-2xl font-bold text-primary dark:text-orange-400">{formatCurrency(food.price)}</p>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p className="text-2xl font-bold text-primary dark:text-orange-400">{formatCurrency(food.price)}</p>
+              {(food.totalOrder !== undefined || food.totalLike !== undefined) && (
+                <div className="flex gap-4 text-xs font-extrabold text-gray-500 dark:text-slate-400">
+                  {food.totalOrder !== undefined && (
+                    <span>Đã bán {food.totalOrder}</span>
+                  )}
+                  {food.totalLike !== undefined && (
+                    <span className="flex items-center gap-0.5">❤️ {food.totalLike}</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-6 mb-10 text-gray-600 dark:text-slate-300">
@@ -122,9 +137,9 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
               <MapPin className="text-primary mt-1 shrink-0" size={20} />
               <div className="flex-1">
                 <h4 className="text-small font-bold text-gray-800 dark:text-slate-200">{LABELS.FOOD.RESTAURANT_TITLE}</h4>
-                {food.mapUrl || food.map_url ? (
+                {food.mapUrl || food.map_url || food.restaurant?.mapUrl ? (
                   <a
-                    href={food.mapUrl || food.map_url}
+                    href={food.mapUrl || food.map_url || food.restaurant?.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center justify-between gap-2"

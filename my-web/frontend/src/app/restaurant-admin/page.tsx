@@ -23,41 +23,31 @@ import { LIMITS } from '@/constants/limits.constant';
 import { SafeImage } from '@/components/base/SafeImage';
 import Link from 'next/link';
 import { Avatar } from '@/components/base/Avatar';
+import { useRouter } from 'next/navigation';
 
 // Feature Components
 import { MenuTable } from '@/components/features/restaurant/MenuTable';
 import { FoodFormModal } from '@/components/features/food/FoodFormModal';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { CategoryManager } from '@/components/features/restaurant/CategoryManager';
-import { UploadExcelModal } from '@/components/features/admin/UploadExcelModal';
+import { UploadExcelModal } from '@/components/features/restaurant/UploadExcelModal';
 import { EditRestaurantModal } from '@/components/features/restaurant/EditRestaurantModal';
+import { MerchantAnalytics } from '@/components/features/restaurant/MerchantAnalytics';
 
 export default function RestaurantDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isRestaurant, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải RESTAURANT / ADMIN
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const authData = localStorage.getItem('auth-storage');
-      if (authData) {
-        try {
-          const parsed = JSON.parse(authData);
-          const loggedInUser = parsed?.state?.user;
-          if (!loggedInUser) {
-            window.location.href = '/login';
-            return;
-          }
-          if (loggedInUser.role !== 'RESTAURANT' && loggedInUser.role !== 'ADMIN') {
-            window.location.href = '/';
-          }
-        } catch {
-          window.location.href = '/login';
-        }
-      } else {
-        window.location.href = '/login';
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!isRestaurant && !isAdmin) {
+        router.push('/');
       }
     }
-  }, []);
+  }, [user, authLoading, isAdmin, isRestaurant, router]);
 
   const {
     myFoods,
@@ -214,81 +204,86 @@ export default function RestaurantDashboard() {
         </header>
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 card-container p-8">
-              <h3 className="text-h2 text-gray-800 dark:text-slate-100 mb-8">{LABELS.RESTAURANT.RECENT_ACTIVITY}</h3>
-              <div className="space-y-6">
-                {myFoods.slice(0, LIMITS.RECENT_VIEWS_DASHBOARD).map((food, i) => (
-                  <div key={i} className="flex items-center gap-6 p-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 rounded-2xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-800">
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                      <SafeImage
-                        src={getValidImageUrl(food.image)}
-                        className="object-cover"
-                        alt={food.name || LABELS.COMMON.UNKNOWN}
-                        fill
-                        sizes="64px"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-800 dark:text-slate-200 text-body">{food.name}</h4>
-                      <p className="text-small text-gray-400">{LABELS.RESTAURANT.STATUS}: <span className="text-primary font-bold">{food.status}</span></p>
-                    </div>
-                    <p className="font-bold text-gray-800 dark:text-slate-200 text-body">{formatCurrency(food.price)}</p>
-                  </div>
-                ))}
-                {myFoods.length === 0 && <p className="text-center text-gray-400 py-8">{LABELS.RESTAURANT.NO_FOOD}</p>}
-              </div>
-            </div>
+          <div className="space-y-10">
+            {/* SVG Charts & Business Insights */}
+            <MerchantAnalytics />
 
-            <div className="space-y-8">
-              <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
-                <h3 className="text-h3 text-gray-800 dark:text-slate-100 mb-6">{LABELS.RESTAURANT.SETTINGS_TITLE}</h3>
+            {/* Lower dashboard info */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 card-container p-8">
+                <h3 className="text-h2 text-gray-800 dark:text-slate-100 mb-8">{LABELS.RESTAURANT.RECENT_ACTIVITY}</h3>
                 <div className="space-y-6">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-slate-400 block mb-2">{LABELS.RESTAURANT.OPERATING_HOURS}</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
-                        defaultValue={restaurant?.profile?.openingHours || ''}
-                        id="opening-hours-input"
-                        className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
-                      />
-                      <Button
-                        onClick={() => {
-                          const val = (document.getElementById('opening-hours-input') as HTMLInputElement)?.value;
-                          actions.updateProfileHours(val);
-                        }}
-                      >
-                        {LABELS.RESTAURANT.SAVE}
-                      </Button>
+                  {myFoods.slice(0, LIMITS.RECENT_VIEWS_DASHBOARD).map((food, i) => (
+                    <div key={i} className="flex items-center gap-6 p-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 rounded-2xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-800">
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                        <SafeImage
+                          src={getValidImageUrl(food.image)}
+                          className="object-cover"
+                          alt={food.name || LABELS.COMMON.UNKNOWN}
+                          fill
+                          sizes="64px"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-800 dark:text-slate-200 text-body">{food.name}</h4>
+                        <p className="text-small text-gray-400">{LABELS.RESTAURANT.STATUS}: <span className="text-primary font-bold">{food.status}</span></p>
+                      </div>
+                      <p className="font-bold text-gray-800 dark:text-slate-200 text-body">{formatCurrency(food.price)}</p>
                     </div>
-                  </div>
-                  {restaurant?.profile?.contactPhone && (
-                    <div>
-                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400 block mb-1">{LABELS.RESTAURANT.CONTACT_PHONE}</span>
-                      <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{restaurant.profile.contactPhone}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4">
-                    <Button
-                      variant="outline"
-                      fullWidth
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="rounded-xl flex items-center justify-center gap-2 border-gray-200 text-gray-700 dark:text-slate-300 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900"
-                    >
-                      <Store size={16} />
-                      <span>{LABELS.COMMON.EDIT} {LABELS.RESTAURANT.EDIT_STORE}</span>
-                    </Button>
-                  </div>
+                  ))}
+                  {myFoods.length === 0 && <p className="text-center text-gray-400 py-8">{LABELS.RESTAURANT.NO_FOOD}</p>}
                 </div>
               </div>
 
-              <div className="gradient-bg rounded-card p-8 text-white shadow-xl shadow-orange-100 dark:shadow-none">
-                <Sparkles size={40} className="mb-6 opacity-50" />
-                <h3 className="text-h2 !text-white mb-4">{LABELS.RESTAURANT.AI_SUGGESTION_TITLE}</h3>
-                <p className="text-body text-orange-50 mb-8 leading-relaxed">{LABELS.RESTAURANT.AI_SUGGESTION_DESC}</p>
-                <Button variant="secondary" fullWidth>{LABELS.RESTAURANT.VIEW_INSIGHT}</Button>
+              <div className="space-y-8">
+                <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
+                  <h3 className="text-h3 text-gray-800 dark:text-slate-100 mb-6">{LABELS.RESTAURANT.SETTINGS_TITLE}</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 dark:text-slate-400 block mb-2">{LABELS.RESTAURANT.OPERATING_HOURS}</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
+                          value={openingHoursText}
+                          onChange={(e) => setOpeningHoursText(e.target.value)}
+                          className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
+                        />
+                        <Button
+                          onClick={() => {
+                            actions.updateProfileHours(openingHoursText);
+                          }}
+                        >
+                          {LABELS.RESTAURANT.SAVE}
+                        </Button>
+                      </div>
+                    </div>
+                    {restaurant?.profile?.contactPhone && (
+                      <div>
+                        <span className="text-xs font-bold text-gray-500 dark:text-slate-400 block mb-1">{LABELS.RESTAURANT.CONTACT_PHONE}</span>
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{restaurant.profile.contactPhone}</span>
+                      </div>
+                    )}
+                    <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4">
+                      <Button
+                        variant="outline"
+                        fullWidth
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="rounded-xl flex items-center justify-center gap-2 border-gray-200 text-gray-700 dark:text-slate-300 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900"
+                      >
+                        <Store size={16} />
+                        <span>{LABELS.COMMON.EDIT} {LABELS.RESTAURANT.EDIT_STORE}</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="gradient-bg rounded-card p-8 text-white shadow-xl shadow-orange-100 dark:shadow-none">
+                  <Sparkles size={40} className="mb-6 opacity-50" />
+                  <h3 className="text-h2 !text-white mb-4">{LABELS.RESTAURANT.AI_SUGGESTION_TITLE}</h3>
+                  <p className="text-body text-orange-50 mb-8 leading-relaxed">{LABELS.RESTAURANT.AI_SUGGESTION_DESC}</p>
+                  <Button variant="secondary" fullWidth>{LABELS.RESTAURANT.VIEW_INSIGHT}</Button>
+                </div>
               </div>
             </div>
           </div>

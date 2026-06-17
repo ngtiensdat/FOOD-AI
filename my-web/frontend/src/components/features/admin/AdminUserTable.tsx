@@ -5,12 +5,14 @@
 // Các chức năng đặc biệt: Phân trang danh sách tài khoản, chứa các nút xóa tài khoản nhanh.
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Trash2, User } from 'lucide-react';
 import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
 import { formatDate } from '@/utils/formatters';
-import { User as UserType } from '@/types/user';
+import { User as UserType, UserRole } from '@/types/user';
 import { MiniCardForAdmin } from './MiniCardForAdmin';
+import { LIMITS } from '@/constants/limits.constant';
 
 interface AdminUserTableProps {
   filteredData: UserType[];
@@ -19,20 +21,21 @@ interface AdminUserTableProps {
   };
 }
 
-const PAGE_SIZE = 5;
+
 
 export const AdminUserTable = ({
   filteredData,
   actions,
 }: AdminUserTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
-  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredData.length / LIMITS.ADMIN_PAGE_SIZE);
   const activePage = Math.min(Math.max(1, currentPage), totalPages || 1);
 
   const paginatedData = useMemo(() => {
-    const start = (activePage - 1) * PAGE_SIZE;
-    return filteredData.slice(start, start + PAGE_SIZE);
+    const start = (activePage - 1) * LIMITS.ADMIN_PAGE_SIZE;
+    return filteredData.slice(start, start + LIMITS.ADMIN_PAGE_SIZE);
   }, [filteredData, activePage]);
 
   return (
@@ -57,7 +60,7 @@ export const AdminUserTable = ({
               }
             ];
 
-            const isMerchant = item.role === 'RESTAURANT';
+            const isMerchant = item.role === UserRole.RESTAURANT;
 
             return (
               <MiniCardForAdmin
@@ -67,6 +70,7 @@ export const AdminUserTable = ({
                 subtitle={item.email}
                 image={item.avatar}
                 fallbackIcon={<User size={36} />}
+                onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[
                   { 
                     label: isMerchant ? LABELS.AUTH.RESTAURANT_ROLE : LABELS.AUTH.CUSTOMER, 
