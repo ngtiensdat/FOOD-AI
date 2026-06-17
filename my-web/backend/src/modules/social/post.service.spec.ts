@@ -40,6 +40,7 @@ describe('PostService', () => {
         create: jest.fn(),
         findUnique: jest.fn(),
         delete: jest.fn(),
+        update: jest.fn(),
       },
     };
 
