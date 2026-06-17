@@ -64,6 +64,7 @@ export const useProfileData = (targetId?: string | null) => {
     if (idToFetch) {
       fetchProfileData(idToFetch, me?.id).then((data) => {
         if (active && data) {
+
           setProfile(data);
           // Sync profile to auth store if it is the current user to ensure points/level are initialized
           if (me?.id === data.id) {
