@@ -8,6 +8,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
 interface DangerZoneSectionProps {
@@ -77,13 +78,14 @@ export const DangerZoneSection = ({
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">
                   {LABELS.SETTINGS.DANGER_ZONE.PASSWORD_LABEL}
                 </label>
-                <input
+                <Input
                   type="password"
                   required
                   placeholder={LABELS.SETTINGS.DANGER_ZONE.PASSWORD_PLACEHOLDER}
+                  variant="none"
                   className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-input py-3.5 px-4 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-50 dark:focus:ring-red-950/20 dark:text-white transition-all text-sm font-medium"
                   value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
+                  onChange={(e) => setDeletePassword((e.target as HTMLInputElement).value)}
                 />
               </div>
 

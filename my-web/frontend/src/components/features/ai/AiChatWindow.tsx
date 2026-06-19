@@ -14,6 +14,7 @@ import {
 import { useAiChat } from '@/hooks/useAiChat';
 import { LABELS } from '@/constants/labels';
 import { SafeImage } from '@/components/base/SafeImage';
+import { Button } from '@/components/base/Button';
 
 // Import presentational subcomponents
 import { ChatSidebar } from './ChatSidebar';
@@ -89,15 +90,17 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
         <div className="flex items-center justify-between px-6 py-4 border-b border-orange-100 dark:border-slate-800 bg-orange-50/40 dark:bg-slate-900/30 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-3">
             {!isSidebarOpen && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsSidebarOpen(true)}
                 title={LABELS.AI_CHAT.HEADER.OPEN_SIDEBAR}
                 aria-label={LABELS.AI_CHAT.HEADER.OPEN_SIDEBAR}
+                variant="none"
+                size="none"
                 className="p-2.5 rounded-xl hover:bg-orange-50/20 text-gray-500 dark:text-slate-400 transition-colors mr-1 border border-transparent hover:border-gray-200 dark:hover:border-slate-800"
               >
                 <PanelLeft size={16} />
-              </button>
+              </Button>
             )}
             <div className="relative w-10 h-10 rounded-2xl overflow-hidden shadow-md bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 flex-shrink-0">
               <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill className="object-contain p-1.5 animate-pulse" />
@@ -117,9 +120,11 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
 
           <div className="flex items-center gap-2">
             {/* Nút cấu hình giả lập thời tiết / GPS */}
-            <button 
+            <Button 
               type="button"
               onClick={() => setShowConfig(!showConfig)}
+              variant="none"
+              size="none"
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all duration-300 flex items-center gap-1.5 ${
                 showConfig 
                   ? 'bg-primary text-white border-primary shadow-md' 
@@ -128,19 +133,21 @@ export function AiChatWindow({ onViewDetail, initialMessage, onResetChat }: AiCh
             >
               <CloudSun size={14} />
               {LABELS.AI_CHAT.HEADER.SIMULATE_CONTEXT}
-            </button>
+            </Button>
 
             {/* Nút Đóng / Thu gọn Khung Chat Trực tiếp */}
             {onResetChat && (
-              <button
+              <Button
                 type="button"
                 onClick={onResetChat}
                 title={LABELS.AI_CHAT.HEADER.COLLAPSE_CHAT}
                 aria-label={LABELS.AI_CHAT.HEADER.COLLAPSE_CHAT}
+                variant="none"
+                size="none"
                 className="p-2 rounded-xl bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400 border border-gray-100 dark:border-slate-800 hover:text-red-500 hover:border-red-200 dark:hover:border-red-950/20 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:shadow"
               >
                 <X size={16} />
-              </button>
+              </Button>
             )}
           </div>
         </div>

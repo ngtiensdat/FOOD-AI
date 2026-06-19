@@ -2,7 +2,7 @@
 // Ý nghĩa: Khi dịch vụ ngoài liên tiếp gặp lỗi, Circuit Breaker sẽ chuyển sang trạng thái OPEN để chặn toàn bộ request gửi đi, tránh quá tải hệ thống, và trả về giá trị fallback lập tức.
 // Thiết kế: State Machine Pattern (CLOSED, OPEN, HALF_OPEN), Generic Types cho phép bọc mọi hàm Promise.
 
-export class CircuitBreaker<TArgs extends any[], TReturn> {
+export class CircuitBreaker<TArgs extends unknown[], TReturn> {
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
   private failureCount = 0;
   private nextAttemptTime = 0;
@@ -28,7 +28,11 @@ export class CircuitBreaker<TArgs extends any[], TReturn> {
         // Trạng thái OPEN: Chặn ngay lập tức và trả về fallback (nếu có)
         if (this.options.fallbackValue !== undefined) {
           if (typeof this.options.fallbackValue === 'function') {
-            return (this.options.fallbackValue as any)(...args);
+            return (
+              this.options.fallbackValue as (
+                ...args: TArgs
+              ) => TReturn | Promise<TReturn>
+            )(...args);
           }
           return this.options.fallbackValue;
         }
@@ -57,7 +61,11 @@ export class CircuitBreaker<TArgs extends any[], TReturn> {
 
       if (this.options.fallbackValue !== undefined) {
         if (typeof this.options.fallbackValue === 'function') {
-          return (this.options.fallbackValue as any)(...args);
+          return (
+            this.options.fallbackValue as (
+              ...args: TArgs
+            ) => TReturn | Promise<TReturn>
+          )(...args);
         }
         return this.options.fallbackValue;
       }

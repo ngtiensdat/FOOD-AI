@@ -55,7 +55,7 @@ export class CategoryGroupService {
       });
 
       return group;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'

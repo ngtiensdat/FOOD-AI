@@ -19,11 +19,12 @@ import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
 import { FollowersModal } from '@/components/features/profile/FollowersModal';
-import { FollowingModal } from '@/components/features/profile/FollowingModal';
+import { FollowingModal, FollowingRestaurant } from '@/components/features/profile/FollowingModal';
 import { RestaurantHeaderCard } from '@/components/features/restaurant/RestaurantHeaderCard';
 import { RestaurantInfoTab } from '@/components/features/restaurant/RestaurantInfoTab';
 import { RestaurantMenuSidebar } from '@/components/features/restaurant/RestaurantMenuSidebar';
 import { RestaurantFoodGrid } from '@/components/features/restaurant/RestaurantFoodGrid';
+import { User } from '@/types/user';
 
 export default function RestaurantProfilePage() {
   const router = useRouter();
@@ -157,8 +158,10 @@ export default function RestaurantProfilePage() {
       <div className="max-w-7xl mx-auto px-6 mt-12 pb-12">
         {/* Tab Selection */}
         <div className="flex border-b border-gray-200 dark:border-slate-800 mb-8">
-          <button
+          <Button
             onClick={() => setActiveTab('menu')}
+            variant="none"
+            size="none"
             className={`pb-4 px-6 font-extrabold text-body transition-all duration-300 flex items-center gap-2 border-b-2 -mb-[2px] ${
               activeTab === 'menu'
                 ? 'border-primary text-primary'
@@ -167,9 +170,11 @@ export default function RestaurantProfilePage() {
           >
             <Utensils size={18} />
             <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MENU_TAB}</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('info')}
+            variant="none"
+            size="none"
             className={`pb-4 px-6 font-extrabold text-body transition-all duration-300 flex items-center gap-2 border-b-2 -mb-[2px] ${
               activeTab === 'info'
                 ? 'border-primary text-primary'
@@ -178,7 +183,7 @@ export default function RestaurantProfilePage() {
           >
             <Info size={18} />
             <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.INFO_TAB}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Tab Contents */}
@@ -232,7 +237,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowers}
             error={errorFollowers}
             followersList={followersList}
-            onItemClick={(followerUser: any) => {
+            onItemClick={(followerUser: User) => {
               setShowFollowersModal(false);
               router.push(`/profile?id=${followerUser.id}`);
             }}
@@ -249,7 +254,7 @@ export default function RestaurantProfilePage() {
             loading={loadingFollowing}
             error={errorFollowing}
             restaurants={followingList.map((item) => item.restaurant)}
-            onRestaurantClick={(restaurantItem: any) => {
+            onRestaurantClick={(restaurantItem: FollowingRestaurant) => {
               setShowFollowingModal(false);
               router.push(`/restaurant/${restaurantItem.id}`);
             }}

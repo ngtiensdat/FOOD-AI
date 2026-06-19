@@ -80,12 +80,14 @@ export const SettingsSection = ({
         animate={{ opacity: 1, y: 0 }}
         className="card-container p-8 md:p-10 shadow-2xl mt-8"
       >
-        <button
+        <Button
           onClick={() => setActiveTab('home')}
           className="flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-all mb-6 text-sm"
+          variant="none"
+          size="none"
         >
           <ArrowLeft size={18} /> {LABELS.COMMON.BACK_HOME}
-        </button>
+        </Button>
 
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-primary text-2xl">
@@ -107,15 +109,17 @@ export const SettingsSection = ({
             { id: 'bug_report', label: LABELS.BUG_REPORT.TITLE, icon: Bug },
             { id: 'danger_zone', label: LABELS.SETTINGS.TABS.DANGER_ZONE, icon: AlertTriangle },
           ].map((tab) => (
-            <button
+            <Button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id as any)}
+              onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone')}
               className={`pb-3 transition-all flex items-center gap-2 ${settingsTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
                 }`}
+              variant="none"
+              size="none"
             >
               <tab.icon size={18} />
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
 

@@ -1,0 +1,271 @@
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Subject } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+import { PrismaService } from '../../database/prisma.service';
+import { NotificationGateway } from '../notification/notification.gateway';
+import {
+  NotificationType,
+  UserRole,
+  PostType,
+  PostStatus,
+} from '@prisma/client';
+import { DEFAULT_BADGE_CONFIGS } from '../../common/constants/badge.constant';
+import { MESSAGES } from '../../common/constants/messages.constant';
+
+export interface GamificationResult {
+  points: number;
+  level: number;
+  badgeTitle: string | null;
+  pointsChanged: number;
+}
+
+export interface GamificationJob {
+  userId: number;
+  action:
+    | 'POST_REVIEW'
+    | 'COMMENT'
+    | 'REPLY'
+    | 'LIKE'
+    | 'UNDO_POST_REVIEW'
+    | 'UNDO_COMMENT'
+    | 'UNDO_REPLY'
+    | 'UNDO_LIKE'
+    | 'REDEEM_VOUCHER';
+  voucherPointsCost?: number;
+  resolve: (value: GamificationResult) => void;
+  reject: (reason: unknown) => void;
+}
+
+@Injectable()
+export class GamificationQueueService implements OnModuleInit {
+  private readonly logger = new Logger(GamificationQueueService.name);
+  private readonly queue$ = new Subject<GamificationJob>();
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationGateway: NotificationGateway,
+  ) {}
+
+  onModuleInit() {
+    // Process points updates sequentially to avoid DB locking and race conditions
+    this.queue$
+      .pipe(
+        concatMap(async (job) => {
+          try {
+            const result = await this.processJob(job);
+            job.resolve(result);
+          } catch (error) {
+            this.logger.error(
+              `Error processing gamification job: ${error.message}`,
+              error.stack,
+            );
+            job.reject(error);
+          }
+        }),
+      )
+      .subscribe();
+  }
+
+  async addJob(
+    userId: number,
+    action: GamificationJob['action'],
+    voucherPointsCost?: number,
+  ): Promise<GamificationResult> {
+    return new Promise<GamificationResult>((resolve, reject) => {
+      this.queue$.next({ userId, action, voucherPointsCost, resolve, reject });
+    });
+  }
+
+  private async processJob(job: GamificationJob) {
+    const { userId, action, voucherPointsCost } = job;
+    this.logger.log(
+      `Processing points for user ID ${userId}, action: ${action}`,
+    );
+
+    // 1. Fetch dynamic config
+    const config = await this.prisma.gamificationConfig.findUnique({
+      where: { id: 'singleton' },
+    });
+
+    const pointsPerLevel = config?.pointsPerLevel ?? 1000;
+    const postReviewPoints = config?.postReviewPoints ?? 50;
+    const commentPoints = config?.commentPoints ?? 10;
+    const likePoints = config?.likePoints ?? 5;
+    const deductionMultiplier = config?.deductionMultiplier ?? 1.0;
+
+    let pointsAmount = 0;
+
+    switch (action) {
+      case 'POST_REVIEW':
+        pointsAmount = postReviewPoints;
+        break;
+      case 'COMMENT':
+        pointsAmount = commentPoints;
+        break;
+      case 'REPLY':
+        pointsAmount = Math.round(commentPoints / 2);
+        break;
+      case 'LIKE':
+        pointsAmount = likePoints;
+        break;
+      case 'UNDO_POST_REVIEW':
+        pointsAmount = -Math.round(postReviewPoints * deductionMultiplier);
+        break;
+      case 'UNDO_COMMENT':
+        pointsAmount = -Math.round(commentPoints * deductionMultiplier);
+        break;
+      case 'UNDO_REPLY':
+        pointsAmount = -Math.round(
+          Math.round(commentPoints / 2) * deductionMultiplier,
+        );
+        break;
+      case 'UNDO_LIKE':
+        pointsAmount = -Math.round(likePoints * deductionMultiplier);
+        break;
+      case 'REDEEM_VOUCHER':
+        pointsAmount = -(voucherPointsCost ?? 0);
+        break;
+      default:
+        throw new Error(`Invalid action type: ${action as string}`);
+    }
+
+    // Use Prisma transaction to ensure bidirectional data integrity and row updates
+    return await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: {
+          points: true,
+          level: true,
+          role: true,
+          badgeTitle: true,
+          name: true,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      const nextPoints = Math.max(0, user.points + pointsAmount);
+      const nextLevel = Math.max(
+        1,
+        Math.floor(nextPoints / pointsPerLevel) + 1,
+      );
+
+      // Compute next badge title
+      const badges = await tx.badgeConfig.findMany({
+        where: { role: user.role },
+      });
+
+      let nextBadge: string | null = user.badgeTitle;
+      if (badges.length > 0) {
+        const sorted = badges.sort((a, b) => b.points - a.points);
+
+        // Fetch user stats
+        const [reviewsCount, postLikesCount, followersCount, restaurant] =
+          await Promise.all([
+            tx.post.count({
+              where: {
+                authorId: userId,
+                postType: PostType.REVIEW,
+                status: PostStatus.APPROVED,
+                deletedAt: null,
+              },
+            }),
+            tx.like.count({
+              where: { post: { authorId: userId } },
+            }),
+            user.role === UserRole.CUSTOMER
+              ? tx.userFollow.count({ where: { followingId: userId } })
+              : tx.follow.count({ where: { restaurant: { ownerId: userId } } }),
+            user.role === UserRole.RESTAURANT
+              ? tx.restaurant.findFirst({
+                  where: { ownerId: userId },
+                  select: { ratingAvg: true, ratingCount: true },
+                })
+              : null,
+          ]);
+
+        const ratingAvg = restaurant?.ratingAvg ?? 0;
+        const ratingCount = restaurant?.ratingCount ?? 0;
+
+        const matched = sorted.find((b) => {
+          if (nextPoints < b.points) return false;
+          if (b.minReviews !== null && reviewsCount < b.minReviews)
+            return false;
+          if (b.minPostLikes !== null && postLikesCount < b.minPostLikes)
+            return false;
+          if (b.minRatingAvg !== null && ratingAvg < b.minRatingAvg)
+            return false;
+          if (b.minRatingCount !== null && ratingCount < b.minRatingCount)
+            return false;
+          if (b.minFollowers !== null && followersCount < b.minFollowers)
+            return false;
+          return true;
+        });
+
+        nextBadge = matched ? matched.title : null;
+      } else {
+        const sorted = DEFAULT_BADGE_CONFIGS.filter(
+          (b) => b.role === user.role,
+        ).sort((a, b) => b.points - a.points);
+        const matched = sorted.find((b) => nextPoints >= b.points);
+        nextBadge = matched ? matched.title : null;
+      }
+
+      // Update User fields
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: {
+          points: nextPoints,
+          level: nextLevel,
+          badgeTitle: nextBadge,
+        },
+      });
+
+      // 3. Level-up or Badge notification (Socket + DB)
+      if (nextLevel > user.level) {
+        const title = MESSAGES.LOYALTY.LEVEL_UP_TITLE;
+        const content = MESSAGES.LOYALTY.LEVEL_UP_BODY(nextLevel);
+        await tx.notification.create({
+          data: {
+            userId,
+            title,
+            content,
+            type: NotificationType.LEVEL_UP,
+          },
+        });
+        await this.notificationGateway.sendNotificationToUser(userId, {
+          type: NotificationType.LEVEL_UP,
+          title,
+          content,
+        });
+      }
+
+      if (nextBadge !== user.badgeTitle && nextBadge !== null) {
+        const title = MESSAGES.LOYALTY.NEW_BADGE_TITLE;
+        const content = MESSAGES.LOYALTY.NEW_BADGE_BODY(nextBadge);
+        await tx.notification.create({
+          data: {
+            userId,
+            title,
+            content,
+            type: NotificationType.LEVEL_UP,
+          },
+        });
+        await this.notificationGateway.sendNotificationToUser(userId, {
+          type: NotificationType.LEVEL_UP,
+          title,
+          content,
+        });
+      }
+
+      return {
+        points: nextPoints,
+        level: nextLevel,
+        badgeTitle: nextBadge,
+        pointsChanged: pointsAmount,
+      };
+    });
+  }
+}

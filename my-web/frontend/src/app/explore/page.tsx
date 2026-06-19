@@ -122,9 +122,9 @@ function ExploreContent() {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 rounded-card overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm animate-pulse flex flex-col h-[320px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-card overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm animate-pulse flex flex-col h-[265px]">
                 <div className="h-32 bg-gray-200 dark:bg-slate-800" />
                 <div className="px-5 pb-5 pt-10 relative flex-1 flex flex-col justify-between">
                   <div className="absolute -top-10 left-5 w-16 h-16 rounded-2xl bg-gray-300 dark:bg-slate-700" />
@@ -151,7 +151,7 @@ function ExploreContent() {
           </div>
         ) : (
           <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid items-stretch grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               <AnimatePresence>
                 {restaurants.map((restaurant, index) => (
                   <motion.div

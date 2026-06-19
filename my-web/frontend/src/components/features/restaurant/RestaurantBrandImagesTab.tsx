@@ -40,10 +40,11 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
+          <Input
             type="checkbox"
             checked={syncWithPersonalAvatar}
-            onChange={(e) => setSyncWithPersonalAvatar(e.target.checked)}
+            onChange={(e) => setSyncWithPersonalAvatar((e.target as HTMLInputElement).checked)}
+            variant="none"
             className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
           />
           <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">
@@ -66,10 +67,11 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
+          <Input
             type="checkbox"
             checked={syncWithPersonalCover}
-            onChange={(e) => setSyncWithPersonalCover(e.target.checked)}
+            onChange={(e) => setSyncWithPersonalCover((e.target as HTMLInputElement).checked)}
+            variant="none"
             className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
           />
           <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">

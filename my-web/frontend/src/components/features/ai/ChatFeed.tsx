@@ -16,6 +16,7 @@ import { User as UserType } from '@/types/user';
 import { ChatMessage } from '@/hooks/useAiChat';
 import { FoodCardData } from '@/components/features/food/FoodCard';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/base/Button';
 
 interface ChatFeedProps {
   messages: ChatMessage[];
@@ -127,20 +128,24 @@ export function ChatFeed({
                 {/* Nút bấm Đăng nhập / Đăng ký nếu là tin nhắn yêu cầu xác thực */}
                 {msg.isAuthPrompt && (
                   <div className="pt-2 pl-1 flex items-center gap-3">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => router.push('/login')}
+                      variant="none"
+                      size="none"
                       className="px-5 py-2.5 rounded-2xl bg-primary text-white text-xs font-bold shadow-md hover:bg-orange-600 transition-all cursor-pointer"
                     >
                       {LABELS.AUTH.LOGIN}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => router.push('/register')}
+                      variant="none"
+                      size="none"
                       className="px-5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
                     >
                       {LABELS.AUTH.REGISTER_NOW}
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -158,7 +163,7 @@ export function ChatFeed({
                             onViewDetail={onViewDetail}
                           />
                           <div className="flex items-center gap-2 pl-1 select-none">
-                            <button
+                            <Button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -166,6 +171,8 @@ export function ChatFeed({
                                   onFeedback?.(Number(food.id), 'LIKE');
                                 }
                               }}
+                              variant="none"
+                              size="none"
                               className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
                                 food.feedback === 'LIKE'
                                   ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800'
@@ -173,8 +180,8 @@ export function ChatFeed({
                               }`}
                             >
                               {LABELS.AI_CHAT.FEED.FEEDBACK_LIKE}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -182,6 +189,8 @@ export function ChatFeed({
                                   onFeedback?.(Number(food.id), 'DISLIKE');
                                 }
                               }}
+                              variant="none"
+                              size="none"
                               className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
                                 food.feedback === 'DISLIKE'
                                   ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800'
@@ -189,7 +198,7 @@ export function ChatFeed({
                               }`}
                             >
                               {LABELS.AI_CHAT.FEED.FEEDBACK_DISLIKE}
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ))}

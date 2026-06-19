@@ -9,6 +9,7 @@ import React from 'react';
 import { User as UserIcon } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { Input } from '@/components/base/Input';
 
 interface ProfileSettingsTabProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
@@ -112,11 +113,12 @@ export const ProfileSettingsTab = ({
                 <span className="text-xs text-gray-400 font-medium">{field.desc}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                <input
+                <Input
                   type="checkbox"
                   className="sr-only peer"
                   checked={privacyState[field.key]}
                   onChange={() => handleToggleField(field.key)}
+                  variant="none"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>

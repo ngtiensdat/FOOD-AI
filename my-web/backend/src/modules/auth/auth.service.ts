@@ -332,13 +332,11 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
-      // Ép kiểu 'as any' là bắt buộc ở đây do thuộc tính 'expiresIn' sử dụng kiểu dữ liệu 'StringValue'
-      // quá nghiêm ngặt của gói 'ms' (chặn kiểu dữ liệu 'string' động của env).
-      expiresIn: appConfig().jwtAccessExpiration as any,
+      expiresIn: appConfig().jwtAccessExpiration as '1d',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: appConfig().jwtRefreshExpiration as any,
+      expiresIn: appConfig().jwtRefreshExpiration as '1d',
     });
 
     const hashedRefreshToken = await BcryptHelper.hash(refreshToken, 10);

@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { reportService } from '@/services/report.service';
@@ -60,7 +61,7 @@ export const ReportModal = ({
       // Reset form state
       setSelectedReason(reportReasons[0]);
       setCustomDetails('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       const { toast } = await import('@/store/useToastStore');
       toast.error(LABELS.MODERATION.TOAST_REPORT_ERROR);
@@ -79,13 +80,15 @@ export const ReportModal = ({
             <ShieldAlert size={24} />
             {LABELS.MODERATION.REPORT_TITLE}
           </h2>
-          <button
+          <Button
             onClick={onClose}
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-400 hover:text-gray-600"
             aria-label={LABELS.COMMON.CANCEL}
+            variant="none"
+            size="none"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Warning Banner */}
@@ -110,12 +113,13 @@ export const ReportModal = ({
                         : 'border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900/50'
                     }`}
                   >
-                  <input
+                  <Input
                     type="radio"
                     name="reportReason"
                     value={reason}
                     checked={selectedReason === reason}
                     onChange={() => setSelectedReason(reason)}
+                    variant="none"
                     className="accent-rose-500"
                   />
                   <span>{reason}</span>
@@ -128,11 +132,13 @@ export const ReportModal = ({
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {LABELS.MODERATION.REPORT_REASON_LABEL}
             </label>
-            <textarea
-              className="form-input min-h-[90px] resize-none"
+            <Input
+              isTextArea
+              variant="none"
+              className="form-input min-h-[90px] resize-none w-full"
               placeholder={LABELS.MODERATION.REPORT_DETAILS_PLACEHOLDER}
               value={customDetails}
-              onChange={(e) => setCustomDetails(e.target.value)}
+              onChange={(e) => setCustomDetails((e.target as HTMLTextAreaElement).value)}
               disabled={loading}
             />
           </div>

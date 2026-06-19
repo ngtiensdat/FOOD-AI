@@ -29,6 +29,8 @@ import { LABELS } from '@/constants/labels';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/providers/theme-provider';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 
 interface FoodItem {
   id: number;
@@ -142,7 +144,7 @@ export function PreferenceSettingsModal({
         console.error('Lỗi khi xóa tất cả phản hồi:', err);
         toast.error(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_ERROR);
       } finally {
-        setClearingFeedbacks(null as any);
+        setClearingFeedbacks(false);
       }
     }
   };
@@ -190,13 +192,15 @@ export function PreferenceSettingsModal({
                 {LABELS.AI_CHAT.PREFERENCES.TITLE}
               </h3>
             </div>
-            <button
+            <Button
               id="preference-modal-close-button"
               onClick={onClose}
+              variant="none"
+              size="none"
               className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X size={18} />
-            </button>
+            </Button>
           </div>
 
           {/* Body Split View */}
@@ -208,10 +212,12 @@ export function PreferenceSettingsModal({
                 const Icon = tab.icon;
                 const isSelected = activeTab === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     id={`preference-modal-sidebar-tab-${tab.id}`}
                     onClick={() => setActiveTab(tab.id)}
+                    variant="none"
+                    size="none"
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all relative ${
                       isSelected
                         ? 'bg-slate-100 dark:bg-slate-800 text-orange-500 shadow-sm'
@@ -226,7 +232,7 @@ export function PreferenceSettingsModal({
                         className="absolute left-0 top-2 bottom-2 w-1 bg-orange-500 rounded-full"
                       />
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -252,7 +258,7 @@ export function PreferenceSettingsModal({
                       <select
                         id="preference-modal-theme-select"
                         value={theme}
-                        onChange={(e) => setTheme(e.target.value as any)}
+                        onChange={(e) => setTheme(e.target.value as 'mixed' | 'light' | 'dark')}
                         className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
                       >
                         <option value="mixed">{LABELS.AI_CHAT.PREFERENCES.THEME_MIXED}</option>
@@ -272,7 +278,7 @@ export function PreferenceSettingsModal({
                         id="preference-modal-lang-select"
                         value={lang}
                         onChange={(e) => {
-                          setPendingLang(e.target.value as any);
+                          setPendingLang(e.target.value as 'auto' | 'vi' | 'en');
                           setShowConfirmLang(true);
                         }}
                         className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500"
@@ -292,11 +298,12 @@ export function PreferenceSettingsModal({
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input
+                        <Input
                           id="preference-modal-voice-toggle"
+                          variant="none"
                           type="checkbox"
                           checked={voiceEnabled}
-                          onChange={(e) => setVoiceEnabled(e.target.checked)}
+                          onChange={(e) => setVoiceEnabled((e.target as HTMLInputElement).checked)}
                           className="sr-only peer"
                         />
                         <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-orange-500"></div>
@@ -316,9 +323,11 @@ export function PreferenceSettingsModal({
 
                   {/* Subtab Thích / Ghét */}
                   <div className="flex gap-4 border-b border-orange-50/50 dark:border-slate-800/60 mb-4 shrink-0">
-                    <button
+                    <Button
                       id="preference-modal-tab-like"
                       onClick={() => setActiveSubTab('like')}
+                      variant="none"
+                      size="none"
                       className={`pb-2.5 text-[11px] font-extrabold transition-all relative flex items-center gap-1.5 ${
                         activeSubTab === 'like'
                           ? 'text-orange-500'
@@ -333,10 +342,12 @@ export function PreferenceSettingsModal({
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full"
                         />
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       id="preference-modal-tab-dislike"
                       onClick={() => setActiveSubTab('dislike')}
+                      variant="none"
+                      size="none"
                       className={`pb-2.5 text-[11px] font-extrabold transition-all relative flex items-center gap-1.5 ${
                         activeSubTab === 'dislike'
                           ? 'text-orange-500'
@@ -351,7 +362,7 @@ export function PreferenceSettingsModal({
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full"
                         />
                       )}
-                    </button>
+                    </Button>
                   </div>
 
                   {/* List Container */}
@@ -412,11 +423,13 @@ export function PreferenceSettingsModal({
                             </div>
 
                             {/* Delete button */}
-                            <button
+                            <Button
                               id={`preference-modal-remove-button-${item.foodId}`}
                               onClick={() => handleRemoveFeedback(item)}
                               disabled={removingId === item.foodId}
                               title={LABELS.AI_CHAT.PREFERENCES.TOOLTIP_REMOVE}
+                              variant="none"
+                              size="none"
                               className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer shrink-0 border border-transparent hover:border-red-100 dark:hover:border-red-900/30"
                             >
                               {removingId === item.foodId ? (
@@ -424,7 +437,7 @@ export function PreferenceSettingsModal({
                               ) : (
                                 <Trash2 size={12} />
                               )}
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -451,10 +464,12 @@ export function PreferenceSettingsModal({
                         </p>
                       </div>
                       
-                      <button
+                      <Button
                         id="preference-modal-clear-all-btn"
                         onClick={handleClearAllFeedbacks}
                         disabled={clearingFeedbacks}
+                        variant="none"
+                        size="none"
                         className="px-4 py-2 text-xs font-extrabold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {clearingFeedbacks ? (
@@ -463,7 +478,7 @@ export function PreferenceSettingsModal({
                           <Trash2 size={14} />
                         )}
                         {LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_BTN}
-                      </button>
+                      </Button>
                     </div>
 
                   </div>

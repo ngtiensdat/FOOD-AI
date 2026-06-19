@@ -14,8 +14,7 @@ import { MESSAGES } from '../constants/messages.constant';
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
   protected override async getTracker(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    req: Record<string, any>,
+    req: Record<string, unknown>,
   ): Promise<string> {
     await Promise.resolve();
     const request = req as unknown as import('express').Request;

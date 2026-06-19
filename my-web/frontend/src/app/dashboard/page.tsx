@@ -18,8 +18,8 @@ import { Avatar } from '@/components/base/Avatar';
 import { AiSuggestionBanner } from '@/components/features/ai/AiSuggestionBanner';
 import { UserProfileDetail } from '@/components/features/profile/UserProfileDetail';
 import { RecentFoodsList } from '@/components/features/food/RecentFoodsList';
-import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
-import { FoodCard } from '@/components/features/food/FoodCard';
+import { FoodDetailModal, FoodDetailData } from '@/components/features/food/FoodDetailModal';
+import { FoodCard, FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 
@@ -94,8 +94,10 @@ export default function CustomerDashboard() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{profile?.role}</p>
                 </div>
 
-                <button
+                <Button
                   onClick={() => setShowMenu(!showMenu)}
+                  variant="none"
+                  size="none"
                   className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
                   aria-label={LABELS.NAV.USER_MENU}
                 >
@@ -110,7 +112,7 @@ export default function CustomerDashboard() {
                     className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
                       }`}
                   />
-                </button>
+                </Button>
 
                 {showMenu && (
                   <>
@@ -168,10 +170,17 @@ export default function CustomerDashboard() {
                   {LABELS.CUSTOMER.NO_HISTORY}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recentViews.slice(0, LIMITS.RECENT_VIEWS_WIDGET).map((item) => (
-                    <FoodCard key={item.id} food={item.food} onViewDetail={setSelectedFood} />
-                  ))}
+                <div className="grid items-stretch grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {recentViews
+                    .slice(0, LIMITS.RECENT_VIEWS_WIDGET)
+                    .filter((item) => !!item.food)
+                    .map((item) => (
+                      <FoodCard
+                        key={item.id}
+                        food={item.food as unknown as FoodCardData}
+                        onViewDetail={setSelectedFood}
+                      />
+                    ))}
                 </div>
               )}
             </div>
@@ -204,7 +213,7 @@ export default function CustomerDashboard() {
       </main>
 
       {/* Modal Onboarding để cập nhật sở thích */}
-      {showOnboarding && (
+      {showOnboarding && profile && (
         <OnboardingModal
           user={profile}
           onComplete={handleOnboardingComplete}
@@ -215,7 +224,7 @@ export default function CustomerDashboard() {
 
       {selectedFood && (
         <FoodDetailModal
-          food={selectedFood}
+          food={selectedFood as unknown as FoodDetailData}
           onClose={() => setSelectedFood(null)}
         />
       )}

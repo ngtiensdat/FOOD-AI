@@ -7,6 +7,7 @@ import { socialService } from '@/services/social.service';
 import { addNotification } from '@/utils/notifications';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { LIMITS } from '@/constants/limits.constant';
 import { PostData } from '@/components/features/profile/PostCard';
 import { User, UserRole } from '@/types/user';
 
@@ -38,41 +39,85 @@ export const useSocialActions = ({
   const [reportTargetId, setReportTargetId] = useState<number | null>(null);
   const [reportTargetType, setReportTargetType] = useState<'POST' | 'COMMENT'>('POST');
 
+  const [levelUpData, setLevelUpData] = useState<{ level: number; badge?: string | null } | null>(null);
+  const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
+
   // Gamification helper to award points and handle level-ups
-  const awardPoints = async (pointsAmount: number, reason: string) => {
-    if (!profile) return;
-    if (profile.role !== UserRole.CUSTOMER && profile.role !== UserRole.RESTAURANT) return;
+  const awardPoints = async (reason: string) => {
+    if (!me?.id) return;
 
     try {
-      const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);
-      if (updatedProfile) {
-        const nextLevel = updatedProfile.level ?? 1;
-        const currentLevel = profile.level ?? 1;
-        if (nextLevel > currentLevel) {
-          toast.success(LABELS.LOYALTY.LEVEL_UP_SUCCESS(nextLevel));
+      // 1. Fetch updated data for the logged-in user (me) to see point changes
+      const updatedMe = await actions.fetchProfileData(me.id, me.id);
+      if (updatedMe) {
+        const nextLevel = updatedMe.level ?? 1;
+        const currentLevel = me.level ?? 1;
+        
+        let hasUnlockedNewBadge = false;
+        let newBadgeTitle: string | null = null;
+        if (updatedMe.badgeTitle !== me.badgeTitle && updatedMe.badgeTitle !== null) {
+          hasUnlockedNewBadge = true;
+          newBadgeTitle = updatedMe.badgeTitle ?? null;
+        }
+
+        if (nextLevel > currentLevel || hasUnlockedNewBadge) {
+          setLevelUpData({ level: nextLevel, badge: newBadgeTitle });
+          setIsLevelUpModalOpen(true);
+
           addNotification(
-            profile.id,
+            me.id,
             LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_TITLE,
             LABELS.LOYALTY.NOTIFICATIONS.LEVEL_UP_BODY(nextLevel),
             'LEVEL_UP',
-            '/trophy.png'
+            '/chibi linh vật/chúc mừng.png'
           );
         }
-        actions.setProfile(updatedProfile);
-        if (me && me.id === profile.id) {
-          login({
-            ...me,
-            points: updatedProfile.points,
-            level: updatedProfile.level,
-            badgeTitle: updatedProfile.badgeTitle,
-          });
+
+        let diff = 0;
+        if (me.points !== undefined && me.points !== null) {
+          diff = (updatedMe.points ?? 0) - me.points;
+        } else {
+          // Fallback standard points for actions if session points are not initialized yet
+          if (reason === LABELS.LOYALTY.REASONS.LIKE_POST) diff = LIMITS.LOYALTY_POINTS.LIKE_POST;
+          else if (reason === LABELS.LOYALTY.REASONS.UNLIKE_POST) diff = LIMITS.LOYALTY_POINTS.UNLIKE_POST;
+          else if (reason === LABELS.LOYALTY.REASONS.COMMENT_POST) diff = LIMITS.LOYALTY_POINTS.COMMENT_POST;
+          else if (reason === LABELS.LOYALTY.REASONS.DELETE_COMMENT) diff = LIMITS.LOYALTY_POINTS.DELETE_COMMENT;
+          else if (reason === LABELS.LOYALTY.REASONS.REPLY_COMMENT) diff = LIMITS.LOYALTY_POINTS.REPLY_COMMENT;
+          else if (reason === LABELS.LOYALTY.REASONS.DELETE_REPLY) diff = LIMITS.LOYALTY_POINTS.DELETE_REPLY;
+          else if (reason === LABELS.LOYALTY.REASONS.CREATE_POST) diff = LIMITS.LOYALTY_POINTS.CREATE_POST;
+          else if (reason === LABELS.LOYALTY.REASONS.DELETE_POST) diff = LIMITS.LOYALTY_POINTS.DELETE_POST;
+          else if (reason === LABELS.LOYALTY.REASONS.SHARE_POST) diff = LIMITS.LOYALTY_POINTS.SHARE_POST;
+        }
+
+        // 2. If the active profile on the page is me, update the page's profile state
+        if (profile && profile.id === me.id) {
+          actions.setProfile(updatedMe);
+        } else if (profile) {
+          // If we are viewing someone else's profile, we should fetch their updated profile to refresh their counts (e.g. followers or likes count)
+          const updatedProfile = await actions.fetchProfileData(profile.id, me.id);
+          if (updatedProfile) {
+            actions.setProfile(updatedProfile);
+          }
+        }
+
+        // 3. Update the logged-in user session state
+        login({
+          ...me,
+          points: updatedMe.points,
+          level: updatedMe.level,
+          badgeTitle: updatedMe.badgeTitle,
+        });
+
+        // 4. Show point change notification
+        if (diff > 0) {
+          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diff, reason));
+        } else if (diff < 0) {
+          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diff), reason));
         }
       }
     } catch (err) {
       console.error('Lỗi khi làm mới profile:', err);
     }
-
-    toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(pointsAmount, reason));
   };
 
   const getFetchId = () => {
@@ -89,14 +134,14 @@ export const useSocialActions = ({
     } catch (err) {
       console.error(err);
     }
-    awardPoints(50, 'Đăng bài viết mới');
+    awardPoints(LABELS.LOYALTY.REASONS.CREATE_POST);
   };
 
   const handleLike = async (postId: number, isLiked: boolean) => {
     try {
       await socialService.toggleLike(postId);
       if (isLiked) {
-        awardPoints(5, 'Thả tim bài đăng');
+        awardPoints(LABELS.LOYALTY.REASONS.LIKE_POST);
         const targetPost = posts.find(p => p.id === postId);
         if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
           addNotification(
@@ -108,7 +153,7 @@ export const useSocialActions = ({
           );
         }
       } else {
-        awardPoints(0, 'Bỏ thích bài đăng');
+        awardPoints(LABELS.LOYALTY.REASONS.UNLIKE_POST);
       }
     } catch (err) {
       console.error(err);
@@ -130,7 +175,7 @@ export const useSocialActions = ({
         return p;
       }));
 
-      awardPoints(10, 'Bình luận bài viết');
+      awardPoints(LABELS.LOYALTY.REASONS.COMMENT_POST);
       const targetPost = posts.find(p => p.id === postId);
       if (targetPost && targetPost.author?.id && targetPost.author.id !== me?.id) {
         addNotification(
@@ -182,7 +227,7 @@ export const useSocialActions = ({
       const data = await socialService.getPosts(authorId);
       setPosts(data || []);
 
-      awardPoints(15, 'Chia sẻ bài viết');
+      awardPoints(LABELS.LOYALTY.REASONS.SHARE_POST);
 
       if (postToShare.author?.id && postToShare.author.id !== me?.id) {
         addNotification(
@@ -200,6 +245,7 @@ export const useSocialActions = ({
   };
 
   const handleDeleteComment = async (postId: number, commentId: number) => {
+    if (!window.confirm(LABELS.SOCIAL.TOAST.COMMENT_DELETE_CONFIRM)) return;
     try {
       await socialService.deleteComment(commentId);
       setPosts(prevPosts => prevPosts.map(p => {
@@ -215,6 +261,7 @@ export const useSocialActions = ({
         return p;
       }));
       toast.success(LABELS.SOCIAL.TOAST.COMMENT_DELETE_SUCCESS);
+      awardPoints(LABELS.LOYALTY.REASONS.DELETE_COMMENT);
     } catch (err) {
       console.error(err);
       toast.error(LABELS.SOCIAL.TOAST.COMMENT_DELETE_ERROR);
@@ -243,7 +290,7 @@ export const useSocialActions = ({
         return p;
       }));
       toast.success(LABELS.SOCIAL.TOAST.REPLY_SUCCESS);
-      awardPoints(5, 'Trả lời bình luận');
+      awardPoints(LABELS.LOYALTY.REASONS.REPLY_COMMENT);
 
       const targetPost = posts.find(p => p.id === postId);
       if (targetPost) {
@@ -265,6 +312,7 @@ export const useSocialActions = ({
   };
 
   const handleDeleteReply = async (postId: number, commentId: number, replyId: number) => {
+    if (!window.confirm(LABELS.SOCIAL.TOAST.REPLY_DELETE_CONFIRM)) return;
     try {
       await socialService.deleteComment(replyId);
       setPosts(prevPosts => prevPosts.map(p => {
@@ -286,6 +334,7 @@ export const useSocialActions = ({
         return p;
       }));
       toast.success(LABELS.SOCIAL.TOAST.REPLY_DELETE_SUCCESS);
+      awardPoints(LABELS.LOYALTY.REASONS.DELETE_REPLY);
     } catch (err) {
       console.error(err);
       toast.error(LABELS.SOCIAL.TOAST.REPLY_DELETE_ERROR);
@@ -298,6 +347,7 @@ export const useSocialActions = ({
       await socialService.deletePost(postId);
       setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
       toast.success(LABELS.SOCIAL.TOAST.POST_DELETE_SUCCESS);
+      awardPoints(LABELS.LOYALTY.REASONS.DELETE_POST);
     } catch (err) {
       console.error(err);
       toast.error(LABELS.SOCIAL.TOAST.POST_DELETE_ERROR);
@@ -322,5 +372,8 @@ export const useSocialActions = ({
     handleReplyComment,
     handleDeleteReply,
     handleDeletePost,
+    isLevelUpModalOpen,
+    setIsLevelUpModalOpen,
+    levelUpData,
   };
 };

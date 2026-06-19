@@ -66,13 +66,15 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="modal-card !p-0 max-w-4xl relative z-10 flex flex-col md:flex-row overflow-hidden"
       >
-        <button
+        <Button
           onClick={onClose}
+          variant="none"
+          size="none"
           className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition-all z-20 md:text-gray-500 md:bg-gray-100 md:hover:bg-gray-200"
           aria-label={LABELS.COMMON.CANCEL}
         >
           <X size={24} />
-        </button>
+        </Button>
 
         <div className="w-full md:w-1/2 h-64 md:h-auto bg-gray-100 relative">
           <SafeImage

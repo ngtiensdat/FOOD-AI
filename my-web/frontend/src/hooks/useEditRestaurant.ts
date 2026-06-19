@@ -6,7 +6,7 @@ import { LABELS } from '@/constants/labels';
 interface UseEditRestaurantProps {
   restaurant: Restaurant | null | undefined;
   isOpen: boolean;
-  onSave: (data: UpdateRestaurantInput) => Promise<any>;
+  onSave: (data: UpdateRestaurantInput) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -100,8 +100,9 @@ export const useEditRestaurant = ({
         syncWithPersonalCover,
       });
       onClose();
-    } catch (err: any) {
-      setError(err.message || LABELS.RESTAURANT.EDIT_MODAL.SAVE_ERROR);
+    } catch (err: unknown) {
+      const errorVal = err as Error;
+      setError(errorVal.message || LABELS.RESTAURANT.EDIT_MODAL.SAVE_ERROR);
     } finally {
       setLoading(false);
     }

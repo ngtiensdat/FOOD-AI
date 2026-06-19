@@ -11,9 +11,9 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('FoodService', () => {
   let service: FoodService;
-  let repository: any;
-  let cacheService: any;
-  let restaurantRepository: any;
+  let repository: Record<string, jest.Mock>;
+  let cacheService: Record<string, jest.Mock>;
+  let restaurantRepository: Record<string, jest.Mock>;
 
   beforeEach(async () => {
     const mockFoodRepository = {
@@ -71,8 +71,11 @@ describe('FoodService', () => {
   });
 
   describe('deleteFood', () => {
-    const userCustomer: User = { id: 1, role: UserRole.CUSTOMER } as any;
-    const userRestaurant: User = { id: 2, role: UserRole.RESTAURANT } as any;
+    const userCustomer = { id: 1, role: UserRole.CUSTOMER } as unknown as User;
+    const userRestaurant = {
+      id: 2,
+      role: UserRole.RESTAURANT,
+    } as unknown as User;
 
     it('should throw NotFoundException if food does not exist', async () => {
       repository.findById.mockResolvedValue(null);
@@ -85,7 +88,7 @@ describe('FoodService', () => {
       repository.findById.mockResolvedValue({
         id: 1,
         restaurant: { ownerId: 99 },
-      } as any);
+      });
 
       await expect(service.deleteFood(userRestaurant, 1)).rejects.toThrow(
         ForbiddenException,
@@ -96,8 +99,8 @@ describe('FoodService', () => {
       repository.findById.mockResolvedValue({
         id: 1,
         restaurant: { ownerId: 2 },
-      } as any);
-      repository.delete.mockResolvedValue({ id: 1 } as any);
+      });
+      repository.delete.mockResolvedValue({ id: 1 });
 
       await service.deleteFood(userRestaurant, 1);
       expect(repository.delete).toHaveBeenCalledWith(1);

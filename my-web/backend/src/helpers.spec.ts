@@ -90,7 +90,7 @@ describe('Unit Tests: Frontend Utility Helpers', () => {
           super();
           return mockDate;
         }
-      } as any;
+      } as unknown as typeof Date;
 
       expect(isRestaurantCurrentlyOpen('08:00-22:00', true)).toBe(true);
       expect(isRestaurantCurrentlyOpen('14:00-22:00', true)).toBe(false);
@@ -109,7 +109,7 @@ describe('Unit Tests: Frontend Utility Helpers', () => {
           super();
           return mockDate;
         }
-      } as any;
+      } as unknown as typeof Date;
 
       // 22:00 to 06:00 spans over midnight. 01:00 is within this range.
       expect(isRestaurantCurrentlyOpen('22:00-06:00', true)).toBe(true);

@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { XCircle, FileSpreadsheet, CheckCircle2, Download } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import * as XLSX from 'xlsx';
 import { foodService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
@@ -170,9 +171,9 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
           <h3 className="text-h2 flex items-center gap-3">
             <FileSpreadsheet className="text-emerald-500" /> {LABELS.RESTAURANT.UPLOAD_EXCEL.TITLE}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all">
+          <Button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all" variant="none" size="none">
             <XCircle size={32} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-5">
@@ -187,12 +188,14 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.NO_FILE}</li>
               </ul>
             </div>
-            <button
+            <Button
               onClick={handleDownloadTemplate}
               className="flex-shrink-0 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shadow-sm"
+              variant="none"
+              size="none"
             >
               <Download size={14} /> {LABELS.RESTAURANT.UPLOAD_EXCEL.DOWNLOAD_BTN}
-            </button>
+            </Button>
           </div>
 
           {/* Bước 1 & 2: Chọn cơ sở và danh mục */}
@@ -245,10 +248,11 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
             <label className="text-sm font-bold text-gray-700 dark:text-slate-300">
               {LABELS.RESTAURANT.UPLOAD_EXCEL.STEP_3} <span className="text-rose-500">*</span>
             </label>
-            <input
+            <Input
               type="file"
               accept=".xlsx, .xls"
               onChange={handleFileUpload}
+              variant="none"
               className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-2xl py-2 px-4 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-orange-600 transition-all text-sm font-semibold dark:text-slate-300"
             />
           </div>

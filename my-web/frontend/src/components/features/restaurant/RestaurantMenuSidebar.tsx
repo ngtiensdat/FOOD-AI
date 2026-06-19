@@ -8,6 +8,7 @@
 import React from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { Button } from '@/components/base/Button';
 
 export interface MenuCategory {
   id: number;
@@ -60,7 +61,7 @@ export const RestaurantMenuSidebar = ({
                 className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20 text-primary font-bold' : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300'}`}
                 onClick={() => {
                   if (onScrollToCategory && selectedCategoryId === null) {
-                    onScrollToCategory(cat.id);
+                     onScrollToCategory(cat.id);
                   } else {
                     setSelectedCategoryId(cat.id);
                   }
@@ -69,16 +70,18 @@ export const RestaurantMenuSidebar = ({
               >
                 <span className="text-sm">{cat.name}</span>
                 {hasChildren && (
-                  <button 
+                  <Button 
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleCategory(cat.id);
                     }}
                     className="p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md"
                     aria-label={isExpanded ? LABELS.RESTAURANT.PUBLIC_PROFILE.COLLAPSE_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.EXPAND_CATEGORY}
+                    variant="none"
+                    size="none"
                   >
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  </button>
+                  </Button>
                 )}
               </div>
               {hasChildren && isExpanded && cat.children && renderCategoryTree(cat.children, level + 1)}

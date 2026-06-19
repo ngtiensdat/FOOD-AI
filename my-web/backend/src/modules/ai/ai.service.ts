@@ -470,10 +470,10 @@ export class AiService implements OnModuleInit {
         !isTriggerRecommend ||
         (selectedRecommendationFoods.length === 0 &&
           messageCount < SLOT_FILL_MAX_MESSAGES)
-          ? this.promptBuilderService.buildSlotFillingPrompt(missingSlots)
-          : this.promptBuilderService.buildRecommendationPrompt();
+          ? await this.promptBuilderService.buildSlotFillingPrompt(missingSlots)
+          : await this.promptBuilderService.buildRecommendationPrompt();
 
-      const systemPrompt = this.promptBuilderService.buildSystemPrompt(
+      const systemPrompt = await this.promptBuilderService.buildSystemPrompt(
         currentDayTimeStr,
         userPrefContext + wellnessInstruction,
         promptInstructions,

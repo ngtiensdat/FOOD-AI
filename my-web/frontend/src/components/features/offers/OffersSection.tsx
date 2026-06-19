@@ -110,9 +110,10 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       setDescription('');
       setSelectedTemplate(LABELS.OFFERS.DEFAULT_TEMPLATES[0].url);
       setIsOpenModal(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
+      const errorResponse = err as { message?: string };
+      toast.error(errorResponse.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
     }
   };
 
@@ -122,9 +123,10 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       await offerService.deleteOffer(offerId);
       setPromotions(prev => prev.filter(p => p.id !== offerId));
       toast.success(LABELS.OFFERS.TOAST.DELETE_SUCCESS);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || LABELS.OFFERS.TOAST.DELETE_ERROR);
+      const errorResponse = err as { message?: string };
+      toast.error(errorResponse.message || LABELS.OFFERS.TOAST.DELETE_ERROR);
     }
   };
 
@@ -192,7 +194,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
             { id: 'COMBO', label: LABELS.OFFERS.FILTER.COMBO },
             { id: 'GIFT', label: LABELS.OFFERS.FILTER.GIFT },
           ].map(tab => (
-            <button
+            <Button
               key={tab.id}
               onClick={() => setFilterType(tab.id)}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
@@ -200,9 +202,11 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                   ? 'bg-primary text-white shadow-md'
                   : 'bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-slate-400 hover:bg-gray-100'
               }`}
+              variant="none"
+              size="none"
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
         
@@ -241,7 +245,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
 
                 {/* Delete button (Trash2) */}
                 {(user?.role === UserRole.ADMIN || (user?.role === UserRole.RESTAURANT && offer.restaurantId === user?.id)) && (
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteOffer(offer.id);
@@ -249,9 +253,11 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                     className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-rose-500 hover:text-white dark:bg-slate-950/90 text-rose-500 rounded-xl transition-all shadow-md backdrop-blur-sm border border-rose-500/10 cursor-pointer"
                     title={LABELS.OFFERS.DELETE_BTN}
                     aria-label={LABELS.OFFERS.DELETE_BTN}
+                    variant="none"
+                    size="none"
                   >
                     <Trash2 size={16} />
-                  </button>
+                  </Button>
                 )}
 
                 {/* Discount Value tag */}
@@ -284,13 +290,15 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                     <span>{LABELS.OFFERS.VALID_UNTIL(offer.validUntil)}</span>
                   </div>
                   
-                  <button 
+                  <Button 
                     onClick={() => toast.info(LABELS.OFFERS.CONTACT_TOAST(offer.restaurantName))}
                     className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer bg-transparent border-none p-0 font-bold"
+                    variant="none"
+                    size="none"
                   >
                     {LABELS.OFFERS.VIEW_STORE}
                     <ChevronRight size={14} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </article>
@@ -311,12 +319,14 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 <Gift className="text-primary" size={22} />
                 {LABELS.OFFERS.CREATE_MODAL_TITLE}
               </h3>
-              <button 
+              <Button 
                 onClick={() => setIsOpenModal(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors p-1 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-lg cursor-pointer border-none bg-transparent"
+                variant="none"
+                size="none"
               >
                 <X size={20} />
-              </button>
+              </Button>
             </div>
 
             <form onSubmit={handleCreateOffer} className="space-y-4 text-xs font-bold text-gray-500">
@@ -336,7 +346,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                   <label className="block text-gray-400">{LABELS.OFFERS.FORM.TYPE_LABEL}</label>
                   <select
                     value={promoType}
-                    onChange={(e) => setPromoType(e.target.value as any)}
+                    onChange={(e) => setPromoType(e.target.value as 'DISCOUNT' | 'COMBO' | 'GIFT' | 'OTHER')}
                     className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700 dark:text-slate-200 font-bold"
                   >
                     <option value="DISCOUNT">{LABELS.OFFERS.FORM.TYPE_OPTIONS.DISCOUNT}</option>
@@ -359,10 +369,11 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 {/* Expiry date */}
                 <div className="space-y-1.5">
                   <label className="block text-gray-400">{LABELS.OFFERS.FORM.EXPIRY_LABEL}</label>
-                  <input
+                  <Input
+                    variant="none"
                     type="date"
                     value={validUntil}
-                    onChange={(e) => setValidUntil(e.target.value)}
+                    onChange={(e) => setValidUntil((e.target as HTMLInputElement).value)}
                     className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700 dark:text-slate-200 font-bold"
                   />
                 </div>
@@ -380,11 +391,13 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
               {/* Description */}
               <div className="space-y-1.5">
                 <label className="block text-gray-400">{LABELS.OFFERS.FORM.DESC_LABEL}</label>
-                <textarea
+                <Input
+                  isTextArea
+                  variant="none"
                   rows={3}
                   placeholder={LABELS.OFFERS.FORM.DESC_PLACEHOLDER}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
                   className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-700 dark:text-slate-200 font-medium"
                 />
               </div>
@@ -393,7 +406,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
               <div className="space-y-2">
                 <label className="block text-gray-400">{LABELS.OFFERS.FORM.IMAGE_LABEL}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {LABELS.OFFERS.DEFAULT_TEMPLATES.map((tpl: any) => (
+                  {LABELS.OFFERS.DEFAULT_TEMPLATES.map((tpl: { name: string; url: string }) => (
                     <div
                       key={tpl.name}
                       onClick={() => setSelectedTemplate(tpl.url)}

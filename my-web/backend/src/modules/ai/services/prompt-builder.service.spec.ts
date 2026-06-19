@@ -37,8 +37,12 @@ describe('PromptBuilderService', () => {
 
       const context = service.buildUserPrefContext(
         profile,
-        favorites as any,
-        histories as any,
+        favorites as unknown as Parameters<
+          PromptBuilderService['buildUserPrefContext']
+        >[1],
+        histories as unknown as Parameters<
+          PromptBuilderService['buildUserPrefContext']
+        >[2],
       );
 
       expect(context).toContain('Mục tiêu: Giảm cân');
@@ -62,7 +66,9 @@ describe('PromptBuilderService', () => {
           address: '123 Đường Láng', // Sẽ bị loại bỏ để giảm token
           description: 'Rất ngon cay thơm', // Sẽ bị loại bỏ để giảm token
         },
-      ] as any[];
+      ] as unknown as Parameters<
+        PromptBuilderService['buildCandidatesSection']
+      >[0];
 
       const prompt = service.buildCandidatesSection(candidates);
 
@@ -75,8 +81,8 @@ describe('PromptBuilderService', () => {
   });
 
   describe('buildSystemPrompt (Đóng gói System Prompt)', () => {
-    it('nên thay thế đúng các placeholders trong mẫu system prompt', () => {
-      const systemPrompt = service.buildSystemPrompt(
+    it('nên thay thế đúng các placeholders trong mẫu system prompt', async () => {
+      const systemPrompt = await service.buildSystemPrompt(
         'Bây giờ là 12:00',
         'Ngữ cảnh test',
         'Chỉ dẫn test',

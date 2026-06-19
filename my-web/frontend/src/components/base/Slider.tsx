@@ -85,10 +85,10 @@ export const Slider = ({ children, title, subtitle, icon, bg = 'white' }: Slider
 
         <div
           ref={sliderRef}
-          className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x"
+          className="flex overflow-x-auto pb-6 gap-5 scrollbar-hide snap-x"
         >
           {React.Children.map(children, (child) => (
-            <div className="min-w-[250px] md:min-w-[290px] snap-start">
+            <div className="min-w-[190px] md:min-w-[220px] snap-start">
               {child}
             </div>
           ))}

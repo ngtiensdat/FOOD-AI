@@ -1,5 +1,5 @@
 jest.mock('isomorphic-dompurify', () => ({
-  sanitize: jest.fn((val) => val),
+  sanitize: jest.fn((val: string): string => val),
 }));
 
 import { Test, TestingModule } from '@nestjs/testing';
@@ -7,14 +7,15 @@ import { PostService } from './post.service';
 import { PrismaService } from '../../database/prisma.service';
 import { CacheService } from '../../common/services/cache.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { UserRole, Post, Comment } from '@prisma/client';
 import { NotificationGateway } from '../notification/notification.gateway';
+import { GamificationQueueService } from '../badge/gamification-queue.service';
 
 describe('PostService', () => {
   let service: PostService;
-  let prisma: any;
-  let cacheService: any;
-  let notificationGateway: any;
+  let prisma: PrismaService;
+  let cacheService: CacheService;
+  let gamificationQueue: GamificationQueueService;
 
   beforeEach(async () => {
     const mockPrismaService = {
@@ -44,12 +45,18 @@ describe('PostService', () => {
     };
 
     const mockCacheService = {
-      wrap: jest.fn((key, fetchFn) => fetchFn()),
+      wrap: jest.fn(
+        <T>(key: string, fetchFn: () => Promise<T>): Promise<T> => fetchFn(),
+      ),
       invalidatePattern: jest.fn(),
     };
 
     const mockNotificationGateway = {
       sendNotificationToUser: jest.fn(),
+    };
+
+    const mockGamificationQueueService = {
+      addJob: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -58,13 +65,19 @@ describe('PostService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: CacheService, useValue: mockCacheService },
         { provide: NotificationGateway, useValue: mockNotificationGateway },
+        {
+          provide: GamificationQueueService,
+          useValue: mockGamificationQueueService,
+        },
       ],
     }).compile();
 
     service = module.get<PostService>(PostService);
-    prisma = module.get(PrismaService);
-    cacheService = module.get(CacheService);
-    notificationGateway = module.get(NotificationGateway);
+    prisma = module.get<PrismaService>(PrismaService);
+    cacheService = module.get<CacheService>(CacheService);
+    gamificationQueue = module.get<GamificationQueueService>(
+      GamificationQueueService,
+    );
   });
 
   it('should be defined', () => {
@@ -73,18 +86,16 @@ describe('PostService', () => {
 
   describe('createPost', () => {
     it('should successfully create post, award points and invalidate cache', async () => {
-      const mockPost = { id: 1, title: 'My Post', content: 'Delicious Pho' };
-      prisma.post.create.mockResolvedValue(mockPost as any);
-      prisma.user.findUnique.mockResolvedValue({
+      const mockPost = {
         id: 1,
-        points: 0,
-        level: 1,
-      } as any);
-      prisma.user.update.mockResolvedValue({
-        id: 1,
-        points: 50,
-        level: 1,
-      } as any);
+        title: 'My Post',
+        content: 'Delicious Pho',
+      } as unknown as Post;
+      const createSpy = jest
+        .spyOn(prisma.post, 'create')
+        .mockResolvedValue(mockPost);
+      const addJobSpy = jest.spyOn(gamificationQueue, 'addJob');
+      const invalidateSpy = jest.spyOn(cacheService, 'invalidatePattern');
 
       const result = await service.createPost(1, {
         title: 'My Post',
@@ -92,26 +103,27 @@ describe('PostService', () => {
       });
 
       expect(result).toEqual(mockPost);
-      expect(prisma.post.create).toHaveBeenCalled();
-      expect(prisma.user.update).toHaveBeenCalled();
-      expect(cacheService.invalidatePattern).toHaveBeenCalledWith('posts:*');
+      expect(createSpy).toHaveBeenCalled();
+      expect(addJobSpy).toHaveBeenCalledWith(1, 'POST_REVIEW');
+      expect(invalidateSpy).toHaveBeenCalledWith('posts:*');
     });
   });
 
   describe('deleteComment', () => {
     it('should throw NotFoundException if comment does not exist', async () => {
-      prisma.comment.findUnique.mockResolvedValue(null);
+      jest.spyOn(prisma.comment, 'findUnique').mockResolvedValue(null);
       await expect(
         service.deleteComment(1, UserRole.CUSTOMER, 999),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not author or commenter', async () => {
-      prisma.comment.findUnique.mockResolvedValue({
+      const mockComment = {
         id: 1,
         userId: 2,
         post: { authorId: 3 },
-      } as any);
+      } as unknown as Comment;
+      jest.spyOn(prisma.comment, 'findUnique').mockResolvedValue(mockComment);
 
       await expect(
         service.deleteComment(1, UserRole.CUSTOMER, 1),
@@ -119,20 +131,35 @@ describe('PostService', () => {
     });
 
     it('should successfully delete comment and invalidate cache', async () => {
-      prisma.comment.findUnique.mockResolvedValue({
+      const mockComment = {
         id: 1,
         userId: 1,
+        parentId: null,
         post: { authorId: 3 },
-      } as any);
-      prisma.comment.update.mockResolvedValue({ id: 1 } as any);
+      } as unknown as Comment;
+      const mockUpdatedComment = {
+        id: 1,
+        deletedAt: new Date(),
+      } as unknown as Comment;
+
+      const findSpy = jest
+        .spyOn(prisma.comment, 'findUnique')
+        .mockResolvedValue(mockComment);
+      const updateSpy = jest
+        .spyOn(prisma.comment, 'update')
+        .mockResolvedValue(mockUpdatedComment);
+      const addJobSpy = jest.spyOn(gamificationQueue, 'addJob');
+      const invalidateSpy = jest.spyOn(cacheService, 'invalidatePattern');
 
       const result = await service.deleteComment(1, UserRole.CUSTOMER, 1);
       expect(result.success).toBe(true);
-      expect(prisma.comment.update).toHaveBeenCalledWith({
+      expect(findSpy).toHaveBeenCalled();
+      expect(updateSpy).toHaveBeenCalledWith({
         where: { id: 1 },
         data: { deletedAt: expect.any(Date) },
       });
-      expect(cacheService.invalidatePattern).toHaveBeenCalledWith('posts:*');
+      expect(addJobSpy).toHaveBeenCalledWith(1, 'UNDO_COMMENT');
+      expect(invalidateSpy).toHaveBeenCalledWith('posts:*');
     });
   });
 });

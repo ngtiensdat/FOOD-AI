@@ -6,7 +6,7 @@ import { appConfig } from '../../config/app.config';
 import { Logger } from '@nestjs/common';
 
 export class RedisIoAdapter extends IoAdapter {
-  private adapterConstructor: ReturnType<typeof createAdapter>;
+  private adapterConstructor?: ReturnType<typeof createAdapter>;
   private readonly logger = new Logger(RedisIoAdapter.name);
 
   async connectToRedis(): Promise<void> {

@@ -11,6 +11,7 @@ import { toast } from '@/store/useToastStore';
 import { formatDateTime } from '@/utils/formatters';
 import { User, isAdmin } from '@/types/user';
 import { PostData } from '../PostCard';
+import { Button } from '@/components/base/Button';
 
 interface PostHeaderProps {
   post: PostData;
@@ -106,13 +107,15 @@ export function PostHeader({
         </span>
 
         <div className="relative">
-          <button
+          <Button
             onClick={() => setShowDropdown(!showDropdown)}
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-full hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
             aria-label={LABELS.SOCIAL.DROPDOWN.LABEL}
+            variant="none"
+            size="none"
           >
             <MoreHorizontal size={18} />
-          </button>
+          </Button>
           
           {showDropdown && (
             <>
@@ -120,99 +123,119 @@ export function PostHeader({
               <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-2 py-2 space-y-0.5 text-xs font-bold text-gray-700 dark:text-slate-300">
                 {isOwner ? (
                   <>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.PIN)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Pin size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.PIN}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.EDIT)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Pencil size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.EDIT}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.EDIT_AUDIENCE)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Users size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.EDIT_AUDIENCE}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.MUTE)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <BellOff size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.MUTE}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.SHARE_PROMO)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Tag size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.SHARE_PROMO}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.UNTRANSLATE)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Languages size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.UNTRANSLATE}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.EDIT_DATE)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Calendar size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.EDIT_DATE}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDropdownAction(LABELS.SOCIAL.DROPDOWN.REFRESH_ATTACHMENT)}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <RefreshCw size={14} className="text-gray-400" />
                       <span>{LABELS.SOCIAL.DROPDOWN.REFRESH_ATTACHMENT}</span>
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <button
+                    <Button
                       type="button"
                       onClick={async () => {
                         setShowDropdown(false);
                         await handleSavePost();
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <Bookmark size={14} className={`text-gray-400 ${isSaved ? 'fill-gray-400' : ''}`} />
                       <span>{isSaved ? LABELS.SOCIAL.DROPDOWN.UNSAVE : LABELS.SOCIAL.DROPDOWN.SAVE}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => {
                         setShowDropdown(false);
                         handleReportPost();
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-left"
+                      variant="none"
+                      size="none"
                     >
                       <AlertOctagon size={14} className="text-rose-500" />
                       <span>{LABELS.SOCIAL.DROPDOWN.REPORT}</span>
-                    </button>
+                    </Button>
                   </>
                 )}
                 {(isOwner || isAdmin(me)) && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setShowDropdown(false);
@@ -221,10 +244,12 @@ export function PostHeader({
                       }
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-left border-t border-gray-100 dark:border-slate-800 mt-1 pt-1.5"
+                    variant="none"
+                    size="none"
                   >
                     <Trash2 size={14} className="text-rose-500" />
                     <span>{LABELS.SOCIAL.DROPDOWN.DELETE}</span>
-                  </button>
+                  </Button>
                 )}
               </div>
             </>

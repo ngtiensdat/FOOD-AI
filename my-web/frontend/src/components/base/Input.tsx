@@ -14,21 +14,36 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTe
   icon?: LucideIcon;
   error?: string;
   isTextArea?: boolean;
+  variant?: 'default' | 'none';
+  rows?: number;
 }
 
-export const Input = ({
+export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(({
   label,
   icon: Icon,
   error,
   isTextArea = false,
+  variant = 'default',
   className = '',
   ...props
-}: InputProps) => {
+}, ref) => {
+  const InputComponent = (isTextArea ? 'textarea' : 'input') as React.ElementType;
+
+  if (variant === 'none') {
+    return (
+      <InputComponent
+        ref={ref}
+        suppressHydrationWarning
+        className={className}
+        {...props}
+        value={props.value === null ? '' : props.value}
+      />
+    );
+  }
+
   const inputStyles = `w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 ${
     Icon ? 'pl-12' : 'px-6'
   } pr-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm`;
-
-  const InputComponent = (isTextArea ? 'textarea' : 'input') as React.ElementType;
 
   return (
     <div className="space-y-2">
@@ -41,6 +56,7 @@ export const Input = ({
           />
         )}
         <InputComponent
+          ref={ref}
           suppressHydrationWarning
           className={`${inputStyles} ${className} ${isTextArea ? 'min-h-[100px]' : ''}`}
           {...props}
@@ -50,4 +66,6 @@ export const Input = ({
       {error && <p className="text-red-500 text-xs mt-1 ml-1 font-bold">{error}</p>}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';

@@ -14,6 +14,8 @@ import { AiSuggestedFood } from './ai/AiResponseBox';
 import { FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 
 import heroBg from '../../assets/hero-bg.png';
 
@@ -58,7 +60,7 @@ export const Hero = ({
   };
 
   return (
-    <section className="pt-32 pb-10 px-6 relative overflow-hidden min-h-[480px] flex items-center">
+    <section className="pt-32 pb-10 px-6 relative overflow-hidden min-h-[480px] lg:min-h-screen flex items-center">
       <SafeImage
         src={heroBg.src}
         alt={LABELS.HERO.BG_ALT}
@@ -103,7 +105,7 @@ export const Hero = ({
                 className="max-w-2xl mx-auto flex items-center gap-3 bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 p-2.5 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-350 backdrop-blur-md"
               >
                 <div className="flex items-center gap-3 pl-3 flex-1">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setInitialMessage('');
@@ -111,6 +113,8 @@ export const Hero = ({
                     }}
                     title={LABELS.HERO.OPEN_AI_TOOLTIP}
                     className="relative w-8 h-8 rounded-xl overflow-hidden hover:scale-110 active:scale-95 transition-all flex-shrink-0 cursor-pointer border border-orange-100 dark:border-slate-800 hover:border-primary p-0.5 bg-orange-50/20"
+                    variant="none"
+                    size="none"
                   >
                     <SafeImage
                       src="/logo.png"
@@ -119,23 +123,26 @@ export const Hero = ({
                       sizes="32px"
                       className="object-contain"
                     />
-                  </button>
-                  <input
+                  </Button>
+                  <Input
+                    variant="none"
                     type="text"
                     value={localInput}
-                    onChange={(e) => setLocalInput(e.target.value)}
+                    onChange={(e) => setLocalInput((e.target as HTMLInputElement).value)}
                     placeholder={LABELS.HERO.SEARCH_PLACEHOLDER}
                     className="bg-transparent border-none outline-none text-sm w-full text-slate-800 dark:text-slate-100 placeholder-gray-400 font-medium focus:ring-0 focus:border-none focus:outline-none"
                   />
                 </div>
-                <button
+                <Button
                   type="submit"
                   disabled={!localInput.trim()}
                   className="px-6 py-3.5 bg-primary text-white font-extrabold text-xs md:text-sm rounded-2xl hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50"
+                  variant="none"
+                  size="none"
                 >
                   {LABELS.AI_CHAT.INPUT.SEARCH}
                   <Send size={14} />
-                </button>
+                </Button>
               </motion.form>
             ) : (
               <motion.div

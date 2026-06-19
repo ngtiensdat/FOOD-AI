@@ -76,7 +76,9 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should throw BadRequestException if email is already taken', async () => {
-      userRepository.findByEmail.mockResolvedValue({ id: 1 } as any);
+      userRepository.findByEmail.mockResolvedValue({
+        id: 1,
+      } as unknown as Awaited<ReturnType<UserRepository['findByEmail']>>);
       await expect(
         service.register({
           email: 'test@example.com',
@@ -94,7 +96,9 @@ describe('AuthService', () => {
         name: 'Test',
         password: 'hashed-password',
       };
-      userRepository.create.mockResolvedValue(mockUser as any);
+      userRepository.create.mockResolvedValue(
+        mockUser as unknown as Awaited<ReturnType<UserRepository['create']>>,
+      );
 
       const result = await service.register({
         email: 'test@example.com',
@@ -122,7 +126,11 @@ describe('AuthService', () => {
         email: 'test@example.com',
         password: await BcryptHelper.hash('correct-password', 10),
       };
-      userRepository.findByEmail.mockResolvedValue(mockUser as any);
+      userRepository.findByEmail.mockResolvedValue(
+        mockUser as unknown as Awaited<
+          ReturnType<UserRepository['findByEmail']>
+        >,
+      );
 
       await expect(
         service.login({

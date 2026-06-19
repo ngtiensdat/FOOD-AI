@@ -1,3 +1,9 @@
+// Mục đích file này để làm gì: Script dòng lệnh CLI dùng để đồng bộ lại toàn bộ vector embeddings cho món ăn và hồ sơ người dùng.
+// Các file khác hay file này có ý nghĩa như nào: Được chạy bằng tay hoặc qua cronjob độc lập, lưu các vector vào PostgreSQL.
+// Các chức năng đặc biệt: Tích hợp LangChain OpenAIEmbeddings để tạo vector hàng loạt và cập nhật bằng raw SQL query.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Scripting, CLI Pattern.
+// Các biến, hàm đặc biệt trong file: reindex() function.
+
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -27,7 +33,7 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { Pool } = require('pg');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const OpenAI = require('openai');
+const { OpenAIEmbeddings } = require('@langchain/openai');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -35,8 +41,9 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
+const embeddings = new OpenAIEmbeddings({
+  openAIApiKey: process.env.OPENAI_API_KEY || 'dummy-key',
+  modelName: 'text-embedding-3-small',
 });
 
 async function reindex() {
@@ -59,12 +66,7 @@ async function reindex() {
       const categoryName = food.category?.name || 'Khác';
       const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || 'Không có mô tả'}. Nhãn: ${tagsStr}.`;
 
-      const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: textToEmbed,
-      });
-
-      const embedding = response.data[0].embedding;
+      const embedding = await embeddings.embedQuery(textToEmbed);
       const vectorStr = `[${embedding.join(',')}]`;
 
       // Cập nhật bằng raw query để truyền vector type
@@ -102,12 +104,7 @@ async function reindex() {
         : 'Không có';
       const textToEmbed = `Người dùng thích ${prefs.cuisine || 'đa dạng'}. Ngân sách ${prefs.budget || 'linh hoạt'}. Mục tiêu sức khỏe: ${goalStr}.`;
 
-      const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: textToEmbed,
-      });
-
-      const embedding = response.data[0].embedding;
+      const embedding = await embeddings.embedQuery(textToEmbed);
       const vectorStr = `[${embedding.join(',')}]`;
 
       await prisma.$executeRaw`UPDATE user_profiles SET embedding = CAST(${vectorStr} AS vector) WHERE user_id = ${profile.userId}`;

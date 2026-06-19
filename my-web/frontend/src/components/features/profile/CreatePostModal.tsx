@@ -8,16 +8,19 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, MessageSquare, Star, Image as ImageIcon, Store, Utensils } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
+import { Alert } from '@/components/base/Alert';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
 import { socialService } from '@/services/social.service';
+import { PostData } from './PostCard';
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated: (post: any) => void;
+  onCreated: (post: PostData) => void;
 }
 
 export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalProps) => {
@@ -27,8 +30,17 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
   const [rating, setRating] = useState(5);
   const [imageUrl, setImageUrl] = useState('');
   
-  const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [foods, setFoods] = useState<any[]>([]);
+  interface LinkableRestaurant {
+    id: number;
+    name: string;
+  }
+  interface LinkableFood {
+    id: number;
+    name: string;
+  }
+
+  const [restaurants, setRestaurants] = useState<LinkableRestaurant[]>([]);
+  const [foods, setFoods] = useState<LinkableFood[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
   const [selectedFoodId, setSelectedFoodId] = useState('');
   
@@ -111,21 +123,23 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             <MessageSquare className="text-primary" size={24} />
             {LABELS.SOCIAL.CREATE_POST}
           </h2>
-          <button 
+          <Button 
             onClick={onClose} 
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-400 hover:text-gray-600"
             aria-label={LABELS.COMMON.CANCEL}
+            variant="none"
+            size="none"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="alert-box-rose text-xs font-bold py-3">
-              <span>{error}</span>
-            </div>
+            <Alert type="error">
+              {error}
+            </Alert>
           )}
 
           {/* Post Type Selector */}
@@ -135,21 +149,23 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             </label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { type: 'NORMAL', label: LABELS.SOCIAL.POST_TYPE_NORMAL },
-                { type: 'REVIEW', label: LABELS.SOCIAL.POST_TYPE_REVIEW }
+                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL },
+                { type: 'REVIEW' as const, label: LABELS.SOCIAL.POST_TYPE_REVIEW }
               ].map((item) => (
-                <button
+                <Button
                   key={item.type}
                   type="button"
-                  onClick={() => setPostType(item.type as any)}
+                  onClick={() => setPostType(item.type)}
                   className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${
                     postType === item.type
                       ? 'border-primary bg-primary/10 text-primary shadow-sm'
                       : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900/50'
                   }`}
+                  variant="none"
+                  size="none"
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -159,13 +175,14 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {LABELS.SOCIAL.TITLE_LABEL}
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input"
+              className="form-input w-full"
               placeholder={LABELS.SOCIAL.TITLE_PLACEHOLDER}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => setTitle((e.target as HTMLInputElement).value)}
               disabled={loading}
+              variant="none"
             />
           </div>
 
@@ -174,11 +191,13 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {LABELS.SOCIAL.CONTENT_LABEL}
             </label>
-            <textarea
-              className="form-input min-h-[120px] resize-y"
+            <Input
+              isTextArea
+              variant="none"
+              className="form-input min-h-[120px] resize-y w-full"
               placeholder={LABELS.SOCIAL.CONTENT_PLACEHOLDER}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => setContent((e.target as HTMLTextAreaElement).value)}
               disabled={loading}
             />
           </div>
@@ -192,12 +211,14 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
               </label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
+                  <Button
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
                     className="p-1 hover:scale-110 transition-transform"
                     aria-label={LABELS.SOCIAL.RATING_STAR(star)}
+                    variant="none"
+                    size="none"
                   >
                     <Star
                       size={28}
@@ -207,7 +228,7 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
                           : 'text-gray-300 dark:text-slate-700'
                       }
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -219,13 +240,14 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
               <ImageIcon size={14} />
               {LABELS.SOCIAL.IMAGE_LABEL}
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input"
+              className="form-input w-full"
               placeholder={LABELS.SOCIAL.IMAGE_URL_PLACEHOLDER}
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => setImageUrl((e.target as HTMLInputElement).value)}
               disabled={loading}
+              variant="none"
             />
           </div>
 

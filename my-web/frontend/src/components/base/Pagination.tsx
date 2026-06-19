@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { Button } from './Button';
+import { Input } from './Input';
 import { getPaginationRange } from '@/utils/helpers';
 import { Hash } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
@@ -83,13 +84,14 @@ export const Pagination = ({
         <div className="flex items-center gap-1.5 ml-2 border-l pl-2 border-gray-200 dark:border-slate-800">
           {isJumping ? (
             <form onSubmit={handleJumpSubmit} className="flex items-center gap-1 animate-fadeIn">
-              <input
+              <Input
+                variant="none"
                 type="number"
                 min={1}
                 max={totalPages}
                 placeholder={`1-${totalPages}`}
                 value={jumpValue}
-                onChange={(e) => setJumpValue(e.target.value)}
+                onChange={(e) => setJumpValue((e.target as HTMLInputElement).value)}
                 className="w-16 h-8 rounded-xl border border-gray-200 px-2 text-center text-xs font-bold focus:outline-none focus:border-primary transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 autoFocus
                 onBlur={() => setTimeout(() => setIsJumping(false), 200)}

@@ -27,8 +27,7 @@ import { UserModule } from '../user/user.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: appConfig().jwtSecret,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        signOptions: { expiresIn: appConfig().jwtAccessExpiration as any },
+        signOptions: { expiresIn: appConfig().jwtAccessExpiration as '1d' },
       }),
       inject: [ConfigService],
     }),

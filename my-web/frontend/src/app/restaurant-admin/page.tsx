@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantActions } from '@/hooks/useRestaurantActions';
 import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { UserDropdown } from '@/components/features/UserDropdown';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
@@ -114,8 +115,10 @@ export default function RestaurantDashboard() {
               <span className="text-xs font-bold text-gray-700 dark:text-slate-300">
                 {isRestaurantActive ? LABELS.RESTAURANT.STATUS_OPEN : LABELS.RESTAURANT.STATUS_CLOSED}
               </span>
-              <button
+              <Button
                 onClick={actions.toggleRestaurantStatus}
+                variant="none"
+                size="none"
                 className={`w-12 h-6 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${isRestaurantActive ? 'bg-primary dark:bg-orange-600' : 'bg-gray-200 dark:bg-slate-800'
                   }`}
               >
@@ -129,7 +132,7 @@ export default function RestaurantDashboard() {
                     <X className="w-3 h-3 text-rose-500 font-bold" />
                   )}
                 </div>
-              </button>
+              </Button>
 
               {/* Tooltip Help Icon */}
               <div className="relative group flex items-center justify-center cursor-help">
@@ -165,8 +168,10 @@ export default function RestaurantDashboard() {
 
             {user && (
               <div className="flex items-center gap-3 relative ml-2">
-                <button
+                <Button
                   onClick={() => setShowMenu(!showMenu)}
+                  variant="none"
+                  size="none"
                   className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
                   aria-label={LABELS.NAV.USER_MENU}
                 >
@@ -181,7 +186,7 @@ export default function RestaurantDashboard() {
                     className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
                       }`}
                   />
-                </button>
+                </Button>
 
                 {showMenu && (
                   <>
@@ -242,11 +247,12 @@ export default function RestaurantDashboard() {
                     <div>
                       <label className="text-xs font-bold text-gray-500 dark:text-slate-400 block mb-2">{LABELS.RESTAURANT.OPERATING_HOURS}</label>
                       <div className="flex gap-2">
-                        <input
+                        <Input
+                          variant="none"
                           type="text"
                           placeholder={LABELS.RESTAURANT.HOURS_PLACEHOLDER}
                           value={openingHoursText}
-                          onChange={(e) => setOpeningHoursText(e.target.value)}
+                          onChange={(e) => setOpeningHoursText((e.target as HTMLInputElement).value)}
                           className="flex-1 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary dark:text-slate-200"
                         />
                         <Button
@@ -310,7 +316,19 @@ export default function RestaurantDashboard() {
             onClose={() => setIsAddingFood(false)}
             editingFood={editingFood}
             formData={formData}
-            setFormData={setFormData as any}
+            setFormData={(data) => setFormData({
+              name: String(data.name ?? ''),
+              price: String(data.price ?? ''),
+              description: String(data.description ?? ''),
+              image: String(data.image ?? ''),
+              tags: String(data.tags ?? ''),
+              address: String(data.address ?? ''),
+              mapUrl: String(data.mapUrl ?? ''),
+              lat: String(data.lat ?? ''),
+              lng: String(data.lng ?? ''),
+              restaurantId: String(data.restaurantId ?? ''),
+              categoryId: String(data.categoryId ?? ''),
+            })}
             onSubmit={actions.handleSubmit}
             myBranches={myBranches}
             onSelectBranch={actions.handleSelectBranch}

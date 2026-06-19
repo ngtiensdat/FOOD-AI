@@ -11,6 +11,7 @@ import { ChevronRight } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { getValidImageUrl } from '@/utils/helpers';
 import { calculateDaysDifference } from '@/utils/formatters';
+import { Button } from '@/components/base/Button';
 
 export interface RecentFoodData {
   name: string;
@@ -38,13 +39,15 @@ export const RecentFoodsList = ({ items, onViewDetail, title, onSeeMore }: Recen
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold text-gray-800">{title || LABELS.CUSTOMER.RECENT_FOODS}</h3>
         {onSeeMore && items.length > 0 && (
-          <button 
+          <Button 
             type="button"
             onClick={onSeeMore} 
             className="text-xs text-primary font-bold hover:underline"
+            variant="none"
+            size="none"
           >
             {LABELS.COMMON.SEE_MORE}
-          </button>
+          </Button>
         )}
       </div>
       <div className="space-y-4">

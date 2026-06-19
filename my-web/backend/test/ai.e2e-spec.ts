@@ -12,15 +12,18 @@ import { WeatherService } from './../src/modules/ai/services/weather.service';
 import { RedisService } from './../src/modules/ai/services/redis.service';
 import { PrismaService } from './../src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole, UserStatus } from '@prisma/client';
+import { User, UserRole, UserStatus } from '@prisma/client';
 import { BcryptHelper } from '../src/common/utils/bcrypt.helper';
+import { IntentDetectorService } from './../src/modules/ai/services/intent-detector.service';
+import { ResponseGeneratorService } from './../src/modules/ai/services/response-generator.service';
+import { FoodIntent } from './../src/modules/ai/constants/food-intent.enum';
 
 describe('AI Flow (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let jwtService: JwtService;
   let redisService: RedisService;
-  let testUser: any;
+  let testUser: User;
   let accessToken: string;
 
   beforeAll(async () => {
@@ -43,6 +46,33 @@ describe('AI Flow (e2e)', () => {
         getCurrentWeather: jest.fn().mockResolvedValue({
           temp: 30,
           condition: 'Nắng',
+        }),
+      })
+      .overrideProvider(IntentDetectorService)
+      .useValue({
+        detectIntentAndSlots: jest.fn().mockResolvedValue({
+          intent: FoodIntent.RECOMMEND_FOOD,
+          slots: { cuisineType: 'cơm tấm' },
+          needs: { cuisine: 1 },
+          searchQuery: 'cơm tấm',
+          reasoning: 'Mocked intent detection',
+        }),
+      })
+      .overrideProvider(ResponseGeneratorService)
+      .useValue({
+        generateResponse: jest.fn().mockResolvedValue({
+          reply: 'Đây là gợi ý món cơm tấm của AI.',
+          suggestedFoodIds: [],
+          quickReplies: [],
+          slots: {},
+          current_stage: 'RECOMMENDED',
+          rejected_food_ids: [],
+          assessment: {
+            mainNeed: 'cuisine',
+            secondaryNeeds: [],
+            confidence: 1,
+            explanation: 'Mocked assessment',
+          },
         }),
       })
       .compile();
@@ -191,7 +221,9 @@ describe('AI Flow (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
-      const found = listRes.body.find((c: any) => c.id === conversationId);
+      const found = (listRes.body as { id: number }[]).find(
+        (c) => c.id === conversationId,
+      );
       expect(found).toBeUndefined();
     });
   });

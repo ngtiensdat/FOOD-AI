@@ -58,9 +58,21 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const router = useRouter();
 
   const { socket } = useSocket();
-  const [notifications, setNotifications] = useState<any[]>([]);
+
+  interface NotificationItem {
+    id: string;
+    title: string;
+    content: string;
+    type: 'LIKE' | 'COMMENT' | 'REPLY' | 'SHARE' | 'LEVEL_UP' | 'PROFILE_UPDATE' | 'SYSTEM' | 'WARNING' | 'PROMOTION' | 'MODERATION_REMOVE' | 'MODERATION_RESOLVE' | 'MODERATION_DISMISS' | string;
+    isRead: boolean;
+    senderAvatar?: string;
+    createdAt: string;
+    postId?: number;
+  }
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [activeNotification, setActiveNotification] = useState<any | null>(null);
+  const [activeNotification, setActiveNotification] = useState<NotificationItem | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
@@ -82,7 +94,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewNotification = (notif: any) => {
+    const handleNewNotification = (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
       toast.success(notif.title || 'Thông báo mới');
     };
@@ -130,7 +142,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     setMounted(true);
   }, []);
 
-  const renderNotificationAvatar = (notif: any, size = 32) => {
+  const renderNotificationAvatar = (notif: NotificationItem, size = 32) => {
     const fallbackClasses = `rounded-full flex items-center justify-center bg-gray-100 dark:bg-slate-900 shrink-0`;
     
     if (notif.senderAvatar) {
@@ -227,15 +239,17 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
       <div className="hidden md:flex items-center justify-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest justify-self-center">
         {tabs.map((tab) => (
-          <button
+          <Button
             suppressHydrationWarning
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
             className={`pb-1 transition-all ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
               }`}
+            variant="none"
+            size="none"
           >
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -256,10 +270,12 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           <div className="flex items-center gap-3 relative">
             {/* Notification Bell */}
             <div className="relative">
-              <button
+              <Button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 transition-colors relative focus:outline-none cursor-pointer"
                 aria-label="Thông báo"
+                variant="none"
+                size="none"
               >
                 <Bell size={20} className={unreadCount > 0 ? 'animate-bounce' : ''} />
                 {unreadCount > 0 && (
@@ -267,7 +283,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                     {unreadCount}
                   </span>
                 )}
-              </button>
+              </Button>
 
               {showNotifications && (
                 <>
@@ -276,9 +292,9 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                     <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-900 pb-2">
                       <span className="font-extrabold text-sm text-gray-900 dark:text-white">{LABELS.NAV.NOTIFICATIONS.TITLE}</span>
                       <div className="flex gap-2 text-[10px] font-bold text-primary">
-                        <button onClick={handleMarkAllAsRead} className="hover:underline">{LABELS.NAV.NOTIFICATIONS.MARK_ALL_READ}</button>
+                        <Button onClick={handleMarkAllAsRead} className="hover:underline" variant="none" size="none">{LABELS.NAV.NOTIFICATIONS.MARK_ALL_READ}</Button>
                         <span className="text-gray-300">|</span>
-                        <button onClick={handleClearAll} className="hover:underline text-rose-500">{LABELS.NAV.NOTIFICATIONS.CLEAR_ALL}</button>
+                        <Button onClick={handleClearAll} className="hover:underline text-rose-500" variant="none" size="none">{LABELS.NAV.NOTIFICATIONS.CLEAR_ALL}</Button>
                       </div>
                     </div>
 
@@ -320,10 +336,12 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
               )}
             </div>
 
-            <button
+            <Button
               onClick={() => setShowMenu(!showMenu)}
               className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
               aria-label={LABELS.NAV.USER_MENU}
+              variant="none"
+              size="none"
             >
               <Avatar 
                 src={user.avatar} 
@@ -337,7 +355,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   showMenu ? 'rotate-180 text-primary' : ''
                 }`} 
               />
-            </button>
+            </Button>
 
             {showMenu && (
               <>
@@ -386,12 +404,14 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
               <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 dark:bg-primary/10 px-3 py-1 rounded-full">
                 {LABELS.NAV.NOTIFICATIONS.TYPES[activeNotification.type as keyof typeof LABELS.NAV.NOTIFICATIONS.TYPES] || LABELS.NAV.NOTIFICATIONS.TYPES.DEFAULT}
               </span>
-              <button 
+              <Button 
                 onClick={() => setShowDetailModal(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors p-1 hover:bg-gray-50 dark:hover:bg-slate-900 rounded-lg cursor-pointer font-bold"
+                variant="none"
+                size="none"
               >
                 ✕
-              </button>
+              </Button>
             </div>
 
             {/* Large Avatar container */}

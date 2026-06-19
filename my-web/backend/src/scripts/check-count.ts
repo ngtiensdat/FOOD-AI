@@ -31,27 +31,31 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+interface CountResult {
+  count: number;
+}
+
 async function check() {
-  const totalFoods: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods`;
-  const nullEmbeddings: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE embedding IS NULL`;
-  const activeFoods: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE is_active = true`;
-  const activeNullEmbeddings: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE is_active = true AND embedding IS NULL`;
-  const approvedFoods: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE status::text = 'APPROVED'`;
-  const approvedNullEmbeddings: any =
-    await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE status::text = 'APPROVED' AND embedding IS NULL`;
+  const totalFoods =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods`) as CountResult[];
+  const nullEmbeddings =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE embedding IS NULL`) as CountResult[];
+  const activeFoods =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE is_active = true`) as CountResult[];
+  const activeNullEmbeddings =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE is_active = true AND embedding IS NULL`) as CountResult[];
+  const approvedFoods =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE status::text = 'APPROVED'`) as CountResult[];
+  const approvedNullEmbeddings =
+    (await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM foods WHERE status::text = 'APPROVED' AND embedding IS NULL`) as CountResult[];
 
   console.log({
-    totalFoods: totalFoods[0].count,
-    nullEmbeddings: nullEmbeddings[0].count,
-    activeFoods: activeFoods[0].count,
-    activeNullEmbeddings: activeNullEmbeddings[0].count,
-    approvedFoods: approvedFoods[0].count,
-    approvedNullEmbeddings: approvedNullEmbeddings[0].count,
+    totalFoods: totalFoods[0]?.count ?? 0,
+    nullEmbeddings: nullEmbeddings[0]?.count ?? 0,
+    activeFoods: activeFoods[0]?.count ?? 0,
+    activeNullEmbeddings: activeNullEmbeddings[0]?.count ?? 0,
+    approvedFoods: approvedFoods[0]?.count ?? 0,
+    approvedNullEmbeddings: approvedNullEmbeddings[0]?.count ?? 0,
   });
 }
 

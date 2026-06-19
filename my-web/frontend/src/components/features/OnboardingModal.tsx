@@ -12,6 +12,8 @@ import { LABELS } from '@/constants/labels';
 import { useOnboardingActions, OnboardingSubmitData } from '@/hooks/useOnboardingActions';
 import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { User } from '@/types/user';
+import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 
 interface OnboardingModalProps {
   user: Partial<User>;
@@ -57,12 +59,14 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
             className={`modal-card w-full ${isBranchStep ? 'max-w-2xl' : 'max-w-xl'} !rounded-[2.5rem] overflow-hidden relative z-10 !p-8 md:!p-10 transition-all duration-300`}
           >
             {onClose && (
-              <button
+              <Button
                 onClick={onClose}
                 className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 transition-colors z-20"
+                variant="none"
+                size="none"
               >
                 <X size={24} />
-              </button>
+              </Button>
             )}
 
             {/* Progress bar */}
@@ -103,14 +107,16 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             {LABELS.RESTAURANT.BRANCH_NUMBER(index + 1)}: {branch.name || LABELS.COMMON.UNNAMED}
                           </span>
                           {branches.length > 1 && (
-                            <button
+                            <Button
                               type="button"
                               onClick={() => handleRemoveBranch(index)}
                               className="text-red-500 hover:text-red-600 transition-colors p-1"
                               title={LABELS.RESTAURANT.DELETE_BRANCH}
+                              variant="none"
+                              size="none"
                             >
                               <Trash2 size={16} />
-                            </button>
+                            </Button>
                           )}
                         </div>
 
@@ -120,11 +126,12 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.NAME_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="text"
                               required
                               value={branch.name}
-                              onChange={(e) => handleBranchChange(index, 'name', e.target.value)}
+                              onChange={(e) => handleBranchChange(index, 'name', (e.target as HTMLInputElement).value)}
                               placeholder={LABELS.ONBOARDING.FORM.NAME_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -180,11 +187,12 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.ADDRESS_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="text"
                               required
                               value={branch.street || ''}
-                              onChange={(e) => handleBranchChange(index, 'street', e.target.value)}
+                              onChange={(e) => handleBranchChange(index, 'street', (e.target as HTMLInputElement).value)}
                               placeholder={LABELS.ONBOARDING.FORM.ADDRESS_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs font-bold"
                             />
@@ -195,12 +203,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.LAT_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="number"
                               step="any"
                               required
                               value={branch.latitude}
-                              onChange={(e) => handleBranchChange(index, 'latitude', parseFloat(e.target.value))}
+                              onChange={(e) => handleBranchChange(index, 'latitude', parseFloat((e.target as HTMLInputElement).value))}
                               placeholder={LABELS.ONBOARDING.FORM.LAT_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -211,12 +220,13 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.LNG_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="number"
                               step="any"
                               required
                               value={branch.longitude}
-                              onChange={(e) => handleBranchChange(index, 'longitude', parseFloat(e.target.value))}
+                              onChange={(e) => handleBranchChange(index, 'longitude', parseFloat((e.target as HTMLInputElement).value))}
                               placeholder={LABELS.ONBOARDING.FORM.LNG_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -227,10 +237,11 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.MAP_URL_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="url"
                               value={branch.mapUrl || ''}
-                              onChange={(e) => handleBranchChange(index, 'mapUrl', e.target.value)}
+                              onChange={(e) => handleBranchChange(index, 'mapUrl', (e.target as HTMLInputElement).value)}
                               placeholder={LABELS.ONBOARDING.FORM.MAP_URL_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -241,10 +252,11 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.HOURS_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="text"
                               value={branch.openingHours || ''}
-                              onChange={(e) => handleBranchChange(index, 'openingHours', e.target.value)}
+                              onChange={(e) => handleBranchChange(index, 'openingHours', (e.target as HTMLInputElement).value)}
                               placeholder={LABELS.ONBOARDING.FORM.HOURS_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -255,10 +267,11 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                               {LABELS.ONBOARDING.FORM.BIO_LABEL}
                             </label>
-                            <input
+                            <Input
+                              variant="none"
                               type="text"
                               value={branch.bio || ''}
-                              onChange={(e) => handleBranchChange(index, 'bio', e.target.value)}
+                              onChange={(e) => handleBranchChange(index, 'bio', (e.target as HTMLInputElement).value)}
                               placeholder={LABELS.ONBOARDING.FORM.BIO_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs"
                             />
@@ -270,30 +283,36 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
 
                   {/* Nút thêm cơ sở mới */}
                   <div className="flex justify-center pt-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={handleAddBranch}
                       className="px-4 py-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary transition-all text-xs font-bold flex items-center gap-1.5 bg-slate-50"
+                      variant="none"
+                      size="none"
                     >
                       <Plus size={14} /> {LABELS.ONBOARDING.ADD_BRANCH_BTN}
-                    </button>
+                    </Button>
                   </div>
 
                   {/* Thanh nút điều hướng cuối */}
                   <div className="flex gap-3 pt-4 border-t border-slate-100">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setStep(step - 1)}
                       className="flex-1 py-3 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all text-xs md:text-sm"
+                      variant="none"
+                      size="none"
                     >
                       {LABELS.ONBOARDING.BACK_BTN}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="submit"
                       className="flex-[2] py-3 gradient-bg text-white rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all text-xs md:text-sm flex items-center justify-center gap-2"
+                      variant="none"
+                      size="none"
                     >
                       {LABELS.ONBOARDING.COMPLETE_BTN} <Compass size={18} />
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -319,10 +338,12 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                   {!showOtherInput ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                       {[...(currentQuestion?.options || []), { label: LABELS.COMMON.OTHER, value: 'other', emoji: '✍️' }].map((option) => (
-                        <button
+                        <Button
                           key={option.value}
                           onClick={() => handleSelect(option.value)}
-                          className="group relative flex items-center gap-4 p-5 bg-gray-50 border-2 border-transparent hover:border-primary hover:bg-orange-50 rounded-2xl transition-all text-left"
+                          className="group relative flex items-center gap-4 p-5 bg-gray-50 border-2 border-transparent hover:border-primary hover:bg-orange-50 rounded-2xl transition-all text-left w-full"
+                          variant="none"
+                          size="none"
                         >
                           <span className="text-3xl group-hover:scale-125 transition-transform">{option.emoji}</span>
                           <div>
@@ -331,7 +352,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             </div>
                           </div>
                           <ArrowRight className="absolute right-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" size={18} />
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   ) : (
@@ -340,27 +361,33 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                       animate={{ opacity: 1, y: 0 }}
                       className="w-full space-y-4"
                     >
-                      <textarea
+                      <Input
+                        isTextArea
+                        variant="none"
                         autoFocus
                         placeholder={LABELS.FORM.OPINION_PLACEHOLDER}
                         className="form-input rounded-3xl p-6 border-2 text-lg min-h-[120px]"
                         value={otherValue}
-                        onChange={(e) => setOtherValue(e.target.value)}
+                        onChange={(e) => setOtherValue((e.target as HTMLTextAreaElement).value)}
                       />
                       <div className="flex gap-3">
-                        <button
+                        <Button
                           onClick={() => setShowOtherInput(false)}
                           className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                          variant="none"
+                          size="none"
                         >
                           {LABELS.COMMON.BACK}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={handleOtherSubmit}
                           disabled={!otherValue.trim()}
                           className="flex-[2] py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          variant="none"
+                          size="none"
                         >
                           {LABELS.COMMON.NEXT} <ArrowRight size={20} />
-                        </button>
+                        </Button>
                       </div>
                     </motion.div>
                   )}

@@ -15,6 +15,7 @@ export interface Food {
   restaurant?: {
     id: number;
     name: string;
+    address?: string;
   } | null;
   tags?: string[];
   address?: string;

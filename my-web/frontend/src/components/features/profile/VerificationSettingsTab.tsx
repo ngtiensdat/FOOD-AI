@@ -8,6 +8,7 @@
 import React from 'react';
 import { Mail } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
 interface VerificationSettingsTabProps {
@@ -48,13 +49,14 @@ export const VerificationSettingsTab = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs text-gray-500 font-semibold ml-1">{LABELS.SETTINGS.VERIFICATION.LABEL}</label>
-              <input
+              <Input
                 type="email"
                 required
                 placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
-                className="form-input py-3 px-4 text-sm font-medium"
+                variant="none"
+                className="form-input py-3 px-4 text-sm font-medium w-full"
                 value={verifyEmail}
-                onChange={(e) => setVerifyEmail(e.target.value)}
+                onChange={(e) => setVerifyEmail((e.target as HTMLInputElement).value)}
               />
             </div>
             <Button type="submit" loading={isLoading} fullWidth>
@@ -73,7 +75,7 @@ export const VerificationSettingsTab = ({
         variant="info"
         onConfirm={() => {
           setShowConfirm(false);
-          onVerifySubmit({ preventDefault: () => {} } as any);
+          onVerifySubmit({ preventDefault: () => {} } as React.FormEvent);
         }}
         onCancel={() => {
           setShowConfirm(false);

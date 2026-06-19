@@ -4,7 +4,7 @@ import { ConsoleLogger, Injectable } from '@nestjs/common';
 export class StructuredLogger extends ConsoleLogger {
   private formatLog(
     level: string,
-    message: any,
+    message: unknown,
     context?: string,
     trace?: string,
   ) {
@@ -12,12 +12,23 @@ export class StructuredLogger extends ConsoleLogger {
     const timestamp = new Date().toISOString();
     const finalContext = context || this.context || 'Application';
 
+    let messageStr = '';
+    if (typeof message === 'string') {
+      messageStr = message;
+    } else if (message instanceof Error) {
+      messageStr = message.message;
+    } else if (typeof message === 'object' && message !== null) {
+      messageStr = JSON.stringify(message);
+    } else {
+      messageStr = String(message);
+    }
+
     if (isProduction) {
       const logObject = {
         timestamp,
         level,
         context: finalContext,
-        message: typeof message === 'object' ? message : String(message),
+        message: typeof message === 'object' ? message : messageStr,
         ...(trace ? { trace } : {}),
       };
       return JSON.stringify(logObject);
@@ -28,7 +39,7 @@ export class StructuredLogger extends ConsoleLogger {
         : '';
       const traceStr = trace ? `\n\x1b[31m${trace}\x1b[0m` : '';
       const color = this.getColor(level);
-      return `${color}${timestamp} [${level.toUpperCase()}] ${contextStr}${String(message)}${traceStr}`;
+      return `${color}${timestamp} [${level.toUpperCase()}] ${contextStr}${messageStr}${traceStr}`;
     }
   }
 
@@ -49,23 +60,23 @@ export class StructuredLogger extends ConsoleLogger {
     }
   }
 
-  log(message: any, context?: string) {
+  log(message: unknown, context?: string) {
     console.log(this.formatLog('log', message, context));
   }
 
-  error(message: any, stack?: string, context?: string) {
+  error(message: unknown, stack?: string, context?: string) {
     console.error(this.formatLog('error', message, context, stack));
   }
 
-  warn(message: any, context?: string) {
+  warn(message: unknown, context?: string) {
     console.warn(this.formatLog('warn', message, context));
   }
 
-  debug(message: any, context?: string) {
+  debug(message: unknown, context?: string) {
     console.log(this.formatLog('debug', message, context));
   }
 
-  verbose(message: any, context?: string) {
+  verbose(message: unknown, context?: string) {
     console.log(this.formatLog('verbose', message, context));
   }
 }

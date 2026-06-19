@@ -20,7 +20,7 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
     private readonly cacheService: CacheService,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const pattern = this.reflector.getAllAndOverride<string>(
       CACHE_INVALIDATE_METADATA_KEY,
       [context.getHandler(), context.getClass()],

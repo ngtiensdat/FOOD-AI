@@ -5,7 +5,6 @@
 // Các biến, hàm đặc biệt: RootLayout, metadata.
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -15,16 +14,6 @@ import { cookies } from "next/headers";
 import { LanguageProvider } from "@/providers/language-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { AssistiveTouchMenu } from "@/components/features/assistive-touch/AssistiveTouchMenu";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: LABELS.COMMON.APP_TITLE,
@@ -44,7 +33,7 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
       suppressHydrationWarning
     >
       <head>

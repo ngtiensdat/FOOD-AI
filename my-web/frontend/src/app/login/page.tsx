@@ -80,14 +80,16 @@ export default function LoginPage() {
                 error={errors.password}
                 className="pr-12"
               />
-              <button
+              <Button
                 suppressHydrationWarning
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                variant="none"
+                size="none"
                 className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+              </Button>
             </div>
 
             <div className="text-right">

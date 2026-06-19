@@ -16,9 +16,11 @@ import { addNotification } from '@/utils/notifications';
 import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
+import { LevelUpModal } from '@/components/features/badges/LevelUpModal';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { toast } from '@/store/useToastStore';
+import { Button } from '@/components/base/Button';
 
 // Modular Feature Components
 import { PostCard, PostData } from '@/components/features/profile/PostCard';
@@ -99,6 +101,9 @@ export default function ForumPage() {
     handleReplyComment,
     handleDeleteReply,
     handleDeletePost,
+    isLevelUpModalOpen,
+    setIsLevelUpModalOpen,
+    levelUpData,
   } = useSocialActions({
     posts,
     setPosts,
@@ -126,13 +131,15 @@ export default function ForumPage() {
             </p>
           </div>
           {profile && (
-            <button
+            <Button
               onClick={() => setIsPostModalOpen(true)}
+              variant="none"
+              size="none"
               className="px-6 py-3 bg-primary text-white rounded-full font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
               <Plus size={20} />
               {LABELS.SOCIAL.CREATE_POST}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -148,13 +155,15 @@ export default function ForumPage() {
               <div className="card-container !p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 rounded-2xl shadow-sm">
                 <div className="flex gap-4">
                   <Avatar src={profile.profile?.avatar} name={me?.name} size={40} />
-                  <button 
+                  <Button 
                     onClick={() => setIsPostModalOpen(true)}
+                    variant="none"
+                    size="none"
                     className="flex-1 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full px-6 py-2.5 text-left text-gray-500 transition-all text-small font-bold flex items-center justify-between border border-gray-100 dark:border-slate-800"
                   >
                     <span>{LABELS.SETTINGS.PROFILE.POSTS.THINKING(me?.name || '')}</span>
                     <Plus size={18} className="text-primary" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -245,12 +254,14 @@ export default function ForumPage() {
                 <Info size={32} className="text-gray-300 mx-auto" />
                 <h4 className="font-bold text-gray-700">{LABELS.SOCIAL.SIDEBAR.JOIN_COMMUNITY}</h4>
                 <p className="text-xs text-gray-400">{LABELS.SOCIAL.SIDEBAR.JOIN_COMMUNITY_DESC}</p>
-                <button
+                <Button
                   onClick={() => router.push('/login')}
+                  variant="none"
+                  size="none"
                   className="w-full py-2.5 bg-primary text-white rounded-xl font-bold shadow hover:shadow-md transition-all text-xs"
                 >
                   {LABELS.SOCIAL.SIDEBAR.LOGIN_NOW}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -336,6 +347,13 @@ export default function ForumPage() {
           onSubmitted={handleReportSubmitted}
         />
       )}
+
+      <LevelUpModal
+        isOpen={isLevelUpModalOpen}
+        onClose={() => setIsLevelUpModalOpen(false)}
+        level={levelUpData?.level || 1}
+        badge={levelUpData?.badge}
+      />
 
       <Footer />
     </div>

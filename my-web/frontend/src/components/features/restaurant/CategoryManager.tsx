@@ -7,6 +7,7 @@
 import React from 'react';
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Folder, FileText, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { Category } from '@/services/category.service';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { useCategoryManager } from '@/hooks/useCategoryManager';
@@ -73,16 +74,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
               </div>
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 {level < 3 && (
-                  <button onClick={() => handleOpenAddCategory(category.groupId, category.id)} className="p-1.5 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_SUB_CATEGORY}>
+                  <Button onClick={() => handleOpenAddCategory(category.groupId, category.id)} className="p-1.5 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_SUB_CATEGORY} variant="none" size="none">
                     <Plus size={14} />
-                  </button>
+                  </Button>
                 )}
-                <button onClick={() => handleOpenEditCategory(category)} className="icon-btn-blue">
+                <Button onClick={() => handleOpenEditCategory(category)} className="icon-btn-blue" variant="none" size="none">
                   <Edit2 size={14} />
-                </button>
-                <button onClick={() => setDeleteConfirm({ type: 'category', id: category.id })} className="icon-btn-rose">
+                </Button>
+                <Button onClick={() => setDeleteConfirm({ type: 'category', id: category.id })} className="icon-btn-rose" variant="none" size="none">
                   <Trash2 size={14} />
-                </button>
+                </Button>
               </div>
             </div>
             {renderCategories(categories, groupName, category.id, level + 1)}
@@ -128,15 +129,15 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
                 <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2.5 py-1 rounded-md border border-orange-100 dark:border-orange-800">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.PRIORITY_PREFIX}{group.order}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleOpenAddCategory(group.id)} className="p-2 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_ROOT_CATEGORY}>
+                <Button onClick={() => handleOpenAddCategory(group.id)} className="p-2 text-primary hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl" title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_ROOT_CATEGORY} variant="none" size="none">
                   <Plus size={16} />
-                </button>
-                <button onClick={() => handleOpenEditGroup(group)} className="icon-btn-blue">
+                </Button>
+                <Button onClick={() => handleOpenEditGroup(group)} className="icon-btn-blue" variant="none" size="none">
                   <Edit2 size={16} />
-                </button>
-                <button onClick={() => setDeleteConfirm({ type: 'group', id: group.id })} className="icon-btn-rose">
+                </Button>
+                <Button onClick={() => setDeleteConfirm({ type: 'group', id: group.id })} className="icon-btn-rose" variant="none" size="none">
                   <Trash2 size={16} />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -180,14 +181,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
             <form onSubmit={handleSubmitGroup} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_NAME} <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
+                <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
                   {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_GROUP}
                 </p>
-                <input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
+                <Input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
@@ -206,14 +207,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
             <form onSubmit={handleSubmitCategory} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_NAME} <span className="text-rose-500">*</span></label>
-                <input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
+                <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
                 <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
                   {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_CATEGORY}
                 </p>
-                <input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: e.target.value })} className="form-input rounded-xl px-4 py-3 text-sm" />
+                <Input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>

@@ -72,7 +72,7 @@ export const LIMITS = {
   /**
    * Kích thước trang mặc định cho danh sách nhà hàng tại trang Khám phá
    */
-  EXPLORE_RESTAURANTS_PAGE_SIZE: 6,
+  EXPLORE_RESTAURANTS_PAGE_SIZE: 20,
 
   /**
    * Kích thước trang mặc định cho danh sách món ăn của nhà hàng công khai
@@ -88,5 +88,26 @@ export const LIMITS = {
    * Kích thước trang mặc định cho phân trang theo nhà hàng trong quản lý món ăn đối tác của Admin
    */
   ADMIN_RESTAURANT_GROUP_PAGE_SIZE: 5,
+
+  /**
+   * Số món ăn hiển thị ban đầu tại trang chủ trước khi người dùng nhấn "Tải thêm"
+   * Được tính để lấp đầy 5 cột × 6 hàng, để ô cuối cùng là nút Tải thêm
+   */
+  HOME_FOOD_INITIAL_LIMIT: 29,
+
+  /**
+   * Điểm thưởng/phạt mặc định cho các hoạt động mạng xã hội (tương tác bài viết/bình luận)
+   */
+  LOYALTY_POINTS: {
+    LIKE_POST: 5,
+    UNLIKE_POST: -5,
+    COMMENT_POST: 10,
+    DELETE_COMMENT: -10,
+    REPLY_COMMENT: 5,
+    DELETE_REPLY: -5,
+    CREATE_POST: 50,
+    DELETE_POST: -50,
+    SHARE_POST: 15,
+  },
 };
 

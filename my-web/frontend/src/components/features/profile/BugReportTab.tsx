@@ -8,6 +8,8 @@
 import React, { useState } from 'react';
 import { Bug, Image as ImageIcon, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
+import { Alert } from '@/components/base/Alert';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { bugReportService } from '@/services/bug-report.service';
@@ -42,9 +44,10 @@ export const BugReportTab = () => {
       setSuccess(true);
       setDescription('');
       setImageUrl('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || LABELS.BUG_REPORT.SUBMIT_ERROR);
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.BUG_REPORT.SUBMIT_ERROR);
     } finally {
       setLoading(false);
     }
@@ -63,17 +66,15 @@ export const BugReportTab = () => {
       </div>
 
       {success && (
-        <div className="alert-box-rose !bg-emerald-50 !border-emerald-200 !color-emerald-600 dark:!bg-emerald-950/20 dark:!border-emerald-900/50 dark:!text-emerald-400 p-4 font-bold flex items-center gap-2">
-          <CheckCircle2 size={18} />
-          <span>{LABELS.BUG_REPORT.SUCCESS}</span>
-        </div>
+        <Alert type="success">
+          {LABELS.BUG_REPORT.SUCCESS}
+        </Alert>
       )}
 
       {error && (
-        <div className="alert-box-rose p-4 font-bold flex items-center gap-2">
-          <AlertTriangle size={18} />
-          <span>{error}</span>
-        </div>
+        <Alert type="error">
+          {error}
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
@@ -85,7 +86,7 @@ export const BugReportTab = () => {
           <select
             className="form-input bg-none"
             value={category}
-            onChange={(e) => setCategory(e.target.value as any)}
+            onChange={(e) => setCategory(e.target.value as 'AI' | 'UI' | 'PERFORMANCE' | 'OTHER')}
             disabled={loading}
           >
             <option value="AI">{LABELS.BUG_REPORT.CATEGORIES.AI}</option>
@@ -100,11 +101,13 @@ export const BugReportTab = () => {
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
             {LABELS.BUG_REPORT.DESC}
           </label>
-          <textarea
+          <Input
+            isTextArea
+            variant="none"
             className="form-input min-h-[140px] resize-y"
             placeholder={LABELS.BUG_REPORT.DESC_PLACEHOLDER}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
             disabled={loading}
           />
         </div>
@@ -115,12 +118,13 @@ export const BugReportTab = () => {
             <ImageIcon size={14} />
             {LABELS.BUG_REPORT.IMAGE}
           </label>
-          <input
+          <Input
+            variant="none"
             type="text"
             className="form-input"
             placeholder={LABELS.BUG_REPORT.IMAGE_PLACEHOLDER}
             value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            onChange={(e) => setImageUrl((e.target as HTMLInputElement).value)}
             disabled={loading}
           />
         </div>

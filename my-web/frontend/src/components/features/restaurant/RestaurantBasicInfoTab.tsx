@@ -49,10 +49,12 @@ export const RestaurantBasicInfoTab: React.FC<RestaurantBasicInfoTabProps> = ({
         <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
           {LABELS.RESTAURANT.EDIT_MODAL.DESC_LABEL}
         </label>
-        <textarea
+        <Input
+          isTextArea
+          variant="none"
           placeholder={LABELS.RESTAURANT.EDIT_MODAL.DESC_PLACEHOLDER}
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
           rows={4}
           className="form-input rounded-card px-4 py-3 text-sm text-gray-800 resize-none"
         />
