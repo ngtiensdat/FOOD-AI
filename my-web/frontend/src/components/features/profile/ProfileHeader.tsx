@@ -114,7 +114,7 @@ export const ProfileHeader = ({
         <div className="relative flex flex-col md:flex-row items-center gap-8 mb-10">
           {/* Avatar Section */}
           <div className="relative group -mt-24 md:-mt-32">
-            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
+            <div className="relative overflow-hidden w-40 h-40 md:w-48 md:h-48 rounded-full border-[6px] border-white shadow-2xl bg-white transition-transform hover:scale-[1.02]">
               <Avatar
                 src={profile?.profile?.avatar}
                 name={user?.name}
@@ -136,13 +136,20 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          <div className="text-center md:text-left flex-1">
-            <h1 className="text-h1 !text-4xl md:!text-5xl text-gray-900 mb-2 flex flex-wrap justify-center md:justify-start items-center gap-3">
-              {user?.name}
+          <div className="text-center md:text-left flex-1 min-w-0">
+            {/* Name row — clamp dài, size nhỏ hơn cho RESTAURANT */}
+            <h1 className={`font-black text-gray-900 mb-2 flex flex-wrap justify-center md:justify-start items-center gap-2 leading-tight
+              ${user?.role === UserRole.RESTAURANT
+                ? 'text-xl md:text-2xl'
+                : 'text-3xl md:text-4xl'
+              }`}>
+              <span className={user?.role === UserRole.RESTAURANT ? 'line-clamp-2 md:line-clamp-none' : ''}>
+                {user?.name}
+              </span>
               {showLevel && (user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
                 <Button
                   onClick={() => router.push('/badges')}
-                  className="text-xs font-extrabold px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full shadow-md animate-pulse shrink-0 hover:from-amber-600 hover:to-orange-700 transition-all cursor-pointer"
+                  className="text-xs font-extrabold px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full shadow-md hover:from-amber-600 hover:to-orange-700 transition-all cursor-pointer shrink-0 self-start mt-1"
                   variant="none"
                   size="none"
                 >

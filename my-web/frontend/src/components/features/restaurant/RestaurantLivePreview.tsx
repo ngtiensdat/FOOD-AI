@@ -37,6 +37,7 @@ export const RestaurantLivePreview: React.FC<RestaurantLivePreviewProps> = ({
               <SafeImage
                 src={coverImage}
                 alt="Cover Preview"
+                fill
                 className="w-full h-full object-cover transition-transform duration-500"
               />
             ) : (
@@ -54,6 +55,7 @@ export const RestaurantLivePreview: React.FC<RestaurantLivePreviewProps> = ({
                 <SafeImage
                   src={logo}
                   alt="Logo Preview"
+                  fill
                   className="w-full h-full object-cover"
                 />
               ) : (

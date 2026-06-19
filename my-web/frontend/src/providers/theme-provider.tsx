@@ -34,6 +34,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         const savedTheme = localStorage.getItem('theme') as Theme | null;
         const activeTheme = savedTheme || 'light';
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setThemeState(activeTheme);
         applyTheme(activeTheme);
     }, []);

@@ -10,6 +10,7 @@ import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { PostData } from '@/components/features/profile/PostCard';
 import { User, UserRole } from '@/types/user';
+import { apiClient } from '@/lib/api-client';
 
 export interface UseSocialActionsParams {
   posts: PostData[];
@@ -129,7 +130,8 @@ export const useSocialActions = ({
     toast.success(LABELS.SOCIAL.POST_SUCCESS);
     try {
       const authorId = getFetchId();
-      const data = await socialService.getPosts(authorId);
+      // bypass cache với timestamp
+      const data = await apiClient.get('/posts', { params: authorId ? { authorId, _t: Date.now() } : { _t: Date.now() } });
       setPosts(data || []);
     } catch (err) {
       console.error(err);
@@ -222,9 +224,14 @@ export const useSocialActions = ({
       });
 
       toast.success(LABELS.SOCIAL.TOAST.SHARE_SUCCESS);
-      
+
+      // Bypass cache — thêm timestamp để server không trả data cũ từ Redis/in-memory cache
       const authorId = getFetchId();
-      const data = await socialService.getPosts(authorId);
+      const data = await apiClient.get('/posts', {
+        params: authorId
+          ? { authorId, _t: Date.now() }
+          : { _t: Date.now() },
+      });
       setPosts(data || []);
 
       awardPoints(LABELS.LOYALTY.REASONS.SHARE_POST);
@@ -342,10 +349,20 @@ export const useSocialActions = ({
   };
 
   const handleDeletePost = async (postId: number) => {
-    if (!window.confirm(LABELS.SOCIAL.TOAST.POST_DELETE_CONFIRM)) return;
     try {
       await socialService.deletePost(postId);
+      // Xóa khỏi danh sách UI ngay lập tức
       setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+      // Cập nhật _count.posts trên profile ngay (không chờ awardPoints refetch)
+      if (profile) {
+        actions.setProfile({
+          ...profile,
+          _count: {
+            ...(profile as any)._count,
+            posts: Math.max(0, ((profile as any)._count?.posts || 1) - 1),
+          },
+        } as any);
+      }
       toast.success(LABELS.SOCIAL.TOAST.POST_DELETE_SUCCESS);
       awardPoints(LABELS.LOYALTY.REASONS.DELETE_POST);
     } catch (err) {

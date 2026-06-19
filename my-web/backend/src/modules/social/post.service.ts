@@ -61,6 +61,7 @@ export class PostService {
     authorId?: number,
     page: number = 1,
     pageSize: number = LIMITS.POSTS_DEFAULT_PAGE_SIZE,
+    noCache?: boolean,
   ) {
     const where: Prisma.PostWhereInput = {
       deletedAt: null,
@@ -72,72 +73,73 @@ export class PostService {
     }
 
     const cacheKey = `posts:list:${authorId || 'all'}:${page}:${pageSize}`;
-    const cached = await this.cacheService.wrap(
-      cacheKey,
-      async () => {
-        const posts = await this.prisma.post.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                role: true,
-                level: true,
-                badgeTitle: true,
-                profile: { select: { avatar: true } },
-              },
+
+    const fetchPosts = async () => {
+      const posts = await this.prisma.post.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              role: true,
+              level: true,
+              badgeTitle: true,
+              profile: { select: { avatar: true } },
             },
-            food: { select: { id: true, name: true } },
-            restaurant: { select: { id: true, name: true } },
-            likes: true,
-            savedPosts: true,
-            comments: {
-              orderBy: { createdAt: 'asc' },
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    profile: { select: { avatar: true } },
-                  },
+          },
+          food: { select: { id: true, name: true } },
+          restaurant: { select: { id: true, name: true } },
+          likes: true,
+          savedPosts: true,
+          comments: {
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { avatar: true } },
                 },
-                replies: {
-                  orderBy: { createdAt: 'asc' },
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        profile: { select: { avatar: true } },
-                      },
+              },
+              replies: {
+                orderBy: { createdAt: 'asc' },
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      profile: { select: { avatar: true } },
                     },
                   },
                 },
               },
             },
-            sharedFrom: {
-              include: {
-                author: {
-                  select: {
-                    id: true,
-                    name: true,
-                    profile: { select: { avatar: true } },
-                  },
+          },
+          sharedFrom: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { avatar: true } },
                 },
               },
             },
           },
-        });
+        },
+      });
 
-        const total = await this.prisma.post.count({ where });
-        return { posts, total };
-      },
-      120, // 2 minutes TTL
-    );
+      const total = await this.prisma.post.count({ where });
+      return { posts, total };
+    };
+
+    const cached = noCache
+      ? await fetchPosts()
+      : await this.cacheService.wrap(cacheKey, fetchPosts, 120);
 
     // Format posts to match frontend's expected properties, checking likes dynamically
     const formattedPosts = cached.posts.map((post) => {
@@ -186,6 +188,7 @@ export class PostService {
         title: post.title,
         content: post.content,
         image: post.image,
+        images: post.images || [],
         rating: post.rating,
         postType: post.postType,
         isShared: post.isShared,
@@ -197,6 +200,7 @@ export class PostService {
               title: post.sharedFrom.title,
               content: post.sharedFrom.content,
               image: post.sharedFrom.image,
+              images: post.sharedFrom.images || [],
             }
           : null,
         likesCount: post.likes.length,
@@ -230,6 +234,7 @@ export class PostService {
       title?: string;
       content?: string;
       image?: string;
+      images?: string[];
       rating?: number;
       postType?: PostType;
       restaurantId?: number;
@@ -247,6 +252,7 @@ export class PostService {
         title: dto.title,
         content: sanitizedContent,
         image: dto.image,
+        images: dto.images || [],
         rating: dto.rating ? Number(dto.rating) : null,
         postType: dto.postType || PostType.NORMAL,
         restaurantId: dto.restaurantId ? Number(dto.restaurantId) : null,
@@ -286,6 +292,7 @@ export class PostService {
     await this.gamificationQueue.addJob(post.authorId, 'UNDO_POST_REVIEW');
 
     await this.cacheService.invalidatePattern('posts:*');
+    await this.cacheService.invalidatePattern('users:*');
 
     return { success: true };
   }
@@ -312,6 +319,7 @@ export class PostService {
       // Deduct points
       await this.gamificationQueue.addJob(userId, 'UNDO_LIKE');
       await this.cacheService.invalidatePattern('posts:*');
+      await this.cacheService.invalidatePattern('users:*');
       return { isLiked: false };
     } else {
       await this.prisma.like.create({
@@ -344,6 +352,7 @@ export class PostService {
       // Queue points update
       await this.gamificationQueue.addJob(userId, 'LIKE');
       await this.cacheService.invalidatePattern('posts:*');
+      await this.cacheService.invalidatePattern('users:*');
       return { isLiked: true };
     }
   }
@@ -445,7 +454,7 @@ export class PostService {
     return { success: true };
   }
 
-  async toggleSavePost(userId: number, postId: number) {
+  async toggleSavePost(userId: number, postId: number, noCache = false) {
     const existing = await this.prisma.savedPost.findUnique({
       where: {
         userId_postId: {
@@ -576,6 +585,7 @@ export class PostService {
         title: post.title,
         content: post.content,
         image: post.image,
+        images: post.images || [],
         rating: post.rating,
         postType: post.postType,
         isShared: post.isShared,
@@ -587,6 +597,7 @@ export class PostService {
               title: post.sharedFrom.title,
               content: post.sharedFrom.content,
               image: post.sharedFrom.image,
+              images: post.sharedFrom.images || [],
             }
           : null,
         likesCount: post.likes.length,

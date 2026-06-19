@@ -11,98 +11,78 @@
 @custom-variant mixed (&:where(.mixed, .mixed *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --primary: #FF8C00;
-  /* Dark Orange */
-  --primary-light: #FFA500;
-  /* Orange */
-  --secondary: #FFD700;
-  /* Gold/Yellow */
-  --accent: #FFF9E6;
-  /* Very Light Yellow */
-  --text-muted: #666666;
-  --shadow: 0 4px 20px rgba(255, 140, 0, 0.1);
-  --radius: 12px;
+  --background: #FAFAFA;
+  --foreground: #111827;
+  --primary: #FF6B00;
+  --primary-light: #FF8533;
+  --secondary: #FFB800;
+  --accent: #F9FAFB;
+  --text-muted: #6B7280;
+  --shadow: 0 4px 20px rgba(255, 107, 0, 0.1);
+  --radius: 16px;
   --radius-lg: 50px;
+
+  /* Curated Warm Gray palette for Light Mode (Vanilla & Onyx) */
+  --color-gray-950: #030712;
+  --color-gray-900: #111827;
+  --color-gray-800: #1F2937;
+  --color-gray-700: #374151;
+  --color-gray-600: #4B5563;
+  --color-gray-500: #6B7280;
+  --color-gray-400: #9CA3AF;
+  --color-gray-300: #D1D5DB;
+  --color-gray-200: #E5E7EB;
+  --color-gray-100: #FFFFFF;
+  --color-gray-50: #FAFAFA;
 }
 
-/* Dark Mode Colors Override */
+/* Dark Mode Colors Override (Abyssal Slate) */
 :root.dark,
 html.dark,
 .dark {
-  --background: #020b24;
-  /* Cosmic Deep Navy Page Background */
-  --foreground: #f0f3ff;
-  /* Ice White */
-  --accent: #0e2252;
-  /* Card Border/Accent Navy */
-  --text-muted: #6282d3;
-  /* Glowing Soft Blue */
+  --background: #09090B;
+  --foreground: #FAFAFA;
+  --accent: #27272A;
+  --text-muted: #A1A1AA;
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 
-  /* Curated Premium Navy & Sapphire palette to override standard Tailwind gray variables in dark mode */
-  --color-gray-950: #ffffff;
-  --color-gray-900: #f0f3ff;
-  /* Ice White */
-  --color-gray-800: #d5defc;
-  /* Soft Ice Blue */
-  --color-gray-700: #b0c2f6;
-  /* Light Ice Sapphire */
-  --color-gray-600: #8ba2e6;
-  /* Soft Sky Cobalt */
-  --color-gray-500: #6282d3;
-  /* Glowing Soft Blue */
-  --color-gray-400: #4260a9;
-  /* Cobalt Shadow */
-  --color-gray-300: #203c7e;
-  /* Midnight Sapphire Border */
-  --color-gray-200: #0e2252;
-  /* Card Border Navy */
-  --color-gray-100: #071330;
-  /* Sleek Card Background */
-  --color-gray-50: #020b24;
-  /* Cosmic Navy Page Background */
+  /* Curated Slate palette for Dark mode */
+  --color-gray-950: #FFFFFF;
+  --color-gray-900: #FAFAFA;
+  --color-gray-800: #F4F4F5;
+  --color-gray-700: #E4E4E7;
+  --color-gray-600: #D4D4D8;
+  --color-gray-500: #A1A1AA;
+  --color-gray-400: #71717A;
+  --color-gray-300: #52525B;
+  --color-gray-200: #27272A;
+  --color-gray-100: #18181B;
+  --color-gray-50: #09090B;
 }
 
-/* Mixed Mode — "Coffee House" Theme */
-/* Inspired by warm restaurant candlelight: espresso + cream + caramel */
+/* Mixed Mode — "Sunset Amber" Theme */
 :root.mixed,
 html.mixed,
 .mixed {
-  --background: #1c1510;
-  /* Deep espresso page background */
-  --foreground: #fef0d6;
-  /* Warm cream text */
-  --accent: #3d2c18;
-  /* Dark wood card border */
-  --text-muted: #c8946a;
-  /* Warm caramel muted text */
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(255, 140, 0, 0.06);
+  --background: #1F181D;
+  --foreground: #FDF8F5;
+  --accent: #3D3039;
+  --text-muted: #B8A3AD;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(255, 107, 0, 0.08);
 
-  /* "Coffee House" warm palette — amber/caramel tones tuned for #1c1510 bg */
-  --color-gray-950: #ffffff;
-  --color-gray-900: #fef8ee;
-  /* Ivory white — headings */
-  --color-gray-800: #f5deb3;
-  /* Wheat — body text (~12:1 contrast) */
-  --color-gray-700: #e8c89a;
-  /* Golden cream — secondary text (~8:1) */
-  --color-gray-650: #d4a97a;
-  --color-gray-600: #c8946a;
-  /* Warm tan — label text (~5:1) */
-  --color-gray-500: #a87a55;
-  /* Caramel — muted text (~3.8:1) */
-  --color-gray-400: #7a5a3e;
-  /* Dark caramel — placeholder */
-  --color-gray-300: #4f3820;
-  /* Rich wood — divider */
-  --color-gray-200: #3d2c18;
-  /* Dark wood — visible border */
-  --color-gray-100: #261c10;
-  /* Coffee card bg — distinct from page */
-  --color-gray-50: #1c1510;
-  /* Espresso page background */
+  /* Deep plum & caramel palette for Sunset mode */
+  --color-gray-950: #FFFFFF;
+  --color-gray-900: #FDF8F5;
+  --color-gray-800: #F2E4EC;
+  --color-gray-700: #E6D0DE;
+  --color-gray-650: #D8BDCB;
+  --color-gray-600: #CBAAB9;
+  --color-gray-500: #B8A3AD;
+  --color-gray-400: #8E7A85;
+  --color-gray-300: #65545D;
+  --color-gray-200: #3D3039;
+  --color-gray-100: #2A2027;
+  --color-gray-50: #1F181D;
 }
 
 @theme inline {
@@ -589,18 +569,38 @@ input[type=number] {
   }
 }
 
-/* Tối ưu thẩm mỹ: Ẩn thanh cuộn (scrollbar) cho toàn bộ trang và tất cả các danh sách cuộn nội bộ */
+/* Tối ưu thẩm mỹ: Custom thanh cuộn mềm mại cho toàn bộ trang và danh sách */
 ::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.5);
 }
 
 * {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
-*::-webkit-scrollbar {
-  display: none;
+.dark * {
+  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
 }

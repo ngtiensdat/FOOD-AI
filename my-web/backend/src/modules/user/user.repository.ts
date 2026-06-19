@@ -6,7 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus, PostStatus } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -37,7 +37,7 @@ export class UserRepository {
             follows: true,
             userFollowers: true,
             userFollowing: true,
-            posts: true,
+            posts: { where: { deletedAt: null, status: PostStatus.APPROVED } },
           },
         },
       },

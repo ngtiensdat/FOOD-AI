@@ -36,6 +36,7 @@ export interface PostData {
   postType: 'NORMAL' | 'REVIEW' | 'PROMOTION';
   rating?: number | null;
   image?: string | null;
+  images?: string[];
   createdAt: string;
   likesCount: number;
   commentsCount: number;
@@ -101,13 +102,19 @@ export function PostCard({
   const [newCommentText, setNewCommentText] = useState('');
   const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [localPost, setLocalPost] = useState(post);
 
   useEffect(() => {
     setIsLiked(post.isLiked);
     setLikesCount(post.likesCount);
     setComments(post.comments);
     setIsSaved(post.isSaved || false);
+    setLocalPost(post);
   }, [post.isLiked, post.likesCount, post.comments, post.isSaved]);
+
+  const handlePostUpdated = (updated: Partial<PostData>) => {
+    setLocalPost((prev) => ({ ...prev, ...updated }));
+  };
 
   useEffect(() => {
     const handleHashCheck = () => {
@@ -248,18 +255,19 @@ export function PostCard({
   };
 
   return (
-    <article id={`post-${post.id}`} className="card-premium p-6 space-y-4 fade-in">
+    <article id={`post-${post.id}`} className="card-premium p-6 space-y-4 fade-in relative hover:z-[60] focus-within:z-[60]">
       <PostHeader
-        post={post}
+        post={localPost}
         me={me}
         isOwner={isOwner}
         isSaved={isSaved}
         handleSavePost={handleSavePost}
         handleReportPost={handleReportPost}
         onDeletePost={onDeletePost}
+        onPostUpdated={handlePostUpdated}
       />
 
-      <PostContent post={post} />
+      <PostContent post={localPost} />
 
       <PostActions
         isLiked={isLiked}

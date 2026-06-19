@@ -5,6 +5,8 @@
 // Các biến, hàm đặc biệt trong file: useCategoryManager, fetchHierarchy, handleSubmitGroup, handleSubmitCategory, handleConfirmDelete.
 
 import { useState, useEffect, useCallback } from 'react';
+
+/* eslint-disable react-hooks/set-state-in-effect */
 import { categoryService, CategoryGroup, Category } from '@/services/category.service';
 import { toast } from '@/store/useToastStore';
 import { LIMITS } from '@/constants/limits.constant';
@@ -44,6 +46,7 @@ export const useCategoryManager = (restaurantId: number) => {
   }, [restaurantId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchHierarchy();
   }, [fetchHierarchy]);
 

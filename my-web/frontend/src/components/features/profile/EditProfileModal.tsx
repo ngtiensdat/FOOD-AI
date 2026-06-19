@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { X, Save } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { ImageUploader } from '@/components/base/ImageUploader';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { ProfileEditState } from '@/hooks/useProfileData';
@@ -82,16 +83,20 @@ export const EditProfileModal = ({
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input 
-              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.AVATAR} 
-              value={editData.avatar || ''} 
-              onChange={e => setEditData({...editData, avatar: e.target.value})} 
+          <div className="grid grid-cols-2 gap-4 items-start">
+            <ImageUploader
+              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.AVATAR}
+              currentUrl={editData.avatar || ''}
+              uploadType="avatar"
+              aspectRatio="square"
+              onUploaded={(url) => setEditData({ ...editData, avatar: url })}
             />
-            <Input 
-              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER} 
-              value={editData.coverImage || ''} 
-              onChange={e => setEditData({...editData, coverImage: e.target.value})} 
+            <ImageUploader
+              label={LABELS.SETTINGS.PROFILE.EDIT_MODAL.COVER}
+              currentUrl={editData.coverImage || ''}
+              uploadType="cover"
+              aspectRatio="cover"
+              onUploaded={(url) => setEditData({ ...editData, coverImage: url })}
             />
           </div>
 

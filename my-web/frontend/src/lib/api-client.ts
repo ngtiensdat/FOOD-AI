@@ -178,6 +178,13 @@ class ApiClient {
   async delete(endpoint: string, options?: RequestOptions) {
     return this.request('DELETE', endpoint, options);
   }
+
+  /**
+   * POST multipart/form-data (dùng cho file upload). Body phải là FormData.
+   */
+  async postForm<T = unknown>(endpoint: string, formData: FormData): Promise<T> {
+    return this.request('POST', endpoint, { body: formData }) as Promise<T>;
+  }
 }
 
 export const apiClient = new ApiClient(API_URL);

@@ -24,9 +24,17 @@ export class PostController {
   async getPosts(
     @GetUser('id') viewerId?: number,
     @Query('authorId') authorIdStr?: string,
+    @Query('_t') timestamp?: string,
   ) {
     const authorId = authorIdStr ? parseInt(authorIdStr) : undefined;
-    return this.postService.getAllPosts(viewerId, authorId);
+    const noCache = !!timestamp; // bypass cache khi có timestamp
+    return this.postService.getAllPosts(
+      viewerId,
+      authorId,
+      1,
+      undefined,
+      noCache,
+    );
   }
 
   @Post()
@@ -38,6 +46,7 @@ export class PostController {
       title?: string;
       content?: string;
       image?: string;
+      images?: string[];
       rating?: number;
       postType?: PostType;
       restaurantId?: number;

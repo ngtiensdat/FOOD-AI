@@ -11,6 +11,7 @@ export const socialService = {
     title?: string;
     content?: string;
     image?: string;
+    images?: string[];
     rating?: number;
     postType?: string;
     restaurantId?: number;
@@ -43,5 +44,18 @@ export const socialService = {
 
   async deletePost(postId: number) {
     return apiClient.delete(`/posts/${postId}`);
+  },
+
+  async updatePost(postId: number, dto: {
+    title?: string;
+    content?: string;
+    images?: string[];
+    postType?: string;
+  }) {
+    return apiClient.patch(`/posts/${postId}`, dto);
+  },
+
+  async togglePinPost(postId: number) {
+    return apiClient.post(`/posts/${postId}/pin`);
   },
 };

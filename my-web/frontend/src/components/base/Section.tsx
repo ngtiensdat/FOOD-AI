@@ -24,10 +24,10 @@ export const Section = ({
   container = true,
 }: SectionProps) => {
   const bgStyles = {
-    white: 'bg-white dark:bg-slate-950',
-    gray: 'bg-gray-50/50 dark:bg-gray-100/10',
-    orange: 'bg-orange-50/30 dark:bg-primary/5',
-    blue: 'bg-blue-50/30 dark:bg-blue-950/10',
+    white: 'bg-gray-50',
+    gray: 'bg-gray-100/50',
+    orange: 'bg-primary/5',
+    blue: 'bg-blue-500/5',
     transparent: 'bg-transparent',
   };
 

@@ -33,14 +33,18 @@ const eslintConfig = defineConfig([
         "warn",
         { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
       ],
-      "boundaries/element-types": [
+      "boundaries/dependencies": [
         "warn",
         {
           "default": "allow",
           "rules": [
             {
-              "from": "base-components",
-              "disallow": ["features", "services", "hooks"],
+              "from": { "type": "base-components" },
+              "disallow": [
+                { "to": { "type": "features" } },
+                { "to": { "type": "services" } },
+                { "to": { "type": "hooks" } }
+              ],
               "message": "Base components should be pure and not depend on features or services."
             }
           ]
