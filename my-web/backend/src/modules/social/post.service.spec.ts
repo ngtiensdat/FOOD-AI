@@ -134,6 +134,12 @@ describe('PostService', () => {
       const mockComment = {
         id: 1,
         userId: 1,
+        parentId: null,
+        post: { authorId: 3 },
+      } as unknown as Comment;
+      const mockUpdatedComment = {
+        id: 1,
+        deletedAt: new Date(),
       } as unknown as Comment;
 
       const findSpy = jest
@@ -141,7 +147,7 @@ describe('PostService', () => {
         .mockResolvedValue(mockComment);
       const updateSpy = jest
         .spyOn(prisma.comment, 'update')
-        .mockResolvedValue({ id: 1 } as any);
+        .mockResolvedValue(mockUpdatedComment);
       const addJobSpy = jest.spyOn(gamificationQueue, 'addJob');
       const invalidateSpy = jest.spyOn(cacheService, 'invalidatePattern');
 
