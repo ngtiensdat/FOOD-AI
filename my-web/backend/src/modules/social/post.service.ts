@@ -96,6 +96,7 @@ export class PostService {
           likes: true,
           savedPosts: true,
           comments: {
+            where: { deletedAt: null },
             orderBy: { createdAt: 'asc' },
             include: {
               user: {
@@ -106,6 +107,7 @@ export class PostService {
                 },
               },
               replies: {
+                where: { deletedAt: null },
                 orderBy: { createdAt: 'asc' },
                 include: {
                   user: {
@@ -502,8 +504,9 @@ export class PostService {
       );
     }
 
-    await this.prisma.comment.delete({
+    await this.prisma.comment.update({
       where: { id: commentId },
+      data: { deletedAt: new Date() },
     });
 
     // Deduct points
@@ -570,6 +573,7 @@ export class PostService {
             likes: true,
             savedPosts: true,
             comments: {
+              where: { deletedAt: null },
               orderBy: { createdAt: 'asc' },
               include: {
                 user: {
@@ -580,6 +584,7 @@ export class PostService {
                   },
                 },
                 replies: {
+                  where: { deletedAt: null },
                   orderBy: { createdAt: 'asc' },
                   include: {
                     user: {

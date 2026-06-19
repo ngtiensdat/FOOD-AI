@@ -50,28 +50,46 @@ describe('AppController', () => {
 
   describe('healthCheck', () => {
     it('should return healthy when database and redis are online', async () => {
-      const res = await appController.healthCheck();
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+      } as Partial<Response> as Response;
+
+      const res = await appController.healthCheck(mockResponse);
       expect(res.status).toBe('healthy');
       expect(res.services.database).toBe('ok');
       expect(res.services.redis).toBe('ok');
     });
 
     it('should return unhealthy when database fails', async () => {
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+      } as Partial<Response> as Response;
+
       jest
         .spyOn(prismaService, '$queryRaw')
         .mockRejectedValueOnce(new Error('Connection error'));
-      const res = await appController.healthCheck();
+      const res = await appController.healthCheck(mockResponse);
       expect(res.status).toBe('unhealthy');
       expect(res.services.database).toBe('error');
       expect(res.services.redis).toBe('ok');
     });
 
-    it('should return unhealthy when redis fails', async () => {
-      jest.spyOn(redisService, 'ping').mockResolvedValueOnce(false);
-      const res = await appController.healthCheck();
-      expect(res.status).toBe('unhealthy');
-      expect(res.services.database).toBe('ok');
-      expect(res.services.redis).toBe('error');
+    it('should return unhealthy when redis fails in production', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        const mockResponse = {
+          status: jest.fn().mockReturnThis(),
+        } as Partial<Response> as Response;
+
+        jest.spyOn(redisService, 'ping').mockResolvedValueOnce(false);
+        const res = await appController.healthCheck(mockResponse);
+        expect(res.status).toBe('unhealthy');
+        expect(res.services.database).toBe('ok');
+        expect(res.services.redis).toBe('error');
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
     });
   });
 
@@ -88,7 +106,7 @@ describe('AppController', () => {
     it('should return ready when healthy', async () => {
       const mockResponse = {
         status: jest.fn().mockReturnThis(),
-      } as unknown as Response;
+      } as Partial<Response> as Response;
 
       const res = await appController.readyCheck(mockResponse);
       expect(res.status).toBe('ready');
@@ -107,7 +125,7 @@ describe('AppController', () => {
           .mockRejectedValueOnce(new Error('Connection error'));
         const mockResponse = {
           status: jest.fn().mockReturnThis(),
-        } as unknown as Response;
+        } as Partial<Response> as Response;
 
         const res = await appController.readyCheck(mockResponse);
         expect(res.status).toBe('unhealthy');
@@ -126,7 +144,7 @@ describe('AppController', () => {
         jest.spyOn(redisService, 'ping').mockResolvedValueOnce(false);
         const mockResponse = {
           status: jest.fn().mockReturnThis(),
-        } as unknown as Response;
+        } as Partial<Response> as Response;
 
         const res = await appController.readyCheck(mockResponse);
         expect(res.status).toBe('unhealthy');

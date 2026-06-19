@@ -19,8 +19,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('health')
-  async healthCheck() {
+  private async checkServices() {
     let dbStatus = 'ok';
     let redisStatus = 'ok';
     try {
@@ -36,10 +35,25 @@ export class AppController {
     } catch {
       redisStatus = 'error';
     }
+    return { dbStatus, redisStatus };
+  }
+
+  @Get('health')
+  async healthCheck(@Res({ passthrough: true }) res: Response) {
+    const { dbStatus, redisStatus } = await this.checkServices();
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHealthy =
+      dbStatus === 'ok' && (redisStatus === 'ok' || !isProduction);
+
+    if (!isHealthy) {
+      res.status(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    const memoryUsage = process.memoryUsage();
 
     return {
-      status:
-        dbStatus === 'ok' && redisStatus === 'ok' ? 'healthy' : 'unhealthy',
+      status: isHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       services: {
@@ -47,8 +61,8 @@ export class AppController {
         redis: redisStatus,
       },
       memory: {
-        rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
-        heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        rss: Math.round(memoryUsage.rss / 1024 / 1024),
+        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
       },
     };
   }
@@ -64,21 +78,7 @@ export class AppController {
 
   @Get('health/ready')
   async readyCheck(@Res({ passthrough: true }) res: Response) {
-    let dbStatus = 'ok';
-    let redisStatus = 'ok';
-    try {
-      await this.prisma.$queryRaw`SELECT 1`;
-    } catch {
-      dbStatus = 'error';
-    }
-    try {
-      const isRedisHealthy = await this.redisService.ping();
-      if (!isRedisHealthy) {
-        redisStatus = 'error';
-      }
-    } catch {
-      redisStatus = 'error';
-    }
+    const { dbStatus, redisStatus } = await this.checkServices();
 
     const isProduction = process.env.NODE_ENV === 'production';
     const isHealthy =

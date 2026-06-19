@@ -171,7 +171,6 @@ export const LevelBadgeManagerTab = () => {
       setSavingRules(false);
     }
   };
-
   const customerBadges = badges.filter((b) => b.role === UserRole.CUSTOMER);
   const restaurantBadges = badges.filter((b) => b.role === UserRole.RESTAURANT);
 

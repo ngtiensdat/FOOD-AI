@@ -13,6 +13,7 @@ import { CsrfGuard } from './common/guards/csrf.guard';
 import { Request, Response, NextFunction } from 'express';
 
 import { appConfig } from './config/app.config';
+import { RedisIoAdapter } from './common/adapters/redis-io.adapter';
 
 async function bootstrap() {
   const logger = new StructuredLogger('Bootstrap');
@@ -22,6 +23,9 @@ async function bootstrap() {
   const config = appConfig();
   const isProduction = process.env.NODE_ENV === 'production';
 
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
   app.use(
     helmet({
       contentSecurityPolicy: isProduction ? undefined : false,

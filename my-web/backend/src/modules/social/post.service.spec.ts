@@ -40,6 +40,7 @@ describe('PostService', () => {
         create: jest.fn(),
         findUnique: jest.fn(),
         delete: jest.fn(),
+        update: jest.fn(),
       },
     };
 
@@ -133,23 +134,24 @@ describe('PostService', () => {
       const mockComment = {
         id: 1,
         userId: 1,
-        post: { authorId: 3 },
       } as unknown as Comment;
-      const mockDeletedComment = { id: 1 } as unknown as Comment;
 
       const findSpy = jest
         .spyOn(prisma.comment, 'findUnique')
         .mockResolvedValue(mockComment);
-      const deleteSpy = jest
-        .spyOn(prisma.comment, 'delete')
-        .mockResolvedValue(mockDeletedComment);
+      const updateSpy = jest
+        .spyOn(prisma.comment, 'update')
+        .mockResolvedValue({ id: 1 } as any);
       const addJobSpy = jest.spyOn(gamificationQueue, 'addJob');
       const invalidateSpy = jest.spyOn(cacheService, 'invalidatePattern');
 
       const result = await service.deleteComment(1, UserRole.CUSTOMER, 1);
       expect(result.success).toBe(true);
       expect(findSpy).toHaveBeenCalled();
-      expect(deleteSpy).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(updateSpy).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { deletedAt: expect.any(Date) },
+      });
       expect(addJobSpy).toHaveBeenCalledWith(1, 'UNDO_COMMENT');
       expect(invalidateSpy).toHaveBeenCalledWith('posts:*');
     });

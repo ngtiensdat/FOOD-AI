@@ -58,7 +58,6 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const router = useRouter();
 
   const { socket } = useSocket();
-
   interface NotificationItem {
     id: string;
     title: string;
