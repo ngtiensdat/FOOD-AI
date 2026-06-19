@@ -118,8 +118,6 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
 
     setLoading(true);
 
-    setLoading(true);
-
     let finalImages = images;
     if (images.length === 0) {
       let defaultImg = undefined;

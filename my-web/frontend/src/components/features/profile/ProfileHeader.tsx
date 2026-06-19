@@ -14,7 +14,7 @@ import { LABELS } from '@/constants/labels';
 import { useRouter } from 'next/navigation';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
 import { User, UserRole } from '@/types/user';
-import { getPrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
+import { resolvePrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
 
 export type ProfileData = User & {
   _count?: {
@@ -60,11 +60,11 @@ export const ProfileHeader = ({
   const router = useRouter();
   const restaurant = profile?.restaurants?.[0];
   const isOwner = me?.id === user?.id;
-  const showLevel = isOwner ? getPrivacyValue('showLevel') : true;
-  const showBadgeTitle = isOwner ? getPrivacyValue('showBadge') : true;
-  const showPoints = isOwner ? getPrivacyValue('showPoints') : true;
-  const showXpBar = isOwner ? getPrivacyValue('showXpBar') : true;
-  const showFollowList = isOwner ? getPrivacyValue('showFollowList') : true;
+  const showLevel = resolvePrivacyValue('showLevel', profile?.profile?.preferences, isOwner);
+  const showBadgeTitle = resolvePrivacyValue('showBadge', profile?.profile?.preferences, isOwner);
+  const showPoints = resolvePrivacyValue('showPoints', profile?.profile?.preferences, isOwner);
+  const showXpBar = resolvePrivacyValue('showXpBar', profile?.profile?.preferences, isOwner);
+  const showFollowList = resolvePrivacyValue('showFollowList', profile?.profile?.preferences, isOwner);
   const isOpen = restaurant
     ? isRestaurantCurrentlyOpen(restaurant.profile?.openingHours, restaurant.isActive)
     : true;

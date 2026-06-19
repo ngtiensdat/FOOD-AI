@@ -8,7 +8,7 @@ import React from 'react';
 import { Sparkles, Settings } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
-import { getPrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
+import { resolvePrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
 
 interface UserProfileDetailProps {
   profile: { email?: string; profile?: { phone?: string; preferences?: Record<string, unknown> };[key: string]: unknown } | null;
@@ -16,8 +16,8 @@ interface UserProfileDetailProps {
 }
 
 export const UserProfileDetail = ({ profile, onUpdatePreferences }: UserProfileDetailProps) => {
-  const showEmail = getPrivacyValue('showEmail');
-  const showPhone = getPrivacyValue('showPhone');
+  const showEmail = resolvePrivacyValue('showEmail', profile?.profile?.preferences, true);
+  const showPhone = resolvePrivacyValue('showPhone', profile?.profile?.preferences, true);
 
   return (
     <section className="card-container p-8">

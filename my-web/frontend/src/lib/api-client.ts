@@ -56,6 +56,13 @@ class ApiClient {
       if (savedLang) {
         headers['Accept-Language'] = savedLang;
       }
+      
+      // Đọc cookie XSRF-TOKEN và đính kèm vào header
+      const parts = `; ${document.cookie}`.split(`; XSRF-TOKEN=`);
+      const csrfToken = parts.length === 2 ? parts.pop()?.split(';').shift() : undefined;
+      if (csrfToken) {
+        headers['X-XSRF-TOKEN'] = csrfToken;
+      }
     }
 
     if (!isFormData && !headers['Content-Type']) {

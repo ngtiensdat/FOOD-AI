@@ -270,6 +270,70 @@ export class PostService {
     return post;
   }
 
+  async updatePost(
+    userId: number,
+    role: UserRole,
+    postId: number,
+    dto: {
+      title?: string;
+      content?: string;
+      image?: string;
+      images?: string[];
+      rating?: number;
+      postType?: PostType;
+      restaurantId?: number;
+      foodId?: number;
+    },
+  ) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
+    if (post.authorId !== userId && role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Bạn không có quyền chỉnh sửa bài viết này');
+    }
+
+    const sanitizedContent = dto.content
+      ? DOMPurify.sanitize(dto.content)
+      : dto.content;
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        title: dto.title !== undefined ? dto.title : post.title,
+        content: dto.content !== undefined ? sanitizedContent : post.content,
+        image: dto.image !== undefined ? dto.image : post.image,
+        images: dto.images !== undefined ? dto.images : post.images,
+        rating:
+          dto.rating !== undefined
+            ? dto.rating
+              ? Number(dto.rating)
+              : null
+            : post.rating,
+        postType: dto.postType !== undefined ? dto.postType : post.postType,
+        restaurantId:
+          dto.restaurantId !== undefined
+            ? dto.restaurantId
+              ? Number(dto.restaurantId)
+              : null
+            : post.restaurantId,
+        foodId:
+          dto.foodId !== undefined
+            ? dto.foodId
+              ? Number(dto.foodId)
+              : null
+            : post.foodId,
+      },
+    });
+
+    await this.cacheService.invalidatePattern('posts:*');
+    return updatedPost;
+  }
+
   async deletePost(userId: number, role: UserRole, postId: number) {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },

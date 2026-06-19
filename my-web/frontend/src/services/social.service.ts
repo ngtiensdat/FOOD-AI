@@ -51,6 +51,9 @@ export const socialService = {
     content?: string;
     images?: string[];
     postType?: string;
+    rating?: number | null;
+    restaurantId?: number | null;
+    foodId?: number | null;
   }) {
     return apiClient.patch(`/posts/${postId}`, dto);
   },

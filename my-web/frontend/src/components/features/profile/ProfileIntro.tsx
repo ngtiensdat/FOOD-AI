@@ -10,7 +10,7 @@ import { Briefcase, MapPin, Mail, Calendar, Edit3 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { User } from '@/types/user';
-import { getPrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
+import { resolvePrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
 
 export type ProfileIntroData = User & { createdAt?: Date | string };
 
@@ -30,8 +30,8 @@ interface IntroItem {
 
 export const ProfileIntro = ({ profile, user, me, onEdit }: ProfileIntroProps) => {
   const isOwner = me?.id === user?.id;
-  const showAddress = isOwner ? getPrivacyValue('showAddress') : true;
-  const showEmail = isOwner ? getPrivacyValue('showEmail') : true;
+  const showAddress = resolvePrivacyValue('showAddress', profile?.profile?.preferences, isOwner);
+  const showEmail = resolvePrivacyValue('showEmail', profile?.profile?.preferences, isOwner);
 
   const joinYear = new Date(profile?.createdAt || new Date()).getFullYear();
 

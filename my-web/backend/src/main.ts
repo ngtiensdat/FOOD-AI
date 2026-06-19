@@ -5,8 +5,10 @@ import { StructuredLogger } from './common/logger/structured-logger.service';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { XssSanitizerInterceptor } from './common/interceptors/xss-sanitizer.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ThrottlerExceptionFilter } from './common/filters/throttler-exception.filter';
+import { CsrfGuard } from './common/guards/csrf.guard';
 
 import { Request, Response, NextFunction } from 'express';
 
@@ -36,11 +38,15 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(
+    new TransformInterceptor(),
+    new XssSanitizerInterceptor(),
+  );
   app.useGlobalFilters(
     new AllExceptionsFilter(),
     new ThrottlerExceptionFilter(),
   );
+  app.useGlobalGuards(new CsrfGuard());
 
   // Thêm logger đơn giản để kiểm tra request có đến được server không (chỉ log ở môi trường development)
   app.use((req: Request, res: Response, next: NextFunction) => {

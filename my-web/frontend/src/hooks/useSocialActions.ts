@@ -252,7 +252,6 @@ export const useSocialActions = ({
   };
 
   const handleDeleteComment = async (postId: number, commentId: number) => {
-    if (!window.confirm(LABELS.SOCIAL.TOAST.COMMENT_DELETE_CONFIRM)) return;
     try {
       await socialService.deleteComment(commentId);
       setPosts(prevPosts => prevPosts.map(p => {
@@ -319,7 +318,6 @@ export const useSocialActions = ({
   };
 
   const handleDeleteReply = async (postId: number, commentId: number, replyId: number) => {
-    if (!window.confirm(LABELS.SOCIAL.TOAST.REPLY_DELETE_CONFIRM)) return;
     try {
       await socialService.deleteComment(replyId);
       setPosts(prevPosts => prevPosts.map(p => {
