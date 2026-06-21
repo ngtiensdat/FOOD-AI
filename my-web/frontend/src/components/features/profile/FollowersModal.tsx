@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { X, Users, Lock } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { User, UserRole } from '@/types/user';
 import { Button } from '@/components/base/Button';
 
@@ -73,7 +74,7 @@ export const FollowersModal = ({
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="loading-spinner w-8 h-8"></div>
+            <LogoSpinner size="sm" />
           </div>
         ) : error ? (
           <div className="text-center py-8 text-red-500 font-semibold text-small flex flex-col items-center gap-2">

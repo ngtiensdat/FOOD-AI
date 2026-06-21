@@ -30,6 +30,7 @@ export class FoodRetrievalService {
     intent?: FoodIntent,
     state?: DialogueState,
     message?: string,
+    offset = 0,
   ): Promise<SearchResult[]> {
     const dbDistrict =
       district && district !== 'Vị trí GPS hiện tại' ? district : undefined;
@@ -193,6 +194,7 @@ export class FoodRetrievalService {
       dbDistrict,
       categoryFilter,
       maxDistanceKm,
+      offset,
     );
 
     // 2. Fallback 1: Nationwide RAG Search (Bypass city/district if local yields empty)
@@ -209,6 +211,7 @@ export class FoodRetrievalService {
         undefined,
         categoryFilter,
         maxDistanceKm,
+        offset,
       );
     }
 

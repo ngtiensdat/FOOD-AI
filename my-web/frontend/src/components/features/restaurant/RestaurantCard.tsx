@@ -68,14 +68,23 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              {/* Tên nhà hàng & Badge Verified */}
-              <div className="flex justify-between items-center mb-0.5 gap-1.5">
-                <h3 className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">
-                  {name}
-                </h3>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900 shrink-0 flex items-center gap-0.5">
-                  <Check size={8} /> {LABELS.RESTAURANT.EDIT_MODAL.VERIFIED}
-                </span>
+              {/* Tên nhà hàng & Badge Verified & Merchant Badge */}
+              <div className="flex flex-col mb-1">
+                <div className="flex justify-between items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">
+                    {name}
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900 shrink-0 flex items-center gap-0.5">
+                    <Check size={8} /> {LABELS.RESTAURANT.EDIT_MODAL.VERIFIED}
+                  </span>
+                </div>
+                {restaurant.owner?.badgeTitle && (
+                  <div className="mt-1 flex">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[8px] font-bold uppercase tracking-wider">
+                      {restaurant.owner.badgeTitle}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Điểm đánh giá sao */}

@@ -22,6 +22,7 @@ export interface SearchResult {
   lat: number;
   lng: number;
   categoryName: string;
+  merchantBadge?: string | null;
   embeddingSimilarity: number;
   distance_km: number | null;
   similarity: number;
@@ -43,6 +44,7 @@ export class VectorRepository {
     district?: string,
     categoryFilter: 'FOOD' | 'DRINK' | 'ALL' = 'ALL',
     maxDistanceKm: number | null = null,
+    offset = 0,
   ): Promise<SearchResult[]> {
     const vectorStr = `[${vector.join(',')}]`;
 
@@ -51,6 +53,7 @@ export class VectorRepository {
         SELECT f.id, f.name, f.price, f.description, f.image, f.tags,
                r.name as "restaurantName", r.address, f.lat, f.lng,
                c.name as "categoryName",
+               u.badge_title as "merchantBadge",
                (1 - (f.embedding <=> CAST(${vectorStr} AS vector))) as "embeddingSimilarity",
                (CASE 
                  WHEN CAST(${userLat} AS float) IS NOT NULL AND CAST(${userLng} AS float) IS NOT NULL AND f.lat IS NOT NULL AND f.lng IS NOT NULL
@@ -59,6 +62,7 @@ export class VectorRepository {
                 END) as "distance_km"
         FROM foods f
         JOIN restaurants r ON f.restaurant_id = r.id
+        LEFT JOIN users u ON r.owner_id = u.id
         LEFT JOIN categories c ON f.category_id = c.id
         WHERE f.is_active = true 
           AND r.is_active = true
@@ -73,12 +77,13 @@ export class VectorRepository {
             (CAST(${categoryFilter} AS text) = 'FOOD' AND (c.name IS NULL OR c.name NOT ILIKE '%uống%'))
           )
       )
-      SELECT id, name, price, description, image, tags, "restaurantName", address, lat, lng, "categoryName", "embeddingSimilarity", "distance_km",
+      SELECT id, name, price, description, image, tags, "restaurantName", address, lat, lng, "categoryName", "merchantBadge", "embeddingSimilarity", "distance_km",
              "embeddingSimilarity" as similarity
       FROM retrieved_foods
       WHERE (CAST(${maxDistanceKm} AS float) IS NULL OR "distance_km" IS NULL OR "distance_km" <= CAST(${maxDistanceKm} AS float))
       ORDER BY similarity DESC
       LIMIT ${limit}
+      OFFSET ${offset}
     `;
   }
 

@@ -41,6 +41,8 @@ export class RecommendationService {
       dislikedFoods: string[];
       dislikedCategories: string[];
     },
+    offset = 0,
+    currentHour?: number,
   ): Promise<{ foods: SearchResult[]; shouldRecommend: boolean }> {
     // 1. Retrieve candidates (uses relational fallback inside if vector results are empty)
     const rawFoods = await this.retrievalService.retrieveCandidates(
@@ -54,6 +56,7 @@ export class RecommendationService {
       intent,
       state,
       message,
+      offset,
     );
 
     // 2. Run Context Reranking (passing intent, needs, and feedbackProfile parameters)
@@ -67,6 +70,7 @@ export class RecommendationService {
       intent,
       needs,
       feedbackProfile,
+      currentHour,
     );
 
     // 3. Evaluate eligibility thresholds

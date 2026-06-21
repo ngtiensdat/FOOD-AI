@@ -13,9 +13,9 @@
 
 **Acceptance Criteria (AC):**
 - [x] Cấu hình **Helmet middleware** bảo vệ ứng dụng NestJS khỏi các lỗ hổng HTTP headers phổ biến.
-- [ ] Cấu hình cơ chế bảo mật **CSRF protection** (hoặc Double Submit Cookie) đối với các request thay đổi trạng thái (POST, PUT, DELETE) do hệ thống sử dụng HttpOnly Cookie.
-- [ ] Áp dụng **Class-validator** và **Sanitization Pipe** ở Backend để tự động lọc sạch và loại bỏ các thẻ HTML độc hại trong dữ liệu nhập vào (chống XSS).
-- [ ] Đảm bảo Prisma ORM luôn sử dụng parameterized queries để ngăn chặn hoàn toàn SQL Injection.
+- [x] Cấu hình cơ chế bảo mật **CSRF protection** (hoặc Double Submit Cookie) đối với các request thay đổi trạng thái (POST, PUT, DELETE) do hệ thống sử dụng HttpOnly Cookie.
+- [x] Áp dụng **Class-validator** và **Sanitization Pipe** ở Backend để tự động lọc sạch và loại bỏ các thẻ HTML độc hại trong dữ liệu nhập vào (chống XSS).
+- [x] Đảm bảo Prisma ORM luôn sử dụng parameterized queries để ngăn chặn hoàn toàn SQL Injection.
 
 ---
 
@@ -27,17 +27,12 @@
 - **So that** tôi có thêm các lựa chọn ăn uống đa dạng mà không bị trùng lặp với gợi ý trước.
 
 **Acceptance Criteria (AC):**
-- [ ] UI nút bấm "Làm mới gợi ý" (Refresh Suggestions) ở phần Hero/AI suggestion.
-- [ ] API cập nhật tham số offset/seed để tính toán lại danh sách gợi ý mới từ Vector DB mà không trùng lặp các món đã hiển thị.
-- [ ] Hiệu ứng loading mượt mà (Skeleton/Spinner) khi AI đang tạo danh sách gợi ý mới.
+- [x] API cập nhật tham số offset/seed để tính toán lại danh sách gợi ý mới từ Vector DB mà không trùng lặp các món đã hiển thị.
 
-### US-31: Chia sẻ món ăn và Bài viết qua Mạng xã hội bên ngoài (Social Sharing)
+### US-31: Cấu hình SEO & Metadata cho việc Chia sẻ (Social Share OG Tags)
 - **As a** thành viên cộng đồng ẩm thực
-- **I want** chia sẻ món ăn ngon hoặc một bài viết review tâm đắc lên Facebook, Zalo hoặc copy liên kết nhanh
-- **So that** bạn bè ngoài nền tảng của tôi cũng có thể xem và tham khảo.
+- **I want** thông tin món ăn hoặc bài viết hiển thị đẹp mắt (hình ảnh, tiêu đề, mô tả sinh động) khi liên kết được chia sẻ lên các mạng xã hội (Facebook, Zalo)
+- **So that** bạn bè ngoài nền tảng của tôi cũng có thể dễ dàng hiểu nội dung.
 
 **Acceptance Criteria (AC):**
-- [ ] UI Nút bấm "Chia sẻ" (Share) trên mỗi Food Card và Post Card.
-- [ ] Tích hợp Web Share API của trình duyệt (trên thiết bị di động) để chia sẻ trực tiếp.
-- [ ] Menu lựa chọn: Chia sẻ qua Facebook, Chia sẻ qua Zalo, Sao chép liên kết (Copy Link) hiển thị thông báo toast thành công.
-- [ ] Hỗ trợ Open Graph meta tags (OG tags) đầy đủ để khi chia sẻ link lên Facebook/Zalo sẽ hiển thị ảnh đại diện món ăn, tên món ăn và mô tả sinh động.
+- [x] Hỗ trợ Open Graph meta tags (OG tags) đầy đủ để khi chia sẻ link lên Facebook/Zalo sẽ hiển thị ảnh đại diện món ăn, tên món ăn và mô tả sinh động.

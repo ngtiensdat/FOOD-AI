@@ -21,8 +21,16 @@ export interface FoodCardData {
   price?: number;
   image?: string;
   description?: string;
-  restaurant?: { name: string; address?: string; mapUrl?: string } | null;
+  restaurant?: { 
+    name: string; 
+    address?: string; 
+    mapUrl?: string;
+    owner?: {
+      badgeTitle?: string | null;
+    } | null;
+  } | null;
   restaurantName?: string;
+  merchantBadge?: string | null;
   distance?: number;
   address?: string;
   mapUrl?: string;
@@ -40,6 +48,7 @@ interface FoodCardProps {
 
 export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps) {
   const [isFavorite, setIsFavorite] = useState(!!food.isFavorite || !!food.is_favorite);
+  const merchantBadge = food.merchantBadge || food.restaurant?.owner?.badgeTitle;
 
   useEffect(() => {
     setIsFavorite(!!food.isFavorite || !!food.is_favorite);
@@ -95,10 +104,17 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
               {food.name}
             </h3>
 
-            {/* Hàng 2: Tên nhà hàng (Chuyển sang màu xám nhạt để đỡ bị rối mắt) */}
-            <p className="text-gray-400 dark:text-slate-400 text-[10px] font-medium mb-1.5 truncate">
-              {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
-            </p>
+            {/* Hàng 2: Tên nhà hàng & Danh hiệu Merchant (nếu có) */}
+            <div className="flex items-center gap-1 mb-1.5 overflow-hidden">
+              <span className="text-gray-400 dark:text-slate-400 text-[10px] font-medium truncate max-w-[70%]">
+                {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
+              </span>
+              {merchantBadge && (
+                <span className="px-1 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[7px] font-bold whitespace-nowrap truncate uppercase tracking-wider">
+                  {merchantBadge}
+                </span>
+              )}
+            </div>
 
             {/* Hàng 3: Giá tiền & Số lượng bán (Đặt ngang hàng bằng flex-row để tiết kiệm diện tích dọc) */}
             <div className="flex justify-between items-center mt-auto border-t border-gray-50 dark:border-slate-800/50 pt-2 shrink-0">
@@ -108,7 +124,7 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
 
               {food.totalOrder !== undefined && (
                 <span className="text-[9px] text-gray-400 bg-gray-50 dark:bg-slate-800 px-1.5 py-0.5 rounded font-medium">
-                  Đã bán {food.totalOrder}
+                  {LABELS.FOOD.SOLD_COUNT(food.totalOrder)}
                 </span>
               )}
             </div>
@@ -133,7 +149,7 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
                   aria-label={LABELS.FOOD.VIEW_MAP}
                 >
                   <MapPin size={9} />
-                  <span>Xem bản đồ</span>
+                  <span>{LABELS.FOOD.VIEW_MAP}</span>
                 </a>
               )}
             </div>

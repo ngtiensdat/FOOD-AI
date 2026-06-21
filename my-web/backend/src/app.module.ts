@@ -27,11 +27,13 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { BugReportModule } from './modules/bug-report/bug-report.module';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { MediaModule } from './modules/media/media.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    MailModule,
     AuthModule,
     UserModule,
     AdminModule,

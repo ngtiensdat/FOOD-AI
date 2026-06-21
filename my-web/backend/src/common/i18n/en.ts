@@ -95,6 +95,8 @@ export const en = {
   },
   MAIL: {
     VERIFICATION_SUBJECT: 'Verify your account on Food AI',
+    VERIFICATION_OTP_SUBJECT: 'Your email verification OTP on Food AI',
+    RESET_PASSWORD_SUBJECT: 'Reset your password on Food AI',
   },
   VALIDATION: {
     EMAIL_INVALID: 'Invalid email format',

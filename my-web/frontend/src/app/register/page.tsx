@@ -60,7 +60,7 @@ export default function RegisterPage() {
                 <CheckCircle2 className="w-12 h-12" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-2xl font-black text-gray-800 dark:text-gray-900 tracking-tight">{LABELS.AUTH.VERIFY_ACCOUNT}</h2>
+                <h2 className="text-2xl font-black text-gray-800 dark:text-gray-900 tracking-tight">{LABELS.COMMON.SUCCESS}</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-600 font-medium px-2 leading-relaxed">{successMessage}</p>
               </div>
               <div className="pt-4 border-t border-gray-50">

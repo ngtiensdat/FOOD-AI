@@ -93,7 +93,7 @@ export default function LoginPage() {
             </div>
 
             <div className="text-right">
-              <a href="#" className="text-small font-bold text-primary hover:underline">{LABELS.AUTH.FORGOT_PASSWORD}</a>
+              <Link href="/forgot-password" className="text-small font-bold text-primary hover:underline">{LABELS.AUTH.FORGOT_PASSWORD}</Link>
             </div>
 
             <Button

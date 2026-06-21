@@ -18,6 +18,7 @@ import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LevelUpModal } from '@/components/features/badges/LevelUpModal';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
 import { toast } from '@/store/useToastStore';
@@ -114,12 +115,7 @@ function ProfileContent() {
     targetId,
   });
 
-  if (!profile) return (
-    <div className="page-loading">
-      <div className="loading-spinner h-12 w-12"></div>
-      <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
-    </div>
-  );
+  if (!profile) return <LogoSpinner fullPage label={LABELS.COMMON.LOADING} />;
 
   const user = profile;
 
@@ -367,12 +363,7 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="page-loading">
-        <div className="loading-spinner h-12 w-12"></div>
-        <p className="text-gray-400 font-bold animate-pulse">{LABELS.COMMON.LOADING}</p>
-      </div>
-    }>
+    <Suspense fallback={<LogoSpinner fullPage label={LABELS.COMMON.LOADING} />}>
       <ProfileContent />
     </Suspense>
   );

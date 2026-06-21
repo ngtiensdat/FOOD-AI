@@ -32,6 +32,8 @@ import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../ai/services/redis.service';
+import { MailService } from '../mail/mail.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +45,7 @@ export class AuthService {
     private aiService: AiService,
     private prisma: PrismaService,
     private redisService: RedisService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -60,13 +63,21 @@ export class AuthService {
         ? UserStatus.PENDING
         : UserStatus.APPROVED;
 
+    // Sinh mã OTP 6 số và băm SHA-256
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+
     const user = await this.userRepository.create({
       email: dto.email,
       password: hashedPassword,
       name: sanitizedName,
       role: dto.role || UserRole.CUSTOMER,
       status,
-      isEmailVerified: true,
+      isEmailVerified: false,
+      verificationOtpHash: otpHash,
+      verificationOtpExpiresAt: otpExpires,
+      lastOtpRequestedAt: new Date(),
       profile: {
         create: {
           fullName: sanitizedName,
@@ -79,7 +90,18 @@ export class AuthService {
         : {}),
     });
 
-    return this.generateToken(user);
+    // Gửi email OTP
+    await this.mailService.sendVerificationOtpEmail(
+      dto.email,
+      sanitizedName || 'Thành viên',
+      otp,
+    );
+
+    return {
+      message:
+        'Đăng ký thành công. Mã OTP xác thực đã được gửi tới email của bạn.',
+      email: user.email,
+    };
   }
 
   async login(dto: LoginDto) {
@@ -104,6 +126,8 @@ export class AuthService {
       this.logger.warn(`User not found: ${dto.email}`);
       throw new NotFoundException(MESSAGES.AUTH.NOT_REGISTERED);
     }
+
+    // Không chặn đăng nhập nếu email chưa xác thực — frontend sẽ hiển thị thông báo nhắc nhở
 
     if (user.status === UserStatus.PENDING) {
       throw new UnauthorizedException(MESSAGES.AUTH.PENDING_APPROVAL);
@@ -143,6 +167,169 @@ export class AuthService {
 
     this.logger.log(`Login successful: ${dto.email}`);
     return this.generateToken(user);
+  }
+
+  async verifyEmail(email: string, otp: string) {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email đã được xác thực trước đó.');
+    }
+
+    if (!user.verificationOtpHash || !user.verificationOtpExpiresAt) {
+      throw new BadRequestException(
+        'Không tìm thấy yêu cầu xác thực hoặc mã OTP đã hết hạn.',
+      );
+    }
+
+    const now = new Date();
+    if (now > user.verificationOtpExpiresAt) {
+      throw new BadRequestException(
+        'Mã xác thực OTP đã hết hạn. Vui lòng yêu cầu gửi lại.',
+      );
+    }
+
+    const inputHash = crypto.createHash('sha256').update(otp).digest('hex');
+    if (inputHash !== user.verificationOtpHash) {
+      throw new BadRequestException('Mã xác thực OTP không chính xác.');
+    }
+
+    // Cập nhật trạng thái xác thực và xóa OTP
+    const updatedUser = await this.userRepository.update(user.id, {
+      isEmailVerified: true,
+      verificationOtpHash: null,
+      verificationOtpExpiresAt: null,
+    });
+
+    if (updatedUser.status === UserStatus.PENDING) {
+      return {
+        message:
+          'Xác thực email thành công. Tài khoản của bạn đang chờ quản trị viên phê duyệt.',
+        status: UserStatus.PENDING,
+      };
+    }
+
+    // Auto login
+    return this.generateToken(updatedUser);
+  }
+
+  async resendOtp(email: string) {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email đã được xác thực trước đó.');
+    }
+
+    const now = new Date();
+    if (user.lastOtpRequestedAt) {
+      const diff = now.getTime() - user.lastOtpRequestedAt.getTime();
+      if (diff < 60000) {
+        const remaining = Math.ceil((60000 - diff) / 1000);
+        throw new BadRequestException(
+          `Vui lòng đợi ${remaining} giây trước khi yêu cầu gửi lại mã.`,
+        );
+      }
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+    await this.userRepository.update(user.id, {
+      verificationOtpHash: otpHash,
+      verificationOtpExpiresAt: otpExpires,
+      lastOtpRequestedAt: now,
+    });
+
+    await this.mailService.sendVerificationOtpEmail(
+      email,
+      user.name || 'Thành viên',
+      otp,
+    );
+
+    return { message: 'Đã gửi lại mã xác thực OTP mới.' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findByEmail(email);
+    // Tránh enum attack: Không báo lỗi nếu email không tồn tại
+    if (!user) {
+      return {
+        message:
+          'Nếu email tồn tại trên hệ thống, mã OTP khôi phục mật khẩu đã được gửi.',
+      };
+    }
+
+    // Chỉ gửi OTP reset mật khẩu khi email đã được xác thực
+    if (!user.isEmailVerified) {
+      return {
+        message:
+          'Nếu email tồn tại trên hệ thống, mã OTP khôi phục mật khẩu đã được gửi.',
+      };
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+    await this.userRepository.update(user.id, {
+      resetOtpHash: otpHash,
+      resetOtpExpiresAt: otpExpires,
+    });
+
+    await this.mailService.sendResetPasswordOtpEmail(
+      email,
+      user.name || 'Thành viên',
+      otp,
+    );
+
+    return {
+      message: 'Mã OTP khôi phục mật khẩu đã được gửi đến email của bạn.',
+    };
+  }
+
+  async resetPassword(email: string, otp: string, newPass: string) {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
+    }
+
+    if (!user.resetOtpHash || !user.resetOtpExpiresAt) {
+      throw new BadRequestException(
+        'Yêu cầu khôi phục mật khẩu không hợp lệ hoặc đã hết hạn.',
+      );
+    }
+
+    const now = new Date();
+    if (now > user.resetOtpExpiresAt) {
+      throw new BadRequestException('Mã khôi phục mật khẩu OTP đã hết hạn.');
+    }
+
+    const inputHash = crypto.createHash('sha256').update(otp).digest('hex');
+    if (inputHash !== user.resetOtpHash) {
+      throw new BadRequestException(
+        'Mã OTP khôi phục mật khẩu không chính xác.',
+      );
+    }
+
+    const hashedPassword = await BcryptHelper.hash(newPass, 10);
+
+    await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      resetOtpHash: null,
+      resetOtpExpiresAt: null,
+    });
+
+    return {
+      message:
+        'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.',
+    };
   }
 
   async getProfile(targetId: number, requesterId?: number) {
@@ -352,6 +539,7 @@ export class AuthService {
         avatar: user.profile?.avatar,
         role: user.role,
         hasCompletedOnboarding: user.profile?.hasCompletedOnboarding || false,
+        isEmailVerified: user.isEmailVerified,
       },
     };
   }

@@ -113,4 +113,102 @@ describe('RerankingService', () => {
       expect(service.calculateIntentScore(food, 'Trà sữa')).toBe(0.3);
     });
   });
+
+  describe('contextReranking (Xếp hạng ngữ cảnh & Nhận diện thời gian từ tin nhắn)', () => {
+    const candidates: SearchResult[] = [
+      {
+        id: 1,
+        name: 'Phở bò chín',
+        price: 45000,
+        description: 'Phở bò ăn sáng thơm ngon',
+        image: '',
+        tags: ['ăn sáng', 'phở'],
+        restaurantName: 'Phở ngon',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Món nước',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      },
+      {
+        id: 2,
+        name: 'Lẩu nấm gà ta',
+        price: 150000,
+        description: 'Lẩu nấm thích hợp ăn tối gia đình',
+        image: '',
+        tags: ['ăn tối', 'lẩu'],
+        restaurantName: 'Lẩu gà ngon',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Lẩu',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      },
+    ];
+
+    it('nên nhận diện từ khóa "tối nay" để ưu tiên các món ăn tối ngay cả khi giờ hiện tại là sáng', () => {
+      const state = {
+        slots: {},
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      // Chúng ta giả định giờ hiện tại là 9:00 sáng (hour = 9).
+      // Nhưng tin nhắn ghi "tối nay", nên reranking sẽ override hour = 19 (tối)
+      // và tăng hạng cho món lẩu gà (id = 2) so với phở bò (id = 1).
+      const reRanked = service.contextReranking(
+        candidates,
+        state as any,
+        undefined,
+        undefined,
+        undefined,
+        'Tôi muốn đi ăn tối nay',
+        undefined,
+        undefined,
+        undefined,
+        9, // Mock currentHour = 9 (Sáng)
+      );
+
+      // Phở bò (id: 1) có tag 'ăn sáng', lẩu nấm (id: 2) có tag 'ăn tối'.
+      // Ở 19h (tối), lẩu nấm được boost, phở bò không được boost.
+      // Do đó, score lẩu nấm lớn hơn phở bò.
+      const pho = reRanked.find((f) => f.id === 1);
+      const lau = reRanked.find((f) => f.id === 2);
+
+      expect(lau!.similarity).toBeGreaterThan(pho!.similarity);
+    });
+
+    it('nên nhận diện từ khóa "sáng mai" để ưu tiên các món ăn sáng ngay cả khi giờ hiện tại là tối', () => {
+      const state = {
+        slots: {},
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      // Mock currentHour = 20 (Tối) nhưng tin nhắn có "sáng mai" -> override hour = 8
+      const reRanked = service.contextReranking(
+        candidates,
+        state as any,
+        undefined,
+        undefined,
+        undefined,
+        'Tìm quán ăn sáng mai',
+        undefined,
+        undefined,
+        undefined,
+        20, // Mock currentHour = 20 (Tối)
+      );
+
+      const pho = reRanked.find((f) => f.id === 1);
+      const lau = reRanked.find((f) => f.id === 2);
+
+      expect(pho!.similarity).toBeGreaterThan(lau!.similarity);
+    });
+  });
 });

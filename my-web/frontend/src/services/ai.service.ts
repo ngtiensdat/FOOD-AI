@@ -25,7 +25,8 @@ export const aiService = {
     district?: string,
     temperature?: number,
     isRaining?: boolean,
-    conversationId?: number
+    conversationId?: number,
+    currentHour?: number
   ) {
     try {
       const response = await apiClient.post('/ai/chat', {
@@ -37,6 +38,7 @@ export const aiService = {
         temperature,
         isRaining,
         conversationId,
+        currentHour,
       });
       return response.data || response;
     } catch {

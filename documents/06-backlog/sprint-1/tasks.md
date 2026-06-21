@@ -8,15 +8,15 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 - [x] Task 1.1: Thiết lập NestJS project và Prisma ORM.
 - [x] Task 1.2: API Đăng ký tài khoản (JWT + Password Hashing).
 - [x] Task 1.3: API Đăng nhập và quản lý Refresh Token.
-- [ ] Task 1.4: API Quên mật khẩu & Gửi mã Reset qua Email.
-- [ ] Task 1.5: Tích hợp Nodemailer để xác thực tài khoản qua Email.
+- [x] Task 1.4: API Quên mật khẩu & Gửi mã Reset qua Email.
+- [x] Task 1.5: Tích hợp Nodemailer để xác thực tài khoản qua Email.
 
 ### [Frontend]
 - [x] Task 1.6: UI Trang Login và Register.
 - [x] Task 1.7: Tích hợp Zustand (authStore) để quản lý trạng thái đăng nhập.
 - [x] Task 1.8: Logic lưu JWT vào HttpOnly Cookies.
-- [ ] Task 1.9: UI Trang Quên mật khẩu & Đặt lại mật khẩu.
-- [ ] Task 1.10: UI Trang thông báo Xác thực Email và form nhập mã OTP.
+- [x] Task 1.9: UI Trang Quên mật khẩu & Đặt lại mật khẩu.
+- [x] Task 1.10: UI Trang thông báo Xác thực Email và form nhập mã OTP.
 
 ---
 

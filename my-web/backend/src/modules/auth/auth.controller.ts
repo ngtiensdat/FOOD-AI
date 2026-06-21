@@ -1,8 +1,8 @@
-// Mục đích: Định nghĩa các API cửa ngõ xác thực người dùng (đăng nhập, đăng ký, đăng xuất, đổi mật khẩu, onboard chi nhánh, và refresh token).
+// Mục đích: Định nghĩa các API cửa ngõ xác thực người dùng (đăng nhập, đăng ký, đăng xuất, đổi mật khẩu, onboard chi nhánh, refresh token, và xác thực OTP/forgot password).
 // File quan hệ: Nhận request từ Client, gọi AuthService để xử lý nghiệp vụ, sử dụng Cookie và các Guards để bảo mật thông tin.
 // Chức năng đặc biệt: Tự động lưu Access Token và Refresh Token vào HTTP-Only Cookies có thuộc tính bảo mật phù hợp môi trường (production/development).
 // Kiến thức/Design Pattern: Single Responsibility (chỉ xử lý routing, cookies và validate đầu vào), Dependency Injection, Guard Pattern (JwtAuthGuard, CustomThrottlerGuard).
-// Các biến, hàm đặc biệt: register(), login(), logout(), changePassword(), completeOnboarding(), refresh(), checkAuth(), setCookies().
+// Các biến, hàm đặc biệt: register(), login(), logout(), changePassword(), completeOnboarding(), refresh(), checkAuth(), setCookies(), verifyEmail(), resendOtp(), forgotPassword(), resetPassword().
 
 import {
   Controller,
@@ -13,6 +13,7 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  Delete,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -22,6 +23,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { Throttle } from '@nestjs/throttler';
@@ -37,9 +42,62 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.register(dto);
-    this.setCookies(res, result.accessToken, result.refreshToken);
-    return { user: result.user };
+    return this.authService.register(dto);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(
+    @Body() dto: VerifyEmailDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.verifyEmail(dto.email, dto.otp);
+    if (result && 'accessToken' in result && result.accessToken) {
+      this.setCookies(res, result.accessToken, result.refreshToken);
+      return { user: result.user };
+    }
+    return result;
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseGuards(CustomThrottlerGuard)
+  @Post('resend-otp')
+  async resendOtp(@Body() dto: ResendOtpDto) {
+    return this.authService.resendOtp(dto.email);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseGuards(CustomThrottlerGuard)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.email, dto.otp, dto.newPassword);
+  }
+
+  @Delete('delete-account')
+  @UseGuards(JwtAuthGuard)
+  async deleteAccount(
+    @GetUser('id') userId: number,
+    @Body() body: { password?: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.deleteAccount(userId, body.password);
+    // Xóa cookies sau khi xóa tài khoản thành công
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    });
+    return result;
   }
 
   @Throttle({ default: { limit: 20, ttl: 60000 } })

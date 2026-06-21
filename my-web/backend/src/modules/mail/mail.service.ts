@@ -54,4 +54,77 @@ export class MailService {
 
     return await this.transporter.sendMail(mailOptions);
   }
+
+  async sendVerificationOtpEmail(
+    to: string,
+    name: string,
+    otp: string,
+  ): Promise<SentMessageInfo> {
+    const config = appConfig();
+    const mailOptions = {
+      from: config.mailFrom,
+      to,
+      subject: MESSAGES.MAIL.VERIFICATION_OTP_SUBJECT,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+          <h2 style="color: #FF5E1A; text-align: center;">Xác minh tài khoản Food AI</h2>
+          <p>Chào bạn <strong>${name}</strong>,</p>
+          <p>Cảm ơn bạn đã đăng ký tài khoản tại Food AI. Để kích hoạt tài khoản của bạn, vui lòng nhập mã OTP dưới đây tại trang xác thực:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="background: #FFF0E6; color: #FF5E1A; border: 1px dashed #FF5E1A; font-size: 32px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px; display: inline-block;">
+              ${otp}
+            </span>
+          </div>
+          <p style="color: #e11d48; font-size: 13px; font-weight: bold;">Lưu ý: Mã OTP này chỉ có hiệu lực trong vòng 5 phút.</p>
+          <p style="color: #666; font-size: 12px; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Nếu bạn không yêu cầu đăng ký này, bạn có thể bỏ qua email này an toàn.</p>
+        </div>
+      `,
+    };
+
+    try {
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.warn('Gửi email OTP thất bại. Fallback log OTP:', otp);
+      console.error(error);
+      return { messageId: 'fallback-logged-console' };
+    }
+  }
+
+  async sendResetPasswordOtpEmail(
+    to: string,
+    name: string,
+    otp: string,
+  ): Promise<SentMessageInfo> {
+    const config = appConfig();
+    const mailOptions = {
+      from: config.mailFrom,
+      to,
+      subject: MESSAGES.MAIL.RESET_PASSWORD_SUBJECT,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+          <h2 style="color: #FF5E1A; text-align: center;">Yêu cầu đặt lại mật khẩu</h2>
+          <p>Chào bạn <strong>${name}</strong>,</p>
+          <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại Food AI. Vui lòng sử dụng mã OTP dưới đây để hoàn tất việc đặt lại mật khẩu:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="background: #FFF0E6; color: #FF5E1A; border: 1px dashed #FF5E1A; font-size: 32px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px; display: inline-block;">
+              ${otp}
+            </span>
+          </div>
+          <p style="color: #e11d48; font-size: 13px; font-weight: bold;">Lưu ý: Mã OTP này chỉ có hiệu lực trong vòng 5 phút.</p>
+          <p style="color: #666; font-size: 12px; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ bộ phận hỗ trợ.</p>
+        </div>
+      `,
+    };
+
+    try {
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.warn(
+        'Gửi email Reset Password OTP thất bại. Fallback log OTP:',
+        otp,
+      );
+      console.error(error);
+      return { messageId: 'fallback-logged-console' };
+    }
+  }
 }

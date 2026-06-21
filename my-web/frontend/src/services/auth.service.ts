@@ -56,11 +56,31 @@ export const authService = {
     return apiClient.post('/auth/verify-profile-email', data);
   },
 
+  async verifyEmailOtp(email: string, otp: string) {
+    return apiClient.post('/auth/verify-email', { email, otp });
+  },
+
+  async resendOtp(email: string) {
+    return apiClient.post('/auth/resend-otp', { email });
+  },
+
+  async forgotPassword(email: string) {
+    return apiClient.post('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(data: { email: string; otp: string; newPass: string }) {
+    return apiClient.post('/auth/reset-password', {
+      email: data.email,
+      otp: data.otp,
+      newPassword: data.newPass,
+    });
+  },
+
   async changePassword(data: ChangePasswordData) {
     return apiClient.post('/auth/change-password', data);
   },
 
   async deleteAccount(data: { password?: string }) {
-    return apiClient.post('/auth/delete-account', data);
+    return apiClient.delete('/auth/delete-account', { body: data });
   },
 };

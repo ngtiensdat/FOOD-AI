@@ -13,6 +13,8 @@ import { UserRole } from '@/types/user';
 import { LABELS } from '@/constants/labels';
 import { GAMIFICATION_CONSTANTS } from '@/constants/gamification.constant';
 
+import { LogoSpinner } from '@/components/base/LogoSpinner';
+
 // Import Modular Components
 import { UserXpCard } from '@/components/features/badges/UserXpCard';
 import { PointsRulesTable } from '@/components/features/badges/PointsRulesTable';
@@ -187,9 +189,8 @@ export default function BadgesPage() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-500 dark:text-slate-400 font-bold animate-pulse">{labels.LOADING_DATA}</p>
+          <div className="py-20 flex justify-center items-center">
+            <LogoSpinner size="lg" label={labels.LOADING_DATA} />
           </div>
         ) : (
           <motion.div

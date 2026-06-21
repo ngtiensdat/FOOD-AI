@@ -17,7 +17,7 @@
 - [x] Hiển thị thông báo lỗi nếu email đã tồn tại.
 - [x] Mã hóa mật khẩu trước khi lưu vào database.
 - [x] Tự động đăng nhập và điều hướng về Dashboard sau khi đăng ký thành công.
-- [ ] Xác thực email người dùng để bảo mật và tránh spam, lạm dụng tài khoản 
+- [x] Xác thực email người dùng để bảo mật và tránh spam, lạm dụng tài khoản 
 
 ### US-02: Đăng nhập hệ thống
 - **As a** người dùng đã có tài khoản
@@ -36,10 +36,10 @@
 - **So that** tôi có thể đặt mật khẩu mới và lấy lại quyền truy cập tài khoản.
 
 **Acceptance Criteria (AC):**
-- [ ] UI Form "Quên mật khẩu" cho phép điền Email.
-- [ ] Gửi email chứa token đặt lại mật khẩu (hoặc OTP reset).
-- [ ] UI Form "Đặt lại mật khẩu" nhập mật khẩu mới và xác nhận mật khẩu mới.
-- [ ] Vô hiệu hóa token đặt lại mật khẩu cũ sau khi mật khẩu mới được lưu thành công.
+- [x] UI Form "Quên mật khẩu" cho phép điền Email.
+- [x] Gửi email chứa token đặt lại mật khẩu (hoặc OTP reset).
+- [x] UI Form "Đặt lại mật khẩu" nhập mật khẩu mới và xác nhận mật khẩu mới.
+- [x] Vô hiệu hóa token đặt lại mật khẩu cũ sau khi mật khẩu mới được lưu thành công.
 
 ### US-06: Xác thực tài khoản qua Email
 - **As a** người dùng mới đăng ký
@@ -47,9 +47,9 @@
 - **So that** tôi có thể kích hoạt tài khoản của mình và chứng minh email là hợp lệ.
 
 **Acceptance Criteria (AC):**
-- [ ] Tự động gửi email chứa link hoặc mã kích hoạt tài khoản ngay sau khi đăng ký.
-- [ ] UI trang thông báo yêu cầu xác thực email và form nhập mã kích hoạt (OTP/Verification code).
-- [ ] Chặn các quyền truy cập của tài khoản chưa xác thực (nếu cấu hình bắt buộc xác thực).
+- [x] Tự động gửi email chứa link hoặc mã kích hoạt tài khoản ngay sau khi đăng ký.
+- [x] UI trang thông báo yêu cầu xác thực email và form nhập mã kích hoạt (OTP/Verification code).
+- [x] Chặn các quyền truy cập của tài khoản chưa xác thực (nếu cấu hình bắt buộc xác thực).
 
 ### US-07: Quyền riêng tư & Xóa tài khoản cá nhân
 - **As a** người dùng muốn ngừng sử dụng ứng dụng
