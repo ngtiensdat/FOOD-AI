@@ -112,6 +112,7 @@ export class AiService implements OnModuleInit {
     isRaining?: boolean,
     conversationId?: number,
     offset = 0,
+    currentHour?: number,
   ) {
     const cleanMessage = message.trim();
     const rateLimitKey = `ratelimit:chat:${userId}`;
@@ -428,6 +429,7 @@ export class AiService implements OnModuleInit {
           needs,
           feedbackProfile,
           offset,
+          currentHour,
         );
         foods = result.foods;
         shouldRecommend = result.shouldRecommend;
@@ -456,7 +458,9 @@ export class AiService implements OnModuleInit {
       const weatherStr = weatherData
         ? ` Thời tiết: ${weatherData.description}, ${weatherData.temperature}°C (cảm nhận ${weatherData.apparentTemperature}°C), độ ẩm ${weatherData.humidity}%, gió ${weatherData.windSpeedKmh} km/h.`
         : '';
-      const currentDayTimeStr = `Bây giờ là ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2, '0')} ngày ${new Date().toLocaleDateString('vi-VN')}.${weatherStr}`;
+      const resolvedHour =
+        currentHour !== undefined ? currentHour : new Date().getHours();
+      const currentDayTimeStr = `Bây giờ là ${resolvedHour}:${String(new Date().getMinutes()).padStart(2, '0')} ngày ${new Date().toLocaleDateString('vi-VN')}.${weatherStr}`;
       const missingSlots: string[] = [];
       if (!currentState.slots.cuisineType) missingSlots.push('cuisineType');
       if (!currentState.slots.budget) missingSlots.push('budget');

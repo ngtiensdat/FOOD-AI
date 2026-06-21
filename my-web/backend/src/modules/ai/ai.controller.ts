@@ -87,6 +87,7 @@ export class AiController {
       dto.isRaining,
       dto.conversationId,
       dto.offset,
+      dto.currentHour,
     );
   }
 

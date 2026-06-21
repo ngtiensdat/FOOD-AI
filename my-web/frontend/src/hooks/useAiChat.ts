@@ -285,6 +285,9 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     const currentLat = useGps ? lat : undefined;
     const currentLng = useGps ? lng : undefined;
 
+    // Resolve current hour
+    const resolvedHour = new Date().getHours();
+
     // Gọi API chat và truyền thêm activeConversationId (nếu có)
     const response = await aiService.chat(
       text,
@@ -292,9 +295,10 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
       currentLng,
       city,
       district,
-      undefined,
-      undefined,
-      activeConversationId || undefined
+      weather?.temperature,
+      weather?.isRaining,
+      activeConversationId || undefined,
+      resolvedHour
     );
 
     // Thêm phản hồi của AI
@@ -348,15 +352,18 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
           const currentLat = useGps ? lat : undefined;
           const currentLng = useGps ? lng : undefined;
 
+          const resolvedHour = new Date().getHours();
+
           const response = await aiService.chat(
             msgToSend,
             currentLat,
             currentLng,
             city,
             district,
-            undefined,
-            undefined,
-            activeConversationId
+            weather?.temperature,
+            weather?.isRaining,
+            activeConversationId,
+            resolvedHour
           );
 
           if (active) {

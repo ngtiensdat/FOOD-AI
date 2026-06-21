@@ -218,8 +218,44 @@ export class RerankingService {
       dislikedFoods: string[];
       dislikedCategories: string[];
     },
+    currentHour?: number,
   ): SearchResult[] {
-    const currentHour = new Date().getHours();
+    let hour = currentHour !== undefined ? currentHour : new Date().getHours();
+
+    // Tự động nhận diện khoảng thời gian được hỏi trong tin nhắn để định hướng gợi ý
+    if (message) {
+      const msgLower = message.toLowerCase();
+      if (
+        msgLower.includes('sáng mai') ||
+        msgLower.includes('sáng nay') ||
+        msgLower.includes('bữa sáng') ||
+        msgLower.includes('ăn sáng')
+      ) {
+        hour = 8;
+      } else if (
+        msgLower.includes('trưa nay') ||
+        msgLower.includes('trưa mai') ||
+        msgLower.includes('bữa trưa') ||
+        msgLower.includes('ăn trưa')
+      ) {
+        hour = 12;
+      } else if (
+        msgLower.includes('tối nay') ||
+        msgLower.includes('tối mai') ||
+        msgLower.includes('bữa tối') ||
+        msgLower.includes('ăn tối') ||
+        msgLower.includes('chiều tối')
+      ) {
+        hour = 19;
+      } else if (
+        msgLower.includes('đêm nay') ||
+        msgLower.includes('ăn đêm') ||
+        msgLower.includes('khuya') ||
+        msgLower.includes('đêm muộn')
+      ) {
+        hour = 23;
+      }
+    }
     const temp = weather?.temperature ?? 28;
     const isRaining = weather?.isRaining ?? false;
 
@@ -313,7 +349,7 @@ export class RerankingService {
         food.name,
         food.categoryName,
         food.tags,
-        currentHour,
+        hour,
       );
       const weatherBoost = this.ruleEngine.getWeatherBoost(
         food.name,

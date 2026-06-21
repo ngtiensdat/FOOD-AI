@@ -117,7 +117,17 @@ export const useHomeActions = () => {
       }
 
       if (user?.id) {
-        const aiData = await aiService.chat(aiInput, lat, lng, selectedCity, selectedDistrict);
+        const aiData = await aiService.chat(
+          aiInput,
+          lat,
+          lng,
+          selectedCity,
+          selectedDistrict,
+          undefined,
+          undefined,
+          undefined,
+          new Date().getHours()
+        );
         setAiResponse(aiData.reply || '');
         setSuggestedFoods(aiData.suggestions || []);
       }

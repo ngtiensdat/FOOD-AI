@@ -41,4 +41,8 @@ export class AiChatDto {
   @IsOptional()
   @IsNumber()
   offset?: number;
+
+  @IsOptional()
+  @IsNumber()
+  currentHour?: number;
 }

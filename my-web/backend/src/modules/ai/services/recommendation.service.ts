@@ -42,6 +42,7 @@ export class RecommendationService {
       dislikedCategories: string[];
     },
     offset = 0,
+    currentHour?: number,
   ): Promise<{ foods: SearchResult[]; shouldRecommend: boolean }> {
     // 1. Retrieve candidates (uses relational fallback inside if vector results are empty)
     const rawFoods = await this.retrievalService.retrieveCandidates(
@@ -69,6 +70,7 @@ export class RecommendationService {
       intent,
       needs,
       feedbackProfile,
+      currentHour,
     );
 
     // 3. Evaluate eligibility thresholds
