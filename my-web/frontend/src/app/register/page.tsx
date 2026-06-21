@@ -80,9 +80,20 @@ export default function RegisterPage() {
         {/* Bottom badge */}
         <div className="relative z-10 flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl p-3.5 border border-white/20">
           <div className="flex -space-x-2">
-            {LABELS.AUTH.REGISTER_PANEL_AVATAR_INITIALS.map((letter, i) => (
-              <div key={i} className="w-8 h-8 rounded-full border-2 border-white/40 bg-white/30 flex items-center justify-center text-white text-xs font-bold">
-                {letter}
+            {LABELS.AUTH.REGISTER_PANEL_AVATARS.map((av, i) => (
+              <div
+                key={i}
+                title={av.name}
+                className="w-9 h-9 rounded-full border-2 border-white/50 overflow-hidden bg-white/20 flex-shrink-0"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.dicebear.com/9.x/personas/svg?seed=${av.seed}&size=36&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0aede`}
+                  alt={av.name}
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                />
               </div>
             ))}
           </div>

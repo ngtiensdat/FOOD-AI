@@ -87,11 +87,25 @@ export default function LoginPage() {
           <p className="text-white/90 text-sm font-medium leading-relaxed">
             &ldquo;{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL}&rdquo;
           </p>
-          <div className="flex items-center gap-2 mt-3">
-            <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-white text-xs font-bold">
-              {LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AVATAR}
+          <div className="flex items-center gap-2.5 mt-3">
+            <div className="w-9 h-9 rounded-full border-2 border-white/40 overflow-hidden flex-shrink-0 bg-white/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://api.dicebear.com/9.x/personas/svg?seed=Khoa&size=36&backgroundColor=ffdfbf`}
+                alt={LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}
+                width={36}
+                height={36}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <span className="text-white/80 text-xs font-semibold">{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}</span>
+            <div>
+              <span className="text-white/90 text-xs font-bold block">{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}</span>
+              <div className="flex gap-0.5 mt-0.5">
+                {[1,2,3,4,5].map((s) => (
+                  <Star key={s} className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
