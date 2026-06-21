@@ -14,7 +14,7 @@
 **Acceptance Criteria (AC):**
 - [x] Tích lũy XP khi đăng bài review (+50 XP), comment (+10 XP), like (+5 XP).
 - [x] Thăng cấp (Level up) khi đạt đủ mốc XP quy định.
-- [ ] Tự động trao danh hiệu dựa trên mốc hoạt động (ví dụ: "Thánh ăn" khi review > 10 món, "Chiến thần review" khi có > 500 lượt thích bài viết).
+- [x] Tự động trao danh hiệu dựa trên mốc hoạt động (ví dụ: "Thánh ăn" khi review > 10 món, "Chiến thần review" khi có > 500 lượt thích bài viết).
 - [x] Hiển thị Cấp độ và Danh hiệu nổi bật trên trang cá nhân của người dùng.
 
 ### US-22: Danh hiệu dành cho Thương gia (Merchant Badges)
@@ -23,9 +23,9 @@
 - **So that** thu hút thêm nhiều thực khách tin tưởng đặt món.
 
 **Acceptance Criteria (AC):**
-- [ ] Trao danh hiệu "Quán ăn 5 sao" khi đạt điểm đánh giá trung bình > 4.8 (tối thiểu 20 lượt đánh giá).
-- [ ] Trao danh hiệu "Điểm đến yêu thích" khi đạt mốc > 100 lượt Follow.
-- [ ] Hiển thị danh hiệu nổi bật trên Merchant Profile và trên từng Card món ăn của quán.
+- [x] Trao danh hiệu "Quán ăn 5 sao" khi đạt điểm đánh giá trung bình > 4.8 (tối thiểu 20 lượt đánh giá).
+- [x] Trao danh hiệu "Điểm đến yêu thích" khi đạt mốc > 100 lượt Follow.
+- [x] Hiển thị danh hiệu nổi bật trên Merchant Profile và trên từng Card món ăn của quán.
 
 ---
 

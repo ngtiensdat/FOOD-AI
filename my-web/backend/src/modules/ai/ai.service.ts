@@ -111,6 +111,7 @@ export class AiService implements OnModuleInit {
     temperature?: number,
     isRaining?: boolean,
     conversationId?: number,
+    offset = 0,
   ) {
     const cleanMessage = message.trim();
     const rateLimitKey = `ratelimit:chat:${userId}`;
@@ -426,6 +427,7 @@ export class AiService implements OnModuleInit {
           intent,
           needs,
           feedbackProfile,
+          offset,
         );
         foods = result.foods;
         shouldRecommend = result.shouldRecommend;

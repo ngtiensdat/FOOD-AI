@@ -110,6 +110,7 @@ export class RestaurantService {
             latitude: restaurant.latitude,
             longitude: restaurant.longitude,
             profile: restaurant.profile,
+            owner: restaurant.owner,
             foods: restaurant.foods.slice(0, LIMITS.RESTAURANT_INITIAL_FOODS),
           },
           stats: {

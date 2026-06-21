@@ -7,12 +7,12 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 ### [Backend]
 - [x] Task 1.1: Thiết kế schema trong Database cho XP, Level, Badge, UserBadge, MerchantBadge.
 - [x] Task 1.2: Xây dựng service tính toán XP và tự động thăng cấp khi có tương tác (đăng bài, like, comment).
-- [ ] Task 1.3: Logic quét định kỳ (Cron job) hoặc Event-driven để tự động trao danh hiệu cho Customer (Thánh ăn, Chiến thần review...) và Merchant (Quán 5 sao, Điểm đến yêu thích...).
+- [x] Task 1.3: Logic quét định kỳ (Cron job) hoặc Event-driven để tự động trao danh hiệu cho Customer (Thánh ăn, Chiến thần review...) và Merchant (Quán 5 sao, Điểm đến yêu thích...).
 - [x] Task 1.4: API trả về thông tin Level/XP và danh sách danh hiệu của một User/Merchant.
 
 ### [Frontend]
 - [x] Task 1.5: UI hiển thị thanh tiến trình XP (XP Progress Bar) và danh hiệu trên Profile Header.
-- [ ] Task 1.6: Hiển thị Badge danh hiệu của Merchant trên Merchant Profile và Food Card.
+- [x] Task 1.6: Hiển thị Badge danh hiệu của Merchant trên Merchant Profile và Food Card.
 
 ---
 

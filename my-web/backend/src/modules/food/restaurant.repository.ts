@@ -48,6 +48,11 @@ export class RestaurantRepository {
       where: { id: { in: nearbyResults.map((r) => r.id) } },
       include: {
         profile: true,
+        owner: {
+          select: {
+            badgeTitle: true,
+          },
+        },
         foods: {
           where: {
             isActive: true,
@@ -115,6 +120,11 @@ export class RestaurantRepository {
       where: { id },
       include: {
         profile: true,
+        owner: {
+          select: {
+            badgeTitle: true,
+          },
+        },
         foods: {
           where: {
             isActive: true,
@@ -355,6 +365,11 @@ export class RestaurantRepository {
         where,
         include: {
           profile: true,
+          owner: {
+            select: {
+              badgeTitle: true,
+            },
+          },
           foods: {
             where: {
               isActive: true,

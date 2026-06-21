@@ -20,6 +20,9 @@ export interface Restaurant {
   latitude?: number | null;
   longitude?: number | null;
   profile?: RestaurantProfile | null;
+  owner?: {
+    badgeTitle?: string | null;
+  } | null;
   foods?: Food[];
   _count?: {
     followers: number;

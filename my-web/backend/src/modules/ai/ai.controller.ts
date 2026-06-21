@@ -86,6 +86,7 @@ export class AiController {
       dto.temperature,
       dto.isRaining,
       dto.conversationId,
+      dto.offset,
     );
   }
 

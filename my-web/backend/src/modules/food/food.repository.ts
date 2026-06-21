@@ -42,6 +42,9 @@ export class FoodRepository {
               profile: {
                 select: { openingHours: true },
               },
+              owner: {
+                select: { badgeTitle: true },
+              },
             },
           },
         },
@@ -157,6 +160,9 @@ export class FoodRepository {
             profile: {
               select: { openingHours: true },
             },
+            owner: {
+              select: { badgeTitle: true },
+            },
           },
         },
       },
@@ -205,6 +211,9 @@ export class FoodRepository {
             isActive: true,
             profile: {
               select: { openingHours: true },
+            },
+            owner: {
+              select: { badgeTitle: true },
             },
           },
         },

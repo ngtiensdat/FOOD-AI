@@ -215,6 +215,7 @@ export const LABELS_EN = {
       FOODS_SUFFIX: 'food items',
       DEFAULT_LOCATION: 'Vietnam',
       DEFAULT_CATEGORY: 'Restaurant',
+      REVIEWS_COUNT: (count: number | string) => `(${count} reviews)`,
     },
     TABLE: {
       FOOD: 'Food Item',
@@ -872,6 +873,7 @@ export const LABELS_EN = {
     NO_IMAGE: 'No image',
     UNCATEGORIZED: 'Uncategorized',
     SYSTEM: 'System',
+    SOLD_COUNT: (count: number | string) => `${count} sold`,
   },
   UI_MESSAGES: {
     CATEGORY: {

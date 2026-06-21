@@ -219,6 +219,7 @@ const LABELS_VI = {
       FOODS_SUFFIX: 'món ăn',
       DEFAULT_LOCATION: 'Việt Nam',
       DEFAULT_CATEGORY: 'Quán ăn',
+      REVIEWS_COUNT: (count: number | string) => `(${count} đánh giá)`,
     },
     TABLE: {
       FOOD: 'Món ăn',
@@ -877,6 +878,7 @@ const LABELS_VI = {
     NO_IMAGE: 'Không có ảnh',
     UNCATEGORIZED: 'Chưa phân loại',
     SYSTEM: 'Hệ thống',
+    SOLD_COUNT: (count: number | string) => `Đã bán ${count}`,
   },
   UI_MESSAGES: {
     CATEGORY: {

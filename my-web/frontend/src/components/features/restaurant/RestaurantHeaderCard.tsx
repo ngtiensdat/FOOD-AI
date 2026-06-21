@@ -59,6 +59,8 @@ export const RestaurantHeaderCard = ({
     ? `url(${restaurantData.profile.coverImage})`
     : DEFAULT_COVER_GRADIENT;
 
+  const badgeTitle = (restaurantData.owner as any)?.badgeTitle || (restaurantData as any).merchantBadge;
+
   return (
     <>
       {isOwner && (
@@ -117,12 +119,19 @@ export const RestaurantHeaderCard = ({
                 />
               </div>
               <div>
-                <h1 className="text-h1 font-black text-gray-900 mb-1">{restaurantData.name}</h1>
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <h1 className="text-h1 font-black text-gray-900 mb-0">{restaurantData.name}</h1>
+                  {badgeTitle && (
+                    <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold uppercase tracking-wider shrink-0">
+                      {badgeTitle}
+                    </span>
+                  )}
+                </div>
                 {restaurantData.ratingAvg !== undefined && restaurantData.ratingAvg !== null && (
                   <div className="flex items-center gap-1.5 text-sm text-yellow-500 font-extrabold mb-2">
                     <span>⭐</span>
                     <span>{Number(restaurantData.ratingAvg).toFixed(1)}</span>
-                    <span className="text-gray-400 font-bold">({Number(restaurantData.ratingCount) || 0} đánh giá)</span>
+                    <span className="text-gray-400 font-bold">{LABELS.RESTAURANT.CARD_LABELS.REVIEWS_COUNT(Number(restaurantData.ratingCount) || 0)}</span>
                   </div>
                 )}
                 {restaurantData.mapUrl ? (

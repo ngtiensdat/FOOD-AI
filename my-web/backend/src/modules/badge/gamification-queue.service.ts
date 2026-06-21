@@ -41,6 +41,9 @@ export class GamificationQueueService implements OnModuleInit {
   private readonly logger = new Logger(GamificationQueueService.name);
   private readonly queue$ = new Subject<GamificationJob>();
 
+  private static readonly SWEEP_INITIAL_DELAY_MS = 5000;
+  private static readonly SWEEP_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationGateway: NotificationGateway,
@@ -64,6 +67,123 @@ export class GamificationQueueService implements OnModuleInit {
         }),
       )
       .subscribe();
+
+    setTimeout(() => {
+      void this.runFullSweep();
+    }, GamificationQueueService.SWEEP_INITIAL_DELAY_MS);
+    setInterval(() => {
+      void this.runFullSweep();
+    }, GamificationQueueService.SWEEP_INTERVAL_MS);
+  }
+
+  async runFullSweep() {
+    this.logger.log('Starting gamification full sweep for badges...');
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { deletedAt: null },
+        select: { id: true, role: true, badgeTitle: true, points: true },
+      });
+
+      for (const user of users) {
+        await this.prisma.$transaction(async (tx) => {
+          const badges = await tx.badgeConfig.findMany({
+            where: { role: user.role },
+          });
+
+          let nextBadge: string | null = user.badgeTitle;
+          if (badges.length > 0) {
+            const sorted = badges.sort((a, b) => b.points - a.points);
+
+            // Fetch user stats
+            const [reviewsCount, postLikesCount, followersCount, restaurant] =
+              await Promise.all([
+                tx.post.count({
+                  where: {
+                    authorId: user.id,
+                    postType: PostType.REVIEW,
+                    status: PostStatus.APPROVED,
+                    deletedAt: null,
+                  },
+                }),
+                tx.like.count({
+                  where: { post: { authorId: user.id } },
+                }),
+                user.role === UserRole.CUSTOMER
+                  ? tx.userFollow.count({ where: { followingId: user.id } })
+                  : tx.follow.count({
+                      where: { restaurant: { ownerId: user.id } },
+                    }),
+                user.role === UserRole.RESTAURANT
+                  ? tx.restaurant.findFirst({
+                      where: { ownerId: user.id },
+                      select: { ratingAvg: true, ratingCount: true },
+                    })
+                  : null,
+              ]);
+
+            const ratingAvg = restaurant?.ratingAvg ?? 0;
+            const ratingCount = restaurant?.ratingCount ?? 0;
+
+            const matched = sorted.find((b) => {
+              if (user.points < b.points) return false;
+              if (b.minReviews !== null && reviewsCount < b.minReviews)
+                return false;
+              if (b.minPostLikes !== null && postLikesCount < b.minPostLikes)
+                return false;
+              if (b.minRatingAvg !== null && ratingAvg < b.minRatingAvg)
+                return false;
+              if (b.minRatingCount !== null && ratingCount < b.minRatingCount)
+                return false;
+              if (b.minFollowers !== null && followersCount < b.minFollowers)
+                return false;
+              return true;
+            });
+
+            nextBadge = matched ? matched.title : null;
+          } else {
+            const sorted = DEFAULT_BADGE_CONFIGS.filter(
+              (b) => b.role === user.role,
+            ).sort((a, b) => b.points - a.points);
+            const matched = sorted.find((b) => user.points >= b.points);
+            nextBadge = matched ? matched.title : null;
+          }
+
+          if (nextBadge !== user.badgeTitle) {
+            this.logger.log(
+              `User ${user.id} badge updated from ${user.badgeTitle || 'None'} to ${nextBadge || 'None'}`,
+            );
+            await tx.user.update({
+              where: { id: user.id },
+              data: { badgeTitle: nextBadge },
+            });
+
+            if (nextBadge !== null) {
+              const title = MESSAGES.LOYALTY.NEW_BADGE_TITLE;
+              const content = MESSAGES.LOYALTY.NEW_BADGE_BODY(nextBadge);
+              await tx.notification.create({
+                data: {
+                  userId: user.id,
+                  title,
+                  content,
+                  type: NotificationType.LEVEL_UP,
+                },
+              });
+              await this.notificationGateway.sendNotificationToUser(user.id, {
+                type: NotificationType.LEVEL_UP,
+                title,
+                content,
+              });
+            }
+          }
+        });
+      }
+      this.logger.log('Gamification full sweep for badges completed.');
+    } catch (err) {
+      this.logger.error(
+        `Error during gamification full sweep: ${err.message}`,
+        err.stack,
+      );
+    }
   }
 
   async addJob(
