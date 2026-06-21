@@ -8,7 +8,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { SafeImage } from '@/components/base/SafeImage';
-import { Mail, Lock, ArrowRight, Eye, EyeOff, UtensilsCrossed, Star, Sparkles } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Star, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 // Hooks
 import { useLoginActions } from '@/hooks/useLoginActions';
@@ -49,10 +49,12 @@ export default function LoginPage() {
 
         {/* Center content */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center -mt-8">
-          {/* Floating food icon circle */}
+          {/* Logo circle */}
           <div className="relative mb-8">
-            <div className="w-36 h-36 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-2xl">
-              <UtensilsCrossed className="w-16 h-16 text-white" strokeWidth={1.5} />
+            <div className="w-36 h-36 bg-white rounded-full flex items-center justify-center shadow-2xl overflow-hidden p-1">
+              <div className="relative w-full h-full">
+                <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="144px" className="object-contain p-4" />
+              </div>
             </div>
             {/* Floating badges */}
             <motion.div
