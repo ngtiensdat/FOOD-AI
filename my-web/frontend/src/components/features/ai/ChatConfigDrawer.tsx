@@ -8,6 +8,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Thermometer, MapPin, Wind, Droplets, CloudRain, Sun, Loader2 } from 'lucide-react';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { LABELS } from '@/constants/labels';
 import { WeatherData } from '@/hooks/useAiChat';
 import { Button } from '@/components/base/Button';
@@ -53,9 +54,8 @@ export function ChatConfigDrawer({
             {LABELS.AI_CHAT.CONFIG.WEATHER_TITLE}
           </span>
           {isWeatherLoading ? (
-            <div className="flex flex-col items-center justify-center py-4 text-gray-400">
-              <Loader2 className="w-5 h-5 animate-spin text-primary mb-1" />
-              <span>{LABELS.AI_CHAT.CONFIG.SYNCING_WEATHER}</span>
+            <div className="py-4 flex justify-center items-center">
+              <LogoSpinner size="sm" label={LABELS.AI_CHAT.CONFIG.SYNCING_WEATHER} />
             </div>
           ) : weather ? (
             <div className="space-y-1.5 pt-1 text-[11px]">

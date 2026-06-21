@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, EyeOff, Loader2, Trash2 } from 'lucide-react';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
@@ -98,9 +99,8 @@ export function PersonalizationTab({
       {/* List Container */}
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1">
         {loading ? (
-          <div className="h-full flex items-center justify-center flex-col gap-2 py-10">
-            <Loader2 size={24} className="text-orange-500 animate-spin" />
-            <span className="text-[11px] text-slate-400 font-bold">{LABELS.AI_CHAT.PREFERENCES.LOADING}</span>
+          <div className="h-full flex items-center justify-center py-10">
+            <LogoSpinner size="sm" label={LABELS.AI_CHAT.PREFERENCES.LOADING} />
           </div>
         ) : currentItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-12 px-4 border border-dashed border-orange-100 dark:border-slate-800 rounded-2xl bg-orange-50/5 dark:bg-slate-900/5">

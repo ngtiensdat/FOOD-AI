@@ -1,5 +1,6 @@
 import React from 'react';
 import { Utensils } from 'lucide-react';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { FoodCardData } from '@/components/features/food/FoodCard';
 import { MiniFoodCard } from '@/components/features/food/MiniFoodCard';
 import { Button } from '@/components/base/Button';
@@ -52,8 +53,7 @@ export const RestaurantFoodGrid = ({
   if (loadingFoods && foodsData.length === 0) {
     return (
       <div className="flex-1 w-full text-center py-20">
-        <div className="loading-spinner w-8 h-8 mx-auto mb-4"></div>
-        <p className="text-gray-500">{LABELS.RESTAURANT.PUBLIC_PROFILE.LOADING_FOODS}</p>
+        <LogoSpinner size="md" label={LABELS.RESTAURANT.PUBLIC_PROFILE.LOADING_FOODS} />
       </div>
     );
   }

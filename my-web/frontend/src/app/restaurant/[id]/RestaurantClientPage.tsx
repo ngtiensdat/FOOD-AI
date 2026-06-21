@@ -13,6 +13,7 @@ import { AnimatePresence } from 'framer-motion';
 
 // Services, Hooks & Components
 import { useRestaurantProfile } from '@/hooks/useRestaurantProfile';
+import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { Button } from '@/components/base/Button';
@@ -113,12 +114,7 @@ export default function RestaurantClientPage() {
   }, [activeTab, selectedCategoryId, foodsData]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-        <div className="loading-spinner w-12 h-12"></div>
-        <p className="text-gray-500 font-bold text-body">{LABELS.COMMON.LOADING}</p>
-      </div>
-    );
+    return <LogoSpinner fullPage label={LABELS.COMMON.LOADING} />;
   }
 
   if (!restaurantData) {
