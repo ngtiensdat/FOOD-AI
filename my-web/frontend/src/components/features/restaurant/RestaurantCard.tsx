@@ -37,6 +37,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
             <SafeImage
               src={profile.coverImage}
               alt={`${name} Cover`}
+              fill
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
@@ -55,6 +56,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
               <SafeImage
                 src={profile.logo}
                 alt={`${name} Logo`}
+                fill
                 className="w-full h-full object-cover"
               />
             ) : (

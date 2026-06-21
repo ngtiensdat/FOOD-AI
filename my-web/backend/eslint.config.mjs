@@ -70,15 +70,15 @@ export default tseslint.config(
           ],
         },
       ],
-      'boundaries/element-types': [
+      'boundaries/dependencies': [
         'error',
         {
           default: 'allow',
           message: '${file.type} is not allowed to import ${dependency.type}',
           rules: [
             {
-              from: 'modules',
-              disallow: ['modules'], // Prevent cross-module imports (should use SharedModule)
+              from: { type: 'modules' },
+              disallow: [{ to: { type: 'modules' } }], // Prevent cross-module imports (should use SharedModule)
               message: 'Modules should not import from other modules directly. Use SharedModule or proper DI.'
             },
           ],

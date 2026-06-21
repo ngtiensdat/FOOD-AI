@@ -56,6 +56,13 @@ class ApiClient {
       if (savedLang) {
         headers['Accept-Language'] = savedLang;
       }
+      
+      // Đọc cookie XSRF-TOKEN và đính kèm vào header
+      const parts = `; ${document.cookie}`.split(`; XSRF-TOKEN=`);
+      const csrfToken = parts.length === 2 ? parts.pop()?.split(';').shift() : undefined;
+      if (csrfToken) {
+        headers['X-XSRF-TOKEN'] = csrfToken;
+      }
     }
 
     if (!isFormData && !headers['Content-Type']) {
@@ -177,6 +184,13 @@ class ApiClient {
 
   async delete(endpoint: string, options?: RequestOptions) {
     return this.request('DELETE', endpoint, options);
+  }
+
+  /**
+   * POST multipart/form-data (dùng cho file upload). Body phải là FormData.
+   */
+  async postForm<T = unknown>(endpoint: string, formData: FormData): Promise<T> {
+    return this.request('POST', endpoint, { body: formData }) as Promise<T>;
   }
 }
 

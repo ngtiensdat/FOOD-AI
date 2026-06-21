@@ -140,4 +140,20 @@ export const getPaginationRange = (currentPage: number, totalPages: number, maxV
   return pages;
 };
 
-
+/**
+ * Trích xuất publicId từ Cloudinary URL để xóa ảnh cũ
+ */
+export const extractPublicId = (url: string): string | null => {
+  if (!url || !url.includes('res.cloudinary.com')) return null;
+  try {
+    const parts = url.split('/image/upload/');
+    if (parts.length < 2) return null;
+    const pathParts = parts[1].split('/');
+    if (pathParts[0].match(/^v\d+$/)) pathParts.shift();
+    const remainingPath = pathParts.join('/');
+    const dotIndex = remainingPath.lastIndexOf('.');
+    return dotIndex !== -1 ? remainingPath.substring(0, dotIndex) : remainingPath;
+  } catch {
+    return null;
+  }
+};

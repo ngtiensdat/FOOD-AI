@@ -61,6 +61,7 @@ export class PostService {
     authorId?: number,
     page: number = 1,
     pageSize: number = LIMITS.POSTS_DEFAULT_PAGE_SIZE,
+    noCache?: boolean,
   ) {
     const where: Prisma.PostWhereInput = {
       deletedAt: null,
@@ -72,74 +73,75 @@ export class PostService {
     }
 
     const cacheKey = `posts:list:${authorId || 'all'}:${page}:${pageSize}`;
-    const cached = await this.cacheService.wrap(
-      cacheKey,
-      async () => {
-        const posts = await this.prisma.post.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                role: true,
-                level: true,
-                badgeTitle: true,
-                profile: { select: { avatar: true } },
-              },
+
+    const fetchPosts = async () => {
+      const posts = await this.prisma.post.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              role: true,
+              level: true,
+              badgeTitle: true,
+              profile: { select: { avatar: true } },
             },
-            food: { select: { id: true, name: true } },
-            restaurant: { select: { id: true, name: true } },
-            likes: true,
-            savedPosts: true,
-            comments: {
-              where: { deletedAt: null },
-              orderBy: { createdAt: 'asc' },
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    profile: { select: { avatar: true } },
-                  },
+          },
+          food: { select: { id: true, name: true } },
+          restaurant: { select: { id: true, name: true } },
+          likes: true,
+          savedPosts: true,
+          comments: {
+            where: { deletedAt: null },
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { avatar: true } },
                 },
-                replies: {
-                  where: { deletedAt: null },
-                  orderBy: { createdAt: 'asc' },
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        profile: { select: { avatar: true } },
-                      },
+              },
+              replies: {
+                where: { deletedAt: null },
+                orderBy: { createdAt: 'asc' },
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      profile: { select: { avatar: true } },
                     },
                   },
                 },
               },
             },
-            sharedFrom: {
-              include: {
-                author: {
-                  select: {
-                    id: true,
-                    name: true,
-                    profile: { select: { avatar: true } },
-                  },
+          },
+          sharedFrom: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { avatar: true } },
                 },
               },
             },
           },
-        });
+        },
+      });
 
-        const total = await this.prisma.post.count({ where });
-        return { posts, total };
-      },
-      120, // 2 minutes TTL
-    );
+      const total = await this.prisma.post.count({ where });
+      return { posts, total };
+    };
+
+    const cached = noCache
+      ? await fetchPosts()
+      : await this.cacheService.wrap(cacheKey, fetchPosts, 120);
 
     // Format posts to match frontend's expected properties, checking likes dynamically
     const formattedPosts = cached.posts.map((post) => {
@@ -188,6 +190,7 @@ export class PostService {
         title: post.title,
         content: post.content,
         image: post.image,
+        images: post.images || [],
         rating: post.rating,
         postType: post.postType,
         isShared: post.isShared,
@@ -199,6 +202,7 @@ export class PostService {
               title: post.sharedFrom.title,
               content: post.sharedFrom.content,
               image: post.sharedFrom.image,
+              images: post.sharedFrom.images || [],
             }
           : null,
         likesCount: post.likes.length,
@@ -232,6 +236,7 @@ export class PostService {
       title?: string;
       content?: string;
       image?: string;
+      images?: string[];
       rating?: number;
       postType?: PostType;
       restaurantId?: number;
@@ -249,6 +254,7 @@ export class PostService {
         title: dto.title,
         content: sanitizedContent,
         image: dto.image,
+        images: dto.images || [],
         rating: dto.rating ? Number(dto.rating) : null,
         postType: dto.postType || PostType.NORMAL,
         restaurantId: dto.restaurantId ? Number(dto.restaurantId) : null,
@@ -264,6 +270,70 @@ export class PostService {
     await this.cacheService.invalidatePattern('posts:*');
 
     return post;
+  }
+
+  async updatePost(
+    userId: number,
+    role: UserRole,
+    postId: number,
+    dto: {
+      title?: string;
+      content?: string;
+      image?: string;
+      images?: string[];
+      rating?: number;
+      postType?: PostType;
+      restaurantId?: number;
+      foodId?: number;
+    },
+  ) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
+    if (post.authorId !== userId && role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Bạn không có quyền chỉnh sửa bài viết này');
+    }
+
+    const sanitizedContent = dto.content
+      ? DOMPurify.sanitize(dto.content)
+      : dto.content;
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        title: dto.title !== undefined ? dto.title : post.title,
+        content: dto.content !== undefined ? sanitizedContent : post.content,
+        image: dto.image !== undefined ? dto.image : post.image,
+        images: dto.images !== undefined ? dto.images : post.images,
+        rating:
+          dto.rating !== undefined
+            ? dto.rating
+              ? Number(dto.rating)
+              : null
+            : post.rating,
+        postType: dto.postType !== undefined ? dto.postType : post.postType,
+        restaurantId:
+          dto.restaurantId !== undefined
+            ? dto.restaurantId
+              ? Number(dto.restaurantId)
+              : null
+            : post.restaurantId,
+        foodId:
+          dto.foodId !== undefined
+            ? dto.foodId
+              ? Number(dto.foodId)
+              : null
+            : post.foodId,
+      },
+    });
+
+    await this.cacheService.invalidatePattern('posts:*');
+    return updatedPost;
   }
 
   async deletePost(userId: number, role: UserRole, postId: number) {
@@ -288,6 +358,7 @@ export class PostService {
     await this.gamificationQueue.addJob(post.authorId, 'UNDO_POST_REVIEW');
 
     await this.cacheService.invalidatePattern('posts:*');
+    await this.cacheService.invalidatePattern('users:*');
 
     return { success: true };
   }
@@ -314,6 +385,7 @@ export class PostService {
       // Deduct points
       await this.gamificationQueue.addJob(userId, 'UNDO_LIKE');
       await this.cacheService.invalidatePattern('posts:*');
+      await this.cacheService.invalidatePattern('users:*');
       return { isLiked: false };
     } else {
       await this.prisma.like.create({
@@ -346,6 +418,7 @@ export class PostService {
       // Queue points update
       await this.gamificationQueue.addJob(userId, 'LIKE');
       await this.cacheService.invalidatePattern('posts:*');
+      await this.cacheService.invalidatePattern('users:*');
       return { isLiked: true };
     }
   }
@@ -448,7 +521,7 @@ export class PostService {
     return { success: true };
   }
 
-  async toggleSavePost(userId: number, postId: number) {
+  async toggleSavePost(userId: number, postId: number, noCache = false) {
     const existing = await this.prisma.savedPost.findUnique({
       where: {
         userId_postId: {
@@ -581,6 +654,7 @@ export class PostService {
         title: post.title,
         content: post.content,
         image: post.image,
+        images: post.images || [],
         rating: post.rating,
         postType: post.postType,
         isShared: post.isShared,
@@ -592,6 +666,7 @@ export class PostService {
               title: post.sharedFrom.title,
               content: post.sharedFrom.content,
               image: post.sharedFrom.image,
+              images: post.sharedFrom.images || [],
             }
           : null,
         likesCount: post.likes.length,

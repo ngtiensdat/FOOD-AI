@@ -10,9 +10,10 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { PrismaModule } from '../../database/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { MediaModule } from '../media/media.module';
 
 @Module({
-  imports: [PrismaModule, ConfigModule],
+  imports: [PrismaModule, ConfigModule, MediaModule],
   controllers: [UserController],
   providers: [UserService, UserRepository],
   exports: [UserService, UserRepository],

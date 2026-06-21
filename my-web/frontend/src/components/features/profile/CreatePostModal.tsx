@@ -10,12 +10,16 @@ import { X, Sparkles, MessageSquare, Star, Image as ImageIcon, Store, Utensils }
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { Alert } from '@/components/base/Alert';
+import { PostImageUploader } from '@/components/base/PostImageUploader';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
 import { socialService } from '@/services/social.service';
+import { authService } from '@/services/auth.service';
 import { PostData } from './PostCard';
+import { useAuth } from '@/hooks/useAuth';
+import { FoodSelectAutocomplete } from '@/components/base/FoodSelectAutocomplete';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -24,48 +28,78 @@ interface CreatePostModalProps {
 }
 
 export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalProps) => {
-  const [postType, setPostType] = useState<'NORMAL' | 'REVIEW' | 'PROMOTION'>('NORMAL');
+  // Thêm 'PROMOTION' và 'ANNOUNCEMENT' vào danh sách kiểu dữ liệu
+  const [postType, setPostType] = useState<'NORMAL' | 'REVIEW' | 'PROMOTION' | 'ANNOUNCEMENT'>('NORMAL');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
-  const [imageUrl, setImageUrl] = useState('');
-  
+  const [images, setImages] = useState<string[]>([]);
+
   interface LinkableRestaurant {
     id: number;
     name: string;
+    profile?: { coverImage?: string | null } | null;
   }
   interface LinkableFood {
     id: number;
     name: string;
+    image?: string | null;
   }
 
   const [restaurants, setRestaurants] = useState<LinkableRestaurant[]>([]);
   const [foods, setFoods] = useState<LinkableFood[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
   const [selectedFoodId, setSelectedFoodId] = useState('');
-  
+
+  // Dropdown UI states
+  const [restaurantSearch, setRestaurantSearch] = useState('');
+  const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { user, isAdmin, isRestaurant } = useAuth();
+  const userRole = isAdmin ? 'ADMIN' : isRestaurant ? 'MERCHANT' : 'USER';
 
   // Load restaurants and foods for linking
   useEffect(() => {
     if (isOpen) {
+      if (isAdmin) setPostType('ANNOUNCEMENT');
+      else if (isRestaurant) setPostType('NORMAL');
+      else setPostType('NORMAL');
+
       const loadLinkingData = async () => {
         try {
-          const [restRes, foodRes] = await Promise.all([
-            restaurantService.getPublicRestaurants({ pageSize: LIMITS.POST_LINKING_RESTAURANTS_PAGE_SIZE }),
-            foodService.getAllFoods()
-          ]);
-          
-          setRestaurants(restRes?.data || []);
-          setFoods(Array.isArray(foodRes) ? foodRes : []);
+          if (isRestaurant) {
+            const myRest = await restaurantService.getMyRestaurant();
+            if (myRest?.data) setRestaurants([myRest.data]);
+          } else if (isAdmin) {
+            const restRes = await restaurantService.getPublicRestaurants({ pageSize: LIMITS.POST_LINKING_RESTAURANTS_PAGE_SIZE });
+            setRestaurants(restRes?.data || []);
+          } else if (user?.id) {
+            const followingRes = await authService.getFollowing(user.id);
+            setRestaurants(followingRes?.restaurants || []);
+          }
         } catch (err) {
           console.error('Error loading linking data for posts:', err);
         }
       };
       loadLinkingData();
     }
-  }, [isOpen]);
+  }, [isOpen, userRole, user?.id]);
+
+  // Load foods when restaurant changes
+  useEffect(() => {
+    if (selectedRestaurantId) {
+      restaurantService.getPublicRestaurantFoods(Number(selectedRestaurantId), undefined, 1, 100)
+        .then(res => setFoods(res.items || []))
+        .catch(err => console.error('Error fetching foods for restaurant:', err));
+    } else {
+      setFoods([]);
+      setSelectedFoodId('');
+    }
+  }, [selectedRestaurantId]);
+
 
   if (!isOpen) return null;
 
@@ -84,33 +118,51 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
 
     setLoading(true);
 
+    let finalImages = images;
+    if (images.length === 0) {
+      let defaultImg = undefined;
+      if (selectedFoodId) {
+        const f = foods.find(x => x.id.toString() === selectedFoodId);
+        if (f?.image) defaultImg = f.image;
+      }
+      if (!defaultImg && selectedRestaurantId) {
+        const r = restaurants.find(x => x.id.toString() === selectedRestaurantId);
+        if (r?.profile?.coverImage) defaultImg = r.profile.coverImage;
+      }
+      if (defaultImg) {
+        finalImages = [defaultImg];
+      }
+    }
+
     socialService.createPost({
       title: title.trim(),
       content: content.trim(),
       postType,
       rating: postType === 'REVIEW' ? rating : undefined,
-      image: imageUrl.trim() || undefined,
+      image: finalImages[0] || undefined,
+      images: finalImages.length > 0 ? finalImages : undefined,
       restaurantId: selectedRestaurantId ? Number(selectedRestaurantId) : undefined,
       foodId: selectedFoodId ? Number(selectedFoodId) : undefined,
     })
-    .then((createdPost) => {
-      onCreated(createdPost);
-      setLoading(false);
-      onClose();
-      // Reset form
-      setTitle('');
-      setContent('');
-      setPostType('NORMAL');
-      setRating(5);
-      setImageUrl('');
-      setSelectedRestaurantId('');
-      setSelectedFoodId('');
-    })
-    .catch((err) => {
-      console.error(err);
-      setError('Lỗi khi đăng bài viết. Vui lòng thử lại.');
-      setLoading(false);
-    });
+      .then((createdPost) => {
+        onCreated(createdPost);
+        setLoading(false);
+        onClose();
+        // Reset form
+        setTitle('');
+        setContent('');
+        setPostType('NORMAL');
+        setRating(5);
+        setImages([]);
+        setSelectedRestaurantId('');
+        setSelectedFoodId('');
+        setRestaurantSearch('');
+      })
+      .catch((err) => {
+        console.error(err);
+        setError('Lỗi khi đăng bài viết. Vui lòng thử lại.');
+        setLoading(false);
+      });
   };
 
   return (
@@ -123,8 +175,8 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             <MessageSquare className="text-primary" size={24} />
             {LABELS.SOCIAL.CREATE_POST}
           </h2>
-          <Button 
-            onClick={onClose} 
+          <Button
+            onClick={onClose}
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-400 hover:text-gray-600"
             aria-label={LABELS.COMMON.CANCEL}
             variant="none"
@@ -143,32 +195,38 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
           )}
 
           {/* Post Type Selector */}
+          {/* Post Type Selector phân theo mã Role */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {LABELS.SOCIAL.SELECT_POST_TYPE}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL },
-                { type: 'REVIEW' as const, label: LABELS.SOCIAL.POST_TYPE_REVIEW }
-              ].map((item) => (
-                <Button
-                  key={item.type}
-                  type="button"
-                  onClick={() => setPostType(item.type)}
-                  className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${
-                    postType === item.type
+                { type: 'NORMAL' as const, label: LABELS.SOCIAL.POST_TYPE_NORMAL, allowedRoles: ['USER', 'MERCHANT'] },
+                { type: 'REVIEW' as const, label: 'Bài viết đánh giá', allowedRoles: ['USER'] },
+                { type: 'PROMOTION' as const, label: 'Bài viết quảng cáo', allowedRoles: ['MERCHANT'] },
+                { type: 'ANNOUNCEMENT' as const, label: 'Thông báo hệ thống', allowedRoles: ['ADMIN'] }
+              ]
+                // Bộ lọc: Chỉ giữ lại những nút bấm phù hợp với Role hiện tại của người dùng
+                .filter((item) => item.allowedRoles.includes(userRole || 'USER'))
+                .map((item) => (
+                  <Button
+                    key={item.type}
+                    type="button"
+                    onClick={() => setPostType(item.type)}
+                    className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all ${postType === item.type
                       ? 'border-primary bg-primary/10 text-primary shadow-sm'
                       : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-900/50'
-                  }`}
-                  variant="none"
-                  size="none"
-                >
-                  {item.label}
-                </Button>
-              ))}
+                      }`}
+                    variant="none"
+                    size="none"
+                  >
+                    {item.label}
+                  </Button>
+                ))}
             </div>
           </div>
+
 
           {/* Title */}
           <div>
@@ -234,67 +292,106 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
             </div>
           )}
 
-          {/* Image URL Input */}
+          {/* Image Uploader */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <ImageIcon size={14} />
-              {LABELS.SOCIAL.IMAGE_LABEL}
+              Ảnh bài đăng
             </label>
-            <Input
-              type="text"
-              className="form-input w-full"
-              placeholder={LABELS.SOCIAL.IMAGE_URL_PLACEHOLDER}
-              value={imageUrl}
-              onChange={(e) => setImageUrl((e.target as HTMLInputElement).value)}
+            <PostImageUploader
+              images={images}
+              onChange={setImages}
               disabled={loading}
-              variant="none"
             />
           </div>
 
-          {/* Linking Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Restaurant Link */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Store size={14} />
-                {LABELS.SOCIAL.SELECT_RESTAURANT}
-              </label>
-              <select
-                className="form-input bg-none"
-                value={selectedRestaurantId}
-                onChange={(e) => setSelectedRestaurantId(e.target.value)}
-                disabled={loading}
-              >
-                <option value="">{LABELS.SOCIAL.NO_LINK_OPTION}</option>
-                {restaurants.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Linking Section - Hidden for NORMAL posts */}
+          {postType !== 'NORMAL' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Restaurant Link */}
+              <div className="relative">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Store size={14} />
+                  {LABELS.SOCIAL.SELECT_RESTAURANT}
+                </label>
+                <div 
+                  className="relative"
+                  onFocus={() => setShowRestaurantDropdown(true)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget)) {
+                      setShowRestaurantDropdown(false);
+                      if (!selectedRestaurantId) setRestaurantSearch('');
+                    }
+                  }}
+                >
+                  <Input
+                    variant="none"
+                    className="form-input w-full bg-none cursor-pointer"
+                    placeholder="-- Tìm kiếm hoặc chọn quán --"
+                    value={restaurantSearch}
+                    onChange={(e) => {
+                      setRestaurantSearch((e.target as HTMLInputElement).value);
+                      setSelectedRestaurantId('');
+                      setShowRestaurantDropdown(true);
+                    }}
+                    disabled={loading}
+                  />
+                  {showRestaurantDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                      <button
+                        type="button"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setSelectedRestaurantId('');
+                          setRestaurantSearch('');
+                          setShowRestaurantDropdown(false);
+                        }}
+                      >
+                        -- Không liên kết --
+                      </button>
+                      {restaurants
+                        .filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase()))
+                        .slice(0, 5)
+                        .map((r) => (
+                          <button
+                            key={r.id}
+                            type="button"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setSelectedRestaurantId(r.id.toString());
+                              setRestaurantSearch(r.name);
+                              setShowRestaurantDropdown(false);
+                            }}
+                          >
+                            {r.name}
+                          </button>
+                      ))}
+                      {restaurants.filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-2 text-sm text-gray-400 italic">Không tìm thấy quán nào đã theo dõi</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            {/* Food Link */}
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Utensils size={14} />
-                {LABELS.SOCIAL.SELECT_FOOD}
-              </label>
-              <select
-                className="form-input bg-none"
-                value={selectedFoodId}
-                onChange={(e) => setSelectedFoodId(e.target.value)}
-                disabled={loading}
-              >
-                <option value="">{LABELS.SOCIAL.NO_LINK_OPTION}</option>
-                {foods.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
+              {/* Food Link */}
+              <div className="relative">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Utensils size={14} />
+                  {LABELS.SOCIAL.SELECT_FOOD}
+                </label>
+                <FoodSelectAutocomplete
+                  foods={foods}
+                  selectedFoodId={selectedFoodId}
+                  onSelectFood={(id, name) => setSelectedFoodId(id)}
+                  disabled={loading || !selectedRestaurantId}
+                  placeholder={!selectedRestaurantId ? "Vui lòng chọn quán trước" : "-- Tìm kiếm món ăn --"}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Footer Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">

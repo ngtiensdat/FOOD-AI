@@ -2,20 +2,41 @@
 // Ý nghĩa: Tách biệt phần UI hiển thị khỏi PostCard.tsx. Chứa logic dẫn đến trang chi tiết món ăn/nhà hàng.
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, MapPin, Utensils } from 'lucide-react';
 import { Avatar } from '@/components/base/Avatar';
-import SafeImage from '@/components/base/SafeImage';
-import { LABELS } from '@/constants/labels';
+import { PostImageViewer } from './PostImageViewer';
 import { PostData } from '../PostCard';
 
 interface PostContentProps {
   post: PostData;
 }
 
+/**
+ * Gom tất cả ảnh của bài đăng thành một mảng hợp nhất.
+ * Ưu tiên mảng `images`, fallback về `image` đơn lẻ. Loại bỏ trùng và rỗng.
+ */
+function resolvePostImages(image?: string | null, images?: string[]): string[] {
+  if (images && images.length > 0) {
+    const all = image ? [image, ...images.filter((u) => u !== image)] : images;
+    return all.filter(Boolean);
+  }
+  return image ? [image] : [];
+}
+
 export function PostContent({ post }: PostContentProps) {
   const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const allImages = resolvePostImages(post.image, post.images);
+  const isLongContent = post.content && (post.content.length > 150 || post.content.split('\n').length > 3);
+
+  const sharedImages = (() => {
+    if (!post.sharedFrom) return [];
+    const sf = post.sharedFrom as { image?: string | null; images?: string[] };
+    return resolvePostImages(sf.image, sf.images);
+  })();
 
   return (
     <>
@@ -23,20 +44,16 @@ export function PostContent({ post }: PostContentProps) {
         <div className="border border-gray-100 dark:border-slate-800 rounded-2xl p-4 bg-gray-50/50 dark:bg-slate-900/30 space-y-4">
           {/* Original Author Header */}
           <div className="flex items-center gap-2">
-            <div 
+            <div
               onClick={() => {
-                if (post.sharedFrom?.id) {
-                  router.push(`/profile?id=${post.sharedFrom.id}`);
-                }
+                if (post.sharedFrom?.id) router.push(`/profile?id=${post.sharedFrom.id}`);
               }}
-              className={`flex items-center gap-2 ${post.sharedFrom?.id ? 'cursor-pointer group/orig-author' : ''}`}
+              className={`flex items-center gap-2 ${post.sharedFrom?.id ? 'cursor-pointer' : ''}`}
             >
               <Avatar src={post.sharedFrom?.avatar} name={post.sharedFrom?.name || ''} size={28} />
-              <div>
-                <span className="font-extrabold text-gray-800 dark:text-slate-200 text-xs hover:text-primary transition-colors block">
-                  {post.sharedFrom?.name}
-                </span>
-              </div>
+              <span className="font-extrabold text-gray-800 dark:text-slate-200 text-xs hover:text-primary transition-colors">
+                {post.sharedFrom?.name}
+              </span>
             </div>
           </div>
 
@@ -66,22 +83,24 @@ export function PostContent({ post }: PostContentProps) {
 
           {/* Original Title & Body */}
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 leading-tight">{post.title}</h4>
-            <p className="text-xs text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+            <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 leading-tight break-words">
+              {post.title}
+            </h4>
+            <p className={`text-xs text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words ${!isExpanded ? 'line-clamp-3' : ''}`}>
+              {post.content}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                className="text-[11px] font-bold text-primary hover:underline mt-1"
+              >
+                {isExpanded ? 'Thu gọn' : 'Xem thêm'}
+              </button>
+            )}
           </div>
 
-          {/* Original Post Image */}
-          {post.image && (
-            <div className="relative w-full h-48 md:h-64 rounded-xl overflow-hidden shadow-inner bg-gray-100 dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <SafeImage
-                src={post.image}
-                alt={post.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 80vw"
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Shared post images */}
+          {sharedImages.length > 0 && <PostImageViewer images={sharedImages} />}
         </div>
       ) : (
         <>
@@ -111,22 +130,22 @@ export function PostContent({ post }: PostContentProps) {
 
           {/* Title & Body */}
           <div className="space-y-2">
-            <h4 className="text-body font-black text-gray-900 leading-tight">{post.title}</h4>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+            <h4 className="text-body font-black text-gray-900 leading-tight break-words">{post.title}</h4>
+            <p className={`text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words ${!isExpanded ? 'line-clamp-3' : ''}`}>
+              {post.content}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                className="text-xs font-bold text-primary hover:underline mt-1"
+              >
+                {isExpanded ? 'Thu gọn' : 'Xem thêm'}
+              </button>
+            )}
           </div>
 
-          {/* Post Image */}
-          {post.image && (
-            <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-inner bg-gray-100 dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-              <SafeImage
-                src={post.image}
-                alt={post.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 80vw"
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Post images — inline viewer */}
+          {allImages.length > 0 && <PostImageViewer images={allImages} />}
         </>
       )}
     </>

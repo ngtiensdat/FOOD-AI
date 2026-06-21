@@ -43,6 +43,7 @@ export const useHomeData = (city?: string, district?: string) => {
 
   // Reset cache when location changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasLoaded({
       recommended: false,
       today: false,

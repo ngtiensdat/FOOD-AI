@@ -14,12 +14,31 @@ import { UserRepository } from './user.repository';
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
 import { MESSAGES } from '../../common/constants/messages.constant';
+import { MediaService } from '../media/media.service';
+
+function extractPublicId(url: string): string | null {
+  if (!url || !url.includes('res.cloudinary.com')) return null;
+  try {
+    const parts = url.split('/image/upload/');
+    if (parts.length < 2) return null;
+    const pathParts = parts[1].split('/');
+    if (pathParts[0].match(/^v\d+$/)) pathParts.shift();
+    const remainingPath = pathParts.join('/');
+    const dotIndex = remainingPath.lastIndexOf('.');
+    return dotIndex !== -1
+      ? remainingPath.substring(0, dotIndex)
+      : remainingPath;
+  } catch {
+    return null;
+  }
+}
 
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
     private prisma: PrismaService,
+    private mediaService: MediaService,
   ) {}
 
   async getProfile(targetId: number, requesterId?: number) {
@@ -61,6 +80,13 @@ export class UserService {
       address: data.address,
       workAt: data.workAt,
     };
+
+    const oldProfile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: { avatar: true, coverImage: true },
+    });
+    const oldAvatar = oldProfile?.avatar;
+    const oldCoverImage = oldProfile?.coverImage;
 
     if (data.preferences !== undefined) {
       const existingProfile = await this.prisma.userProfile.findUnique({
@@ -125,6 +151,25 @@ export class UserService {
         }
       }
     });
+
+    // 4. Xóa ảnh cũ trên Cloudinary để tiết kiệm dung lượng
+    if (data.avatar && oldAvatar && data.avatar !== oldAvatar) {
+      const publicId = extractPublicId(oldAvatar);
+      if (publicId) {
+        this.mediaService
+          .deleteImage(publicId)
+          .catch((err) => console.error('Lỗi xóa avatar cũ:', err));
+      }
+    }
+
+    if (data.coverImage && oldCoverImage && data.coverImage !== oldCoverImage) {
+      const publicId = extractPublicId(oldCoverImage);
+      if (publicId) {
+        this.mediaService
+          .deleteImage(publicId)
+          .catch((err) => console.error('Lỗi xóa cover cũ:', err));
+      }
+    }
 
     return { message: MESSAGES.USER.UPDATE_SUCCESS };
   }

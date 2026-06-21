@@ -26,5 +26,8 @@ export const appConfig = () => {
     mailUser: process.env.MAIL_USER || '',
     mailPass: process.env.MAIL_PASS || '',
     mailFrom: process.env.MAIL_FROM || 'noreply@foodai.com',
+    cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || '',
+    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || '',
   };
 };

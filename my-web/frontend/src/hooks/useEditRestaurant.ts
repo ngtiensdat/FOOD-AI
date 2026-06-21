@@ -3,6 +3,8 @@ import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 interface UseEditRestaurantProps {
   restaurant: Restaurant | null | undefined;
   isOpen: boolean;

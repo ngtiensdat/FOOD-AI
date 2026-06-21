@@ -80,7 +80,9 @@ export const useProfileData = (targetId?: string | null) => {
     }
     
     // Đóng modals tự động khi id profile mục tiêu thay đổi
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowFollowersModal(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowFollowingModal(false);
 
     return () => {

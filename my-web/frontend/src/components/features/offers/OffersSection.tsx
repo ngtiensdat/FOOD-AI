@@ -10,6 +10,9 @@ import { LABELS } from '@/constants/labels';
 import { offerService } from '@/services/offer.service';
 import { useAuth } from '@/hooks/useAuth';
 import { User, UserRole } from '@/types/user';
+import { ImageUploader } from '@/components/base/ImageUploader';
+import { FoodSelectAutocomplete, LinkableFood } from '@/components/base/FoodSelectAutocomplete';
+import { restaurantService } from '@/services/restaurant.service';
 
 interface OfferData {
   id: number;
@@ -40,6 +43,9 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
   const [validUntil, setValidUntil] = useState('');
   const [description, setDescription] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [customImage, setCustomImage] = useState('');
+  const [selectedFoodId, setSelectedFoodId] = useState('');
+  const [foods, setFoods] = useState<LinkableFood[]>([]);
   const [filterType, setFilterType] = useState<string>('ALL');
 
   useEffect(() => {
@@ -63,6 +69,15 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
 
   const { isRestaurant } = useAuth();
   const isMerchant = isRestaurant;
+
+  // Load menu foods when merchant opens modal
+  useEffect(() => {
+    if (isMerchant && user?.id && isOpenModal) {
+      restaurantService.getPublicRestaurantFoods(user.id, undefined, 1, 100)
+        .then(res => setFoods(res.items || []))
+        .catch(console.error);
+    }
+  }, [isMerchant, user?.id, isOpenModal]);
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +110,7 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
         discountValue: discountValue.trim(),
         restaurantName: user?.name || LABELS.OFFERS.FORM.MERCHANT_FALLBACK,
         restaurantId: user?.id,
-        image: selectedTemplate || LABELS.OFFERS.DEFAULT_TEMPLATES[0].url,
+        image: customImage || selectedTemplate || LABELS.OFFERS.DEFAULT_TEMPLATES[0].url,
         validUntil: formattedDate,
       });
 
@@ -109,6 +124,8 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
       setValidUntil('');
       setDescription('');
       setSelectedTemplate(LABELS.OFFERS.DEFAULT_TEMPLATES[0].url);
+      setCustomImage('');
+      setSelectedFoodId('');
       setIsOpenModal(false);
     } catch (err: unknown) {
       console.error(err);
@@ -402,35 +419,49 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 />
               </div>
 
-              {/* Template Image Select */}
-              <div className="space-y-2">
+              {/* Image Selection Section */}
+              <div className="space-y-4">
                 <label className="block text-gray-400">{LABELS.OFFERS.FORM.IMAGE_LABEL}</label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {LABELS.OFFERS.DEFAULT_TEMPLATES.map((tpl: { name: string; url: string }) => (
-                    <div
-                      key={tpl.name}
-                      onClick={() => setSelectedTemplate(tpl.url)}
-                      className={`relative h-20 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
-                        selectedTemplate === tpl.url
-                          ? 'border-primary ring-2 ring-primary/20 scale-95'
-                          : 'border-transparent hover:scale-95'
-                      }`}
-                    >
-                      <SafeImage
-                        src={tpl.url}
-                        alt={tpl.name}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-end p-1">
-                        <span className="text-[8px] font-black text-white truncate w-full leading-normal">
-                          {tpl.name}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
+                  {/* Option 1: Upload Manual Image */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">1</div>
+                      Tải ảnh lên thủ công
+                    </span>
+                    <ImageUploader 
+                      uploadType="post-image" 
+                      currentUrl={customImage && customImage !== selectedTemplate ? customImage : undefined} 
+                      onUploaded={(url) => { 
+                        setCustomImage(url); 
+                        setSelectedFoodId(''); 
+                        setSelectedTemplate(''); 
+                      }} 
+                    />
+                  </div>
+
+                  {/* Option 2: Select Food */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">2</div>
+                      Hoặc chọn Món ăn
+                    </span>
+                    <FoodSelectAutocomplete
+                      foods={foods}
+                      selectedFoodId={selectedFoodId}
+                      onSelectFood={(id, name, image) => {
+                        setSelectedFoodId(id);
+                        if (image) setCustomImage(image);
+                        setSelectedTemplate('');
+                      }}
+                      disabled={foods.length === 0}
+                      placeholder={foods.length === 0 ? "Chưa có món ăn nào trong thực đơn" : "-- Tìm kiếm món ăn --"}
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1 italic">Ảnh của món ăn sẽ được tự động làm ảnh bìa cho Ưu đãi nếu món đó có ảnh.</p>
+                  </div>
                 </div>
+
               </div>
 
               {/* Submit */}

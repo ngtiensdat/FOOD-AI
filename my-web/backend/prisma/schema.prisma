@@ -194,6 +194,7 @@ model Post {
   title        String?
   content      String?
   image        String?
+  images       String[]    @default([]) @map("images")
   rating       Int?
   postType     PostType    @default(NORMAL)
   status       PostStatus  @default(APPROVED)
@@ -382,6 +383,7 @@ enum PostType {
   NORMAL
   REVIEW
   PROMOTION
+  ANNOUNCEMENT
 }
 
 enum ReportStatus {

@@ -9,6 +9,7 @@ import { PostHeader } from './post-card/PostHeader';
 import { PostContent } from './post-card/PostContent';
 import { PostActions } from './post-card/PostActions';
 import { CommentsSection } from './post-card/CommentsSection';
+import { ConfirmModal } from '@/components/base/ConfirmModal';
 
 export interface ReplyData {
   id: number;
@@ -36,6 +37,7 @@ export interface PostData {
   postType: 'NORMAL' | 'REVIEW' | 'PROMOTION';
   rating?: number | null;
   image?: string | null;
+  images?: string[];
   createdAt: string;
   likesCount: number;
   commentsCount: number;
@@ -101,13 +103,32 @@ export function PostCard({
   const [newCommentText, setNewCommentText] = useState('');
   const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [localPost, setLocalPost] = useState(post);
+
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [replyToDelete, setReplyToDelete] = useState<{ commentId: number; replyId: number } | null>(null);
+
+  const totalCommentsCount = React.useMemo(() => {
+    let count = comments.length;
+    comments.forEach((c) => {
+      if (c.replies) {
+        count += c.replies.length;
+      }
+    });
+    return count;
+  }, [comments]);
 
   useEffect(() => {
     setIsLiked(post.isLiked);
     setLikesCount(post.likesCount);
     setComments(post.comments);
     setIsSaved(post.isSaved || false);
+    setLocalPost(post);
   }, [post.isLiked, post.likesCount, post.comments, post.isSaved]);
+
+  const handlePostUpdated = (updated: Partial<PostData>) => {
+    setLocalPost((prev) => ({ ...prev, ...updated }));
+  };
 
   useEffect(() => {
     const handleHashCheck = () => {
@@ -153,11 +174,17 @@ export function PostCard({
   };
 
   const handleDeleteCommentClick = (commentId: number) => {
-    const updated = comments.filter(c => c.id !== commentId);
+    setCommentToDelete(commentId);
+  };
+
+  const confirmDeleteComment = () => {
+    if (commentToDelete === null) return;
+    const updated = comments.filter(c => c.id !== commentToDelete);
     setComments(updated);
     if (onDeleteComment) {
-      onDeleteComment(post.id, commentId);
+      onDeleteComment(post.id, commentToDelete);
     }
+    setCommentToDelete(null);
   };
 
   const handleReportPost = () => {
@@ -232,6 +259,12 @@ export function PostCard({
   }, [replyText, me, comments, post.id, onReplyComment]);
 
   const handleDeleteReplyClick = (commentId: number, replyId: number) => {
+    setReplyToDelete({ commentId, replyId });
+  };
+
+  const confirmDeleteReply = () => {
+    if (replyToDelete === null) return;
+    const { commentId, replyId } = replyToDelete;
     const updated = comments.map(c => {
       if (c.id === commentId) {
         return {
@@ -245,26 +278,28 @@ export function PostCard({
     if (onDeleteReply) {
       onDeleteReply(post.id, commentId, replyId);
     }
+    setReplyToDelete(null);
   };
 
   return (
-    <article id={`post-${post.id}`} className="card-premium p-6 space-y-4 fade-in">
+    <article id={`post-${post.id}`} className="card-premium p-6 space-y-4 fade-in relative hover:z-[60] focus-within:z-[60]">
       <PostHeader
-        post={post}
+        post={localPost}
         me={me}
         isOwner={isOwner}
         isSaved={isSaved}
         handleSavePost={handleSavePost}
         handleReportPost={handleReportPost}
         onDeletePost={onDeletePost}
+        onPostUpdated={handlePostUpdated}
       />
 
-      <PostContent post={post} />
+      <PostContent post={localPost} />
 
       <PostActions
         isLiked={isLiked}
         likesCount={likesCount}
-        commentsCount={comments.length}
+        commentsCount={totalCommentsCount}
         showComments={showComments}
         handleLikeToggle={handleLikeToggle}
         setShowComments={setShowComments}
@@ -290,6 +325,28 @@ export function PostCard({
           onReport={onReport}
         />
       )}
+
+      {/* Confirm Delete Comment Modal */}
+      <ConfirmModal
+        isOpen={commentToDelete !== null}
+        title={LABELS.SOCIAL.DELETE_COMMENT || 'Xóa bình luận'}
+        message={LABELS.SOCIAL.TOAST.COMMENT_DELETE_CONFIRM}
+        confirmText={LABELS.COMMON.DELETE}
+        variant="danger"
+        onConfirm={confirmDeleteComment}
+        onCancel={() => setCommentToDelete(null)}
+      />
+
+      {/* Confirm Delete Reply Modal */}
+      <ConfirmModal
+        isOpen={replyToDelete !== null}
+        title={LABELS.SOCIAL.DELETE_REPLY || 'Xóa phản hồi'}
+        message={LABELS.SOCIAL.TOAST.REPLY_DELETE_CONFIRM}
+        confirmText={LABELS.COMMON.DELETE}
+        variant="danger"
+        onConfirm={confirmDeleteReply}
+        onCancel={() => setReplyToDelete(null)}
+      />
     </article>
   );
 }

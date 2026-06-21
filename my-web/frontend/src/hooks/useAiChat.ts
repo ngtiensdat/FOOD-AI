@@ -4,6 +4,7 @@
 // Design Pattern: Custom Hook pattern, Separation of Concerns (SoC).
 // Biến, hàm đặc biệt: useAiChat, sendDirectMessage, handleCreateNewChat, handleDeleteChat, handleFeedback.
 import { useState, useEffect, useRef, useCallback } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
 import { aiService } from '@/services/ai.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';

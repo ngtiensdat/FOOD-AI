@@ -47,6 +47,7 @@ export const useExploreActions = () => {
 
   // Reset trang về 1 ngay khi bộ lọc thay đổi (không bị trễ)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery]);
 

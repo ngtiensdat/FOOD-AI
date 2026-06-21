@@ -11,10 +11,12 @@ import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { Input } from '@/components/base/Input';
 
+import { userService } from '@/services/user.service';
+
 interface ProfileSettingsTabProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
-  profileData: { profile?: { preferences?: { showFollowList?: boolean; showPersonalInfo?: boolean } }; [key: string]: unknown } | null;
-  setProfileData: React.Dispatch<React.SetStateAction<{ profile?: { preferences?: { showFollowList?: boolean } }; [key: string]: unknown } | null>>;
+  profileData: { profile?: { preferences?: Record<string, unknown> }; [key: string]: unknown } | null;
+  setProfileData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 /** Key localStorage cho từng trường thông tin cá nhân */
@@ -36,6 +38,29 @@ export function getPrivacyValue(key: keyof typeof PRIVACY_KEYS): boolean {
   return stored !== null ? JSON.parse(stored) : true;
 }
 
+/**
+ * Giải quyết giá trị ẩn/hiện thông tin cá nhân dựa trên preferences từ Database,
+ * và fallback về localStorage nếu là chủ sở hữu (owner).
+ */
+export function resolvePrivacyValue(
+  key: keyof typeof PRIVACY_KEYS,
+  profilePreferences: Record<string, unknown> | null | undefined,
+  isOwner: boolean
+): boolean {
+  // 1. Kiểm tra trong preferences từ DB (do server trả về)
+  if (profilePreferences && profilePreferences[key] !== undefined) {
+    return profilePreferences[key] === true;
+  }
+  
+  // 2. Nếu là chủ sở hữu và chưa có trên DB, đọc từ localStorage làm fallback
+  if (isOwner) {
+    return getPrivacyValue(key);
+  }
+  
+  // 3. Mặc định là hiển thị nếu không có cấu hình và là khách xem
+  return true;
+}
+
 export const ProfileSettingsTab = ({
   user,
   profileData,
@@ -54,24 +79,72 @@ export const ProfileSettingsTab = ({
   ];
 
   // State cho từng toggle nguyên tử
-  const [privacyState, setPrivacyState] = React.useState(() => ({
-    showLevel: getPrivacyValue('showLevel'),
-    showBadge: getPrivacyValue('showBadge'),
-    showPoints: getPrivacyValue('showPoints'),
-    showXpBar: getPrivacyValue('showXpBar'),
-    showFollowList: getPrivacyValue('showFollowList'),
-    showEmail: getPrivacyValue('showEmail'),
-    showPhone: getPrivacyValue('showPhone'),
-    showAddress: getPrivacyValue('showAddress'),
-  }));
+  const [privacyState, setPrivacyState] = React.useState(() => {
+    const dbPrefs = profileData?.profile?.preferences;
+    return {
+      showLevel: dbPrefs?.showLevel !== undefined ? dbPrefs.showLevel === true : getPrivacyValue('showLevel'),
+      showBadge: dbPrefs?.showBadge !== undefined ? dbPrefs.showBadge === true : getPrivacyValue('showBadge'),
+      showPoints: dbPrefs?.showPoints !== undefined ? dbPrefs.showPoints === true : getPrivacyValue('showPoints'),
+      showXpBar: dbPrefs?.showXpBar !== undefined ? dbPrefs.showXpBar === true : getPrivacyValue('showXpBar'),
+      showFollowList: dbPrefs?.showFollowList !== undefined ? dbPrefs.showFollowList === true : getPrivacyValue('showFollowList'),
+      showEmail: dbPrefs?.showEmail !== undefined ? dbPrefs.showEmail === true : getPrivacyValue('showEmail'),
+      showPhone: dbPrefs?.showPhone !== undefined ? dbPrefs.showPhone === true : getPrivacyValue('showPhone'),
+      showAddress: dbPrefs?.showAddress !== undefined ? dbPrefs.showAddress === true : getPrivacyValue('showAddress'),
+    };
+  });
+
+  React.useEffect(() => {
+    if (profileData?.profile) {
+      const dbPrefs = profileData.profile.preferences;
+      setPrivacyState({
+        showLevel: dbPrefs?.showLevel !== undefined ? dbPrefs.showLevel === true : getPrivacyValue('showLevel'),
+        showBadge: dbPrefs?.showBadge !== undefined ? dbPrefs.showBadge === true : getPrivacyValue('showBadge'),
+        showPoints: dbPrefs?.showPoints !== undefined ? dbPrefs.showPoints === true : getPrivacyValue('showPoints'),
+        showXpBar: dbPrefs?.showXpBar !== undefined ? dbPrefs.showXpBar === true : getPrivacyValue('showXpBar'),
+        showFollowList: dbPrefs?.showFollowList !== undefined ? dbPrefs.showFollowList === true : getPrivacyValue('showFollowList'),
+        showEmail: dbPrefs?.showEmail !== undefined ? dbPrefs.showEmail === true : getPrivacyValue('showEmail'),
+        showPhone: dbPrefs?.showPhone !== undefined ? dbPrefs.showPhone === true : getPrivacyValue('showPhone'),
+        showAddress: dbPrefs?.showAddress !== undefined ? dbPrefs.showAddress === true : getPrivacyValue('showAddress'),
+      });
+    }
+  }, [profileData]);
 
   /** Toggle một trường cụ thể */
-  const handleToggleField = (key: keyof typeof PRIVACY_KEYS) => {
+  const handleToggleField = async (key: keyof typeof PRIVACY_KEYS) => {
     const newValue = !privacyState[key];
     localStorage.setItem(PRIVACY_KEYS[key], JSON.stringify(newValue));
     setPrivacyState(prev => ({ ...prev, [key]: newValue }));
-    const field = fields.find(f => f.key === key);
-    toast.success(LABELS.SETTINGS.PROFILE.PRIVACY_TOAST_SUCCESS(field?.label || '', newValue));
+
+    try {
+      const dbPrefs = profileData?.profile?.preferences || {};
+      const updatedPrefs = {
+        ...dbPrefs,
+        [key]: newValue,
+      };
+
+      await userService.updateProfile({
+        preferences: updatedPrefs,
+      });
+
+      setProfileData((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          profile: {
+            ...prev.profile,
+            preferences: updatedPrefs,
+          },
+        };
+      });
+
+      const field = fields.find(f => f.key === key);
+      toast.success(LABELS.SETTINGS.PROFILE.PRIVACY_TOAST_SUCCESS(field?.label || '', newValue));
+    } catch (err) {
+      console.error('Lỗi khi lưu thiết lập riêng tư:', err);
+      toast.error('Không thể lưu thiết lập riêng tư lên server.');
+      setPrivacyState(prev => ({ ...prev, [key]: !newValue }));
+      localStorage.setItem(PRIVACY_KEYS[key], JSON.stringify(!newValue));
+    }
   };
 
   return (

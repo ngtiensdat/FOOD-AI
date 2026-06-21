@@ -26,6 +26,7 @@ import { ReportModule } from './modules/report/report.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { BugReportModule } from './modules/bug-report/bug-report.module';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     ReportModule,
     NotificationModule,
     BugReportModule,
+    MediaModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

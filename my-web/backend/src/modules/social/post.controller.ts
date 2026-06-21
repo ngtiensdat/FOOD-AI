@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -24,9 +25,17 @@ export class PostController {
   async getPosts(
     @GetUser('id') viewerId?: number,
     @Query('authorId') authorIdStr?: string,
+    @Query('_t') timestamp?: string,
   ) {
     const authorId = authorIdStr ? parseInt(authorIdStr) : undefined;
-    return this.postService.getAllPosts(viewerId, authorId);
+    const noCache = !!timestamp; // bypass cache khi có timestamp
+    return this.postService.getAllPosts(
+      viewerId,
+      authorId,
+      1,
+      undefined,
+      noCache,
+    );
   }
 
   @Post()
@@ -38,6 +47,7 @@ export class PostController {
       title?: string;
       content?: string;
       image?: string;
+      images?: string[];
       rating?: number;
       postType?: PostType;
       restaurantId?: number;
@@ -101,5 +111,26 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   async getSaved(@GetUser('id') userId: number) {
     return this.postService.getSavedPosts(userId);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async updatePost(
+    @GetUser('id') userId: number,
+    @GetUser('role') role: UserRole,
+    @Param('id', ParseIntPipe) postId: number,
+    @Body()
+    dto: {
+      title?: string;
+      content?: string;
+      image?: string;
+      images?: string[];
+      rating?: number;
+      postType?: PostType;
+      restaurantId?: number;
+      foodId?: number;
+    },
+  ) {
+    return this.postService.updatePost(userId, role, postId, dto);
   }
 }

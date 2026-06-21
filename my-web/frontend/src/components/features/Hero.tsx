@@ -176,6 +176,7 @@ export const Hero = ({
           <div className="flex items-center gap-2 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-full px-4 py-2.5 text-slate-700 dark:text-slate-200 shadow-sm w-1/2">
             <MapPin size={16} className="text-primary shrink-0 animate-bounce" />
             <select
+              suppressHydrationWarning
               value={selectedCity}
               onChange={(e) => onCityChange(e.target.value)}
               className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
@@ -191,6 +192,7 @@ export const Hero = ({
           <div className="flex items-center gap-2 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-full px-4 py-2.5 text-slate-700 dark:text-slate-200 shadow-sm w-1/2">
             <MapPin size={16} className="text-primary shrink-0 animate-bounce" />
             <select
+              suppressHydrationWarning
               value={selectedDistrict}
               onChange={(e) => onDistrictChange(e.target.value)}
               className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
