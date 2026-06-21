@@ -112,6 +112,21 @@ export const useProfileData = (targetId?: string | null) => {
 
   const updateProfile = async () => {
     if (!profile?.id) return;
+
+    if (editData.name) {
+      if (editData.name.trim().length < 2) {
+        toast.error(LABELS.FORM.NAME_REQUIRED);
+        return;
+      }
+      if (/\d/.test(editData.name)) {
+        toast.error(LABELS.FORM.NAME_INVALID);
+        return;
+      }
+    } else {
+      toast.error(LABELS.FORM.NAME_REQUIRED);
+      return;
+    }
+
     setLoading(true);
     try {
       const { city, district, street, ...payload } = editData;

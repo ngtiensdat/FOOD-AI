@@ -81,6 +81,17 @@ export function useSettings({
   const onPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (newPassword.length < 8) {
+      toast.error(LABELS.FORM.PASSWORD_INVALID);
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      toast.error(LABELS.FORM.PASSWORD_INVALID);
+      return;
+    }
+
     if (newPassword !== confirmNewPassword) {
       toast.error(LABELS.SETTINGS.SECURITY.MISMATCH);
       return;

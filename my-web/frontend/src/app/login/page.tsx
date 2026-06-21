@@ -24,7 +24,8 @@ export default function LoginPage() {
     showPassword, setShowPassword,
     errors,
     isLoading,
-    handleLogin
+    handleLogin,
+    handleBlur,
   } = useLoginActions();
 
   return (
@@ -65,6 +66,7 @@ export default function LoginPage() {
               placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur('email')}
               error={errors.email}
             />
 
@@ -77,6 +79,7 @@ export default function LoginPage() {
                 placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => handleBlur('password')}
                 error={errors.password}
                 className="pr-12"
               />

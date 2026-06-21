@@ -11,6 +11,7 @@ import {
   MinLength,
   IsOptional,
   IsEnum,
+  Matches,
 } from 'class-validator';
 import { UserRole } from '@prisma/client';
 import { MESSAGES } from '../../../common/constants/messages.constant';
@@ -22,10 +23,14 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: () => MESSAGES.VALIDATION.PASSWORD_REQUIRED })
   @MinLength(8, { message: () => MESSAGES.VALIDATION.PASSWORD_MIN_LENGTH })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
+    message: () => MESSAGES.VALIDATION.PASSWORD_INVALID,
+  })
   password: string;
 
   @IsString()
   @IsNotEmpty({ message: () => MESSAGES.VALIDATION.NAME_REQUIRED })
+  @Matches(/^[^0-9]*$/, { message: () => MESSAGES.VALIDATION.NAME_INVALID })
   name: string;
 
   @IsEnum(UserRole)

@@ -12,7 +12,8 @@ export const loginSchema = z.object({
 
 export const registerSchema = z.object({
   name: z.string()
-    .min(2, LABELS.FORM.NAME_REQUIRED),
+    .min(2, LABELS.FORM.NAME_REQUIRED)
+    .regex(/^[^0-9]*$/, LABELS.FORM.NAME_INVALID),
   email: z.string()
     .min(1, LABELS.FORM.EMAIL_REQUIRED)
     .email(LABELS.FORM.EMAIL_INVALID),

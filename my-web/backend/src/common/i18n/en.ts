@@ -102,7 +102,11 @@ export const en = {
     EMAIL_INVALID: 'Invalid email format',
     PASSWORD_REQUIRED: 'Password cannot be empty',
     PASSWORD_MIN_LENGTH: 'Password must be at least 8 characters long',
+    PASSWORD_INVALID:
+      'Password must be at least 8 characters long, containing both letters and numbers',
     NAME_REQUIRED: 'Name cannot be empty',
+    NAME_MIN_LENGTH: 'Name must be at least 2 characters long',
+    NAME_INVALID: 'Name must not contain numbers',
     OLD_PASSWORD_REQUIRED: 'Old password cannot be empty',
     NEW_PASSWORD_REQUIRED: 'New password cannot be empty',
     NEW_PASSWORD_MIN_LENGTH: 'New password must be at least 8 characters long',

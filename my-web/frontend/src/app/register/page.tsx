@@ -26,7 +26,8 @@ export default function RegisterPage() {
     errors,
     successMessage,
     isLoading,
-    handleRegister
+    handleRegister,
+    handleBlur,
   } = useRegisterActions();
 
   return (
@@ -112,6 +113,7 @@ export default function RegisterPage() {
                   placeholder={LABELS.FORM.PLACEHOLDERS.NAME}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onBlur={() => handleBlur('name')}
                   error={errors.name}
                 />
 
@@ -123,6 +125,7 @@ export default function RegisterPage() {
                   placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => handleBlur('email')}
                   error={errors.email}
                 />
 
@@ -135,6 +138,7 @@ export default function RegisterPage() {
                     placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onBlur={() => handleBlur('password')}
                     error={errors.password}
                     className="pr-12"
                   />
@@ -159,6 +163,7 @@ export default function RegisterPage() {
                     placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onBlur={() => handleBlur('confirmPassword')}
                     error={errors.confirmPassword}
                     className="pr-12"
                   />
@@ -183,6 +188,7 @@ export default function RegisterPage() {
                       placeholder={LABELS.AUTH.LEGAL_DOCS_PLACEHOLDER}
                       value={legalDocuments}
                       onChange={(e) => setLegalDocuments(e.target.value)}
+                      onBlur={() => handleBlur('legalDocuments')}
                       error={errors.legalDocuments}
                     />
                   </motion.div>

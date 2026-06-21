@@ -5,7 +5,7 @@
 // Các chức năng đặc biệt: Validate form bằng Zod schema, hiển thị lỗi động, set user vào Zustand store.
 // Các biến, hàm đặc biệt: ApiError, handleLogin, validate.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
@@ -23,28 +23,35 @@ export const useLoginActions = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const validate = () => {
-    const result = loginSchema.safeParse({ email, password });
+  const validate = (currentEmail = email, currentPassword = password, forceCheckAll = false) => {
+    const result = loginSchema.safeParse({ email: currentEmail, password: currentPassword });
+    const newErrors: Record<string, string> = {};
     if (!result.success) {
-      const newErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
-        const path = issue.path[0];
-        if (path) {
-          newErrors[path as string] = issue.message;
+        const path = issue.path[0] as string;
+        if (path && (forceCheckAll || touched[path])) {
+          newErrors[path] = issue.message;
         }
       });
-      setErrors(newErrors);
-      return false;
     }
-    setErrors({});
-    return true;
+    setErrors(newErrors);
+    return result.success;
   };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  useEffect(() => {
+    validate(email, password, false);
+  }, [email, password, touched]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate(email, password, true)) return;
 
     setIsLoading(true);
     try {
@@ -75,6 +82,7 @@ export const useLoginActions = () => {
     showPassword, setShowPassword,
     errors,
     isLoading,
-    handleLogin
+    handleLogin,
+    handleBlur,
   };
 };

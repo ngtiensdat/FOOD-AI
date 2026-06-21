@@ -337,8 +337,20 @@ export const MESSAGES = {
         'Mật khẩu phải có ít nhất 8 ký tự',
       );
     },
+    get PASSWORD_INVALID() {
+      return t(
+        'VALIDATION.PASSWORD_INVALID',
+        'Mật khẩu phải từ 8 ký tự, gồm cả chữ và số',
+      );
+    },
     get NAME_REQUIRED() {
       return t('VALIDATION.NAME_REQUIRED', 'Tên không được để trống');
+    },
+    get NAME_MIN_LENGTH() {
+      return t('VALIDATION.NAME_MIN_LENGTH', 'Tên phải có ít nhất 2 ký tự');
+    },
+    get NAME_INVALID() {
+      return t('VALIDATION.NAME_INVALID', 'Họ và tên không được chứa chữ số');
     },
     get OLD_PASSWORD_REQUIRED() {
       return t(

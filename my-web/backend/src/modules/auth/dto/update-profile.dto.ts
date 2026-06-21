@@ -4,11 +4,20 @@
 // Kiến thức/Design Pattern: DTO Pattern, Validation Pattern, Separation of Concerns.
 // Các biến, hàm đặc biệt: name, fullName, phone, avatar, coverImage, bio, address, workAt, preferences.
 
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  MinLength,
+  Matches,
+} from 'class-validator';
+import { MESSAGES } from '../../../common/constants/messages.constant';
 
 export class UpdateProfileDto {
   @IsString()
   @IsOptional()
+  @MinLength(2, { message: () => MESSAGES.VALIDATION.NAME_MIN_LENGTH })
+  @Matches(/^[^0-9]*$/, { message: () => MESSAGES.VALIDATION.NAME_INVALID })
   name?: string;
 
   @IsString()

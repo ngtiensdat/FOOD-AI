@@ -838,6 +838,7 @@ export const LABELS_EN = {
     PASSWORD_INVALID: 'Password must be at least 8 characters, with letters and numbers',
     CONFIRM_PASSWORD_MISMATCH: 'Confirm password does not match',
     NAME_REQUIRED: 'Name must be at least 2 characters',
+    NAME_INVALID: 'Name must not contain numbers',
     LEGAL_DOCS_REQUIRED: 'Please provide clear legal verification document details',
     PLACEHOLDERS: {
       NAME: 'John Doe',

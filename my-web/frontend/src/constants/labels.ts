@@ -843,6 +843,7 @@ const LABELS_VI = {
     PASSWORD_INVALID: 'Mật khẩu phải từ 8 ký tự, gồm cả chữ và số',
     CONFIRM_PASSWORD_MISMATCH: 'Mật khẩu nhập lại không trùng khớp',
     NAME_REQUIRED: 'Tên phải có ít nhất 2 ký tự',
+    NAME_INVALID: 'Họ và tên không được chứa chữ số',
     LEGAL_DOCS_REQUIRED: 'Vui lòng cung cấp thông tin giấy tờ pháp lý rõ ràng',
     PLACEHOLDERS: {
       NAME: 'Nguyễn Văn User',

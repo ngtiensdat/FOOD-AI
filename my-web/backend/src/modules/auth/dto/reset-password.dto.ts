@@ -1,4 +1,4 @@
-import { IsEmail, IsString, Length, MinLength } from 'class-validator';
+import { IsEmail, IsString, Length, MinLength, Matches } from 'class-validator';
 import { MESSAGES } from '../../../common/constants/messages.constant';
 
 export class ResetPasswordDto {
@@ -11,5 +11,8 @@ export class ResetPasswordDto {
 
   @IsString()
   @MinLength(8, { message: () => MESSAGES.VALIDATION.PASSWORD_MIN_LENGTH })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
+    message: () => MESSAGES.VALIDATION.PASSWORD_INVALID,
+  })
   newPassword: string;
 }
