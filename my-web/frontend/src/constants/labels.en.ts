@@ -80,7 +80,7 @@ export const LABELS_EN = {
     VERIFY_ACCOUNT: 'Verify Account',
     LOGIN_GO: 'Go to Login',
     REGISTER_SUCCESS_PENDING: 'Registration successful! Pending Admin approval.',
-    REGISTER_SUCCESS_VERIFY: 'Registration successful! Please verify your account.',
+    REGISTER_SUCCESS_VERIFY: 'Registration successful! Please verify your email in Settings to best protect your account.',
     LOGIN_REQUIRED: 'Please login to perform this function!',
     FORGOT_PASSWORD_TITLE: 'Forgot Password?',
     FORGOT_PASSWORD_SUBTITLE: 'Don\'t worry! Enter your registered email address to receive a password reset OTP.',

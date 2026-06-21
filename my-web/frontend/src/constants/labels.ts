@@ -84,7 +84,7 @@ const LABELS_VI = {
     VERIFY_ACCOUNT: 'Xác minh tài khoản',
     LOGIN_GO: 'Đi tới Đăng nhập',
     REGISTER_SUCCESS_PENDING: 'Đăng ký thành công! Đang chờ Admin phê duyệt.',
-    REGISTER_SUCCESS_VERIFY: 'Đăng ký thành công! Vui lòng xác minh tài khoản.',
+    REGISTER_SUCCESS_VERIFY: 'Đăng ký thành công! Bạn nên xác thực email trong phần Cài đặt để bảo vệ tài khoản tốt nhất.',
     LOGIN_REQUIRED: 'Vui lòng đăng nhập để thực hiện chức năng này!',
     FORGOT_PASSWORD_TITLE: 'Quên mật khẩu?',
     FORGOT_PASSWORD_SUBTITLE: 'Đừng lo lắng! Hãy nhập email đăng ký tài khoản của bạn để nhận mã OTP khôi phục mật khẩu.',
