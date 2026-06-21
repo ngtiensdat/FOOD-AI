@@ -8,7 +8,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { SafeImage } from '@/components/base/SafeImage';
-import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, UtensilsCrossed, Star, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 // Hooks
 import { useLoginActions } from '@/hooks/useLoginActions';
@@ -29,91 +29,166 @@ export default function LoginPage() {
   } = useLoginActions();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 relative">
-      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-all text-small">
-        <ArrowLeft size={20} /> {LABELS.COMMON.BACK}
-      </Link>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full"
-      >
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-12 h-12 bg-white dark:bg-gray-200 rounded-xl flex items-center justify-center text-black dark:text-white shadow-lg overflow-hidden">
-              <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="48px" className="object-contain p-2" />
-            </div>
-            <span className="text-3xl font-bold gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
-          </Link>
+    <div className="min-h-screen flex">
+      {/* ── Left Panel: Visual / Branding ── */}
+      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden flex-col justify-between p-12" style={{ background: 'linear-gradient(145deg, #FF6B00 0%, #FF9A3C 45%, #FFB800 100%)' }}>
+        {/* Background decorative blobs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #fff7 0%, transparent 70%)' }} />
+          <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full opacity-10" style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }} />
         </div>
 
-        <div className="bg-white dark:bg-gray-100 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-200">
-          <div className="text-center mb-10">
-            <h1 className="text-h2 text-gray-900 mb-2">{LABELS.AUTH.LOGIN_TITLE}</h1>
-            <p className="text-gray-600 text-body">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
+        {/* Logo */}
+        <Link href="/" className="relative flex items-center gap-3 z-10">
+          <div className="relative w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+            <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="44px" className="object-contain p-1.5" />
           </div>
+          <span className="text-2xl font-black text-white tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
+        </Link>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            {errors.form && (
-              <Alert type="error">{errors.form}</Alert>
-            )}
-            <Input
-              label={LABELS.FORM.EMAIL}
-              icon={Mail}
-              type="email"
-              required
-              placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => handleBlur('email')}
-              error={errors.email}
-            />
-
-            <div className="relative group">
-              <Input
-                label={LABELS.AUTH.PASSWORD}
-                icon={Lock}
-                type={showPassword ? 'text' : 'password'}
-                required
-                placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={() => handleBlur('password')}
-                error={errors.password}
-                className="pr-12"
-              />
-              <Button
-                suppressHydrationWarning
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                variant="none"
-                size="none"
-                className="absolute right-4 top-[46px] text-gray-400 hover:text-primary transition-colors"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </Button>
+        {/* Center content */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center -mt-8">
+          {/* Floating food icon circle */}
+          <div className="relative mb-8">
+            <div className="w-36 h-36 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-2xl">
+              <UtensilsCrossed className="w-16 h-16 text-white" strokeWidth={1.5} />
             </div>
-
-            <div className="text-right">
-              <Link href="/forgot-password" className="text-small font-bold text-primary hover:underline">{LABELS.AUTH.FORGOT_PASSWORD}</Link>
-            </div>
-
-            <Button
-              type="submit"
-              fullWidth
-              loading={isLoading}
-              className="py-4 text-lg"
+            {/* Floating badges */}
+            <motion.div
+              animate={{ y: [-6, 6, -6] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -top-3 -right-4 bg-white rounded-2xl px-3 py-1.5 shadow-xl flex items-center gap-1.5"
             >
-              {LABELS.AUTH.LOGIN} <ArrowRight size={20} className="ml-2" />
-            </Button>
-          </form>
+              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-black text-gray-800">{LABELS.AUTH.LOGIN_PANEL_RATING}</span>
+            </motion.div>
+            <motion.div
+              animate={{ y: [6, -6, 6] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+              className="absolute -bottom-2 -left-6 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+              <span className="text-xs font-bold text-gray-700">{LABELS.AUTH.LOGIN_PANEL_AI_BADGE}</span>
+            </motion.div>
+          </div>
 
-          <div className="mt-8 text-center text-gray-500 text-small">
-            {LABELS.AUTH.NO_ACCOUNT} <Link href="/register" className="text-primary font-bold hover:underline">{LABELS.AUTH.REGISTER_NOW}</Link>
+          <h2 className="text-4xl font-black text-white mb-4 leading-tight">
+            {LABELS.AUTH.LOGIN_PANEL_HEADING}<br />
+            <span className="text-white/80">{LABELS.AUTH.LOGIN_PANEL_HEADING_SUB}</span>
+          </h2>
+          <p className="text-white/70 text-base max-w-xs leading-relaxed">
+            {LABELS.AUTH.LOGIN_PANEL_DESC}
+          </p>
+        </div>
+
+        {/* Bottom testimonial */}
+        <div className="relative z-10 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+          <p className="text-white/90 text-sm font-medium leading-relaxed">
+            &ldquo;{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL}&rdquo;
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+            <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-white text-xs font-bold">
+              {LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AVATAR}
+            </div>
+            <span className="text-white/80 text-xs font-semibold">{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}</span>
           </div>
         </div>
-      </motion.div>
+      </div>
+
+      {/* ── Right Panel: Login Form ── */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-50 overflow-y-auto">
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="relative w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden">
+            <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="40px" className="object-contain p-1.5" />
+          </div>
+          <span className="text-2xl font-black gradient-text">{LABELS.COMMON.BRAND_NAME}</span>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-sm"
+        >
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-black text-gray-900 mb-1">{LABELS.AUTH.LOGIN_TITLE}</h1>
+            <p className="text-gray-500 text-sm">{LABELS.AUTH.LOGIN_SUBTITLE}</p>
+          </div>
+
+          {/* Form Card */}
+          <div className="bg-white dark:bg-gray-100 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-200 p-7">
+            <form onSubmit={handleLogin} className="space-y-4">
+              {errors.form && (
+                <Alert type="error">{errors.form}</Alert>
+              )}
+
+              <Input
+                label={LABELS.FORM.EMAIL}
+                icon={Mail}
+                type="email"
+                required
+                placeholder={LABELS.FORM.PLACEHOLDERS.EMAIL}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email')}
+                error={errors.email}
+              />
+
+              <div className="relative group">
+                <Input
+                  label={LABELS.AUTH.PASSWORD}
+                  icon={Lock}
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder={LABELS.FORM.PLACEHOLDERS.PASSWORD}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => handleBlur('password')}
+                  error={errors.password}
+                  className="pr-12"
+                />
+                <Button
+                  suppressHydrationWarning
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  variant="none"
+                  size="none"
+                  className="absolute right-4 top-[42px] text-gray-400 hover:text-primary transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </Button>
+              </div>
+
+              <div className="text-right -mt-1">
+                <Link href="/forgot-password" className="text-xs font-bold text-primary hover:underline">{LABELS.AUTH.FORGOT_PASSWORD}</Link>
+              </div>
+
+              <Button
+                type="submit"
+                fullWidth
+                loading={isLoading}
+                className="py-3.5 text-base mt-2"
+              >
+                {LABELS.AUTH.LOGIN} <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </form>
+          </div>
+
+          {/* Footer links */}
+          <div className="mt-5 text-center text-gray-500 text-sm">
+            {LABELS.AUTH.NO_ACCOUNT}{' '}
+            <Link href="/register" className="text-primary font-bold hover:underline">{LABELS.AUTH.REGISTER_NOW}</Link>
+          </div>
+          <div className="mt-4 text-center">
+            <Link href="/" className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">
+              ← {LABELS.COMMON.BACK}
+            </Link>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
