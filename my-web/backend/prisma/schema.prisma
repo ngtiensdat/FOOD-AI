@@ -4,7 +4,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
-  output          = "../../../node_modules/.prisma/client"
+  output          = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -19,10 +19,15 @@ model User {
   name              String?
   role              UserRole       @default(CUSTOMER)
   status            UserStatus     @default(APPROVED)
-  isEmailVerified   Boolean        @default(false) @map("is_email_verified")
-  verificationToken String?        @map("verification_token")
-  resetToken        String?        @map("reset_token")
-  refreshToken      String?        @map("refresh_token")
+  isEmailVerified          Boolean        @default(false) @map("is_email_verified")
+  verificationToken        String?        @map("verification_token")
+  verificationOtpHash      String?        @map("verification_otp_hash")
+  verificationOtpExpiresAt DateTime?      @map("verification_otp_expires_at")
+  lastOtpRequestedAt       DateTime?      @map("last_otp_requested_at")
+  resetToken               String?        @map("reset_token")
+  resetOtpHash             String?        @map("reset_otp_hash")
+  resetOtpExpiresAt        DateTime?      @map("reset_otp_expires_at")
+  refreshToken             String?        @map("refresh_token")
   legalDocuments    String?        @map("legal_documents")
   points            Int            @default(0)
   level             Int            @default(1)

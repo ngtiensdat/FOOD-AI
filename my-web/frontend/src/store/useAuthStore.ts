@@ -10,9 +10,20 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
-      setUser: (user) => set({ user }),
+      setUser: (newUser) => {
+        const current = get().user;
+        // Skip update if values are identical (prevents infinite render loops)
+        if (
+          newUser !== null &&
+          current !== null &&
+          JSON.stringify(newUser) === JSON.stringify(current)
+        ) {
+          return;
+        }
+        set({ user: newUser });
+      },
       logout: () => {
         set({ user: null });
         // Xóa cookie accessToken và refreshToken sẽ được xử lý ở backend (logout API)
@@ -24,4 +35,5 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
 

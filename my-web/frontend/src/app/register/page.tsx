@@ -64,9 +64,9 @@ export default function RegisterPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-600 font-medium px-2 leading-relaxed">{successMessage}</p>
               </div>
               <div className="pt-4 border-t border-gray-50">
-                <Link href="/login" className="w-full">
+                <Link href={`/verify-email?email=${encodeURIComponent(email)}`} className="w-full">
                   <Button variant="primary" fullWidth className="py-4">
-                    {LABELS.AUTH.LOGIN_GO} <ArrowRight size={18} className="ml-2" />
+                    {LABELS.AUTH.PROCEED_VERIFY} <ArrowRight size={18} className="ml-2" />
                   </Button>
                 </Link>
               </div>

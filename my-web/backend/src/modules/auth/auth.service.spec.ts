@@ -15,6 +15,7 @@ import {
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { AiService } from '../ai/ai.service';
 import { RedisService } from '../ai/services/redis.service';
+import { MailService } from '../mail/mail.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -52,6 +53,11 @@ describe('AuthService', () => {
       ttl: jest.fn(),
     };
 
+    const mockMailService = {
+      sendVerificationOtpEmail: jest.fn(() => Promise.resolve()),
+      sendResetPasswordOtpEmail: jest.fn(() => Promise.resolve()),
+    };
+
     process.env.JWT_SECRET = 'mock-jwt-secret-for-unit-tests-only';
 
     const module: TestingModule = await Test.createTestingModule({
@@ -62,6 +68,7 @@ describe('AuthService', () => {
         { provide: AiService, useValue: {} },
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: RedisService, useValue: mockRedisService },
+        { provide: MailService, useValue: mockMailService },
       ],
     }).compile();
 
@@ -106,9 +113,8 @@ describe('AuthService', () => {
         name: 'Test',
       });
 
-      expect(result.user.email).toBe(mockUser.email);
-      expect(result.accessToken).toBeDefined();
-      expect(result.refreshToken).toBeDefined();
+      expect(result.message).toBeDefined();
+      expect(result.email).toBe(mockUser.email);
     });
   });
 

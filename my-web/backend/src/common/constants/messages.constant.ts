@@ -311,6 +311,18 @@ export const MESSAGES = {
         'Xác minh tài khoản của bạn trên Food AI',
       );
     },
+    get VERIFICATION_OTP_SUBJECT() {
+      return t(
+        'MAIL.VERIFICATION_OTP_SUBJECT',
+        'Mã xác minh email OTP của bạn trên Food AI',
+      );
+    },
+    get RESET_PASSWORD_SUBJECT() {
+      return t(
+        'MAIL.RESET_PASSWORD_SUBJECT',
+        'Yêu cầu đặt lại mật khẩu trên Food AI',
+      );
+    },
   },
   VALIDATION: {
     get EMAIL_INVALID() {

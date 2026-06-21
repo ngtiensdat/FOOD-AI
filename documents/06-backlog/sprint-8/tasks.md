@@ -19,7 +19,3 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 - [ ] Task 2.1: API Refresh AI suggestions: Thêm cơ chế offset/random seed trong Vector Database.
 - [ ] Task 2.2: Tích hợp cấu hình SEO động (Dynamic OG tags) cho Món ăn và Bài viết tại server-side rendering (nếu cần).
 
-### [Frontend]
-- [ ] Task 2.3: UI nút "Làm mới gợi ý" và kết nối API tải lại Suggestions ở trang chủ.
-- [ ] Task 2.4: Component nút bấm Chia sẻ (Share menu dropdown) với các tùy chọn Facebook, Zalo, Copy Link.
-- [ ] Task 2.5: Tích hợp Web Share API cho thiết bị Mobile.

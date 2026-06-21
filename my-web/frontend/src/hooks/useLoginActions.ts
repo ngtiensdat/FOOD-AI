@@ -50,7 +50,14 @@ export const useLoginActions = () => {
     try {
       const data = await authService.login({ email, password });
       setUser(data.user);
-      toast.success(LABELS.COMMON.SUCCESS);
+
+      // Nếu email chưa được xác thực, hiển thị thông báo nhắc nhở (vẫn cho đăng nhập)
+      if (data.user && data.user.isEmailVerified === false) {
+        toast.info(LABELS.AUTH.LOGIN_SUCCESS_UNVERIFIED);
+      } else {
+        toast.success(LABELS.COMMON.SUCCESS);
+      }
+
       window.location.href = '/';
     } catch (error) {
       const err = error as ApiError;
