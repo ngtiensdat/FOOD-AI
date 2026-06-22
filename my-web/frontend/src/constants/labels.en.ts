@@ -861,6 +861,8 @@ export const LABELS_EN = {
     NAME_REQUIRED: 'Name must be at least 2 characters',
     NAME_INVALID: 'Name must not contain numbers',
     LEGAL_DOCS_REQUIRED: 'Please provide clear legal verification document details',
+    PHONE_INVALID: 'Phone number is invalid (e.g., 0987654321)',
+    URL_INVALID: 'Link URL is invalid',
     PLACEHOLDERS: {
       NAME: 'John Doe',
       EMAIL: 'user123@gmail.com',

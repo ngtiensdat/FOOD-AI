@@ -12,6 +12,7 @@ import { Alert } from '@/components/base/Alert';
 import { authService } from '@/services/auth.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { forgotPasswordSchema } from '@/schemas/auth.schema';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -22,12 +23,9 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (val: string) => {
-    if (!val.trim()) {
-      return LABELS.AUTH.ENTER_EMAIL_ERROR;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(val.trim())) {
-      return LABELS.FORM.EMAIL_INVALID;
+    const result = forgotPasswordSchema.safeParse({ email: val });
+    if (!result.success) {
+      return result.error.issues[0].message;
     }
     return null;
   };

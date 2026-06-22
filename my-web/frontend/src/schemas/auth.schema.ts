@@ -36,5 +36,36 @@ export const registerSchema = z.object({
   path: ['legalDocuments'],
 });
 
-export type LoginInput = z.infer<typeof registerSchema>;
+export const forgotPasswordSchema = z.object({
+  email: z.string()
+    .min(1, LABELS.AUTH.ENTER_EMAIL_ERROR)
+    .email(LABELS.FORM.EMAIL_INVALID),
+});
+
+export const resetPasswordSchema = z.object({
+  otp: z.string()
+    .length(6, LABELS.AUTH.VERIFY_OTP_REQUIRED)
+    .regex(/^\d{6}$/, LABELS.AUTH.VERIFY_OTP_INVALID),
+  newPassword: z.string()
+    .min(8, LABELS.AUTH.PASSWORD_MIN_LENGTH)
+    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, LABELS.FORM.PASSWORD_INVALID),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: LABELS.AUTH.PASSWORD_MISMATCH,
+  path: ['confirmPassword'],
+});
+
+export const verifyEmailSchema = z.object({
+  email: z.string()
+    .min(1, LABELS.FORM.EMAIL_REQUIRED)
+    .email(LABELS.FORM.EMAIL_INVALID),
+  otp: z.string()
+    .length(6, LABELS.AUTH.VERIFY_OTP_REQUIRED)
+    .regex(/^\d{6}$/, LABELS.AUTH.VERIFY_OTP_INVALID),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;

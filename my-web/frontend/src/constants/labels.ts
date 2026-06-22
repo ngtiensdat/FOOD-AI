@@ -866,6 +866,8 @@ const LABELS_VI = {
     NAME_REQUIRED: 'Tên phải có ít nhất 2 ký tự',
     NAME_INVALID: 'Họ và tên không được chứa chữ số',
     LEGAL_DOCS_REQUIRED: 'Vui lòng cung cấp thông tin giấy tờ pháp lý rõ ràng',
+    PHONE_INVALID: 'Số điện thoại không đúng định dạng (VD: 0987654321)',
+    URL_INVALID: 'Đường dẫn liên kết không hợp lệ',
     PLACEHOLDERS: {
       NAME: 'Nguyễn Văn User',
       EMAIL: 'user123@gmail.com',

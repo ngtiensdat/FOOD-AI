@@ -12,6 +12,7 @@ import { Alert } from '@/components/base/Alert';
 import { authService } from '@/services/auth.service';
 import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
+import { resetPasswordSchema } from '@/schemas/auth.schema';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -49,23 +50,18 @@ function ResetPasswordForm() {
 
   const validateForm = (forceCheckAll = false) => {
     const otpCode = otp.join('');
-    if (forceCheckAll || touched.otp) {
-      if (otpCode.length !== 6) {
-        return LABELS.AUTH.VERIFY_OTP_REQUIRED;
-      }
-    }
-    if (forceCheckAll || touched.newPassword) {
-      if (newPassword.length < 8) {
-        return LABELS.AUTH.PASSWORD_MIN_LENGTH;
-      }
-      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-      if (!passwordRegex.test(newPassword)) {
-        return LABELS.FORM.PASSWORD_INVALID;
-      }
-    }
-    if (forceCheckAll || touched.confirmPassword) {
-      if (newPassword !== confirmPassword) {
-        return LABELS.AUTH.PASSWORD_MISMATCH;
+    const result = resetPasswordSchema.safeParse({
+      otp: otpCode,
+      newPassword,
+      confirmPassword,
+    });
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string;
+        if (forceCheckAll || touched[field]) {
+          return issue.message;
+        }
       }
     }
     return null;
