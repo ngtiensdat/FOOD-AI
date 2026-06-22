@@ -48,7 +48,9 @@ export interface User {
   createdAt?: string;
   legalDocs?: string;
   points?: number;
+  xp?: number;
   level?: number;
+  highestLevel?: number;
   badgeTitle?: string | null;
 }
 

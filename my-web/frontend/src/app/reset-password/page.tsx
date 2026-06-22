@@ -27,6 +27,7 @@ function ResetPasswordForm() {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -46,6 +47,34 @@ function ResetPasswordForm() {
     }
   }, [resendCooldown]);
 
+  const validateForm = (forceCheckAll = false) => {
+    const otpCode = otp.join('');
+    if (forceCheckAll || touched.otp) {
+      if (otpCode.length !== 6) {
+        return LABELS.AUTH.VERIFY_OTP_REQUIRED;
+      }
+    }
+    if (forceCheckAll || touched.newPassword) {
+      if (newPassword.length < 8) {
+        return LABELS.AUTH.PASSWORD_MIN_LENGTH;
+      }
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        return LABELS.FORM.PASSWORD_INVALID;
+      }
+    }
+    if (forceCheckAll || touched.confirmPassword) {
+      if (newPassword !== confirmPassword) {
+        return LABELS.AUTH.PASSWORD_MISMATCH;
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    setError(validateForm(false));
+  }, [otp, newPassword, confirmPassword, touched]);
+
   const handleOtpChange = (index: number, value: string) => {
     if (isNaN(Number(value))) return;
 
@@ -55,6 +84,11 @@ function ResetPasswordForm() {
 
     if (value && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1].focus();
+    }
+    
+    // Mark OTP as touched if they fill all fields or change
+    if (newOtp.join('').length === 6) {
+      setTouched((prev) => ({ ...prev, otp: true }));
     }
   };
 
@@ -70,6 +104,7 @@ function ResetPasswordForm() {
     if (pasteData.length === 6 && !isNaN(Number(pasteData))) {
       const pasteOtp = pasteData.split('');
       setOtp(pasteOtp);
+      setTouched((prev) => ({ ...prev, otp: true }));
       if (inputRefs.current[5]) {
         inputRefs.current[5].focus();
       }
@@ -90,23 +125,16 @@ function ResetPasswordForm() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setTouched({ otp: true, newPassword: true, confirmPassword: true });
     
+    const validationError = validateForm(true);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setError(null);
     const otpCode = otp.join('');
-    if (otpCode.length !== 6) {
-      setError(LABELS.AUTH.VERIFY_OTP_REQUIRED);
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setError(LABELS.AUTH.PASSWORD_MIN_LENGTH);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError(LABELS.AUTH.PASSWORD_MISMATCH);
-      return;
-    }
 
     setIsLoading(true);
     try {
@@ -190,6 +218,7 @@ function ResetPasswordForm() {
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
                     onPaste={idx === 0 ? handlePaste : undefined}
+                    onBlur={() => setTouched((prev) => ({ ...prev, otp: true }))}
                     className="w-11 h-12 md:w-12 md:h-14 text-center text-xl font-extrabold text-gray-900 border-2 border-gray-150 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                     disabled={isLoading}
                   />
@@ -207,6 +236,7 @@ function ResetPasswordForm() {
                 placeholder={LABELS.AUTH.NEW_PASSWORD_PLACEHOLDER}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                onBlur={() => setTouched((prev) => ({ ...prev, newPassword: true }))}
                 disabled={isLoading}
                 className="pr-12"
               />
@@ -230,6 +260,7 @@ function ResetPasswordForm() {
                 placeholder={LABELS.AUTH.CONFIRM_NEW_PASSWORD_LABEL}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
                 disabled={isLoading}
                 className="pr-12"
               />

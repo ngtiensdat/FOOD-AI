@@ -150,14 +150,17 @@ async function main() {
   console.log('- Đang khởi tạo GamificationConfig...');
   await prisma.gamificationConfig.upsert({
     where: { id: 'singleton' },
-    update: {},
+    update: {
+      levelUpPointsReward: 100
+    },
     create: {
       id: 'singleton',
       pointsPerLevel: 1000,
       postReviewPoints: 50,
       commentPoints: 10,
       likePoints: 5,
-      deductionMultiplier: 1.0
+      deductionMultiplier: 1.0,
+      levelUpPointsReward: 100
     }
   });
 

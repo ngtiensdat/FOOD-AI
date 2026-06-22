@@ -12,3 +12,10 @@ export const DEFAULT_BADGE_CONFIGS = [
 ] as const;
 
 export const POINTS_PER_LEVEL = 1000;
+export const DEFAULT_LEVEL_UP_POINTS_REWARD = 100;
+export const DEFAULT_POST_REVIEW_POINTS = 50;
+export const DEFAULT_COMMENT_POINTS = 10;
+export const DEFAULT_LIKE_POINTS = 5;
+export const DEFAULT_DEDUCTION_MULTIPLIER = 1.0;
+export const DEFAULT_STARTING_LEVEL = 1;
+export const MIN_POINTS_OR_XP = 0;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SafeImage } from '@/components/base/SafeImage';
@@ -18,17 +18,37 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const validateEmail = (val: string) => {
+    if (!val.trim()) {
+      return LABELS.AUTH.ENTER_EMAIL_ERROR;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(val.trim())) {
+      return LABELS.FORM.EMAIL_INVALID;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (touched) {
+      setError(validateEmail(email));
+    }
+  }, [email, touched]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    if (!email.trim()) {
-      setError(LABELS.AUTH.ENTER_EMAIL_ERROR);
+    setTouched(true);
+    const validationError = validateEmail(email);
+    if (validationError) {
+      setError(validationError);
       return;
     }
+
+    setError(null);
+    setSuccess(null);
 
     setIsLoading(true);
     try {
@@ -90,6 +110,7 @@ export default function ForgotPasswordPage() {
               placeholder={LABELS.AUTH.EMAIL_PLACEHOLDER}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched(true)}
               disabled={isLoading || !!success}
             />
 

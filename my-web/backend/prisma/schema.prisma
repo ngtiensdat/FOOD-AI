@@ -30,7 +30,9 @@ model User {
   refreshToken             String?        @map("refresh_token")
   legalDocuments    String?        @map("legal_documents")
   points            Int            @default(0)
+  xp                Int            @default(0)
   level             Int            @default(1)
+  highestLevel      Int            @default(1) @map("highest_level")
   badgeTitle        String?        @map("badge_title")
   createdAt         DateTime       @default(now()) @map("created_at")
   updatedAt         DateTime       @updatedAt @map("updated_at")
@@ -490,6 +492,7 @@ model GamificationConfig {
   commentPoints       Int      @default(10) @map("comment_points")
   likePoints          Int      @default(5) @map("like_points")
   deductionMultiplier Float    @default(1.0) @map("deduction_multiplier")
+  levelUpPointsReward Int      @default(100) @map("level_up_points_reward")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@map("gamification_configs")

@@ -5,7 +5,7 @@
 // Các chức năng đặc biệt: Hỗ trợ đăng ký nhiều role (Customer/Restaurant), validate động, quản lý giấy tờ cho nhà hàng.
 // Các biến, hàm đặc biệt: ApiError, handleRegister, validate.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -26,10 +26,11 @@ export const useRegisterActions = () => {
   const [role, setRole] = useState<string>(UserRole.CUSTOMER);
   const [legalDocuments, setLegalDocuments] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const validate = () => {
+  const validate = (forceCheckAll = false) => {
     const result = registerSchema.safeParse({
       name,
       email,
@@ -38,24 +39,30 @@ export const useRegisterActions = () => {
       role,
       legalDocuments,
     });
+    const newErrors: Record<string, string> = {};
     if (!result.success) {
-      const newErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
-        const path = issue.path[0];
-        if (path) {
-          newErrors[path as string] = issue.message;
+        const path = issue.path[0] as string;
+        if (path && (forceCheckAll || touched[path])) {
+          newErrors[path] = issue.message;
         }
       });
-      setErrors(newErrors);
-      return false;
     }
-    setErrors({});
-    return true;
+    setErrors(newErrors);
+    return result.success;
   };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  useEffect(() => {
+    validate(false);
+  }, [name, email, password, confirmPassword, role, legalDocuments, touched]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate(true)) return;
 
     setIsLoading(true);
     setErrors({});
@@ -100,6 +107,7 @@ export const useRegisterActions = () => {
     errors,
     successMessage,
     isLoading,
-    handleRegister
+    handleRegister,
+    handleBlur,
   };
 };
