@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
 import { User, UserRole } from '@/types/user';
 import { resolvePrivacyValue } from '@/components/features/profile/ProfileSettingsTab';
+import { GAMIFICATION_CONSTANTS } from '@/constants/gamification.constant';
 
 export type ProfileData = User & {
   _count?: {
@@ -237,12 +238,12 @@ export const ProfileHeader = ({
                     <div className="mt-1 max-w-xs">
                       <div className="flex justify-between text-mini text-gray-500 mb-1 font-bold">
                         <span>{LABELS.LOYALTY.XP_PROGRESS}</span>
-                        <span>{(profile?.points || 0) % 1000} / 1000 XP</span>
+                        <span>{(profile?.xp || 0) % GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL} / {GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL} XP</span>
                       </div>
                       <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-slate-700">
                         <div 
                           className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.max(5, ((profile?.points || 0) % 1000) / 10)}%` }}
+                          style={{ width: `${Math.max(GAMIFICATION_CONSTANTS.MIN_XP_PERCENT, (((profile?.xp || 0) % GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL) / GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL) * GAMIFICATION_CONSTANTS.PERCENT_FACTOR)}%` }}
                         />
                       </div>
                     </div>

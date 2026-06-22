@@ -9,7 +9,17 @@ import {
   PostType,
   PostStatus,
 } from '@prisma/client';
-import { DEFAULT_BADGE_CONFIGS } from '../../common/constants/badge.constant';
+import {
+  DEFAULT_BADGE_CONFIGS,
+  DEFAULT_LEVEL_UP_POINTS_REWARD,
+  DEFAULT_POST_REVIEW_POINTS,
+  DEFAULT_COMMENT_POINTS,
+  DEFAULT_LIKE_POINTS,
+  DEFAULT_DEDUCTION_MULTIPLIER,
+  POINTS_PER_LEVEL,
+  DEFAULT_STARTING_LEVEL,
+  MIN_POINTS_OR_XP,
+} from '../../common/constants/badge.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 
 export interface GamificationResult {
@@ -81,7 +91,13 @@ export class GamificationQueueService implements OnModuleInit {
     try {
       const users = await this.prisma.user.findMany({
         where: { deletedAt: null },
-        select: { id: true, role: true, badgeTitle: true, points: true },
+        select: {
+          id: true,
+          role: true,
+          badgeTitle: true,
+          points: true,
+          xp: true,
+        },
       });
 
       for (const user of users) {
@@ -125,7 +141,7 @@ export class GamificationQueueService implements OnModuleInit {
             const ratingCount = restaurant?.ratingCount ?? 0;
 
             const matched = sorted.find((b) => {
-              if (user.points < b.points) return false;
+              if (user.xp < b.points) return false;
               if (b.minReviews !== null && reviewsCount < b.minReviews)
                 return false;
               if (b.minPostLikes !== null && postLikesCount < b.minPostLikes)
@@ -144,7 +160,7 @@ export class GamificationQueueService implements OnModuleInit {
             const sorted = DEFAULT_BADGE_CONFIGS.filter(
               (b) => b.role === user.role,
             ).sort((a, b) => b.points - a.points);
-            const matched = sorted.find((b) => user.points >= b.points);
+            const matched = sorted.find((b) => user.xp >= b.points);
             nextBadge = matched ? matched.title : null;
           }
 
@@ -207,11 +223,15 @@ export class GamificationQueueService implements OnModuleInit {
       where: { id: 'singleton' },
     });
 
-    const pointsPerLevel = config?.pointsPerLevel ?? 1000;
-    const postReviewPoints = config?.postReviewPoints ?? 50;
-    const commentPoints = config?.commentPoints ?? 10;
-    const likePoints = config?.likePoints ?? 5;
-    const deductionMultiplier = config?.deductionMultiplier ?? 1.0;
+    const pointsPerLevel = config?.pointsPerLevel ?? POINTS_PER_LEVEL;
+    const postReviewPoints =
+      config?.postReviewPoints ?? DEFAULT_POST_REVIEW_POINTS;
+    const commentPoints = config?.commentPoints ?? DEFAULT_COMMENT_POINTS;
+    const likePoints = config?.likePoints ?? DEFAULT_LIKE_POINTS;
+    const deductionMultiplier =
+      config?.deductionMultiplier ?? DEFAULT_DEDUCTION_MULTIPLIER;
+    const levelUpPointsReward =
+      config?.levelUpPointsReward ?? DEFAULT_LEVEL_UP_POINTS_REWARD;
 
     let pointsAmount = 0;
 
@@ -255,7 +275,9 @@ export class GamificationQueueService implements OnModuleInit {
         where: { id: userId },
         select: {
           points: true,
+          xp: true,
           level: true,
+          highestLevel: true,
           role: true,
           badgeTitle: true,
           name: true,
@@ -266,13 +288,33 @@ export class GamificationQueueService implements OnModuleInit {
         throw new Error(`User with ID ${userId} not found`);
       }
 
-      const nextPoints = Math.max(0, user.points + pointsAmount);
-      const nextLevel = Math.max(
-        1,
-        Math.floor(nextPoints / pointsPerLevel) + 1,
-      );
+      let nextPoints = user.points;
+      let nextXp = user.xp;
+      let nextLevel = user.level;
+      let nextHighestLevel = user.highestLevel;
+      let rewardEarned = 0;
 
-      // Compute next badge title
+      if (action === 'REDEEM_VOUCHER') {
+        nextPoints = Math.max(MIN_POINTS_OR_XP, user.points + pointsAmount); // pointsAmount is negative voucherPointsCost
+      } else {
+        // Social action (like, comment, review)
+        nextXp = Math.max(MIN_POINTS_OR_XP, user.xp + pointsAmount); // pointsAmount is reward/deduction amount
+        nextLevel = Math.max(
+          DEFAULT_STARTING_LEVEL,
+          Math.floor(nextXp / pointsPerLevel) + DEFAULT_STARTING_LEVEL,
+        );
+
+        if (nextLevel > user.highestLevel) {
+          rewardEarned = (nextLevel - user.highestLevel) * levelUpPointsReward;
+          nextPoints = user.points + rewardEarned;
+          nextHighestLevel = nextLevel;
+        } else if (nextLevel < user.level) {
+          // Level dropped (e.g. user deleted their post/comment)
+          // We update current level, but keep highestLevel intact and do NOT deduct usable points
+        }
+      }
+
+      // Compute next badge title based on nextXp instead of nextPoints
       const badges = await tx.badgeConfig.findMany({
         where: { role: user.role },
       });
@@ -310,7 +352,7 @@ export class GamificationQueueService implements OnModuleInit {
         const ratingCount = restaurant?.ratingCount ?? 0;
 
         const matched = sorted.find((b) => {
-          if (nextPoints < b.points) return false;
+          if (nextXp < b.points) return false;
           if (b.minReviews !== null && reviewsCount < b.minReviews)
             return false;
           if (b.minPostLikes !== null && postLikesCount < b.minPostLikes)
@@ -329,7 +371,7 @@ export class GamificationQueueService implements OnModuleInit {
         const sorted = DEFAULT_BADGE_CONFIGS.filter(
           (b) => b.role === user.role,
         ).sort((a, b) => b.points - a.points);
-        const matched = sorted.find((b) => nextPoints >= b.points);
+        const matched = sorted.find((b) => nextXp >= b.points);
         nextBadge = matched ? matched.title : null;
       }
 
@@ -338,53 +380,58 @@ export class GamificationQueueService implements OnModuleInit {
         where: { id: userId },
         data: {
           points: nextPoints,
+          xp: nextXp,
           level: nextLevel,
+          highestLevel: nextHighestLevel,
           badgeTitle: nextBadge,
         },
       });
 
-      // 3. Level-up or Badge notification (Socket + DB)
-      if (nextLevel > user.level) {
-        const title = MESSAGES.LOYALTY.LEVEL_UP_TITLE;
-        const content = MESSAGES.LOYALTY.LEVEL_UP_BODY(nextLevel);
-        await tx.notification.create({
-          data: {
-            userId,
+      // 3. Level-up or Badge notification (Socket + DB) - only for social actions, not for voucher redemption
+      if (action !== 'REDEEM_VOUCHER') {
+        if (nextLevel > user.level) {
+          const title = MESSAGES.LOYALTY.LEVEL_UP_TITLE;
+          const content = MESSAGES.LOYALTY.LEVEL_UP_BODY(nextLevel);
+          await tx.notification.create({
+            data: {
+              userId,
+              title,
+              content,
+              type: NotificationType.LEVEL_UP,
+            },
+          });
+          await this.notificationGateway.sendNotificationToUser(userId, {
+            type: NotificationType.LEVEL_UP,
             title,
             content,
-            type: NotificationType.LEVEL_UP,
-          },
-        });
-        await this.notificationGateway.sendNotificationToUser(userId, {
-          type: NotificationType.LEVEL_UP,
-          title,
-          content,
-        });
-      }
+          });
+        }
 
-      if (nextBadge !== user.badgeTitle && nextBadge !== null) {
-        const title = MESSAGES.LOYALTY.NEW_BADGE_TITLE;
-        const content = MESSAGES.LOYALTY.NEW_BADGE_BODY(nextBadge);
-        await tx.notification.create({
-          data: {
-            userId,
+        if (nextBadge !== user.badgeTitle && nextBadge !== null) {
+          const title = MESSAGES.LOYALTY.NEW_BADGE_TITLE;
+          const content = MESSAGES.LOYALTY.NEW_BADGE_BODY(nextBadge);
+          await tx.notification.create({
+            data: {
+              userId,
+              title,
+              content,
+              type: NotificationType.LEVEL_UP,
+            },
+          });
+          await this.notificationGateway.sendNotificationToUser(userId, {
+            type: NotificationType.LEVEL_UP,
             title,
             content,
-            type: NotificationType.LEVEL_UP,
-          },
-        });
-        await this.notificationGateway.sendNotificationToUser(userId, {
-          type: NotificationType.LEVEL_UP,
-          title,
-          content,
-        });
+          });
+        }
       }
 
       return {
         points: nextPoints,
         level: nextLevel,
         badgeTitle: nextBadge,
-        pointsChanged: pointsAmount,
+        pointsChanged:
+          action === 'REDEEM_VOUCHER' ? pointsAmount : rewardEarned,
       };
     });
   }
