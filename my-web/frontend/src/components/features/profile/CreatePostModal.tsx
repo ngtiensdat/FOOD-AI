@@ -338,8 +338,10 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
                   />
                   {showRestaurantDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                      <button
+                      <Button
                         type="button"
+                        variant="none"
+                        size="none"
                         className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => {
@@ -349,14 +351,16 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
                         }}
                       >
                         -- Không liên kết --
-                      </button>
+                      </Button>
                       {restaurants
                         .filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase()))
                         .slice(0, 5)
                         .map((r) => (
-                          <button
+                          <Button
                             key={r.id}
                             type="button"
+                            variant="none"
+                            size="none"
                             className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={() => {
@@ -366,7 +370,7 @@ export const CreatePostModal = ({ isOpen, onClose, onCreated }: CreatePostModalP
                             }}
                           >
                             {r.name}
-                          </button>
+                          </Button>
                       ))}
                       {restaurants.filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase())).length === 0 && (
                         <div className="px-4 py-2 text-sm text-gray-400 italic">Không tìm thấy quán nào đã theo dõi</div>

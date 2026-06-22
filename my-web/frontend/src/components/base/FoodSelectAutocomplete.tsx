@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Utensils } from 'lucide-react';
 import { Input } from './Input';
+import { Button } from './Button';
 import { SafeImage } from './SafeImage';
 
 export interface LinkableFood {
@@ -77,8 +78,10 @@ export const FoodSelectAutocomplete: React.FC<FoodSelectAutocompleteProps> = ({
       
       {isOpen && !disabled && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-lg z-[9999] max-h-60 overflow-y-auto">
-          <button
+          <Button
             type="button"
+            variant="none"
+            size="none"
             className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2"
             onClick={() => {
               onSelectFood('', '');
@@ -87,12 +90,14 @@ export const FoodSelectAutocomplete: React.FC<FoodSelectAutocompleteProps> = ({
             }}
           >
             -- Không liên kết --
-          </button>
+          </Button>
           
           {filteredFoods.map((f) => (
-            <button
+            <Button
               key={f.id}
               type="button"
+              variant="none"
+              size="none"
               className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-3"
               onClick={() => {
                 onSelectFood(f.id.toString(), f.name, f.image);
@@ -110,7 +115,7 @@ export const FoodSelectAutocomplete: React.FC<FoodSelectAutocompleteProps> = ({
                 </div>
               )}
               <span className="truncate">{f.name}</span>
-            </button>
+            </Button>
           ))}
           
           {filteredFoods.length === 0 && search && (
