@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Star, MapPin, Utensils } from 'lucide-react';
 import { Avatar } from '@/components/base/Avatar';
+import { Button } from '@/components/base/Button';
 import { PostImageViewer } from './PostImageViewer';
 import { PostData } from '../PostCard';
 
@@ -90,12 +91,15 @@ export function PostContent({ post }: PostContentProps) {
               {post.content}
             </p>
             {isLongContent && (
-              <button
+              <Button
+                type="button"
+                variant="none"
+                size="none"
                 onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
                 className="text-[11px] font-bold text-primary hover:underline mt-1"
               >
                 {isExpanded ? 'Thu gọn' : 'Xem thêm'}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -135,12 +139,15 @@ export function PostContent({ post }: PostContentProps) {
               {post.content}
             </p>
             {isLongContent && (
-              <button
+              <Button
+                type="button"
+                variant="none"
+                size="none"
                 onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
                 className="text-xs font-bold text-primary hover:underline mt-1"
               >
                 {isExpanded ? 'Thu gọn' : 'Xem thêm'}
-              </button>
+              </Button>
             )}
           </div>
 

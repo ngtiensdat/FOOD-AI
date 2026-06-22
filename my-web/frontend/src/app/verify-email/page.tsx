@@ -7,6 +7,7 @@ import { SafeImage } from '@/components/base/SafeImage';
 import { ArrowLeft, Mail, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 import { Alert } from '@/components/base/Alert';
 import { authService } from '@/services/auth.service';
 import { toast } from '@/store/useToastStore';
@@ -179,10 +180,11 @@ function VerifyEmailForm() {
 
             <div className="flex justify-center gap-3 md:gap-4 my-8">
               {otp.map((digit, idx) => (
-                <input
+                <Input
                   key={idx}
+                  variant="none"
                   ref={(el) => {
-                    if (el) inputRefs.current[idx] = el;
+                    if (el) inputRefs.current[idx] = el as HTMLInputElement;
                   }}
                   type="text"
                   maxLength={1}
@@ -190,8 +192,8 @@ function VerifyEmailForm() {
                   inputMode="numeric"
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  onPaste={idx === 0 ? handlePaste : undefined}
+                  onKeyDown={(e) => handleKeyDown(idx, e as React.KeyboardEvent<HTMLInputElement>)}
+                  onPaste={idx === 0 ? (e) => handlePaste(e as React.ClipboardEvent<HTMLInputElement>) : undefined}
                   className="w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-extrabold text-gray-900 border-2 border-gray-150 rounded-2xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   disabled={isLoading || !!success}
                 />
@@ -205,9 +207,12 @@ function VerifyEmailForm() {
 
           <div className="mt-8 text-center text-gray-500 text-small">
             {LABELS.AUTH.NO_OTP_RECEIVED}{' '}
-            <button
+            <Button
+              type="button"
               onClick={handleResend}
               disabled={resendCooldown > 0 || !!success}
+              variant="none"
+              size="none"
               className={`font-bold transition-colors ${
                 resendCooldown > 0
                   ? 'text-gray-400 cursor-not-allowed'
@@ -215,7 +220,7 @@ function VerifyEmailForm() {
               }`}
             >
               {resendCooldown > 0 ? LABELS.AUTH.RESEND_OTP_COOLDOWN(resendCooldown) : LABELS.AUTH.RESEND_OTP_BTN}
-            </button>
+            </Button>
           </div>
         </>
       )}
