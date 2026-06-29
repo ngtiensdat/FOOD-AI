@@ -61,4 +61,24 @@ export class CreateFoodDto {
   @IsOptional()
   @Type(() => Number)
   categoryId?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  calories?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  carbs?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  protein?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  fat?: number;
 }

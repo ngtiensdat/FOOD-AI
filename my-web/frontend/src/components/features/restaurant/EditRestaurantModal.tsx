@@ -92,7 +92,7 @@ export const EditRestaurantModal: React.FC<EditRestaurantModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="modal-card max-w-4xl w-full !p-0 shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] max-h-[750px] relative z-10"
+          className="modal-card max-w-4xl w-[92%] md:w-full !p-0 shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] max-h-[750px] relative z-10"
         >
         
         {/* Left Column: Real-time Live Preview Panel */}

@@ -23,6 +23,10 @@ export interface Food {
   lat?: number | null;
   lng?: number | null;
   categoryId?: number | null;
+  calories?: number | null;
+  carbs?: number | null;
+  protein?: number | null;
+  fat?: number | null;
   createdAt: string;
   updatedAt: string;
   totalOrder?: number;
@@ -43,6 +47,11 @@ export interface CreateFoodInput {
   image?: string;
   tags?: string[];
   restaurantId?: number | null;
+  categoryId?: number | null;
+  calories?: number | null;
+  carbs?: number | null;
+  protein?: number | null;
+  fat?: number | null;
 }
 
 export interface UpdateFoodInput extends Partial<CreateFoodInput> {

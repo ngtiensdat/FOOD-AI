@@ -24,7 +24,7 @@ export const RestaurantLivePreview: React.FC<RestaurantLivePreviewProps> = ({
   openingHours,
 }) => {
   return (
-    <div className="w-full md:w-5/12 bg-gray-50 dark:bg-slate-950 p-6 flex flex-col justify-between border-r border-gray-100 dark:border-slate-800 overflow-y-auto">
+    <div className="hidden md:flex w-full md:w-5/12 bg-gray-50 dark:bg-slate-950 p-6 flex-col justify-between border-r border-gray-100 dark:border-slate-800 overflow-y-auto">
       <div>
         <h4 className="text-small font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
           <RefreshCw size={14} className="animate-spin text-primary" /> {LABELS.RESTAURANT.EDIT_MODAL.LIVE_PREVIEW}

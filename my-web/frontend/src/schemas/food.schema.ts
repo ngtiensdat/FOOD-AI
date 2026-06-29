@@ -10,6 +10,10 @@ export const foodSchema = z.object({
   tags: z.array(z.string()).optional(),
   restaurantId: z.number({ message: 'Vui lòng chọn cơ sở kinh doanh' }),
   categoryId: z.number().optional().nullable(),
+  calories: z.number().optional().nullable(),
+  carbs: z.number().optional().nullable(),
+  protein: z.number().optional().nullable(),
+  fat: z.number().optional().nullable(),
 });
 
 export type FoodInput = z.infer<typeof foodSchema>;

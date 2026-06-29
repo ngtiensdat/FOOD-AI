@@ -50,7 +50,7 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
         </div>
       </header>
 
-      <div className="card-container overflow-hidden">
+      <div className="card-container overflow-x-auto w-full custom-scrollbar">
       <table className="w-full text-left">
         <thead>
           <tr className="table-header-row">

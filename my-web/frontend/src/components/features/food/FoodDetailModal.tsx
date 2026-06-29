@@ -41,6 +41,10 @@ export interface FoodDetailData {
   } | null;
   totalOrder?: number;
   totalLike?: number;
+  calories?: number;
+  carbs?: number;
+  protein?: number;
+  fat?: number;
   [key: string]: unknown;
 }
 
@@ -146,6 +150,32 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
               <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{LABELS.FOOD.DETAIL_TITLE}</h4>
               <p className="leading-relaxed text-body">{food.description}</p>
             </div>
+
+            {(food.calories || food.carbs || food.protein || food.fat) ? (
+              <div className="p-4 bg-orange-50/50 dark:bg-slate-900/50 border border-orange-100/50 dark:border-slate-800/80 rounded-2xl">
+                <h4 className="text-small font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                  {LABELS.FOOD.NUTRITION_TITLE}
+                </h4>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm text-center">
+                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">{LABELS.FOOD.NUTRITION_CALORIES}</span>
+                    <span className="block text-base font-black text-primary mt-1">{food.calories ?? 0} <span className="text-[10px] font-normal text-gray-400">kcal</span></span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm text-center">
+                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Carbs</span>
+                    <span className="block text-base font-black text-gray-700 dark:text-slate-200 mt-1">{food.carbs ?? 0}<span className="text-[10px] font-normal text-gray-400">g</span></span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm text-center">
+                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Protein</span>
+                    <span className="block text-base font-black text-gray-700 dark:text-slate-200 mt-1">{food.protein ?? 0}<span className="text-[10px] font-normal text-gray-400">g</span></span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-950 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm text-center">
+                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fat</span>
+                    <span className="block text-base font-black text-gray-700 dark:text-slate-200 mt-1">{food.fat ?? 0}<span className="text-[10px] font-normal text-gray-400">g</span></span>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl group/addr">
               <MapPin className="text-primary mt-1 shrink-0" size={20} />

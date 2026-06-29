@@ -6,6 +6,7 @@
 
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { MediaService } from '../media/media.service';
+import { VectorSyncService } from '../ai/services/vector-sync.service';
 
 function extractPublicId(url: string): string | null {
   if (!url || !url.includes('res.cloudinary.com')) return null;
@@ -35,10 +37,13 @@ function extractPublicId(url: string): string | null {
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     private userRepository: UserRepository,
     private prisma: PrismaService,
     private mediaService: MediaService,
+    private readonly vectorSyncService: VectorSyncService,
   ) {}
 
   async getProfile(targetId: number, requesterId?: number) {
@@ -169,6 +174,16 @@ export class UserService {
           .deleteImage(publicId)
           .catch((err) => console.error('Lỗi xóa cover cũ:', err));
       }
+    }
+
+    // 5. Cập nhật vector sở thích người dùng nếu preferences thay đổi
+    if (data.preferences !== undefined) {
+      this.vectorSyncService.updateUserEmbedding(userId).catch((err) => {
+        this.logger.warn(
+          `Failed to update user embedding for user ${userId}:`,
+          err,
+        );
+      });
     }
 
     return { message: MESSAGES.USER.UPDATE_SUCCESS };

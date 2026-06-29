@@ -28,6 +28,10 @@ export interface FoodFormData {
   mapUrl?: string;
   lat?: string | number;
   lng?: string | number;
+  calories?: string | number;
+  carbs?: string | number;
+  protein?: string | number;
+  fat?: string | number;
   [key: string]: unknown;
 }
 
@@ -150,7 +154,7 @@ export const FoodFormModal = ({
               onChange={e => setFormData({ ...formData, name: e.target.value })} 
               className="md:col-span-2" 
             />
-            <Input 
+             <Input 
               label={LABELS.FORM.PRICE} 
               type="number" 
               value={formData.price} 
@@ -160,6 +164,30 @@ export const FoodFormModal = ({
               label={LABELS.FORM.TAGS} 
               value={formData.tags} 
               onChange={e => setFormData({ ...formData, tags: e.target.value })} 
+            />
+            <Input 
+              label={LABELS.FORM.CALORIES} 
+              type="number" 
+              value={formData.calories || ''} 
+              onChange={e => setFormData({ ...formData, calories: e.target.value })} 
+            />
+            <Input 
+              label={LABELS.FORM.CARBS} 
+              type="number" 
+              value={formData.carbs || ''} 
+              onChange={e => setFormData({ ...formData, carbs: e.target.value })} 
+            />
+            <Input 
+              label={LABELS.FORM.PROTEIN} 
+              type="number" 
+              value={formData.protein || ''} 
+              onChange={e => setFormData({ ...formData, protein: e.target.value })} 
+            />
+            <Input 
+              label={LABELS.FORM.FAT} 
+              type="number" 
+              value={formData.fat || ''} 
+              onChange={e => setFormData({ ...formData, fat: e.target.value })} 
             />
             <Input 
               label={LABELS.FORM.IMAGE_URL} 

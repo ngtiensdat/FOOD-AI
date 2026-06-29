@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -18,14 +19,20 @@ import { POINTS_PER_LEVEL } from '../../common/constants/badge.constant';
 import { CacheService } from '../../common/services/cache.service';
 import { NotificationGateway } from '../notification/notification.gateway';
 import { GamificationQueueService } from '../badge/gamification-queue.service';
+import { VectorSyncService } from '../ai/services/vector-sync.service';
+import { VectorRepository } from '../ai/vector.repository';
 
 @Injectable()
 export class PostService {
+  private readonly logger = new Logger(PostService.name);
+
   constructor(
     private prisma: PrismaService,
     private cacheService: CacheService,
     private readonly notificationGateway: NotificationGateway,
     private readonly gamificationQueue: GamificationQueueService,
+    private readonly vectorSyncService: VectorSyncService,
+    private readonly vectorRepository: VectorRepository,
   ) {}
 
   async awardPoints(
@@ -72,58 +79,37 @@ export class PostService {
       where.authorId = authorId;
     }
 
-    const cacheKey = `posts:list:${authorId || 'all'}:${page}:${pageSize}`;
-
-    const fetchPosts = async () => {
-      const posts = await this.prisma.post.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+    const postInclude = {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          level: true,
+          badgeTitle: true,
+          profile: { select: { avatar: true } },
+        },
+      },
+      food: { select: { id: true, name: true } },
+      restaurant: { select: { id: true, name: true } },
+      likes: true,
+      savedPosts: true,
+      comments: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'asc' as const },
         include: {
-          author: {
+          user: {
             select: {
               id: true,
               name: true,
-              role: true,
-              level: true,
-              badgeTitle: true,
               profile: { select: { avatar: true } },
             },
           },
-          food: { select: { id: true, name: true } },
-          restaurant: { select: { id: true, name: true } },
-          likes: true,
-          savedPosts: true,
-          comments: {
+          replies: {
             where: { deletedAt: null },
-            orderBy: { createdAt: 'asc' },
+            orderBy: { createdAt: 'asc' as const },
             include: {
               user: {
-                select: {
-                  id: true,
-                  name: true,
-                  profile: { select: { avatar: true } },
-                },
-              },
-              replies: {
-                where: { deletedAt: null },
-                orderBy: { createdAt: 'asc' },
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      profile: { select: { avatar: true } },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          sharedFrom: {
-            include: {
-              author: {
                 select: {
                   id: true,
                   name: true,
@@ -133,6 +119,108 @@ export class PostService {
             },
           },
         },
+      },
+      sharedFrom: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              profile: { select: { avatar: true } },
+            },
+          },
+        },
+      },
+    };
+
+    const cacheKey = `posts:list:${authorId || 'all'}:${page}:${pageSize}`;
+
+    // Vector-based recommendation: when a logged-in user browses the general feed
+    const useVectorRecommendation = viewerId && !authorId;
+    let userEmbeddingRaw: number[] | null = null;
+
+    if (useVectorRecommendation) {
+      try {
+        interface EmbeddingRow {
+          embedding: string | null;
+        }
+        const rows = await this.prisma.$queryRaw<EmbeddingRow[]>`
+          SELECT embedding::text FROM user_profiles WHERE user_id = ${viewerId}
+        `;
+        if (rows.length > 0 && rows[0].embedding) {
+          userEmbeddingRaw = JSON.parse(rows[0].embedding) as number[];
+        }
+      } catch (e) {
+        this.logger.warn(
+          'Không thể lấy embedding người dùng cho vector feed:',
+          e,
+        );
+      }
+    }
+
+    const fetchPosts = async () => {
+      // If user has an embedding vector, use cosine similarity ranking
+      if (userEmbeddingRaw && userEmbeddingRaw.length > 0) {
+        const offset = (page - 1) * pageSize;
+        const recommendedIds =
+          await this.vectorRepository.getRecommendedPostIds(
+            userEmbeddingRaw,
+            pageSize,
+            offset,
+          );
+
+        let posts;
+        if (recommendedIds.length > 0) {
+          // Fetch recommended posts
+          const recommendedPosts = await this.prisma.post.findMany({
+            where: { ...where, id: { in: recommendedIds } },
+            include: postInclude,
+          });
+
+          // Sort by the order returned from vector search (similarity DESC)
+          const idOrderMap = new Map(
+            recommendedIds.map((id, idx) => [id, idx]),
+          );
+          recommendedPosts.sort(
+            (a, b) =>
+              (idOrderMap.get(a.id) ?? 999) - (idOrderMap.get(b.id) ?? 999),
+          );
+
+          // If not enough results from vector search, fill with latest posts
+          if (recommendedPosts.length < pageSize) {
+            const excludeIds = recommendedPosts.map((p) => p.id);
+            const fillerPosts = await this.prisma.post.findMany({
+              where: { ...where, id: { notIn: excludeIds } },
+              orderBy: { createdAt: 'desc' },
+              take: pageSize - recommendedPosts.length,
+              include: postInclude,
+            });
+            posts = [...recommendedPosts, ...fillerPosts];
+          } else {
+            posts = recommendedPosts;
+          }
+        } else {
+          // No vector results, fall back to chronological
+          posts = await this.prisma.post.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            skip: offset,
+            take: pageSize,
+            include: postInclude,
+          });
+        }
+
+        const total = await this.prisma.post.count({ where });
+        return { posts, total };
+      }
+
+      // Default: chronological order
+      const posts = await this.prisma.post.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: postInclude,
       });
 
       const total = await this.prisma.post.count({ where });
@@ -269,6 +357,14 @@ export class PostService {
     await this.gamificationQueue.addJob(userId, 'POST_REVIEW');
     await this.cacheService.invalidatePattern('posts:*');
 
+    // Fire-and-forget: generate post embedding for feed recommendation
+    this.vectorSyncService.updatePostEmbedding(post.id).catch((err) => {
+      this.logger.warn(
+        `Failed to generate embedding for post ${post.id}:`,
+        err,
+      );
+    });
+
     return post;
   }
 
@@ -333,6 +429,15 @@ export class PostService {
     });
 
     await this.cacheService.invalidatePattern('posts:*');
+
+    // Fire-and-forget: re-generate post embedding after content update
+    this.vectorSyncService.updatePostEmbedding(updatedPost.id).catch((err) => {
+      this.logger.warn(
+        `Failed to update embedding for post ${updatedPost.id}:`,
+        err,
+      );
+    });
+
     return updatedPost;
   }
 

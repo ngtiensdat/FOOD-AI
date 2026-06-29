@@ -26,6 +26,10 @@ export const EXCEL_HEADERS = {
   FOOD_DESC: 'Food Desc',
   FOOD_IMAGE: 'Food Image URL',
   FOOD_TAGS: 'Food Tags',
+  FOOD_CALORIES: 'Calories',
+  FOOD_CARBS: 'Carbs',
+  FOOD_PROTEIN: 'Protein',
+  FOOD_FAT: 'Fat',
 };
 
 export const DEFAULT_VALUES = {
@@ -47,6 +51,10 @@ export interface MerchantFood {
   description: string;
   image: string;
   tags: string[];
+  calories?: number;
+  carbs?: number;
+  protein?: number;
+  fat?: number;
 }
 
 export interface MerchantGroup {
@@ -131,6 +139,19 @@ export class MerchantImportService {
       if (foodName && foodPrice) {
         const group = merchantsMap.get(email);
         if (group) {
+          const calVal = row[EXCEL_HEADERS.FOOD_CALORIES]
+            ? parseFloat(String(row[EXCEL_HEADERS.FOOD_CALORIES]))
+            : 0;
+          const carbVal = row[EXCEL_HEADERS.FOOD_CARBS]
+            ? parseFloat(String(row[EXCEL_HEADERS.FOOD_CARBS]))
+            : 0;
+          const protVal = row[EXCEL_HEADERS.FOOD_PROTEIN]
+            ? parseFloat(String(row[EXCEL_HEADERS.FOOD_PROTEIN]))
+            : 0;
+          const fatVal = row[EXCEL_HEADERS.FOOD_FAT]
+            ? parseFloat(String(row[EXCEL_HEADERS.FOOD_FAT]))
+            : 0;
+
           group.foods.push({
             name: String(foodName),
             price: parseFloat(String(foodPrice)),
@@ -145,6 +166,10 @@ export class MerchantImportService {
                   .split(',')
                   .map((t) => t.trim())
               : [],
+            calories: isNaN(calVal) ? 0 : calVal,
+            carbs: isNaN(carbVal) ? 0 : carbVal,
+            protein: isNaN(protVal) ? 0 : protVal,
+            fat: isNaN(fatVal) ? 0 : fatVal,
           });
         }
       }
@@ -236,6 +261,10 @@ export class MerchantImportService {
                 description: food.description || '',
                 image: food.image || '',
                 tags: food.tags,
+                calories: food.calories ?? 0,
+                carbs: food.carbs ?? 0,
+                protein: food.protein ?? 0,
+                fat: food.fat ?? 0,
                 status: FoodStatus.APPROVED,
                 isActive: true,
               },

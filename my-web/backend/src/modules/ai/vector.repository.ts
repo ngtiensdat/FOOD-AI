@@ -100,4 +100,38 @@ export class VectorRepository {
       UPDATE user_profiles SET embedding = CAST(${vectorStr} AS vector) WHERE user_id = ${userId}
     `;
   }
+
+  async updatePostEmbedding(postId: number, vector: number[]) {
+    const vectorStr = `[${vector.join(',')}]`;
+    return this.prisma.$executeRaw`
+      UPDATE posts SET embedding = CAST(${vectorStr} AS vector) WHERE id = ${postId}
+    `;
+  }
+
+  async getRecommendedPostIds(
+    userVector: number[],
+    limit = 10,
+    offset = 0,
+  ): Promise<number[]> {
+    const vectorStr = `[${userVector.join(',')}]`;
+
+    interface RecommendedPostRow {
+      id: number;
+      similarity: number;
+    }
+
+    const rows = await this.prisma.$queryRaw<RecommendedPostRow[]>`
+      SELECT id,
+             (1 - (embedding <=> CAST(${vectorStr} AS vector))) as similarity
+      FROM posts
+      WHERE deleted_at IS NULL
+        AND status::text = 'APPROVED'
+        AND embedding IS NOT NULL
+      ORDER BY similarity DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+
+    return rows.map((r) => r.id);
+  }
 }

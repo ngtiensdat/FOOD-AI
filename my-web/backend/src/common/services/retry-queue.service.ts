@@ -7,7 +7,7 @@ import {
 import { RedisService } from '../../modules/ai/services/redis.service';
 
 export interface RetryJob {
-  type: 'food' | 'user';
+  type: 'food' | 'user' | 'post';
   id: number;
 }
 
@@ -24,7 +24,7 @@ export class RetryQueueService implements OnModuleInit, OnModuleDestroy {
     this.processHandler = handler;
   }
 
-  async pushToQueue(type: 'food' | 'user', id: number) {
+  async pushToQueue(type: 'food' | 'user' | 'post', id: number) {
     const jobPayload: RetryJob = { type, id };
     this.logger.log(
       `Pushing failed embedding job to DLQ: ${JSON.stringify(jobPayload)}`,

@@ -10,6 +10,8 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { UserRole, Post, Comment } from '@prisma/client';
 import { NotificationGateway } from '../notification/notification.gateway';
 import { GamificationQueueService } from '../badge/gamification-queue.service';
+import { VectorSyncService } from '../ai/services/vector-sync.service';
+import { VectorRepository } from '../ai/vector.repository';
 
 describe('PostService', () => {
   let service: PostService;
@@ -59,6 +61,17 @@ describe('PostService', () => {
       addJob: jest.fn(),
     };
 
+    const mockVectorSyncService = {
+      updatePostEmbedding: jest.fn().mockResolvedValue(undefined),
+      updateUserEmbedding: jest.fn().mockResolvedValue(undefined),
+      getEmbedding: jest.fn().mockResolvedValue([]),
+    };
+
+    const mockVectorRepository = {
+      getRecommendedPostIds: jest.fn().mockResolvedValue([]),
+      updatePostEmbedding: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PostService,
@@ -69,6 +82,8 @@ describe('PostService', () => {
           provide: GamificationQueueService,
           useValue: mockGamificationQueueService,
         },
+        { provide: VectorSyncService, useValue: mockVectorSyncService },
+        { provide: VectorRepository, useValue: mockVectorRepository },
       ],
     }).compile();
 

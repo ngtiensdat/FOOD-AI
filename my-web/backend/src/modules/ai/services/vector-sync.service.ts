@@ -85,4 +85,50 @@ export class VectorSyncService {
       });
     }
   }
+
+  async updatePostEmbedding(postId: number) {
+    try {
+      await retry(
+        async () => {
+          const post = await this.prisma.post.findUnique({
+            where: { id: postId },
+            include: {
+              author: true,
+              food: { include: { category: true } },
+              restaurant: true,
+            },
+          });
+
+          if (!post || post.deletedAt) return;
+
+          const authorName = post.author.name || 'Người dùng';
+          const titleStr = post.title ? `Tiêu đề: ${post.title}. ` : '';
+          const contentStr = post.content ? `Nội dung: ${post.content}. ` : '';
+          const foodStr = post.food
+            ? `Món ăn liên quan: ${post.food.name} (${post.food.category?.name || ''}). Mô tả món: ${post.food.description || ''}. `
+            : '';
+          const restaurantStr = post.restaurant
+            ? `Nhà hàng liên kết: ${post.restaurant.name}. Địa chỉ: ${post.restaurant.address}. Lĩnh vực ẩm thực: ${post.restaurant.cuisines?.join(', ') || ''}.`
+            : '';
+
+          const textToEmbed = `Bài viết ẩm thực của tác giả ${authorName}. ${titleStr}${contentStr}${foodStr}${restaurantStr}`;
+
+          const embedding = await this.getEmbedding(textToEmbed);
+          await this.vectorRepository.updatePostEmbedding(postId, embedding);
+        },
+        3, // 3 retries
+        500, // delay 500ms
+        2, // exponential backoff
+      );
+      this.logger.log(`Cập nhật vector thành công cho bài đăng ID: ${postId}`);
+    } catch (error) {
+      this.logger.error(
+        `Lỗi cập nhật vector cho bài đăng ${postId} sau 3 lần thử lại:`,
+        error instanceof Error ? error.stack : error,
+      );
+      await this.retryQueueService.pushToQueue('post', postId).catch((qErr) => {
+        this.logger.error(`Không thể đưa bài đăng ${postId} vào DLQ:`, qErr);
+      });
+    }
+  }
 }

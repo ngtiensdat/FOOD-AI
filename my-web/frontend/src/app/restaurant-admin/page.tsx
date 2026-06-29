@@ -248,7 +248,7 @@ export default function RestaurantDashboard() {
         </Sidebar>
 
         {/* Content Area */}
-        <main className={`flex-1 p-8 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-80'}`}>
+        <main className={`flex-1 p-4 md:p-8 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-0 md:ml-20' : 'ml-0 md:ml-80'}`}>
           <motion.div
             initial={{ opacity: 0, x: slideDirection === 'left' ? 100 : -100 }}
             animate={{ opacity: 1, x: 0 }}
@@ -494,6 +494,10 @@ export default function RestaurantDashboard() {
               lng: String(data.lng ?? ''),
               restaurantId: String(data.restaurantId ?? ''),
               categoryId: String(data.categoryId ?? ''),
+              calories: String(data.calories ?? ''),
+              carbs: String(data.carbs ?? ''),
+              protein: String(data.protein ?? ''),
+              fat: String(data.fat ?? ''),
             })}
             onSubmit={actions.handleSubmit}
             myBranches={myBranches}
