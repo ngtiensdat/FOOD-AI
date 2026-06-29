@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Folder, FileText, HelpCircle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { Category } from '@/services/category.service';
@@ -97,9 +98,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-h3 text-gray-800 dark:text-slate-100">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.TITLE}</h3>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
+            {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.TITLE}
+          </h2>
           <div title={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.HELP_TOOLTIP} className="cursor-help text-gray-400 hover:text-primary transition-colors bg-gray-100 p-1.5 rounded-full dark:bg-slate-800">
             <HelpCircle size={16} />
           </div>
@@ -107,12 +110,12 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
         <Button onClick={handleOpenAddGroup} className="flex items-center gap-2 rounded-xl">
           <Plus size={18} /> {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}
         </Button>
-      </div>
+      </header>
 
       {/* Hướng dẫn sử dụng */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4 rounded-2xl text-blue-800 dark:text-blue-300 text-sm">
+      <div className="bg-primary/5 dark:bg-primary/10 border border-primary/10 p-4 rounded-2xl text-primary dark:text-primary-light text-sm">
         <p className="font-bold mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_TITLE}</p>
-        <ul className="list-disc pl-5 space-y-1">
+        <ul className="list-disc pl-5 space-y-1 text-gray-500 dark:text-slate-400">
           <li>{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_GROUP}</li>
           <li>{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GUIDE_CATEGORY}</li>
         </ul>
@@ -173,57 +176,87 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
       </div>
 
       {/* Modals */}
-      {isGroupModalOpen && (
-        <div className="modal-wrapper">
-          <div className="modal-overlay" onClick={() => setIsGroupModalOpen(false)} />
-          <div className="modal-card max-w-md w-full !p-6 relative">
-            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_GROUP : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}</h3>
-            <form onSubmit={handleSubmitGroup} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_NAME} <span className="text-rose-500">*</span></label>
-                <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
-                  {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_GROUP}
-                </p>
-                <Input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
-                <Button type="submit">{LABELS.COMMON.SAVE}</Button>
-              </div>
-            </form>
+      <AnimatePresence>
+        {isGroupModalOpen && (
+          <div className="modal-wrapper">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="modal-overlay" 
+              onClick={() => setIsGroupModalOpen(false)} 
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="modal-card max-w-md w-full !p-6 relative z-10"
+            >
+              <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_GROUP : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}</h3>
+              <form onSubmit={handleSubmitGroup} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_NAME} <span className="text-rose-500">*</span></label>
+                  <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.GROUP_PLACEHOLDER} value={groupFormData.name} onChange={e => setGroupFormData({ ...groupFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
+                    {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_GROUP}
+                  </p>
+                  <Input required min={0} max={999} type="number" value={groupFormData.order} onChange={e => setGroupFormData({ ...groupFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsGroupModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
+                  <Button type="submit">{LABELS.COMMON.SAVE}</Button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {isCategoryModalOpen && (
-        <div className="modal-wrapper">
-          <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)} />
-          <div className="modal-card max-w-md w-full !p-6 relative">
-            <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_CATEGORY}</h3>
-            <form onSubmit={handleSubmitCategory} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_NAME} <span className="text-rose-500">*</span></label>
-                <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
-                  {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_CATEGORY}
-                </p>
-                <Input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
-                <Button type="submit">{LABELS.COMMON.SAVE}</Button>
-              </div>
-            </form>
+      <AnimatePresence>
+        {isCategoryModalOpen && (
+          <div className="modal-wrapper">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="modal-overlay" 
+              onClick={() => setIsCategoryModalOpen(false)} 
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="modal-card max-w-md w-full !p-6 relative z-10"
+            >
+              <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_CATEGORY}</h3>
+              <form onSubmit={handleSubmitCategory} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_NAME} <span className="text-rose-500">*</span></label>
+                  <Input required minLength={2} maxLength={50} type="text" placeholder={LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.CATEGORY_PLACEHOLDER} value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">{LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.DISPLAY_ORDER} <span className="text-rose-500">*</span></label>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 leading-relaxed">
+                    {LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ORDER_DESC_CATEGORY}
+                  </p>
+                  <Input required min={0} max={999} type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: (e.target as HTMLInputElement).value })} variant="none" className="form-input rounded-xl px-4 py-3 text-sm w-full" />
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{LABELS.COMMON.CANCEL}</Button>
+                  <Button type="submit">{LABELS.COMMON.SAVE}</Button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <ConfirmModal
         isOpen={deleteConfirm !== null}

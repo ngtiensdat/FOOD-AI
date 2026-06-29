@@ -6,19 +6,21 @@
 'use client';
 
 import React from 'react';
-import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown, ShieldAlert, Award, Bell } from 'lucide-react';
+import { Shield, Check, Users, Store, ArrowLeft, Search, Pizza, ChevronDown, ShieldAlert, Award, Bell, Home, Compass, MessageSquare, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { useAdminData } from '@/hooks/useAdminData';
 import { useAdminActions } from '@/hooks/useAdminActions'; // Logic được tách ra đây
-import { Sidebar, SidebarItem } from '@/components/base/Sidebar';
+import { Sidebar, SidebarItem, useSidebarCollapse } from '@/components/base/Sidebar';
+import { Navbar } from '@/components/features/Navbar';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from '@/components/features/UserDropdown'; // Tái sử dụng component UserDropdown
+import { ThemeToggle } from '@/components/base/ThemeToggle';
 import { LABELS } from '@/constants/labels';
 // Feature Components
 import { AdminTable } from '@/components/features/admin/AdminTable';
@@ -30,7 +32,7 @@ import { LevelBadgeManagerTab } from '@/components/features/admin/LevelBadgeMana
 import { AdminNotificationTab } from '@/components/features/admin/AdminNotificationTab';
 
 export default function AdminDashboard() {
-  const { user, logout, isAdmin, loading: authLoading } = useAuth();
+  const { user, logout, isAdmin, isRestaurant, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // Bảo vệ route - Tự động redirect nếu chưa đăng nhập hoặc không phải ADMIN
@@ -43,6 +45,22 @@ export default function AdminDashboard() {
       }
     }
   }, [user, authLoading, isAdmin, router]);
+
+  const [slideDirection, setSlideDirection] = React.useState<'left' | 'right'>('left');
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const prevPath = sessionStorage.getItem('prevPath') || '';
+      sessionStorage.setItem('prevPath', '/admin');
+      if (prevPath) {
+        const pathOrder = ['/dashboard', '/restaurant-admin', '/admin'];
+        const prevIndex = pathOrder.indexOf(prevPath);
+        const currentIndex = pathOrder.indexOf('/admin');
+        if (prevIndex !== -1 && currentIndex !== -1) {
+          setSlideDirection(currentIndex > prevIndex ? 'left' : 'right');
+        }
+      }
+    }
+  }, []);
 
   const adminData = useAdminData();
   const [showImportModal, setShowImportModal] = React.useState(false);
@@ -77,133 +95,119 @@ export default function AdminDashboard() {
   const filteredCustomers = getFilteredCustomers();
   const filteredFoods = getFilteredFoods();
 
+  const { isCollapsed, toggleCollapse } = useSidebarCollapse();
+
+  const userSubItems = [
+    {
+      label: LABELS.ADMIN.APPROVE_MERCHANTS,
+      active: activeTab === 'merchants',
+      onClick: () => setActiveTab('merchants')
+    },
+    {
+      label: LABELS.ADMIN.MANAGE_MERCHANTS,
+      active: activeTab === 'users',
+      onClick: () => setActiveTab('users')
+    },
+    {
+      label: LABELS.ADMIN.MANAGE_CUSTOMERS,
+      active: activeTab === 'customers',
+      onClick: () => setActiveTab('customers')
+    }
+  ];
+
+  const contentSubItems = [
+    {
+      label: LABELS.ADMIN.MANAGE_MENU,
+      active: activeTab === 'menu',
+      onClick: () => setActiveTab('menu')
+    },
+    {
+      label: LABELS.MODERATION.TITLE,
+      active: activeTab === 'moderation',
+      onClick: () => setActiveTab('moderation')
+    }
+  ];
+
+  const systemSubItems = [
+    {
+      label: LABELS.ADMIN.MANAGE_LEVEL_BADGES,
+      active: activeTab === 'levels',
+      onClick: () => setActiveTab('levels')
+    },
+    {
+      label: LABELS.ADMIN.SEND_NOTIFICATION,
+      active: activeTab === 'notifications',
+      onClick: () => setActiveTab('notifications')
+    }
+  ];
+
   return (
-    <div className="admin-layout">
-      <Sidebar brandIcon={Shield} brandLabel={LABELS.ADMIN.PANEL_TITLE}>
-        <SidebarItem icon={Check} label={LABELS.ADMIN.APPROVE_MERCHANTS} active={activeTab === 'merchants'} onClick={() => setActiveTab('merchants')} />
-        <SidebarItem icon={Store} label={LABELS.ADMIN.MANAGE_MERCHANTS} active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
-        <SidebarItem icon={Users} label={LABELS.ADMIN.MANAGE_CUSTOMERS} active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
-        <SidebarItem icon={Pizza} label={LABELS.ADMIN.MANAGE_MENU} active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-        <SidebarItem icon={ShieldAlert} label={LABELS.MODERATION.TITLE} active={activeTab === 'moderation'} onClick={() => setActiveTab('moderation')} />
-        <SidebarItem icon={Award} label={LABELS.ADMIN.MANAGE_LEVEL_BADGES} active={activeTab === 'levels'} onClick={() => setActiveTab('levels')} />
-        <SidebarItem icon={Bell} label={LABELS.ADMIN.SEND_NOTIFICATION} active={activeTab === 'notifications'} onClick={() => setActiveTab('notifications')} />
-        <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
-      </Sidebar>
+    <div className="admin-layout flex flex-col min-h-screen bg-gray-50 dark:bg-slate-950">
+      <Navbar />
 
-      <main className="admin-main">
-        <header className="flex justify-between items-center mb-12">
-          <div className="flex flex-col">
-            <h2 className="text-h2 text-gray-800">
-              {activeTab === 'merchants' ? LABELS.ADMIN.APPROVE_MERCHANTS :
-                activeTab === 'menu' ? LABELS.ADMIN.MANAGE_MENU :
-                  activeTab === 'users' ? LABELS.ADMIN.MANAGE_MERCHANTS :
-                    activeTab === 'moderation' ? LABELS.MODERATION.TITLE :
-                      activeTab === 'levels' ? LABELS.ADMIN.MANAGE_LEVEL_BADGES :
-                        activeTab === 'notifications' ? LABELS.ADMIN.SEND_NOTIFICATION :
-                          LABELS.ADMIN.MANAGE_CUSTOMERS}
-            </h2>
-
-            {activeTab === 'menu' && (
-              <div className="flex gap-6 mt-4 text-small font-bold">
-                {[
-                  { id: 'merchant', label: LABELS.ADMIN.MERCHANT_FOOD },
-                  { id: 'system', label: LABELS.ADMIN.SYSTEM_FOOD }
-                ].map(tab => (
-                  <Button
-                    key={tab.id}
-                    onClick={() => setFoodSubTab(tab.id as 'system' | 'merchant')}
-                    className={`pb-2 border-b-2 transition-all ${foodSubTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                    variant="none"
-                    size="none"
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {activeTab !== 'moderation' && activeTab !== 'levels' && activeTab !== 'notifications' && (activeTab === 'users' || activeTab === 'menu') && (
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => setShowImportModal(true)}
-              >
-                <FileUp className="w-4 h-4" />
-                {LABELS.ADMIN.IMPORT_EXCEL}
-              </Button>
-            )}
-            {activeTab !== 'moderation' && activeTab !== 'levels' && activeTab !== 'notifications' && (
-              <Input
-                icon={Search}
-                placeholder={LABELS.COMMON.SEARCH}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-80"
-              />
-            )}
-            {user && (
-              <div className="flex items-center gap-3 relative">
-                <Button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all focus:outline-none cursor-pointer p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
-                  aria-label={LABELS.NAV.USER_MENU}
-                  variant="none"
-                  size="none"
-                >
-                  <Avatar
-                    src={user.avatar}
-                    name={user.name}
-                    size={40}
-                    className="border-2 border-white dark:border-slate-700 shadow-md bg-gray-100"
-                  />
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-500 dark:text-slate-400 transition-transform duration-300 ${showMenu ? 'rotate-180 text-primary' : ''
-                      }`}
-                  />
-                </Button>
-
-                {showMenu && (
-                  <>
-                    {/* Lớp phủ trong suốt hỗ trợ đóng menu khi click ra ngoài */}
-                    <div
-                      className="fixed inset-0 z-40 bg-transparent cursor-default"
-                      onClick={() => setShowMenu(false)}
-                    />
-                    <UserDropdown
-                      user={user}
-                      onLogout={logout}
-                      onSettingsClick={() => { window.location.href = '/?tab=settings'; setShowMenu(false); }}
-                      onClose={() => setShowMenu(false)}
-                    />
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </header>
-
-        {activeTab === 'moderation' ? (
-          <ModerationTab />
-        ) : activeTab === 'levels' ? (
-          <LevelBadgeManagerTab />
-        ) : activeTab === 'notifications' ? (
-          <AdminNotificationTab allUsers={adminData.allUsers} adminAvatar={user?.avatar || undefined} />
-        ) : (
-          <AdminTable
-            activeTab={activeTab as 'merchants' | 'users' | 'menu' | 'customers' | 'moderation'}
-            foodSubTab={foodSubTab}
-            loading={loading}
-            merchants={filteredMerchants}
-            users={filteredUsers}
-            customers={filteredCustomers}
-            foods={filteredFoods}
-            actions={actions}
+      {/* Main Container below Top Navbar */}
+      <div className="flex pt-20 min-h-[calc(100vh-5rem)] w-full">
+        {/* Sidebar shifted down and logo hidden */}
+        <Sidebar 
+          showBrand={false} 
+          className="top-20 h-[calc(100vh-5rem)] pt-4"
+          isCollapsed={isCollapsed}
+          onCollapseToggle={toggleCollapse}
+        >
+          <SidebarItem 
+            icon={Users} 
+            label={LABELS.ADMIN.MANAGE_USERS_TITLE} 
+            active={activeTab === 'merchants' || activeTab === 'users' || activeTab === 'customers'} 
+            subItems={userSubItems} 
           />
-        )}
+          <SidebarItem 
+            icon={Pizza} 
+            label={LABELS.ADMIN.MANAGE_CONTENT_TITLE} 
+            active={activeTab === 'menu' || activeTab === 'moderation'} 
+            subItems={contentSubItems} 
+          />
+          <SidebarItem 
+            icon={Award} 
+            label={LABELS.ADMIN.SYSTEM_CONFIG_TITLE} 
+            active={activeTab === 'levels' || activeTab === 'notifications'} 
+            subItems={systemSubItems} 
+          />
+          <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
+        </Sidebar>
+
+        {/* Content Area */}
+        <main className={`flex-1 p-8 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-80'}`}>
+          <motion.div
+            initial={{ opacity: 0, x: slideDirection === 'left' ? 100 : -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: 'tween', ease: 'easeOut', duration: 0.4 }}
+            className="w-full h-full"
+          >
+          {activeTab === 'moderation' ? (
+            <ModerationTab />
+          ) : activeTab === 'levels' ? (
+            <LevelBadgeManagerTab />
+          ) : activeTab === 'notifications' ? (
+            <AdminNotificationTab allUsers={adminData.allUsers} adminAvatar={user?.avatar || undefined} />
+          ) : (
+            <AdminTable
+              activeTab={activeTab}
+              foodSubTab={foodSubTab}
+              setFoodSubTab={setFoodSubTab}
+              loading={loading}
+              merchants={filteredMerchants}
+              users={filteredUsers}
+              customers={filteredCustomers}
+              foods={filteredFoods}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onImportExcelClick={() => setShowImportModal(true)}
+              actions={actions}
+            />
+          )}
+          </motion.div>
       </main>
+      </div>
 
       <AnimatePresence>
         {editingFood && (

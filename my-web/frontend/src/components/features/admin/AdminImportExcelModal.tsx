@@ -109,12 +109,12 @@ export function AdminImportExcelModal({ isOpen, onClose, onSuccess }: AdminImpor
           </div>
 
           <div className="p-6">
-            <div className="mb-6 flex justify-between items-center bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 p-4 rounded-xl">
+            <div className="mb-6 flex justify-between items-center bg-primary/5 dark:bg-primary/10 border border-primary/10 p-4 rounded-xl">
               <div>
-                <p className="text-sm font-semibold text-blue-900 dark:text-blue-300">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_TITLE}</p>
-                <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_DESC}</p>
+                <p className="text-sm font-semibold text-primary dark:text-primary-light">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_TITLE}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{LABELS.IMPORT_EXCEL.UI.TEMPLATE_DESC}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50">
+              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2 border-primary/25 text-primary hover:bg-primary/5 dark:border-primary/30 dark:text-primary-light dark:hover:bg-primary/10">
                 <Download className="w-4 h-4" />
                 {LABELS.IMPORT_EXCEL.UI.BTN_DOWNLOAD}
               </Button>

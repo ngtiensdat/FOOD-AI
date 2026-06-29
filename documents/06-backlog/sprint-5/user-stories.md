@@ -46,3 +46,22 @@
 **Acceptance Criteria (AC):**
 - [x] Thông báo Real-time khi được Like/Comment.
 - [x] Tab thông báo hiển thị danh sách các hoạt động mới nhất.
+
+### US-17+: Lưu bài viết (Saved Posts)
+- **As a** thành viên cộng đồng
+- **I want** lưu bài viết của người khác vào bộ sưu tập cá nhân
+- **So that** tôi có thể tìm và đọc lại chúng một cách dễ dàng trong tương lai.
+
+**Acceptance Criteria (AC):**
+- [x] Nút "Lưu bài viết" trên từng Card bài đăng trong Feed.
+- [x] Tab "Bài viết đã lưu" trong trang cá nhân hiển thị đầy đủ danh sách bài đăng đã lưu.
+
+### US-17++: Chia sẻ nội bộ bài viết (Internal Post Share)
+- **As a** thành viên cộng đồng
+- **I want** chia sẻ bài viết của người khác lên trang cá nhân của mình
+- **So that** bạn bè theo dõi tôi có thể nhìn thấy nội dung đó.
+
+**Acceptance Criteria (AC):**
+- [x] Nút "Chia sẻ" cho phép đăng lại bài viết gốc về tường nhà mình.
+- [x] Bài đăng dạng share hiển thị liên kết trực tiếp và thông tin tác giả của bài viết gốc.
+

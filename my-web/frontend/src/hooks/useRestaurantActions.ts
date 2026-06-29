@@ -20,7 +20,7 @@ import { foodSchema } from '@/schemas/food.schema';
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'views' | 'interactions' | 'conversion' | 'activity'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);

@@ -1,16 +1,23 @@
 /**
  * Mục đích file này để làm gì: Component giao diện cơ bản (Base UI) hiển thị Thanh điều hướng bên (Sidebar) và các mục menu con (SidebarItem).
  * Các file khác hay file này có ý nghĩa như nào: Là một thành phần UI thuần, cung cấp layout điều hướng cố định (fixed) bên trái. Được dùng chủ yếu trong trang Admin hoặc Dashboard.
- * Các chức năng đặc biệt: `SidebarItem` thông minh tự động nhận diện nếu có truyền `href` thì render thẻ `<Link>` để chuyển trang tối ưu trong Next.js, nếu không sẽ tự động render thẻ `<Button>`. Hỗ trợ biến thể `danger` cho các thao tác nguy hiểm (vd: Đăng xuất).
- * Các biến, hàm đặc biệt trong file: Mặc định tự gọi `LABELS.COMMON.BRAND_NAME` cho logo/tên thương hiệu để đảm bảo nguyên tắc Zero Hardcode.
+ * Các chức năng đặc biệt: `SidebarItem` thông minh hỗ trợ thu gọn (collapsed), tooltip trên hover, submenu lồng nhau, nhận diện Link/Button tự động.
  */
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import { LucideIcon, Sparkles } from 'lucide-react';
+import { LucideIcon, Sparkles, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Button } from '@/components/base/Button';
+
+export interface SubItem {
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+  href?: string;
+  icon?: LucideIcon;
+}
 
 export interface SidebarItemProps {
   icon: LucideIcon;
@@ -19,34 +26,192 @@ export interface SidebarItemProps {
   onClick?: () => void;
   active?: boolean;
   variant?: 'default' | 'danger';
+  isCollapsed?: boolean;
+  subItems?: SubItem[];
 }
 
-export const SidebarItem = ({ icon: Icon, label, href, onClick, active, variant = 'default' }: SidebarItemProps) => {
-  const baseStyles = "w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all text-small";
-  const activeStyles = "bg-orange-50 text-primary shadow-sm shadow-orange-100";
-  const inactiveStyles = "text-gray-400 hover:bg-gray-50 hover:text-gray-600";
-  const dangerStyles = "text-red-400 hover:bg-red-50 hover:text-red-500";
+export const SidebarItem = ({ 
+  icon: Icon, 
+  label, 
+  href, 
+  onClick, 
+  active, 
+  variant = 'default', 
+  isCollapsed = false,
+  subItems 
+}: SidebarItemProps) => {
+  const hasSubItems = subItems && subItems.length > 0;
+  const storageKey = `sidebar-menu-open-${label}`;
+  
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  const content = (
-    <>
-      <Icon size={20} />
-      <span>{label}</span>
-    </>
+  // Khôi phục trạng thái đóng/mở từ localStorage
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && hasSubItems) {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        setIsOpen(saved === 'true');
+      } else {
+        // Mặc định là đóng khi mở trang
+        setIsOpen(false);
+      }
+    }
+  }, [hasSubItems, storageKey]);
+
+  const baseStyles = `w-full flex items-center justify-between rounded-2xl font-bold transition-all text-small cursor-pointer group relative ${
+    isCollapsed ? 'px-4 py-4 justify-center' : 'px-6 py-4 gap-4'
+  }`;
+  
+  const activeStyles = "bg-primary text-white shadow-md shadow-primary/20 dark:bg-primary dark:text-white";
+  const inactiveStyles = "text-gray-400 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-gray-600 dark:hover:text-slate-200";
+  const dangerStyles = "text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500";
+
+  const handleToggleOpen = (e: React.MouseEvent) => {
+    if (hasSubItems && !isCollapsed) {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextOpen = !isOpen;
+      setIsOpen(nextOpen);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, String(nextOpen));
+      }
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
+  const itemContent = (
+    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-4'} w-full`}>
+      <Icon size={20} className={active ? "text-white" : ""} />
+      {!isCollapsed && <span className="truncate flex-1 text-left">{label}</span>}
+      {hasSubItems && !isCollapsed && (
+        <ChevronDown 
+          size={16} 
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        />
+      )}
+      {/* Tooltip khi bị collapsed */}
+      {isCollapsed && (
+        <div className="absolute left-full ml-4 px-3 py-2 bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-100 text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-md z-[999] font-medium">
+          {label}
+        </div>
+      )}
+    </div>
   );
 
-  if (href) {
-    return (
-      <Link href={href} className={`${baseStyles} ${active ? activeStyles : (variant === 'danger' ? dangerStyles : inactiveStyles)}`}>
-        {content}
-      </Link>
-    );
-  }
+  // Submenu nổi khi hover ở chế độ collapsed
+  const collapsedSubMenu = isCollapsed && hasSubItems && (
+    <div className="absolute left-full top-0 ml-4 py-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto min-w-[200px] z-[999] flex flex-col space-y-1 p-2">
+      <div className="px-3 py-1.5 text-[10px] font-black uppercase text-gray-400 dark:text-slate-500 border-b border-gray-50 dark:border-slate-800 mb-1">
+        {label}
+      </div>
+      {subItems.map((sub, idx) => (
+        sub.href ? (
+          <Link
+            key={idx}
+            href={sub.href}
+            className={`px-3 py-2 rounded-xl text-xs font-bold text-left block transition-colors ${
+              sub.active
+                ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200'
+            }`}
+          >
+            {sub.label}
+          </Link>
+        ) : (
+          <button
+            key={idx}
+            onClick={sub.onClick}
+            className={`w-full px-3 py-2 rounded-xl text-xs font-bold text-left block transition-colors ${
+              sub.active
+                ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200'
+            }`}
+          >
+            {sub.label}
+          </button>
+        )
+      ))}
+    </div>
+  );
 
-  return (
-    <Button onClick={onClick} variant="none" size="none" className={`${baseStyles} ${active ? activeStyles : (variant === 'danger' ? dangerStyles : inactiveStyles)}`}>
-      {content}
+  const mainItem = href && !hasSubItems ? (
+    <Link href={href} className={`${baseStyles} ${active ? activeStyles : (variant === 'danger' ? dangerStyles : inactiveStyles)}`}>
+      {itemContent}
+    </Link>
+  ) : (
+    <Button 
+      onClick={handleToggleOpen} 
+      variant="none" 
+      size="none" 
+      className={`${baseStyles} ${active ? activeStyles : (variant === 'danger' ? dangerStyles : inactiveStyles)}`}
+    >
+      {itemContent}
+      {collapsedSubMenu}
     </Button>
   );
+
+  return (
+    <div className="w-full flex flex-col">
+      {mainItem}
+      
+      {/* Menu con lồng bên trong khi mở rộng */}
+      {hasSubItems && !isCollapsed && isOpen && (
+        <div className="flex flex-col ml-8 mt-2 space-y-1.5 pl-4 border-l border-gray-100 dark:border-slate-800/80 animate-in fade-in slide-in-from-top-2 duration-200">
+          {subItems.map((sub, idx) => {
+            const subStyles = `w-full text-left py-2 px-4 rounded-xl font-bold transition-all text-xs flex items-center gap-2 cursor-pointer ${
+              sub.active 
+                ? 'text-primary bg-primary/[0.04] dark:bg-primary/[0.08]' 
+                : 'text-gray-400 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-gray-600 dark:hover:text-slate-200'
+            }`;
+            const SubIcon = sub.icon;
+            
+            const subContent = (
+              <>
+                {SubIcon && <SubIcon size={14} />}
+                <span>{sub.label}</span>
+              </>
+            );
+
+            if (sub.href) {
+              return (
+                <Link key={idx} href={sub.href} className={subStyles}>
+                  {subContent}
+                </Link>
+              );
+            }
+
+            return (
+              <Button key={idx} onClick={sub.onClick} variant="none" size="none" className={subStyles}>
+                {subContent}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const useSidebarCollapse = () => {
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar-collapsed');
+      setIsCollapsed(saved === 'true');
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    const newVal = !isCollapsed;
+    setIsCollapsed(newVal);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-collapsed', String(newVal));
+    }
+  };
+
+  return { isCollapsed, toggleCollapse };
 };
 
 interface SidebarProps {
@@ -54,25 +219,74 @@ interface SidebarProps {
   brandLabel?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  showBrand?: boolean;
+  className?: string;
+  isCollapsed?: boolean;
+  onCollapseToggle?: () => void;
 }
 
-export const Sidebar = ({ brandIcon: BrandIcon = Sparkles, brandLabel = LABELS.COMMON.BRAND_NAME, children, footer }: SidebarProps) => {
-  return (
-    <aside className="w-80 bg-white border-r border-gray-100 flex flex-col p-8 fixed h-full z-20">
-      <div className="flex items-center gap-3 mb-12 px-2">
-        <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white shadow-lg">
-          <BrandIcon size={24} />
-        </div>
-        <span className="text-2xl font-bold gradient-text tracking-tight">{brandLabel}</span>
-      </div>
+export const Sidebar = ({ 
+  brandIcon: BrandIcon = Sparkles, 
+  brandLabel = LABELS.COMMON.BRAND_NAME, 
+  children, 
+  footer,
+  showBrand = true,
+  className = '',
+  isCollapsed = false,
+  onCollapseToggle
+}: SidebarProps) => {
+  const ToggleIcon = isCollapsed ? PanelLeft : PanelLeftClose;
 
-      <nav className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
-        {children}
+  return (
+    <aside className={`bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col fixed h-full z-20 transition-all duration-300 ${
+      isCollapsed ? 'w-20 p-4 items-center' : 'w-80 p-8'
+    } ${className}`}>
+      {showBrand && (
+        <div className={`flex items-center mb-12 px-2 w-full ${isCollapsed ? 'justify-center' : 'justify-between gap-3'}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+              <BrandIcon size={24} />
+            </div>
+            {!isCollapsed && (
+              <span className="text-2xl font-bold gradient-text tracking-tight">{brandLabel}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {onCollapseToggle && (
+        <button 
+          onClick={onCollapseToggle} 
+          className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-400 hover:text-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all shadow-md z-30 cursor-pointer hover:scale-110 active:scale-95 flex items-center justify-center"
+          aria-label={isCollapsed ? LABELS.RESTAURANT.SIDEBAR.EXPAND : LABELS.RESTAURANT.SIDEBAR.COLLAPSE}
+        >
+          <ToggleIcon size={12} />
+        </button>
+      )}
+
+      <nav className={`space-y-3 flex-1 overflow-y-auto custom-scrollbar w-full ${isCollapsed ? 'px-0' : 'pr-2'}`}>
+        {React.Children.map(children, child => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child as React.ReactElement<any>, { isCollapsed });
+          }
+          return child;
+        })}
       </nav>
 
       {footer && (
-        <div className="mt-auto pt-6 border-t border-gray-50 space-y-2">
-          {footer}
+        <div className={`mt-auto pt-6 border-t border-gray-50 dark:border-slate-800/50 w-full ${isCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-2'}`}>
+          {isCollapsed ? (
+            <div className="flex flex-col gap-2 items-center">
+              {React.Children.map(footer, child => {
+                if (React.isValidElement(child)) {
+                  return React.cloneElement(child as React.ReactElement<any>, { isCollapsed, size: 'none', className: 'p-3 rounded-xl' });
+                }
+                return child;
+              })}
+            </div>
+          ) : (
+            footer
+          )}
         </div>
       )}
     </aside>

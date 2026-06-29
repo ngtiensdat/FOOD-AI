@@ -48,3 +48,15 @@
 **Acceptance Criteria (AC):**
 - [x] Form báo lỗi kỹ thuật tại trang Trợ giúp / FAQ.
 - [x] Cho phép điền mô tả lỗi, chọn danh mục (Đăng nhập, Đặt món, Bản đồ...) và tải lên ảnh minh họa.
+
+### US-28+: Nâng cao độ tin cậy và hiệu năng hệ thống (Operations Hardening)
+- **As a** kỹ sư vận hành hệ thống
+- **I want** ứng dụng được tích hợp cache, quản lý hàng đợi lỗi tự động, bộ giám sát chi phí API AI và các cổng tự kiểm tra sức khỏe
+- **So that** hệ thống vận hành bền vững, chịu tải tốt và kiểm soát tốt ngân sách API.
+
+**Acceptance Criteria (AC):**
+- [x] Tích hợp Redis Cache tăng tốc độ đọc dữ liệu tĩnh (như danh sách bài đăng).
+- [x] Tích hợp hàng đợi Retry queue xử lý lại tự động các tác vụ nền bị lỗi (như đồng bộ vector).
+- [x] Tích hợp Budget tracker giám sát chặt chẽ lượng token sử dụng của OpenAI để tránh cạn kiệt tài khoản.
+- [x] Triển khai cổng Health check endpoint phục vụ monitor tình trạng DB, Redis, Server.
+

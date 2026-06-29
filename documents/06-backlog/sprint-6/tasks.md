@@ -23,9 +23,12 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 - [x] Task 2.2: API lấy danh sách Voucher trong chợ (Voucher Market) kèm điều kiện đổi.
 - [x] Task 2.3: API xử lý giao dịch đổi voucher (Kiểm tra điều kiện, trừ điểm, cấp mã voucher cho ví của user).
 - [x] Task 2.4: API Favorites: Toggle lưu món ăn và lấy danh sách món ăn đã lưu của user.
+- [x] Task 2.4+: API CRUD chương trình khuyến mãi (Offer model, OfferController).
 
 ### [Frontend]
 - [x] Task 2.5: UI trang Voucher Market (Hiển thị danh sách, nút Đổi voucher và điều kiện).
 - [x] Task 2.6: UI Ví Voucher cá nhân (My Vouchers) trong trang Profile.
 - [x] Task 2.7: UI Trang danh sách "Món ăn đã lưu" (Favorites Page).
+- [x] Task 2.7+: UI Form tạo ưu đãi mới và danh sách ưu đãi cho Merchant Hub.
+- [x] Task 2.7++: UI Hiển thị danh sách ưu đãi đang áp dụng trên trang công khai của quán.
 
