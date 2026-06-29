@@ -871,6 +871,10 @@ export const LABELS_EN = {
     DESCRIPTION: 'Description',
     IMAGE_URL: 'Image (URL)',
     TAGS: 'Tags',
+    CALORIES: 'Calories (kcal)',
+    CARBS: 'Carbohydrates (g)',
+    PROTEIN: 'Protein (g)',
+    FAT: 'Fat (g)',
     EMAIL: 'Email',
     ADDRESS: 'Address',
     PHONE: 'Phone number',
@@ -925,6 +929,11 @@ export const LABELS_EN = {
     UNCATEGORIZED: 'Uncategorized',
     SYSTEM: 'System',
     SOLD_COUNT: (count: number | string) => `${count} sold`,
+    NUTRITION_TITLE: 'Nutrition Facts',
+    NUTRITION_CALORIES: 'Calories',
+    NUTRITION_CARBS: 'Carbohydrates',
+    NUTRITION_PROTEIN: 'Protein',
+    NUTRITION_FAT: 'Fat',
   },
   UI_MESSAGES: {
     CATEGORY: {

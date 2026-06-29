@@ -192,7 +192,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="modal-card max-w-md w-full !p-6 relative z-10"
+              className="modal-card max-w-md w-[92%] md:w-full !p-6 relative z-10"
             >
               <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingGroup ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_GROUP : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_GROUP}</h3>
               <form onSubmit={handleSubmitGroup} className="space-y-4">
@@ -233,7 +233,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ restaurantId }
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="modal-card max-w-md w-full !p-6 relative z-10"
+              className="modal-card max-w-md w-[92%] md:w-full !p-6 relative z-10"
             >
               <h3 className="text-h3 mb-6 text-gray-800 dark:text-white">{editingCategory ? LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.EDIT_CATEGORY : LABELS.RESTAURANT.PUBLIC_PROFILE.CATEGORY_MANAGER.ADD_CATEGORY}</h3>
               <form onSubmit={handleSubmitCategory} className="space-y-4">

@@ -876,6 +876,10 @@ const LABELS_VI = {
     DESCRIPTION: 'Mô tả',
     IMAGE_URL: 'Hình ảnh (URL)',
     TAGS: 'Tags',
+    CALORIES: 'Calo (kcal)',
+    CARBS: 'Carbohydrates (g)',
+    PROTEIN: 'Chất đạm / Protein (g)',
+    FAT: 'Chất béo / Fat (g)',
     EMAIL: 'Email',
     ADDRESS: 'Địa chỉ',
     PHONE: 'Số điện thoại',
@@ -930,6 +934,11 @@ const LABELS_VI = {
     UNCATEGORIZED: 'Chưa phân loại',
     SYSTEM: 'Hệ thống',
     SOLD_COUNT: (count: number | string) => `Đã bán ${count}`,
+    NUTRITION_TITLE: 'Thành phần dinh dưỡng',
+    NUTRITION_CALORIES: 'Calo',
+    NUTRITION_CARBS: 'Carbohydrates',
+    NUTRITION_PROTEIN: 'Chất đạm (Protein)',
+    NUTRITION_FAT: 'Chất béo (Fat)',
   },
   UI_MESSAGES: {
     CATEGORY: {

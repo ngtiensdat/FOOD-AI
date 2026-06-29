@@ -7,9 +7,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { LucideIcon, Sparkles, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { LucideIcon, Sparkles, ChevronDown, PanelLeftClose, PanelLeft, Menu, X } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Button } from '@/components/base/Button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface SubItem {
   label: string;
@@ -236,59 +237,148 @@ export const Sidebar = ({
   onCollapseToggle
 }: SidebarProps) => {
   const ToggleIcon = isCollapsed ? PanelLeft : PanelLeftClose;
+  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
 
   return (
-    <aside className={`bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col fixed h-full z-20 transition-all duration-300 ${
-      isCollapsed ? 'w-20 p-4 items-center' : 'w-80 p-8'
-    } ${className}`}>
-      {showBrand && (
-        <div className={`flex items-center mb-12 px-2 w-full ${isCollapsed ? 'justify-center' : 'justify-between gap-3'}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
-              <BrandIcon size={24} />
+    <>
+      {/* Nút Hamburger cho Mobile - Đặt đè lên Navbar */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="fixed left-4 top-5 z-[51] p-2 bg-gray-50/50 hover:bg-gray-100 dark:bg-slate-900/50 dark:hover:bg-slate-800 border border-gray-100/50 dark:border-slate-800/50 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200 rounded-xl md:hidden transition-all shadow-sm focus:outline-none flex items-center justify-center cursor-pointer"
+        aria-label="Open navigation menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9990] md:hidden"
+            />
+            {/* Drawer Panel */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', ease: 'easeOut', duration: 0.3 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 p-6 z-[9991] flex flex-col md:hidden shadow-2xl"
+            >
+              {/* Top brand header & Close button */}
+              <div className="flex items-center justify-between mb-8 border-b border-gray-50 dark:border-slate-800/80 pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-white shadow-md">
+                    <BrandIcon size={18} />
+                  </div>
+                  <span className="text-lg font-bold gradient-text tracking-tight">{brandLabel}</span>
+                </div>
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer flex items-center justify-center"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Navigation inside Drawer */}
+              <nav className="space-y-3 flex-1 overflow-y-auto pr-1">
+                {React.Children.map(children, child => {
+                  if (React.isValidElement(child)) {
+                    return React.cloneElement(child as React.ReactElement<any>, { 
+                      isCollapsed: false,
+                      onClick: () => {
+                        const origOnClick = (child.props as any).onClick;
+                        if (origOnClick) origOnClick();
+                        setIsMobileOpen(false);
+                      }
+                    });
+                  }
+                  return child;
+                })}
+              </nav>
+
+              {/* Footer inside Drawer */}
+              {footer && (
+                <div className="mt-auto pt-6 border-t border-gray-50 dark:border-slate-800/50 w-full space-y-2">
+                  {React.Children.map(footer, child => {
+                    if (React.isValidElement(child)) {
+                      return React.cloneElement(child as React.ReactElement<any>, {
+                        isCollapsed: false,
+                        onClick: () => {
+                          const origOnClick = (child.props as any).onClick;
+                          if (origOnClick) origOnClick();
+                          setIsMobileOpen(false);
+                        }
+                      });
+                    }
+                    return child;
+                  })}
+                </div>
+              )}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar (hidden on mobile) */}
+      <aside className={`bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 hidden md:flex flex-col fixed h-full z-20 transition-all duration-300 ${
+        isCollapsed ? 'w-20 p-4 items-center' : 'w-80 p-8'
+      } ${className}`}>
+        {showBrand && (
+          <div className={`flex items-center mb-12 px-2 w-full ${isCollapsed ? 'justify-center' : 'justify-between gap-3'}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+                <BrandIcon size={24} />
+              </div>
+              {!isCollapsed && (
+                <span className="text-2xl font-bold gradient-text tracking-tight">{brandLabel}</span>
+              )}
             </div>
-            {!isCollapsed && (
-              <span className="text-2xl font-bold gradient-text tracking-tight">{brandLabel}</span>
+          </div>
+        )}
+
+        {onCollapseToggle && (
+          <button 
+            onClick={onCollapseToggle} 
+            className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-400 hover:text-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all shadow-md z-30 cursor-pointer hover:scale-110 active:scale-95 flex items-center justify-center"
+            aria-label={isCollapsed ? LABELS.RESTAURANT.SIDEBAR.EXPAND : LABELS.RESTAURANT.SIDEBAR.COLLAPSE}
+          >
+            <ToggleIcon size={12} />
+          </button>
+        )}
+
+        <nav className={`space-y-3 flex-1 overflow-y-auto custom-scrollbar w-full ${isCollapsed ? 'px-0' : 'pr-2'}`}>
+          {React.Children.map(children, child => {
+            if (React.isValidElement(child)) {
+              return React.cloneElement(child as React.ReactElement<any>, { isCollapsed });
+            }
+            return child;
+          })}
+        </nav>
+
+        {footer && (
+          <div className={`mt-auto pt-6 border-t border-gray-50 dark:border-slate-800/50 w-full ${isCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-2'}`}>
+            {isCollapsed ? (
+              <div className="flex flex-col gap-2 items-center">
+                {React.Children.map(footer, child => {
+                  if (React.isValidElement(child)) {
+                    return React.cloneElement(child as React.ReactElement<any>, { isCollapsed, size: 'none', className: 'p-3 rounded-xl' });
+                  }
+                  return child;
+                })}
+              </div>
+            ) : (
+              footer
             )}
           </div>
-        </div>
-      )}
-
-      {onCollapseToggle && (
-        <button 
-          onClick={onCollapseToggle} 
-          className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-400 hover:text-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all shadow-md z-30 cursor-pointer hover:scale-110 active:scale-95 flex items-center justify-center"
-          aria-label={isCollapsed ? LABELS.RESTAURANT.SIDEBAR.EXPAND : LABELS.RESTAURANT.SIDEBAR.COLLAPSE}
-        >
-          <ToggleIcon size={12} />
-        </button>
-      )}
-
-      <nav className={`space-y-3 flex-1 overflow-y-auto custom-scrollbar w-full ${isCollapsed ? 'px-0' : 'pr-2'}`}>
-        {React.Children.map(children, child => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<any>, { isCollapsed });
-          }
-          return child;
-        })}
-      </nav>
-
-      {footer && (
-        <div className={`mt-auto pt-6 border-t border-gray-50 dark:border-slate-800/50 w-full ${isCollapsed ? 'flex flex-col items-center gap-2' : 'space-y-2'}`}>
-          {isCollapsed ? (
-            <div className="flex flex-col gap-2 items-center">
-              {React.Children.map(footer, child => {
-                if (React.isValidElement(child)) {
-                  return React.cloneElement(child as React.ReactElement<any>, { isCollapsed, size: 'none', className: 'p-3 rounded-xl' });
-                }
-                return child;
-              })}
-            </div>
-          ) : (
-            footer
-          )}
-        </div>
-      )}
-    </aside>
+        )}
+      </aside>
+    </>
   );
 };

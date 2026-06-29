@@ -253,7 +253,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
       <nav className={`fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 grid grid-cols-3 items-center border-b border-gray-50 dark:border-slate-900 transition-transform duration-300 ease-in-out ${
         visible ? 'translate-y-0' : '-translate-y-full'
       }`}>
-      <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity justify-self-start">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity justify-self-start pl-10 md:pl-0">
         <div className="relative w-10 h-10">
           <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="40px" className="object-contain" />
         </div>

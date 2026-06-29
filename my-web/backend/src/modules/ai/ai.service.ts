@@ -89,6 +89,8 @@ export class AiService implements OnModuleInit {
         await this.updateFoodEmbedding(job.id);
       } else if (job.type === 'user') {
         await this.updateUserEmbedding(job.id);
+      } else if (job.type === 'post') {
+        await this.updatePostEmbedding(job.id);
       }
     });
   }
@@ -816,5 +818,9 @@ export class AiService implements OnModuleInit {
 
   async updateUserEmbedding(userId: number) {
     return this.vectorSyncService.updateUserEmbedding(userId);
+  }
+
+  async updatePostEmbedding(postId: number) {
+    return this.vectorSyncService.updatePostEmbedding(postId);
   }
 }

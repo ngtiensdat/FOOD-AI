@@ -30,7 +30,8 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
   const [myBranches, setMyBranches] = useState<Restaurant[]>([]);
 
   const [formData, setFormData] = useState({
-    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: ''
+    name: '', price: '', description: '', image: '', tags: '', address: '', mapUrl: '', lat: '', lng: '', restaurantId: '', categoryId: '',
+    calories: '', carbs: '', protein: '', fat: ''
   });
 
   const fetchMyFoods = async () => {
@@ -135,7 +136,11 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
       lat: defaultBranch ? defaultBranch.latitude?.toString() || '' : '',
       lng: defaultBranch ? defaultBranch.longitude?.toString() || '' : '',
       restaurantId: defaultBranch ? defaultBranch.id.toString() : '',
-      categoryId: ''
+      categoryId: '',
+      calories: '',
+      carbs: '',
+      protein: '',
+      fat: ''
     });
     setIsAddingFood(true);
   };
@@ -153,7 +158,11 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
       lat: food.lat?.toString() || '',
       lng: food.lng?.toString() || '',
       restaurantId: food.restaurantId?.toString() || '',
-      categoryId: food.categoryId?.toString() || ''
+      categoryId: food.categoryId?.toString() || '',
+      calories: food.calories?.toString() || '',
+      carbs: food.carbs?.toString() || '',
+      protein: food.protein?.toString() || '',
+      fat: food.fat?.toString() || ''
     });
     setIsAddingFood(true);
   };
@@ -192,6 +201,11 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
     const restaurantIdParsed = parseInt(formData.restaurantId);
     const categoryIdParsed = formData.categoryId ? parseInt(formData.categoryId) : null;
     const tagsParsed = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
+    
+    const caloriesParsed = formData.calories ? parseFloat(formData.calories) : null;
+    const carbsParsed = formData.carbs ? parseFloat(formData.carbs) : null;
+    const proteinParsed = formData.protein ? parseFloat(formData.protein) : null;
+    const fatParsed = formData.fat ? parseFloat(formData.fat) : null;
 
     const validation = foodSchema.safeParse({
       name: formData.name,
@@ -201,6 +215,10 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
       tags: tagsParsed,
       restaurantId: restaurantIdParsed,
       categoryId: categoryIdParsed,
+      calories: caloriesParsed,
+      carbs: carbsParsed,
+      protein: proteinParsed,
+      fat: fatParsed,
     });
 
     if (!validation.success) {
@@ -215,7 +233,11 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
       lng: formData.lng ? parseFloat(formData.lng) : null,
       tags: tagsParsed,
       restaurantId: restaurantIdParsed,
-      categoryId: categoryIdParsed || undefined
+      categoryId: categoryIdParsed || undefined,
+      calories: caloriesParsed,
+      carbs: carbsParsed,
+      protein: proteinParsed,
+      fat: fatParsed,
     };
 
     try {

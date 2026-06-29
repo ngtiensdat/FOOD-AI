@@ -11,9 +11,10 @@ import { UserRepository } from './user.repository';
 import { PrismaModule } from '../../database/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { MediaModule } from '../media/media.module';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
-  imports: [PrismaModule, ConfigModule, MediaModule],
+  imports: [PrismaModule, ConfigModule, MediaModule, AiModule],
   controllers: [UserController],
   providers: [UserService, UserRepository],
   exports: [UserService, UserRepository],

@@ -176,7 +176,7 @@ export default function AdminDashboard() {
         </Sidebar>
 
         {/* Content Area */}
-        <main className={`flex-1 p-8 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-80'}`}>
+        <main className={`flex-1 p-4 md:p-8 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-0 md:ml-20' : 'ml-0 md:ml-80'}`}>
           <motion.div
             initial={{ opacity: 0, x: slideDirection === 'left' ? 100 : -100 }}
             animate={{ opacity: 1, x: 0 }}

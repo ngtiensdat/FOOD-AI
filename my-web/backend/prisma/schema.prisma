@@ -145,6 +145,10 @@ model Food {
   city               String?                // <-- Tỉnh/Thành phố phục vụ lọc chính xác
   district           String?                // <-- Quận/Huyện phục vụ lọc chính xác
   mapUrl             String?                @map("map_url")
+  calories           Float?                 @default(0)
+  carbs              Float?                 @default(0)
+  protein            Float?                 @default(0)
+  fat                Float?                 @default(0)
   restaurantId       Int?                   @map("restaurant_id")
   embedding          Unsupported("vector")?
   createdAt          DateTime               @default(now()) @map("created_at")
@@ -210,6 +214,7 @@ model Post {
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
   deletedAt    DateTime?   @map("deleted_at")
+  embedding    Unsupported("vector")?
   comments     Comment[]
   likes        Like[]
   approver     User?       @relation("AdminApprovedPosts", fields: [approverId], references: [id])
