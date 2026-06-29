@@ -196,6 +196,9 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                               placeholder={LABELS.ONBOARDING.FORM.ADDRESS_PLACEHOLDER}
                               className="form-input rounded-xl px-3 py-2 text-xs font-bold"
                             />
+                            <p className="text-[9px] text-orange-600 dark:text-orange-400 mt-1 font-medium leading-relaxed bg-orange-50/50 dark:bg-orange-950/10 px-2 py-1 rounded-lg border border-orange-100/20 dark:border-orange-900/10">
+                              ⚠️ {LABELS.ONBOARDING.FORM.ADDRESS_TIP}
+                            </p>
                           </div>
 
                           {/* Vĩ độ */}

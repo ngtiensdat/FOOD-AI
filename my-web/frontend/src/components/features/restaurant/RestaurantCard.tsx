@@ -11,14 +11,16 @@ import { SafeImage } from '@/components/base/SafeImage';
 import { Restaurant } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
 import { ExpandableText } from '@/components/base/ExpandableText';
+import { getGoogleMapsUrl } from '@/utils/helpers';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
 }
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
-  const { id, name, city, district, profile, foods = [], _count, distance } = restaurant;
+  const { id, name, city, district, profile, foods = [], _count, distance, mapUrl, latitude, longitude, address } = restaurant;
   const followersCount = _count?.followers ?? 0;
+  const mapLink = getGoogleMapsUrl(latitude, longitude, mapUrl, name, address);
 
 
   // Thu thập các tag món ăn độc bản phục vụ kết xuất danh mục tiêu biểu
@@ -122,12 +124,12 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
             {/* Địa điểm & Thẻ món ăn */}
             <div className="flex items-center justify-between mt-auto shrink-0">
-              {restaurant.mapUrl ? (
+              {mapLink ? (
                 <div
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    window.open(restaurant.mapUrl, '_blank', 'noopener,noreferrer');
+                    window.open(mapLink, '_blank', 'noopener,noreferrer');
                   }}
                   className="flex items-center gap-0.5 text-[10px] text-gray-500 dark:text-slate-400 hover:text-primary hover:underline cursor-pointer truncate max-w-[55%]"
                   title={restaurant.address || LABELS.FOOD.VIEW_MAP}

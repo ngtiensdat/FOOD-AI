@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
-import { getValidImageUrl, isRestaurantCurrentlyOpen } from '@/utils/helpers';
+import { getValidImageUrl, isRestaurantCurrentlyOpen, getGoogleMapsUrl } from '@/utils/helpers';
 
 export interface FoodDetailData {
   id?: number | string;
@@ -24,12 +24,16 @@ export interface FoodDetailData {
   address?: string;
   mapUrl?: string;
   map_url?: string;
+  lat?: number | string | null;
+  lng?: number | string | null;
   restaurantName?: string;
   restaurant?: {
     id?: number;
     name: string;
     address?: string;
     mapUrl?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
     isActive?: boolean;
     profile?: {
       openingHours?: string;
@@ -51,6 +55,14 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
   const isOpen = isRestaurantCurrentlyOpen(
     food.restaurant?.profile?.openingHours,
     food.restaurant?.isActive
+  );
+
+  const mapUrl = getGoogleMapsUrl(
+    food.lat || food.restaurant?.latitude,
+    food.lng || food.restaurant?.longitude,
+    food.mapUrl || food.map_url || food.restaurant?.mapUrl,
+    food.restaurant?.name || food.restaurantName,
+    food.address || food.restaurant?.address
   );
 
   return (
@@ -139,9 +151,9 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
               <MapPin className="text-primary mt-1 shrink-0" size={20} />
               <div className="flex-1">
                 <h4 className="text-small font-bold text-gray-800 dark:text-slate-200">{LABELS.FOOD.RESTAURANT_TITLE}</h4>
-                {food.mapUrl || food.map_url || food.restaurant?.mapUrl ? (
+                {mapUrl ? (
                   <a
-                    href={food.mapUrl || food.map_url || food.restaurant?.mapUrl}
+                    href={mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center justify-between gap-2"

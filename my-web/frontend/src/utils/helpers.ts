@@ -157,3 +157,36 @@ export const extractPublicId = (url: string): string | null => {
     return null;
   }
 };
+
+/**
+ * Tạo link Google Maps tự động dựa trên kinh vĩ độ hoặc fallback về url bản đồ cấu hình sẵn.
+ */
+export const getGoogleMapsUrl = (
+  latitude?: number | string | null,
+  longitude?: number | string | null,
+  fallbackMapUrl?: string | null,
+  restaurantName?: string | null,
+  address?: string | null
+): string => {
+  // Ưu tiên tìm kiếm theo Tên nhà hàng + Địa chỉ để Google Maps hiển thị đúng bảng hiệu đăng ký
+  if (restaurantName && address) {
+    const cleanAddress = address.trim();
+    const query = `${restaurantName.trim()}, ${cleanAddress}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  }
+  
+  // Nếu có địa chỉ, tìm kiếm theo địa chỉ
+  if (address) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}`;
+  }
+
+  // Tọa độ là phương án dự phòng khi thiếu thông tin văn bản
+  if (latitude !== undefined && latitude !== null && longitude !== undefined && longitude !== null) {
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+      return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    }
+  }
+  return fallbackMapUrl || '';
+};

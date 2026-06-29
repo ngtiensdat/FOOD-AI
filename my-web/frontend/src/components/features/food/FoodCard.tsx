@@ -13,7 +13,7 @@ import { Button } from '@/components/base/Button';
 import { ExpandableText } from '@/components/base/ExpandableText';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency, formatDistance } from '@/utils/formatters';
-import { getValidImageUrl } from '@/utils/helpers';
+import { getValidImageUrl, getGoogleMapsUrl } from '@/utils/helpers';
 
 export interface FoodCardData {
   id?: number | string;
@@ -25,6 +25,8 @@ export interface FoodCardData {
     name: string; 
     address?: string; 
     mapUrl?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
     owner?: {
       badgeTitle?: string | null;
     } | null;
@@ -35,6 +37,8 @@ export interface FoodCardData {
   address?: string;
   mapUrl?: string;
   map_url?: string;
+  lat?: number | string | null;
+  lng?: number | string | null;
   totalOrder?: number;
   totalLike?: number;
   [key: string]: unknown;
@@ -54,7 +58,13 @@ export function FoodCard({ food, onViewDetail, onToggleFavorite }: FoodCardProps
     setIsFavorite(!!food.isFavorite || !!food.is_favorite);
   }, [food.isFavorite, food.is_favorite]);
 
-  const mapLink = food.mapUrl || food.map_url || food.restaurant?.mapUrl;
+  const mapLink = getGoogleMapsUrl(
+    food.lat || food.restaurant?.latitude,
+    food.lng || food.restaurant?.longitude,
+    food.mapUrl || food.map_url || food.restaurant?.mapUrl,
+    food.restaurant?.name || food.restaurantName,
+    food.address || food.restaurant?.address
+  );
   const addressText = food.address || food.restaurant?.address;
 
   return (
