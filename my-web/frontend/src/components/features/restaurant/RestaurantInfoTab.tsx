@@ -13,10 +13,15 @@ import {
   MapPin 
 } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
+import { getGoogleMapsUrl } from '@/utils/helpers';
 
 interface RestaurantInfoTabProps {
   restaurantData: {
+    name: string;
+    address?: string;
     mapUrl?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
     profile?: {
       openingHours?: string | null;
       contactPhone?: string | null;
@@ -71,23 +76,33 @@ export const RestaurantInfoTab = ({ restaurantData }: RestaurantInfoTabProps) =>
           </div>
         )}
 
-        {restaurantData.mapUrl && (
-          <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-6">
-            <h4 className="text-body font-extrabold text-gray-900 mb-3 flex items-center gap-2">
-              <Globe size={18} className="text-primary" />
-              <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MAP_TITLE}</span>
-            </h4>
-            <a 
-              href={restaurantData.mapUrl} 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-small font-bold text-primary hover:underline flex items-center gap-1.5"
-            >
-              <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MAP_OPEN}</span>
-              <MapPin size={14} />
-            </a>
-          </div>
-        )}
+        {(() => {
+          const mapUrl = getGoogleMapsUrl(
+            restaurantData.latitude,
+            restaurantData.longitude,
+            restaurantData.mapUrl,
+            restaurantData.name,
+            restaurantData.address
+          );
+          if (!mapUrl) return null;
+          return (
+            <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-6">
+              <h4 className="text-body font-extrabold text-gray-900 mb-3 flex items-center gap-2">
+                <Globe size={18} className="text-primary" />
+                <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MAP_TITLE}</span>
+              </h4>
+              <a 
+                href={mapUrl} 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-small font-bold text-primary hover:underline flex items-center gap-1.5"
+              >
+                <span>{LABELS.RESTAURANT.PUBLIC_PROFILE.MAP_OPEN}</span>
+                <MapPin size={14} />
+              </a>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Quick Bio Info */}

@@ -16,12 +16,15 @@ import {
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
+import { getGoogleMapsUrl } from '@/utils/helpers';
 
 interface RestaurantHeaderCardProps {
   restaurantData: {
     name: string;
     address?: string;
     mapUrl?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
     description?: string;
     ratingAvg?: number | null;
     ratingCount?: number | null;
@@ -60,6 +63,13 @@ export const RestaurantHeaderCard = ({
     : DEFAULT_COVER_GRADIENT;
 
   const badgeTitle = (restaurantData.owner as any)?.badgeTitle || (restaurantData as any).merchantBadge;
+  const mapUrl = getGoogleMapsUrl(
+    restaurantData.latitude,
+    restaurantData.longitude,
+    restaurantData.mapUrl,
+    restaurantData.name,
+    restaurantData.address
+  );
 
   return (
     <>
@@ -134,9 +144,9 @@ export const RestaurantHeaderCard = ({
                     <span className="text-gray-400 font-bold">{LABELS.RESTAURANT.CARD_LABELS.REVIEWS_COUNT(Number(restaurantData.ratingCount) || 0)}</span>
                   </div>
                 )}
-                {restaurantData.mapUrl ? (
+                {mapUrl ? (
                   <a
-                    href={restaurantData.mapUrl}
+                    href={mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-gray-500 hover:text-primary hover:underline text-small font-semibold transition-colors"

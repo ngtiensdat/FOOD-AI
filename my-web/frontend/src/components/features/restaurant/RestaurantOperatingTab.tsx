@@ -92,6 +92,9 @@ export const RestaurantOperatingTab: React.FC<RestaurantOperatingTabProps> = ({
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
+        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1.5 font-medium leading-relaxed bg-orange-50/50 dark:bg-orange-950/10 px-3 py-1.5 rounded-lg border border-orange-100/30 dark:border-orange-900/20">
+          ⚠️ {LABELS.RESTAURANT.EDIT_MODAL.ADDRESS_TIP}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
