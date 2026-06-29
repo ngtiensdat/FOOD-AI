@@ -21,8 +21,11 @@ Tài liệu này chia nhỏ các User Stories thành các đầu việc kỹ thu
 ### [Backend]
 - [x] Task 2.1: Xây dựng Hybrid Search (Vector + Metadata).
 - [x] Task 2.2: API Chat AI xử lý ngữ cảnh người dùng và Database.
+- [x] Task 2.2+: API /ai/feedback lưu phản hồi Like/Dislike của khách cho các món ăn được gợi ý.
+- [x] Task 2.2++: API quản lý danh sách cuộc hội thoại (conversations) lưu dài hạn.
 
 ### [Frontend]
 - [x] Task 2.3: Tích hợp kết quả gợi ý AI vào phần Hero.
 - [x] Task 2.4: UI Chat Assistant (Giai đoạn sơ khai).
+- [x] Task 2.4+: Giao diện quản lý danh sách cuộc hội thoại cũ và nút bấm Like/Dislike phản hồi gợi ý trong ô chat.
 

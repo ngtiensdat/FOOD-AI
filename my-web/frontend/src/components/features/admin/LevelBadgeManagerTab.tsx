@@ -32,6 +32,7 @@ interface GamificationRules {
 
 export const LevelBadgeManagerTab = () => {
   const [badges, setBadges] = useState<BadgeConfig[]>([]);
+  const [showBadgeLists, setShowBadgeLists] = useState(false);
   const [role, setRole] = useState<UserRole.CUSTOMER | UserRole.RESTAURANT>(UserRole.CUSTOMER);
   const [title, setTitle] = useState('');
   const [points, setPoints] = useState('');
@@ -178,270 +179,282 @@ export const LevelBadgeManagerTab = () => {
     <div className="space-y-8 fade-in">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-1">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2 mb-1">
             <Award className="text-primary animate-bounce" size={28} />
             {bmLabels.TITLE}
           </h2>
-          <p className="text-sm text-gray-500">{bmLabels.DESC}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{bmLabels.DESC}</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={loadData}
-          className="self-start sm:self-auto border-gray-200"
-        >
-          <RefreshCw size={16} className="mr-2" />
-          {bmLabels.REFRESH_BTN}
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowBadgeLists(!showBadgeLists)}
+            className={`border-gray-200 dark:border-slate-800 text-sm font-semibold transition-all cursor-pointer ${
+              showBadgeLists ? 'bg-primary text-white hover:bg-primary-light border-primary' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900'
+            }`}
+          >
+            <Award size={16} className="mr-2" />
+            {showBadgeLists ? "Ẩn danh sách Danh hiệu" : "Xem danh sách Danh hiệu"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={loadData}
+            className="self-start sm:self-auto border-gray-200 dark:border-slate-800 cursor-pointer"
+          >
+            <RefreshCw size={16} className="mr-2" />
+            {bmLabels.REFRESH_BTN}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Forms column (Add Badge & Scoring rules) */}
-        <div className="space-y-8 xl:col-span-1">
-          {/* Form Add Config */}
-          <div className="card-premium p-6 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent border-amber-500/20 shadow-md">
-            <h3 className="text-body font-black text-gray-800 flex items-center gap-2 mb-6">
-              <Plus size={20} className="text-primary" />
-              {bmLabels.ADD_BADGE_FORM_TITLE}
-            </h3>
+      {/* Forms layout - side-by-side using full width */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form Add Config */}
+        <div className="card-premium p-6 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent border-amber-500/20 shadow-md">
+          <h3 className="text-body font-black text-gray-800 dark:text-slate-100 flex items-center gap-2 mb-6">
+            <Plus size={20} className="text-primary" />
+            {bmLabels.ADD_BADGE_FORM_TITLE}
+          </h3>
 
-            <form onSubmit={handleAddBadge} className="space-y-4">
+          <form onSubmit={handleAddBadge} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                {bmLabels.ROLE}
+              </label>
+              <select
+                className="form-input bg-none"
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole.CUSTOMER | UserRole.RESTAURANT)}
+              >
+                <option value={UserRole.CUSTOMER}>{LABELS.AUTH.CUSTOMER}</option>
+                <option value={UserRole.RESTAURANT}>{LABELS.AUTH.RESTAURANT}</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                {bmLabels.BADGE_TITLE}
+              </label>
+              <Input
+                variant="none"
+                type="text"
+                className="form-input"
+                placeholder={bmLabels.TITLE_PLACEHOLDER}
+                value={title}
+                onChange={(e) => setTitle((e.target as HTMLInputElement).value)}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  {bmLabels.ROLE}
-                </label>
-                <select
-                  className="form-input bg-none"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as UserRole.CUSTOMER | UserRole.RESTAURANT)}
-                >
-                  <option value={UserRole.CUSTOMER}>{LABELS.AUTH.CUSTOMER}</option>
-                  <option value={UserRole.RESTAURANT}>{LABELS.AUTH.RESTAURANT}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  {bmLabels.BADGE_TITLE}
+                  {bmLabels.MIN_POINTS_LABEL}
                 </label>
                 <Input
                   variant="none"
-                  type="text"
+                  type="number"
                   className="form-input"
-                  placeholder={bmLabels.TITLE_PLACEHOLDER}
-                  value={title}
-                  onChange={(e) => setTitle((e.target as HTMLInputElement).value)}
+                  placeholder="1000"
+                  value={points}
+                  onChange={(e) => setPoints((e.target as HTMLInputElement).value)}
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.MIN_POINTS_LABEL}
-                  </label>
-                  <Input
-                    variant="none"
-                    type="number"
-                    className="form-input"
-                    placeholder="1000"
-                    value={points}
-                    onChange={(e) => setPoints((e.target as HTMLInputElement).value)}
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  {bmLabels.MIN_REVIEWS_LABEL}
+                </label>
+                <Input
+                  variant="none"
+                  type="number"
+                  className="form-input"
+                  placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
+                  value={minReviews}
+                  onChange={(e) => setMinReviews((e.target as HTMLInputElement).value)}
+                />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.MIN_REVIEWS_LABEL}
-                  </label>
-                  <Input
-                    variant="none"
-                    type="number"
-                    className="form-input"
-                    placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
-                    value={minReviews}
-                    onChange={(e) => setMinReviews((e.target as HTMLInputElement).value)}
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  {bmLabels.MIN_LIKES_LABEL}
+                </label>
+                <Input
+                  variant="none"
+                  type="number"
+                  className="form-input"
+                  placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
+                  value={minPostLikes}
+                  onChange={(e) => setMinPostLikes((e.target as HTMLInputElement).value)}
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.MIN_LIKES_LABEL}
-                  </label>
-                  <Input
-                    variant="none"
-                    type="number"
-                    className="form-input"
-                    placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
-                    value={minPostLikes}
-                    onChange={(e) => setMinPostLikes((e.target as HTMLInputElement).value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.MIN_FOLLOWERS_LABEL}
-                  </label>
-                  <Input
-                    variant="none"
-                    type="number"
-                    className="form-input"
-                    placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
-                    value={minFollowers}
-                    onChange={(e) => setMinFollowers((e.target as HTMLInputElement).value)}
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  {bmLabels.MIN_FOLLOWERS_LABEL}
+                </label>
+                <Input
+                  variant="none"
+                  type="number"
+                  className="form-input"
+                  placeholder={bmLabels.OPTIONAL_PLACEHOLDER}
+                  value={minFollowers}
+                  onChange={(e) => setMinFollowers((e.target as HTMLInputElement).value)}
+                />
               </div>
+            </div>
 
-              {role === UserRole.RESTAURANT && (
-                <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-2xl">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      {bmLabels.MIN_RATING_AVG_LABEL}
-                    </label>
-                    <Input
-                      variant="none"
-                      type="number"
-                      step="0.1"
-                      className="form-input"
-                      placeholder="4.5"
-                      value={minRatingAvg}
-                      onChange={(e) => setMinRatingAvg((e.target as HTMLInputElement).value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      {bmLabels.MIN_RATING_COUNT_LABEL}
-                    </label>
-                    <Input
-                      variant="none"
-                      type="number"
-                      className="form-input"
-                      placeholder="20"
-                      value={minRatingCount}
-                      onChange={(e) => setMinRatingCount((e.target as HTMLInputElement).value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <Button type="submit" variant="primary" fullWidth className="mt-2 font-bold shadow-md">
-                <Sparkles size={16} className="mr-2" />
-                {bmLabels.ADD_BADGE}
-              </Button>
-            </form>
-          </div>
-
-          {/* Gamification Rules Settings */}
-          <div className="card-premium p-6 shadow-md border-gray-200">
-            <h3 className="text-body font-black text-gray-800 flex items-center gap-2 mb-6">
-              <Settings size={20} className="text-gray-500" />
-              {bmLabels.RULES_CONFIG_TITLE}
-            </h3>
-
-            {loadingRules ? (
-              <p className="text-center text-xs text-gray-400 py-4 animate-pulse">{bmLabels.RULES_LOADING}</p>
-            ) : (
-              <form onSubmit={handleSaveRules} className="space-y-4">
+            {role === UserRole.RESTAURANT && (
+              <div className="grid grid-cols-2 gap-4 p-3 bg-primary/5 dark:bg-primary/10 border border-primary/10 rounded-2xl">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.RULES_POINTS_PER_LEVEL}
-                  </label>
-                  <Input
-                    variant="none"
-                    type="number"
-                    className="form-input"
-                    value={pointsPerLevel}
-                    onChange={(e) => setPointsPerLevel((e.target as HTMLInputElement).value)}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      {bmLabels.RULES_REVIEW_POINTS}
-                    </label>
-                    <Input
-                      variant="none"
-                      type="number"
-                      className="form-input"
-                      value={postReviewPoints}
-                      onChange={(e) => setPostReviewPoints((e.target as HTMLInputElement).value)}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      {bmLabels.RULES_COMMENT_POINTS}
-                    </label>
-                    <Input
-                      variant="none"
-                      type="number"
-                      className="form-input"
-                      value={commentPoints}
-                      onChange={(e) => setCommentPoints((e.target as HTMLInputElement).value)}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      {bmLabels.RULES_LIKE_POINTS}
-                    </label>
-                    <Input
-                      variant="none"
-                      type="number"
-                      className="form-input"
-                      value={likePoints}
-                      onChange={(e) => setLikePoints((e.target as HTMLInputElement).value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {bmLabels.RULES_DEDUCTION_MULTIPLIER}
+                    {bmLabels.MIN_RATING_AVG_LABEL}
                   </label>
                   <Input
                     variant="none"
                     type="number"
                     step="0.1"
                     className="form-input"
-                    value={deductionMultiplier}
-                    onChange={(e) => setDeductionMultiplier((e.target as HTMLInputElement).value)}
-                    required
+                    placeholder="4.5"
+                    value={minRatingAvg}
+                    onChange={(e) => setMinRatingAvg((e.target as HTMLInputElement).value)}
                   />
-                  <p className="text-[10px] text-gray-400 font-medium mt-1">
-                    {bmLabels.RULES_DEDUCTION_HELP}
-                  </p>
                 </div>
 
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  fullWidth
-                  loading={savingRules}
-                  className="mt-2 font-bold shadow-md"
-                >
-                  <Save size={16} className="mr-2" />
-                  {bmLabels.RULES_SAVE_BTN}
-                </Button>
-              </form>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.MIN_RATING_COUNT_LABEL}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    className="form-input"
+                    placeholder="20"
+                    value={minRatingCount}
+                    onChange={(e) => setMinRatingCount((e.target as HTMLInputElement).value)}
+                  />
+                </div>
+              </div>
             )}
-          </div>
+
+            <Button type="submit" variant="primary" fullWidth className="mt-2 font-bold shadow-md cursor-pointer">
+              <Sparkles size={16} className="mr-2" />
+              {bmLabels.ADD_BADGE}
+            </Button>
+          </form>
         </div>
 
-        {/* Badges List */}
-        <div className="xl:col-span-2 space-y-8">
+        {/* Gamification Rules Settings */}
+        <div className="card-premium p-6 shadow-md border-gray-200 dark:border-slate-800">
+          <h3 className="text-body font-black text-gray-800 dark:text-slate-100 flex items-center gap-2 mb-6">
+            <Settings size={20} className="text-gray-500 dark:text-slate-400" />
+            {bmLabels.RULES_CONFIG_TITLE}
+          </h3>
+
+          {loadingRules ? (
+            <p className="text-center text-xs text-gray-400 py-4 animate-pulse">{bmLabels.RULES_LOADING}</p>
+          ) : (
+            <form onSubmit={handleSaveRules} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  {bmLabels.RULES_POINTS_PER_LEVEL}
+                </label>
+                <Input
+                  variant="none"
+                  type="number"
+                  className="form-input"
+                  value={pointsPerLevel}
+                  onChange={(e) => setPointsPerLevel((e.target as HTMLInputElement).value)}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.RULES_REVIEW_POINTS}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    className="form-input"
+                    value={postReviewPoints}
+                    onChange={(e) => setPostReviewPoints((e.target as HTMLInputElement).value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.RULES_COMMENT_POINTS}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    className="form-input"
+                    value={commentPoints}
+                    onChange={(e) => setCommentPoints((e.target as HTMLInputElement).value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.RULES_LIKE_POINTS}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    className="form-input"
+                    value={likePoints}
+                    onChange={(e) => setLikePoints((e.target as HTMLInputElement).value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  {bmLabels.RULES_DEDUCTION_MULTIPLIER}
+                </label>
+                <Input
+                  variant="none"
+                  type="number"
+                  step="0.1"
+                  className="form-input"
+                  value={deductionMultiplier}
+                  onChange={(e) => setDeductionMultiplier((e.target as HTMLInputElement).value)}
+                  required
+                />
+                <p className="text-[10px] text-gray-400 font-medium mt-1">
+                  {bmLabels.RULES_DEDUCTION_HELP}
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                variant="secondary"
+                fullWidth
+                loading={savingRules}
+                className="mt-2 font-bold shadow-md cursor-pointer"
+              >
+                <Save size={16} className="mr-2" />
+                {bmLabels.RULES_SAVE_BTN}
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Badges List Section: Toggled when requested */}
+      {showBadgeLists && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-gray-100 dark:border-slate-800/80 animate-in fade-in slide-in-from-bottom-4 duration-300">
           {/* Customer badges */}
-          <div className="card-premium p-6 space-y-4 shadow-md">
-            <h3 className="text-body font-black text-gray-800 flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
+          <div className="card-premium p-6 space-y-4 shadow-md border-gray-150 dark:border-slate-800">
+            <h3 className="text-body font-black text-gray-800 dark:text-slate-100 flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
               <User size={18} className="text-emerald-500" />
               {bmLabels.CUSTOMER_BADGES_TITLE(customerBadges.length)}
             </h3>
@@ -458,18 +471,18 @@ export const LevelBadgeManagerTab = () => {
                     className="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-800 text-xs flex justify-between items-start hover:border-emerald-500/30 transition-all"
                   >
                     <div className="space-y-1.5 min-w-0 pr-2">
-                      <span className="font-extrabold text-gray-900 text-sm block truncate">{badge.title}</span>
-                      <div className="space-y-1 text-mini text-gray-500 font-bold">
-                        <div className="flex items-center gap-1">{bmLabels.XP_REQUIRED}<span className="text-gray-800 font-extrabold">{badge.points.toLocaleString()}</span></div>
-                        {badge.minReviews !== null && <div>{bmLabels.REVIEWS_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minReviews}{bmLabels.REVIEWS_UNIT}</span></div>}
-                        {badge.minPostLikes !== null && <div>{bmLabels.LIKES_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minPostLikes}</span></div>}
-                        {badge.minFollowers !== null && <div>{bmLabels.FOLLOWERS_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minFollowers}{bmLabels.FOLLOWERS_UNIT}</span></div>}
+                      <span className="font-extrabold text-gray-900 dark:text-slate-100 text-sm block truncate">{badge.title}</span>
+                      <div className="space-y-1 text-mini text-gray-500 dark:text-slate-400 font-bold">
+                        <div className="flex items-center gap-1">{bmLabels.XP_REQUIRED}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.points.toLocaleString()}</span></div>
+                        {badge.minReviews !== null && <div>{bmLabels.REVIEWS_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minReviews}{bmLabels.REVIEWS_UNIT}</span></div>}
+                        {badge.minPostLikes !== null && <div>{bmLabels.LIKES_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minPostLikes}</span></div>}
+                        {badge.minFollowers !== null && <div>{bmLabels.FOLLOWERS_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minFollowers}{bmLabels.FOLLOWERS_UNIT}</span></div>}
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       onClick={() => handleDeleteBadge(badge.id)}
-                      className="!p-2 text-gray-400 hover:text-rose-500 rounded-xl transition-all shrink-0"
+                      className="!p-2 text-gray-400 hover:text-rose-500 rounded-xl transition-all shrink-0 cursor-pointer"
                       title={LABELS.COMMON.DELETE}
                     >
                       <Trash2 size={16} />
@@ -481,8 +494,8 @@ export const LevelBadgeManagerTab = () => {
           </div>
 
           {/* Restaurant badges */}
-          <div className="card-premium p-6 space-y-4 shadow-md">
-            <h3 className="text-body font-black text-gray-800 flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
+          <div className="card-premium p-6 space-y-4 shadow-md border-gray-150 dark:border-slate-800">
+            <h3 className="text-body font-black text-gray-800 dark:text-slate-100 flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
               <Store size={18} className="text-blue-500" />
               {bmLabels.RESTAURANT_BADGES_TITLE(restaurantBadges.length)}
             </h3>
@@ -499,20 +512,20 @@ export const LevelBadgeManagerTab = () => {
                     className="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-800 text-xs flex justify-between items-start hover:border-blue-500/30 transition-all"
                   >
                     <div className="space-y-1.5 min-w-0 pr-2">
-                      <span className="font-extrabold text-gray-900 text-sm block truncate">{badge.title}</span>
-                      <div className="space-y-1 text-mini text-gray-500 font-bold">
-                        <div className="flex items-center gap-1">{bmLabels.XP_REQUIRED}<span className="text-gray-800 font-extrabold">{badge.points.toLocaleString()}</span></div>
-                        {badge.minReviews !== null && <div>{bmLabels.REVIEWS_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minReviews}{bmLabels.REVIEWS_UNIT}</span></div>}
-                        {badge.minPostLikes !== null && <div>{bmLabels.LIKES_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minPostLikes}</span></div>}
-                        {badge.minFollowers !== null && <div>{bmLabels.FOLLOWERS_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minFollowers}{bmLabels.FOLLOWERS_UNIT}</span></div>}
-                        {badge.minRatingAvg !== null && <div>{bmLabels.RATING_AVG_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minRatingAvg}{bmLabels.RATING_AVG_UNIT}</span></div>}
-                        {badge.minRatingCount !== null && <div>{bmLabels.RATING_COUNT_LABEL_SHORT}<span className="text-gray-800 font-extrabold">{badge.minRatingCount}{bmLabels.RATING_COUNT_UNIT}</span></div>}
+                      <span className="font-extrabold text-gray-900 dark:text-slate-100 text-sm block truncate">{badge.title}</span>
+                      <div className="space-y-1 text-mini text-gray-500 dark:text-slate-400 font-bold">
+                        <div className="flex items-center gap-1">{bmLabels.XP_REQUIRED}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.points.toLocaleString()}</span></div>
+                        {badge.minReviews !== null && <div>{bmLabels.REVIEWS_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minReviews}{bmLabels.REVIEWS_UNIT}</span></div>}
+                        {badge.minPostLikes !== null && <div>{bmLabels.LIKES_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minPostLikes}</span></div>}
+                        {badge.minFollowers !== null && <div>{bmLabels.FOLLOWERS_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minFollowers}{bmLabels.FOLLOWERS_UNIT}</span></div>}
+                        {badge.minRatingAvg !== null && <div>{bmLabels.RATING_AVG_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minRatingAvg}{bmLabels.RATING_AVG_UNIT}</span></div>}
+                        {badge.minRatingCount !== null && <div>{bmLabels.RATING_COUNT_LABEL_SHORT}<span className="text-gray-800 dark:text-slate-200 font-extrabold">{badge.minRatingCount}{bmLabels.RATING_COUNT_UNIT}</span></div>}
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       onClick={() => handleDeleteBadge(badge.id)}
-                      className="!p-2 text-gray-400 hover:text-rose-500 rounded-xl transition-all shrink-0"
+                      className="!p-2 text-gray-400 hover:text-rose-500 rounded-xl transition-all shrink-0 cursor-pointer"
                       title={LABELS.COMMON.DELETE}
                     >
                       <Trash2 size={16} />
@@ -523,7 +536,9 @@ export const LevelBadgeManagerTab = () => {
             )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
+
+

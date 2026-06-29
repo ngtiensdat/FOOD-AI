@@ -169,7 +169,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
       >
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-h2 flex items-center gap-3">
-            <FileSpreadsheet className="text-emerald-500" /> {LABELS.RESTAURANT.UPLOAD_EXCEL.TITLE}
+            <FileSpreadsheet className="text-primary" /> {LABELS.RESTAURANT.UPLOAD_EXCEL.TITLE}
           </h3>
           <Button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all" variant="none" size="none">
             <XCircle size={32} />
@@ -178,10 +178,10 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
 
         <div className="space-y-5">
           {/* Hướng dẫn + Tải file mẫu */}
-          <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 p-4 rounded-2xl text-emerald-800 dark:text-emerald-300 text-sm flex gap-4 items-start justify-between">
+          <div className="bg-primary/5 dark:bg-primary/10 border border-primary/10 p-4 rounded-2xl text-primary dark:text-primary-light text-sm flex gap-4 items-start justify-between">
             <div>
               <p className="font-bold mb-2">{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDE_TITLE}</p>
-              <ul className="list-disc pl-5 space-y-1 text-emerald-700 dark:text-emerald-400">
+              <ul className="list-disc pl-5 space-y-1 text-gray-500 dark:text-slate-400">
                 <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.COLS_INFO} <strong>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.DESC}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.IMAGE}, {LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS}</strong></li>
                 <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.REQUIRED_INFO(LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.NAME, LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE)}</li>
                 <li>{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS} {LABELS.RESTAURANT.UPLOAD_EXCEL.GUIDES.TAGS_INFO}</li>
@@ -190,7 +190,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
             </div>
             <Button
               onClick={handleDownloadTemplate}
-              className="flex-shrink-0 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shadow-sm"
+              className="flex-shrink-0 flex items-center gap-2 bg-primary hover:bg-primary-light text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shadow-md"
               variant="none"
               size="none"
             >
@@ -208,7 +208,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 required
                 value={selectedBranchId}
                 onChange={e => setSelectedBranchId(parseInt(e.target.value))}
-                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold"
+                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
               >
                 <option value="" disabled hidden>{LABELS.RESTAURANT.UPLOAD_EXCEL.SELECT_BRANCH}</option>
                 {myBranches.map((branch) => (
@@ -225,7 +225,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                 value={selectedCategoryId}
                 onChange={e => setSelectedCategoryId(e.target.value ? parseInt(e.target.value) : '')}
                 disabled={!selectedBranchId || loadingCategories}
-                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="form-input py-3 px-4 rounded-2xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
               >
                 <option value="">{LABELS.RESTAURANT.UPLOAD_EXCEL.SELECT_CATEGORY}</option>
                 {flatCategories.map(cat => (
@@ -296,7 +296,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
               fullWidth
               onClick={handleSubmit}
               disabled={previewData.length === 0 || !selectedBranchId || isUploading}
-              className={previewData.length > 0 ? "bg-emerald-500 hover:bg-emerald-600" : ""}
+              className={previewData.length > 0 ? "bg-primary hover:bg-primary-light text-white font-bold" : ""}
             >
               {isUploading ? LABELS.RESTAURANT.UPLOAD_EXCEL.SAVING : LABELS.RESTAURANT.UPLOAD_EXCEL.SAVE_BTN(previewData.length)}
             </Button>

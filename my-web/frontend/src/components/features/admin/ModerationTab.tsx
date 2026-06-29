@@ -97,18 +97,18 @@ export const ModerationTab = () => {
   return (
     <div className="space-y-6 fade-in">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-1">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2 mb-1">
           <ShieldAlert className="text-rose-500" size={28} />
           {LABELS.MODERATION.TITLE}
         </h2>
-        <p className="text-sm text-gray-500">{LABELS.MODERATION.PENDING_REPORTS}</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400">{LABELS.MODERATION.PENDING_REPORTS}</p>
       </div>
 
       {pendingReports.length === 0 ? (
-        <div className="card-container !p-12 text-center border-2 border-dashed !border-gray-100">
+        <div className="card-container !p-12 text-center border-2 border-dashed border-gray-100 dark:border-slate-800">
           <Check className="mx-auto text-emerald-500 mb-4 stroke-[3]" size={48} />
-          <h3 className="text-lg font-bold text-gray-400">{LABELS.MODERATION.NO_REPORTS}</h3>
-          <p className="text-gray-400 text-small">{LABELS.MODERATION.CLEAN_STATE_DESC}</p>
+          <h3 className="text-lg font-bold text-gray-400 dark:text-slate-500">{LABELS.MODERATION.NO_REPORTS}</h3>
+          <p className="text-gray-400 dark:text-slate-500 text-small">{LABELS.MODERATION.CLEAN_STATE_DESC}</p>
         </div>
       ) : (
         <div className="card-premium overflow-hidden">

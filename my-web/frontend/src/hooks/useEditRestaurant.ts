@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { LOCATION_DATA, DEFAULT_CITY } from '@/constants/location.constant';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
+import { restaurantSchema } from '@/schemas/restaurant.schema';
 
 /* eslint-disable react-hooks/set-state-in-effect */
 
@@ -71,15 +72,25 @@ export const useEditRestaurant = ({
     setLoading(true);
     setError('');
 
-    // Validation
-    if (!name.trim()) {
-      setError(LABELS.RESTAURANT.EDIT_MODAL.NAME_REQUIRED);
-      setLoading(false);
-      return;
-    }
+    const validation = restaurantSchema.safeParse({
+      name,
+      address,
+      city,
+      district,
+      description,
+      mapUrl,
+      logo: logo || null,
+      coverImage: coverImage || null,
+      bio,
+      contactEmail,
+      contactPhone,
+      openingHours,
+      syncWithPersonalAvatar,
+      syncWithPersonalCover,
+    });
 
-    if (openingHours && !/^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}$/.test(openingHours)) {
-      setError(LABELS.RESTAURANT.HOURS_FORMAT_ERROR);
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       setLoading(false);
       return;
     }

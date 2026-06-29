@@ -74,3 +74,22 @@
 - [x] Nút Xóa món ăn/Xóa người dùng hiển thị Modal xác nhận (ConfirmModal) thay vì `window.confirm` thô sơ.
 - [x] Toàn bộ chuỗi hiển thị hardcode được chuyển vào `LABELS` constants.
 - [x] Tất cả thẻ `<img>` được thay bằng `next/image` theo chuẩn `.agent` rule.
+
+### US-07+: Nhập món ăn hàng loạt từ file Excel (Merchant Bulk Import)
+- **As a** Merchant có thực đơn lớn
+- **I want** tải lên tệp Excel chứa danh sách các món ăn để nhập hàng loạt vào thực đơn
+- **So that** tôi không phải nhập thủ công từng món một cách tẻ nhạt.
+
+**Acceptance Criteria (AC):**
+- [x] Nút "Nhập từ Excel" mở Modal tải tệp tin mẫu (.xlsx).
+- [x] API Backend `/foods/bulk` phân tích file Excel, validate dữ liệu (tên món, giá, tags) và lưu hàng loạt vào DB dưới quyền của Merchant đó.
+
+### US-08+++: Nhập đối tác hàng loạt từ file Excel (Admin Bulk Import)
+- **As a** Admin quản trị hệ thống
+- **I want** nhập hàng loạt thông tin nhà hàng và đối tác từ file Excel
+- **So that** nhanh chóng đưa các merchant liên kết lên hệ thống trong giai đoạn triển khai.
+
+**Acceptance Criteria (AC):**
+- [x] Giao diện Admin có Modal "Nhập đối tác Excel" tải tệp mẫu và chọn tệp Excel.
+- [x] API Backend `/admin/import-merchants` phân tích file Excel, validate thông tin và tạo hàng loạt tài khoản User (Restaurant) kèm nhà hàng (Restaurant) tương ứng.
+

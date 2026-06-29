@@ -43,11 +43,11 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
 
   const inputStyles = `w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 ${
     Icon ? 'pl-12' : 'px-6'
-  } pr-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 transition-all text-sm`;
+  } pr-4 outline-none focus:border-primary focus:ring-4 focus:ring-orange-50 dark:bg-slate-900/50 dark:border-slate-800 dark:text-slate-200 dark:focus:ring-orange-500/10 text-gray-800 transition-all text-sm`;
 
   return (
     <div className="space-y-2">
-      {label && <label className="text-small font-semibold text-gray-700 ml-1">{label}</label>}
+      {label && <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">{label}</label>}
       <div className="relative group">
         {Icon && (
           <Icon 

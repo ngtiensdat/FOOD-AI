@@ -13,6 +13,7 @@ import { authService } from '@/services/auth.service';
 import { toast } from '@/store/useToastStore';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
+import { verifyEmailSchema } from '@/schemas/auth.schema';
 
 function VerifyEmailForm() {
   const router = useRouter();
@@ -90,8 +91,9 @@ function VerifyEmailForm() {
     setError(null);
     const otpCode = otp.join('');
 
-    if (otpCode.length !== 6) {
-      setError(LABELS.AUTH.VERIFY_OTP_REQUIRED);
+    const validation = verifyEmailSchema.safeParse({ email, otp: otpCode });
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
 

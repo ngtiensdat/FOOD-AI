@@ -8,18 +8,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
+import Image from 'next/image';
 import { Section } from '@/components/base/Section';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { LABELS } from '@/constants/labels';
 
 const CATEGORIES = [
-  { name: LABELS.CATEGORIES.NAMES.WATER, icon: '🍜' },
-  { name: LABELS.CATEGORIES.NAMES.RICE, icon: '🍛' },
-  { name: LABELS.CATEGORIES.NAMES.SNACK, icon: '🍟' },
-  { name: LABELS.CATEGORIES.NAMES.DESSERT, icon: '🍰' },
-  { name: LABELS.CATEGORIES.NAMES.CASUAL, icon: '🍚' },
-  { name: LABELS.CATEGORIES.NAMES.LUXURY, icon: '🍣' },
+  { name: LABELS.CATEGORIES.NAMES.WATER, icon: '/categories/water_category_3d.png' },
+  { name: LABELS.CATEGORIES.NAMES.RICE, icon: '/categories/rice_category_3d.png' },
+  { name: LABELS.CATEGORIES.NAMES.SNACK, icon: '/categories/snack_category_3d.png' },
+  { name: LABELS.CATEGORIES.NAMES.DESSERT, icon: '/categories/dessert_category_3d.png' },
+  { name: LABELS.CATEGORIES.NAMES.CASUAL, icon: '/categories/casual_category_3d.png' },
+  { name: LABELS.CATEGORIES.NAMES.LUXURY, icon: '/categories/luxury_category_3d.png' },
 ];
 
 const SUGGESTED_TAGS = [
@@ -90,7 +91,16 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
                 : 'hover:border-orange-200 text-gray-900'
               }`}
           >
-            <div className="text-4xl group-hover:scale-110 transition-transform">{cat.icon}</div>
+            <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm border border-gray-100 dark:border-gray-700 group-hover:scale-110 transition-transform p-2 overflow-hidden">
+              <Image
+                src={cat.icon}
+                alt={cat.name}
+                width={72}
+                height={72}
+                className="object-contain"
+                priority
+              />
+            </div>
             <div className={`font-bold ${selectedCategory === cat.name ? 'text-white' : 'text-gray-900'}`}>
               {cat.name}
             </div>

@@ -49,3 +49,13 @@
 **Acceptance Criteria (AC):**
 - [x] Nút Thả tim (Like) trên Food Card lưu món ăn đó vào danh sách "Yêu thích" cá nhân.
 - [x] Trang "Món ăn đã lưu" (Favorites) hiển thị đầy đủ danh sách các món ăn đã thả tim.
+
+### US-25: Tạo và quản lý chương trình khuyến mãi (Merchant Offers)
+- **As a** đối tác nhà hàng (Merchant)
+- **I want** tạo các chương trình khuyến mãi, giảm giá trực tuyến cho quán mình
+- **So that** tăng doanh thu bán hàng và thu hút khách hàng quan tâm.
+
+**Acceptance Criteria (AC):**
+- [x] Form tạo Offer mới: Tiêu đề, Mô tả, Loại khuyến mãi, Giá trị giảm giá, Thời hạn áp dụng, Hình ảnh.
+- [x] Hiển thị danh sách các ưu đãi đang chạy trực tiếp trên trang chủ của Merchant và trang hồ sơ công khai của Nhà hàng.
+

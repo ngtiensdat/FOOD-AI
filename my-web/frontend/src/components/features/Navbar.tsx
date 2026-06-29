@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/base/ThemeToggle';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy } from 'lucide-react';
+import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
 import { notificationService } from '@/services/notification.service';
@@ -20,12 +20,12 @@ import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 
 interface NavbarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isRestaurant } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -95,7 +95,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
     const handleNewNotification = (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
-      toast.success(notif.title || 'Thông báo mới');
+      toast.success(notif.title || LABELS.NAV.NOTIFICATIONS.NEW_NOTIFICATION);
     };
 
     socket.on('notification', handleNewNotification);
@@ -199,30 +199,54 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     }
   };
 
-  const handleTabClick = (tabId: string) => {
-    if (tabId === 'explore') {
-      router.push('/explore');
-    } else if (tabId === 'forum') {
-      router.push('/forum');
-    } else if (pathname === '/') {
-      setActiveTab(tabId);
-    } else {
-      if (tabId === 'home') {
-        router.push('/');
-      } else {
-        router.push(`/?tab=${tabId}`);
-      }
-    }
+  const getTabHref = (tabId: string) => {
+    if (tabId === 'explore') return '/explore';
+    if (tabId === 'forum') return '/forum';
+    if (tabId === 'dashboard') return '/dashboard';
+    if (tabId === 'restaurant-admin') return '/restaurant-admin';
+    if (tabId === 'admin') return '/admin';
+    if (tabId === 'home') return '/';
+    return `/?tab=${tabId}`;
   };
+
+  useEffect(() => {
+    router.prefetch('/explore');
+    router.prefetch('/forum');
+    router.prefetch('/dashboard');
+    router.prefetch('/restaurant-admin');
+    router.prefetch('/admin');
+    router.prefetch('/');
+  }, [router]);
 
   if (!mounted) return null;
 
+  // Active tab detection
+  let currentActive = activeTab || '';
+  if (!currentActive) {
+    if (pathname === '/explore') currentActive = 'explore';
+    else if (pathname === '/forum') currentActive = 'forum';
+    else if (pathname === '/dashboard') currentActive = 'dashboard';
+    else if (pathname === '/restaurant-admin') currentActive = 'restaurant-admin';
+    else if (pathname === '/admin') currentActive = 'admin';
+    else currentActive = 'home';
+  }
+
   const tabs = [
-    { id: 'home', label: LABELS.NAV.HOME },
-    { id: 'explore', label: LABELS.NAV.EXPLORE },
-    { id: 'forum', label: LABELS.NAV.FORUM },
-    { id: 'offers', label: LABELS.NAV.OFFERS },
+    { id: 'home', label: LABELS.NAV.HOME, icon: Home },
+    { id: 'explore', label: LABELS.NAV.EXPLORE, icon: Compass },
+    { id: 'forum', label: LABELS.NAV.FORUM, icon: MessageSquare },
+    { id: 'offers', label: LABELS.NAV.OFFERS, icon: Tag },
   ];
+
+  if (user) {
+    tabs.push({ id: 'dashboard', label: LABELS.AUTH?.PROFILE || 'Trang cá nhân', icon: User });
+    if (isRestaurant) {
+      tabs.push({ id: 'restaurant-admin', label: LABELS.RESTAURANT?.MERCHANT_HUB || 'Quản lý quán ăn', icon: Store });
+    }
+    if (isAdmin) {
+      tabs.push({ id: 'admin', label: LABELS.ADMIN?.PANEL_TITLE || 'Quản trị hệ thống', icon: Shield });
+    }
+  }
 
   return (
     <>
@@ -236,20 +260,34 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         <span className="text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
       </Link>
 
-      <div className="hidden md:flex items-center justify-center gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest justify-self-center">
-        {tabs.map((tab) => (
-          <Button
-            suppressHydrationWarning
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-            className={`pb-1 transition-all ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'hover:text-primary'
-              }`}
-            variant="none"
-            size="none"
-          >
-            {tab.label}
-          </Button>
-        ))}
+      <div className="hidden md:flex items-center justify-center gap-1 h-full justify-self-center">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = currentActive === tab.id;
+          return (
+            <div key={tab.id} className="relative group h-full flex items-center animate-fade-in">
+              <Link
+                href={getTabHref(tab.id)}
+                onClick={(e) => {
+                  if (pathname === '/' && setActiveTab && (tab.id === 'home' || tab.id === 'offers')) {
+                    e.preventDefault();
+                    setActiveTab(tab.id);
+                  }
+                }}
+                className={`h-full px-6 flex items-center justify-center border-b-4 transition-all ${
+                  isActive
+                    ? 'text-primary border-primary font-black scale-105'
+                    : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
+                }`}
+              >
+                <Icon size={20} />
+              </Link>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                {tab.label}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex items-center justify-end gap-4 relative justify-self-end">
@@ -272,7 +310,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
               <Button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 transition-colors relative focus:outline-none cursor-pointer"
-                aria-label="Thông báo"
+                aria-label={LABELS.NAV.NOTIFICATIONS.TITLE}
                 variant="none"
                 size="none"
               >
@@ -367,7 +405,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   user={user}
                   onLogout={logout}
                   onSettingsClick={() => {
-                    handleTabClick('settings');
+                    router.push('/?tab=settings');
                     setShowMenu(false);
                   }}
                   onClose={() => setShowMenu(false)}

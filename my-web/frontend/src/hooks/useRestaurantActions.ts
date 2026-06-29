@@ -15,11 +15,12 @@ import { isValidOpeningHours } from '@/utils/helpers';
 import { User } from '@/types/user';
 import { Food } from '@/types/food';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
+import { foodSchema } from '@/schemas/food.schema';
 
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'views' | 'interactions' | 'conversion' | 'activity'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -186,14 +187,35 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
       toast.error(LABELS.UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
       return;
     }
+
+    const priceParsed = parseFloat(formData.price);
+    const restaurantIdParsed = parseInt(formData.restaurantId);
+    const categoryIdParsed = formData.categoryId ? parseInt(formData.categoryId) : null;
+    const tagsParsed = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
+
+    const validation = foodSchema.safeParse({
+      name: formData.name,
+      price: priceParsed,
+      description: formData.description,
+      image: formData.image,
+      tags: tagsParsed,
+      restaurantId: restaurantIdParsed,
+      categoryId: categoryIdParsed,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
     const data = {
       ...formData,
-      price: parseFloat(formData.price),
+      price: priceParsed,
       lat: formData.lat ? parseFloat(formData.lat) : null,
       lng: formData.lng ? parseFloat(formData.lng) : null,
-      tags: formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
-      restaurantId: parseInt(formData.restaurantId),
-      categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined
+      tags: tagsParsed,
+      restaurantId: restaurantIdParsed,
+      categoryId: categoryIdParsed || undefined
     };
 
     try {

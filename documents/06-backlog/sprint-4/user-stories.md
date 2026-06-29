@@ -40,3 +40,13 @@
 - [x] UI Chat Assistant (Floating button hoặc Chat page) toàn diện.
 - [x] Gợi ý các món ăn cụ thể ngay trong nội dung trò chuyện của AI.
 - [x] Lưu trữ và quản lý lịch sử trò chuyện lâu dài.
+
+### US-15+: Phản hồi chất lượng gợi ý AI (AI Suggestion Feedback)
+- **As a** người dùng sử dụng chatbot AI
+- **I want** đánh giá thích (Like) hoặc không thích (Dislike) các món ăn được gợi ý
+- **So that** hệ thống AI học hỏi và cải thiện thuật toán gợi ý chính xác hơn cho lần sau.
+
+**Acceptance Criteria (AC):**
+- [x] Nút bấm Like/Dislike bên cạnh mỗi thẻ món ăn gợi ý trong ô chat của AI.
+- [x] API `/ai/feedback` ghi nhận phản hồi vào database (`AiFeedback`) để huấn luyện/tối ưu profile người dùng.
+
