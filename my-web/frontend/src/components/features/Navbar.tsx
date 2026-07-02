@@ -2,16 +2,17 @@
  * Mục đích file này để làm gì: Component Thanh điều hướng (Navbar) chính của website.
  * Các file khác hay file này có ý nghĩa như nào: Hiển thị thanh menu ngang ở trên cùng, chứa logo, các tab chuyển hướng chính và nút tài khoản người dùng/menu mở rộng.
  * Các chức năng đặc biệt: Tích hợp chế độ Dark Mode (ThemeToggle), tự động theo dõi trạng thái đăng nhập để hiển thị nút Đăng nhập hoặc Avatar.
+ * Kiến thức: DIP – notification logic được ủy quyền cho useNotifications hook.
  */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
-import { notificationService } from '@/services/notification.service';
+import { useNotifications, NotificationItem } from '@/hooks/useNotifications';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
@@ -25,7 +26,9 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
-  const { user, logout, isAdmin, isRestaurant } = useAuth();
+  const { user, logout, isAdmin, isRestaurant, isCustomer } = useAuth();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -58,83 +61,21 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const router = useRouter();
 
   const { socket } = useSocket();
-  interface NotificationItem {
-    id: string;
-    title: string;
-    content: string;
-    type: 'LIKE' | 'COMMENT' | 'REPLY' | 'SHARE' | 'LEVEL_UP' | 'PROFILE_UPDATE' | 'SYSTEM' | 'WARNING' | 'PROMOTION' | 'MODERATION_REMOVE' | 'MODERATION_RESOLVE' | 'MODERATION_DISMISS' | string;
-    isRead: boolean;
-    senderAvatar?: string;
-    createdAt: string;
-    postId?: number;
-  }
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [activeNotification, setActiveNotification] = useState<NotificationItem | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-
-  useEffect(() => {
-    if (user?.id) {
-      const fetchNotifications = async () => {
-        try {
-          const res = await notificationService.getNotifications(1, 50);
-          setNotifications(res || []);
-        } catch (e) {
-          console.error('Lỗi khi tải thông báo:', e);
-        }
-      };
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewNotification = (notif: NotificationItem) => {
-      setNotifications((prev) => [notif, ...prev]);
-      toast.success(notif.title || LABELS.NAV.NOTIFICATIONS.NEW_NOTIFICATION);
-    };
-
-    socket.on('notification', handleNewNotification);
-
-    return () => {
-      socket.off('notification', handleNewNotification);
-    };
-  }, [socket]);
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const handleNotificationClick = async (notifId: string) => {
-    try {
-      await notificationService.markAsRead(notifId);
-      const updated = notifications.map(n => n.id === notifId ? { ...n, isRead: true } : n);
-      setNotifications(updated);
-    } catch (e) {
-      console.error('Lỗi khi đọc thông báo:', e);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationService.markAllAsRead();
-      const updated = notifications.map(n => ({ ...n, isRead: true }));
-      setNotifications(updated);
-    } catch (e) {
-      console.error('Lỗi khi đọc tất cả thông báo:', e);
-    }
-  };
-
-  const handleClearAll = async () => {
-    try {
-      await notificationService.clearAll();
-      setNotifications([]);
-    } catch (e) {
-      console.error('Lỗi khi xoá tất cả thông báo:', e);
-    }
-  };
+  // DIP: Notification logic được ủy quyền cho useNotifications hook
+  const {
+    notifications,
+    showNotifications,
+    setShowNotifications,
+    activeNotification,
+    setActiveNotification,
+    showDetailModal,
+    setShowDetailModal,
+    unreadCount,
+    handleNotificationClick,
+    handleMarkAllAsRead,
+    handleClearAll,
+  } = useNotifications({ userId: user?.id, socket });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -205,6 +146,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     if (tabId === 'dashboard') return '/dashboard';
     if (tabId === 'restaurant-admin') return '/restaurant-admin';
     if (tabId === 'admin') return '/admin';
+    if (tabId === 'vouchers') return '/vouchers';
     if (tabId === 'home') return '/';
     return `/?tab=${tabId}`;
   };
@@ -215,6 +157,8 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     router.prefetch('/dashboard');
     router.prefetch('/restaurant-admin');
     router.prefetch('/admin');
+    router.prefetch('/profile');
+    router.prefetch('/vouchers');
     router.prefetch('/');
   }, [router]);
 
@@ -228,6 +172,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     else if (pathname === '/dashboard') currentActive = 'dashboard';
     else if (pathname === '/restaurant-admin') currentActive = 'restaurant-admin';
     else if (pathname === '/admin') currentActive = 'admin';
+    else if (pathname === '/vouchers') currentActive = 'vouchers';
     else currentActive = 'home';
   }
 
@@ -239,6 +184,9 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   ];
 
   if (user) {
+    if (isCustomer) {
+      tabs.push({ id: 'vouchers', label: LABELS.LOYALTY.TITLE || 'Ví Voucher', icon: Ticket });
+    }
     tabs.push({ id: 'dashboard', label: LABELS.AUTH?.PROFILE || 'Trang cá nhân', icon: User });
     if (isRestaurant) {
       tabs.push({ id: 'restaurant-admin', label: LABELS.RESTAURANT?.MERCHANT_HUB || 'Quản lý quán ăn', icon: Store });

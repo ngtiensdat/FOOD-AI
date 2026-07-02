@@ -1,8 +1,8 @@
 // Mục đích file này để làm gì: Component hiển thị giao diện cấu hình thông tin cá nhân và cài đặt riêng tư của tài khoản.
 // Các file khác hay file này có ý nghĩa như nào: Tab con của SettingsSection, quản lý thông tin tên hiển thị, email và trạng thái hiển thị danh sách theo dõi.
 // Các chức năng đặc biệt: Cho phép toggle ẩn/hiện từng mục thông tin cá nhân (level, badge, điểm, XP, email, SĐT, địa chỉ, danh sách theo dõi).
-// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: Component-based Architecture, State Management, Atomic Privacy Controls.
-// Các biến, hàm đặc biệt trong file: ProfileSettingsTab, PRIVACY_KEYS, PRIVACY_FIELDS, getPrivacyValue.
+// Kiến thức, Design Pattern, nguyên tắc (SOLID, OOP...) đang được áp dụng trong file: SRP – logic tiện ích privacy đã tách ra @/utils/privacy.
+// Các biến, hàm đặc biệt trong file: ProfileSettingsTab.
 'use client';
 
 import React from 'react';
@@ -10,56 +10,21 @@ import { User as UserIcon } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { Input } from '@/components/base/Input';
-
 import { userService } from '@/services/user.service';
+import { User } from '@/types/user';
+
+// SRP: Privacy utilities đã được tách ra @/utils/privacy.
+// Re-export để backward-compatible với các consumer hiện tại (ProfileHeader, ProfileIntro, UserProfileDetail).
+import { PRIVACY_KEYS, getPrivacyValue, resolvePrivacyValue } from '@/utils/privacy';
+export { PRIVACY_KEYS, getPrivacyValue, resolvePrivacyValue };
 
 interface ProfileSettingsTabProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
-  profileData: { profile?: { preferences?: Record<string, unknown> }; [key: string]: unknown } | null;
-  setProfileData: React.Dispatch<React.SetStateAction<any>>;
+  profileData: User | null;
+  setProfileData: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-/** Key localStorage cho từng trường thông tin cá nhân */
-export const PRIVACY_KEYS = {
-  showLevel: 'privacy_showLevel',
-  showBadge: 'privacy_showBadge',
-  showPoints: 'privacy_showPoints',
-  showXpBar: 'privacy_showXpBar',
-  showFollowList: 'privacy_showFollowList',
-  showEmail: 'privacy_showEmail',
-  showPhone: 'privacy_showPhone',
-  showAddress: 'privacy_showAddress',
-} as const;
 
-/** Đọc giá trị từ localStorage, mặc định true (hiển thị) */
-export function getPrivacyValue(key: keyof typeof PRIVACY_KEYS): boolean {
-  if (typeof window === 'undefined') return true;
-  const stored = localStorage.getItem(PRIVACY_KEYS[key]);
-  return stored !== null ? JSON.parse(stored) : true;
-}
-
-/**
- * Giải quyết giá trị ẩn/hiện thông tin cá nhân dựa trên preferences từ Database,
- * và fallback về localStorage nếu là chủ sở hữu (owner).
- */
-export function resolvePrivacyValue(
-  key: keyof typeof PRIVACY_KEYS,
-  profilePreferences: Record<string, unknown> | null | undefined,
-  isOwner: boolean
-): boolean {
-  // 1. Kiểm tra trong preferences từ DB (do server trả về)
-  if (profilePreferences && profilePreferences[key] !== undefined) {
-    return profilePreferences[key] === true;
-  }
-  
-  // 2. Nếu là chủ sở hữu và chưa có trên DB, đọc từ localStorage làm fallback
-  if (isOwner) {
-    return getPrivacyValue(key);
-  }
-  
-  // 3. Mặc định là hiển thị nếu không có cấu hình và là khách xem
-  return true;
-}
 
 export const ProfileSettingsTab = ({
   user,
@@ -96,6 +61,7 @@ export const ProfileSettingsTab = ({
   React.useEffect(() => {
     if (profileData?.profile) {
       const dbPrefs = profileData.profile.preferences;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPrivacyState({
         showLevel: dbPrefs?.showLevel !== undefined ? dbPrefs.showLevel === true : getPrivacyValue('showLevel'),
         showBadge: dbPrefs?.showBadge !== undefined ? dbPrefs.showBadge === true : getPrivacyValue('showBadge'),
@@ -126,8 +92,8 @@ export const ProfileSettingsTab = ({
         preferences: updatedPrefs,
       });
 
-      setProfileData((prev: any) => {
-        if (!prev) return prev;
+      setProfileData((prev) => {
+        if (!prev || !prev.profile) return prev;
         return {
           ...prev,
           profile: {
@@ -141,7 +107,7 @@ export const ProfileSettingsTab = ({
       toast.success(LABELS.SETTINGS.PROFILE.PRIVACY_TOAST_SUCCESS(field?.label || '', newValue));
     } catch (err) {
       console.error('Lỗi khi lưu thiết lập riêng tư:', err);
-      toast.error('Không thể lưu thiết lập riêng tư lên server.');
+      toast.error(LABELS.SETTINGS.PROFILE.PRIVACY_SAVE_ERROR);
       setPrivacyState(prev => ({ ...prev, [key]: !newValue }));
       localStorage.setItem(PRIVACY_KEYS[key], JSON.stringify(!newValue));
     }

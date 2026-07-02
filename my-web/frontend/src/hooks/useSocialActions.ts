@@ -78,16 +78,19 @@ export const useSocialActions = ({
         if (me.points !== undefined && me.points !== null) {
           diff = (updatedMe.points ?? 0) - me.points;
         } else {
-          // Fallback standard points for actions if session points are not initialized yet
-          if (reason === LABELS.LOYALTY.REASONS.LIKE_POST) diff = LIMITS.LOYALTY_POINTS.LIKE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.UNLIKE_POST) diff = LIMITS.LOYALTY_POINTS.UNLIKE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.COMMENT_POST) diff = LIMITS.LOYALTY_POINTS.COMMENT_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_COMMENT) diff = LIMITS.LOYALTY_POINTS.DELETE_COMMENT;
-          else if (reason === LABELS.LOYALTY.REASONS.REPLY_COMMENT) diff = LIMITS.LOYALTY_POINTS.REPLY_COMMENT;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_REPLY) diff = LIMITS.LOYALTY_POINTS.DELETE_REPLY;
-          else if (reason === LABELS.LOYALTY.REASONS.CREATE_POST) diff = LIMITS.LOYALTY_POINTS.CREATE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_POST) diff = LIMITS.LOYALTY_POINTS.DELETE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.SHARE_POST) diff = LIMITS.LOYALTY_POINTS.SHARE_POST;
+          // OCP: Lookup map — thêm action mới chỉ cần thêm entry, không sửa logic
+          const REASON_TO_POINTS: Record<string, number> = {
+            [LABELS.LOYALTY.REASONS.LIKE_POST]:      LIMITS.LOYALTY_POINTS.LIKE_POST,
+            [LABELS.LOYALTY.REASONS.UNLIKE_POST]:    LIMITS.LOYALTY_POINTS.UNLIKE_POST,
+            [LABELS.LOYALTY.REASONS.COMMENT_POST]:   LIMITS.LOYALTY_POINTS.COMMENT_POST,
+            [LABELS.LOYALTY.REASONS.DELETE_COMMENT]: LIMITS.LOYALTY_POINTS.DELETE_COMMENT,
+            [LABELS.LOYALTY.REASONS.REPLY_COMMENT]:  LIMITS.LOYALTY_POINTS.REPLY_COMMENT,
+            [LABELS.LOYALTY.REASONS.DELETE_REPLY]:   LIMITS.LOYALTY_POINTS.DELETE_REPLY,
+            [LABELS.LOYALTY.REASONS.CREATE_POST]:    LIMITS.LOYALTY_POINTS.CREATE_POST,
+            [LABELS.LOYALTY.REASONS.DELETE_POST]:    LIMITS.LOYALTY_POINTS.DELETE_POST,
+            [LABELS.LOYALTY.REASONS.SHARE_POST]:     LIMITS.LOYALTY_POINTS.SHARE_POST,
+          };
+          diff = REASON_TO_POINTS[reason] ?? 0;
         }
 
         // 2. If the active profile on the page is me, update the page's profile state
@@ -356,10 +359,10 @@ export const useSocialActions = ({
         actions.setProfile({
           ...profile,
           _count: {
-            ...(profile as any)._count,
-            posts: Math.max(0, ((profile as any)._count?.posts || 1) - 1),
+            ...profile._count,
+            posts: Math.max(0, (profile._count?.posts || 1) - 1),
           },
-        } as any);
+        });
       }
       toast.success(LABELS.SOCIAL.TOAST.POST_DELETE_SUCCESS);
       awardPoints(LABELS.LOYALTY.REASONS.DELETE_POST);
