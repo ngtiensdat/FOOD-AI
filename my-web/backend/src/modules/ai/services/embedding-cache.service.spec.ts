@@ -2,7 +2,7 @@ process.env.JWT_SECRET = 'test-secret';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmbeddingCacheService } from './embedding-cache.service';
-import { RedisService } from './redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 
 describe('EmbeddingCacheService', () => {
   let service: EmbeddingCacheService;

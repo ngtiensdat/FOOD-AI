@@ -87,11 +87,11 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                   {/* Rank number or Crown */}
                   <div className="w-8 h-8 shrink-0 flex items-center justify-center">
                     {isTop1 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(1) || 'Hạng 1'}>👑</span>
+                      <img src="/images/badges/medal_gold.png" alt="Gold" className="w-7 h-7 object-contain" />
                     ) : isTop2 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(2) || 'Hạng 2'}>🥈</span>
+                      <img src="/images/badges/medal_silver.png" alt="Silver" className="w-7 h-7 object-contain" />
                     ) : isTop3 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(3) || 'Hạng 3'}>🥉</span>
+                      <img src="/images/badges/medal_bronze.png" alt="Bronze" className="w-7 h-7 object-contain" />
                     ) : (
                       <span className="text-sm font-black text-gray-400 dark:text-slate-500">#{index + 1}</span>
                     )}
@@ -114,8 +114,9 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                       )}
                     </h4>
                     {item.badgeTitle && (
-                      <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate">
-                        ✨ {item.badgeTitle}
+                      <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate flex items-center gap-1 mt-0.5">
+                        <img src="/images/badges/badge_star.png" alt="Star" className="w-3 h-3 object-contain shrink-0" />
+                        <span>{item.badgeTitle}</span>
                       </p>
                     )}
                   </div>

@@ -103,6 +103,7 @@ model Restaurant {
   histories      History[]
   posts          Post[]
   profile        RestaurantProfile?
+  pointCodes     PointCode[]
   owner          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
@@ -443,6 +444,14 @@ model Voucher {
   discountValue String        @map("discount_value")
   minSpend      String        @map("min_spend")
   expiryDays    Int           @map("expiry_days")
+  expiryDate    DateTime?     @map("expiry_date")
+  quantity      Int           @default(100)
+  usedCount     Int           @default(0) @map("used_count")
+  image         String?
+  promoType     String        @default("DISCOUNT") @map("promo_type")
+  restaurantId  Int?          @map("restaurant_id")
+  restaurantName String?      @map("restaurant_name")
+  applicableRestaurantIds Int[] @default([]) @map("applicable_restaurant_ids")
   createdAt     DateTime      @default(now()) @map("created_at")
   userVouchers  UserVoucher[]
 
@@ -450,15 +459,32 @@ model Voucher {
 }
 
 model UserVoucher {
-  id         String   @id @default(uuid())
-  userId     Int      @map("user_id")
-  voucherId  String   @map("voucher_id")
-  code       String   @unique
-  redeemedAt DateTime @default(now()) @map("redeemed_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  voucher    Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  userId     Int       @map("user_id")
+  voucherId  String    @map("voucher_id")
+  code       String    @unique
+  redeemedAt DateTime  @default(now()) @map("redeemed_at")
+  isUsed     Boolean   @default(false) @map("is_used")
+  usedAt     DateTime? @map("used_at")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher    Voucher   @relation(fields: [voucherId], references: [id], onDelete: Cascade)
 
   @@map("user_vouchers")
+}
+
+model PointCode {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  points       Int
+  restaurantId Int       @map("restaurant_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime  @map("expires_at")
+  usedById     Int?      @map("used_by_id")
+  usedByName   String?   @map("used_by_name")
+  usedAt       DateTime? @map("used_at")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("point_codes")
 }
 
 model Offer {
@@ -471,6 +497,10 @@ model Offer {
   restaurantId   Int?     @map("restaurant_id")
   image          String
   validUntil     String   @map("valid_until")
+  promoCode      String?  @map("promo_code")
+  terms          String?  @map("terms")
+  quantity       Int?     @default(100)
+  usedCount      Int      @default(0) @map("used_count")
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("offers")

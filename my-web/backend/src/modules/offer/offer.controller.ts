@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -15,34 +16,43 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { UserRole } from '@prisma/client';
+import { CreateOfferDto } from './dto/create-offer.dto';
+import { UpdateOfferDto } from './dto/update-offer.dto';
 
 @Controller('offers')
 export class OfferController {
   constructor(private offerService: OfferService) {}
 
   @Get()
-  async getAllOffers(@Query('promoType') promoType?: string) {
-    return this.offerService.getAllOffers(promoType);
+  async getAllOffers(
+    @Query('promoType') promoType?: string,
+    @Query('restaurantId') restaurantId?: string,
+  ) {
+    const restId = restaurantId ? parseInt(restaurantId, 10) : undefined;
+    return this.offerService.getAllOffers(promoType, restId);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.RESTAURANT)
+  @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
   async createOffer(
     @GetUser('id') userId: number,
-    @Body()
-    dto: {
-      title: string;
-      description: string;
-      promoType: string;
-      discountValue: string;
-      restaurantName: string;
-      restaurantId?: number;
-      image: string;
-      validUntil: string;
-    },
+    @GetUser('role') role: UserRole,
+    @Body() dto: CreateOfferDto,
   ) {
-    return this.offerService.createOffer(userId, dto);
+    return this.offerService.createOffer(userId, role, dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
+  async updateOffer(
+    @GetUser('id') userId: number,
+    @GetUser('role') role: UserRole,
+    @Param('id', ParseIntPipe) offerId: number,
+    @Body() dto: UpdateOfferDto,
+  ) {
+    return this.offerService.updateOffer(userId, role, offerId, dto);
   }
 
   @Delete(':id')

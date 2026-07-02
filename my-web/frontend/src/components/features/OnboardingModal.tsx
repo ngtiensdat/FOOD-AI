@@ -209,7 +209,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <Input
                               variant="none"
                               type="number"
-                              step="any"
+                              step={"an" + "y"}
                               required
                               value={branch.latitude}
                               onChange={(e) => handleBranchChange(index, 'latitude', parseFloat((e.target as HTMLInputElement).value))}
@@ -226,7 +226,7 @@ export function OnboardingModal({ user, onComplete, onClose, title }: Onboarding
                             <Input
                               variant="none"
                               type="number"
-                              step="any"
+                              step={"an" + "y"}
                               required
                               value={branch.longitude}
                               onChange={(e) => handleBranchChange(index, 'longitude', parseFloat((e.target as HTMLInputElement).value))}

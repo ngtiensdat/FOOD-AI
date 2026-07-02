@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { BcryptHelper } from '../../common/utils/bcrypt.helper';
 import { AiService } from '../ai/ai.service';
-import { RedisService } from '../ai/services/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { MailService } from '../mail/mail.service';
 
 describe('AuthService', () => {

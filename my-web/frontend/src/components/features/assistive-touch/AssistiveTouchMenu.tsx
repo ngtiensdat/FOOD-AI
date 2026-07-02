@@ -9,7 +9,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/base/SafeImage';
 import { useAssistiveTouch } from '@/hooks/useAssistiveTouch';
 import { Button } from '@/components/base/Button';
 import { AiChatWindow } from '@/components/features/ai/AiChatWindow';
@@ -96,7 +96,7 @@ export const AssistiveTouchMenu = () => {
           aria-label={isOpen ? "Đóng menu tiện ích" : "Mở menu tiện ích"}
         >
           <div className="relative w-18 h-18">
-            <Image
+            <SafeImage
               src="/balloon.png"
               alt="Utility Bubble"
               fill
@@ -139,7 +139,7 @@ export const AssistiveTouchMenu = () => {
                 }`}
               >
                 <div className="relative w-full h-full">
-                  <Image
+                  <SafeImage
                     src="/chibi linh vật/nháy mắt.png"
                     alt="Chibi Mascot"
                     fill

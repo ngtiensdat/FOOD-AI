@@ -27,6 +27,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { Throttle } from '@nestjs/throttler';
@@ -81,7 +82,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async deleteAccount(
     @GetUser('id') userId: number,
-    @Body() body: { password?: string },
+    @Body() body: DeleteAccountDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.deleteAccount(userId, body.password);

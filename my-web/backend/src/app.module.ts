@@ -28,11 +28,13 @@ import { BugReportModule } from './modules/bug-report/bug-report.module';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { MediaModule } from './modules/media/media.module';
 import { MailModule } from './modules/mail/mail.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    RedisModule,
     MailModule,
     AuthModule,
     UserModule,

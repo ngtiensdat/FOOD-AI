@@ -113,7 +113,7 @@ export const ConversionAnalyticsTab = React.memo(() => {
           <span className="text-xs text-gray-400 font-bold whitespace-nowrap">{LABELS.ANALYTICS.SORT_BY}</span>
           <select
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as any)}
+            onChange={(e) => setSortOrder(e.target.value as 'desc' | 'asc' | 'alpha')}
             className="form-input py-2 px-3 rounded-xl text-xs font-semibold bg-gray-50 border border-gray-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200 cursor-pointer"
           >
             <option value="desc">{LABELS.ANALYTICS.CONVERSION_DESCENDING}</option>

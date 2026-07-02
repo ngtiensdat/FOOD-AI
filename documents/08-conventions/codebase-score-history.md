@@ -25,6 +25,7 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | 12/06/2026 | **Sprint 5 (Tối ưu)** | AI Auditor | 2.50 | 2.50 | 2.50 | 2.50 | **10.0 / 10** | **Hoàn hảo:** Loại bỏ hoàn toàn magic numbers, các con số page size phân trang cục bộ ở frontend đã được đóng gói và chuyển thành hằng số cấu hình tập trung tại limits.constant.ts. 0 lỗi biên dịch TS. |
 | 13/06/2026 | **Sprint 5 (WS & DB)** | AI Auditor | 1.80 | 2.00 | 2.20 | 2.30 | **8.30 / 10** | **Rà soát chất lượng & bảo mật:** Tích hợp thành công WebSocket và database migration, tuy nhiên phát hiện lỗ hổng WebSocket IDOR nghiêm trọng (thiếu xác thực JWT handshake) và sự lặp lại logic (DRY violation) ở frontend. |
 | 22/06/2026 | **Sprint 6 (Refactor & Audit)** | AI Auditor | 2.45 | 2.45 | 2.50 | 2.50 | **9.90 / 10** | **Xuất sắc:** Giải quyết triệt để lỗ hổng bảo mật WebSocket IDOR (JWT handshake auth) và gộp logic mạng xã hội frontend vào custom hook useSocialActions. Xây dựng hoàn chỉnh hệ thống Gamification tách biệt XP/Points để chống gian lận voucher. |
+| 29/06/2026 | **Sprint 7 (Vector & Hybrid Forum)** | AI Auditor | 2.48 | 2.48 | 2.50 | 2.50 | **9.96 / 10** | **Elite Grade:** Tích hợp vector recommendation và xử lý hàng đợi retry queue. Cải tiến giao diện Diễn đàn thành bố cục cuộn hỗn hợp (Hybrid Scrolling) đối xứng, phân trang bằng "Xem thêm", tự động nhận diện bài viết đã xem qua IntersectionObserver và loại bỏ hoàn toàn text cứng. |
 
 ---
 

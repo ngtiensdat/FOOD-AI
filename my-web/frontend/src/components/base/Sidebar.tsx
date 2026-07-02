@@ -30,6 +30,12 @@ export interface SidebarItemProps {
   isCollapsed?: boolean;
   subItems?: SubItem[];
 }
+export interface ClonedElementProps {
+  isCollapsed?: boolean;
+  onClick?: () => void;
+  size?: string;
+  className?: string;
+}
 
 export const SidebarItem = ({ 
   icon: Icon, 
@@ -42,22 +48,8 @@ export const SidebarItem = ({
   subItems 
 }: SidebarItemProps) => {
   const hasSubItems = subItems && subItems.length > 0;
-  const storageKey = `sidebar-menu-open-${label}`;
   
   const [isOpen, setIsOpen] = React.useState(false);
-
-  // Khôi phục trạng thái đóng/mở từ localStorage
-  React.useEffect(() => {
-    if (typeof window !== 'undefined' && hasSubItems) {
-      const saved = localStorage.getItem(storageKey);
-      if (saved !== null) {
-        setIsOpen(saved === 'true');
-      } else {
-        // Mặc định là đóng khi mở trang
-        setIsOpen(false);
-      }
-    }
-  }, [hasSubItems, storageKey]);
 
   const baseStyles = `w-full flex items-center justify-between rounded-2xl font-bold transition-all text-small cursor-pointer group relative ${
     isCollapsed ? 'px-4 py-4 justify-center' : 'px-6 py-4 gap-4'
@@ -71,11 +63,7 @@ export const SidebarItem = ({
     if (hasSubItems && !isCollapsed) {
       e.preventDefault();
       e.stopPropagation();
-      const nextOpen = !isOpen;
-      setIsOpen(nextOpen);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, String(nextOpen));
-      }
+      setIsOpen(!isOpen);
     } else if (onClick) {
       onClick();
     }
@@ -290,10 +278,10 @@ export const Sidebar = ({
               <nav className="space-y-3 flex-1 overflow-y-auto pr-1">
                 {React.Children.map(children, child => {
                   if (React.isValidElement(child)) {
-                    return React.cloneElement(child as React.ReactElement<any>, { 
+                    return React.cloneElement(child as React.ReactElement<ClonedElementProps>, { 
                       isCollapsed: false,
                       onClick: () => {
-                        const origOnClick = (child.props as any).onClick;
+                        const origOnClick = (child.props as ClonedElementProps).onClick;
                         if (origOnClick) origOnClick();
                         setIsMobileOpen(false);
                       }
@@ -308,10 +296,10 @@ export const Sidebar = ({
                 <div className="mt-auto pt-6 border-t border-gray-50 dark:border-slate-800/50 w-full space-y-2">
                   {React.Children.map(footer, child => {
                     if (React.isValidElement(child)) {
-                      return React.cloneElement(child as React.ReactElement<any>, {
+                      return React.cloneElement(child as React.ReactElement<ClonedElementProps>, {
                         isCollapsed: false,
                         onClick: () => {
-                          const origOnClick = (child.props as any).onClick;
+                          const origOnClick = (child.props as ClonedElementProps).onClick;
                           if (origOnClick) origOnClick();
                           setIsMobileOpen(false);
                         }
@@ -356,7 +344,7 @@ export const Sidebar = ({
         <nav className={`space-y-3 flex-1 overflow-y-auto custom-scrollbar w-full ${isCollapsed ? 'px-0' : 'pr-2'}`}>
           {React.Children.map(children, child => {
             if (React.isValidElement(child)) {
-              return React.cloneElement(child as React.ReactElement<any>, { isCollapsed });
+              return React.cloneElement(child as React.ReactElement<ClonedElementProps>, { isCollapsed });
             }
             return child;
           })}
@@ -368,7 +356,7 @@ export const Sidebar = ({
               <div className="flex flex-col gap-2 items-center">
                 {React.Children.map(footer, child => {
                   if (React.isValidElement(child)) {
-                    return React.cloneElement(child as React.ReactElement<any>, { isCollapsed, size: 'none', className: 'p-3 rounded-xl' });
+                    return React.cloneElement(child as React.ReactElement<ClonedElementProps>, { isCollapsed, size: 'none', className: 'p-3 rounded-xl' });
                   }
                   return child;
                 })}

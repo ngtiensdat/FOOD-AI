@@ -134,4 +134,22 @@ export class VectorRepository {
 
     return rows.map((r) => r.id);
   }
+
+  async clearFoodEmbedding(foodId: number) {
+    return this.prisma.$executeRaw`
+      UPDATE foods SET embedding = NULL WHERE id = ${foodId}
+    `;
+  }
+
+  async clearUserEmbedding(userId: number) {
+    return this.prisma.$executeRaw`
+      UPDATE user_profiles SET embedding = NULL WHERE user_id = ${userId}
+    `;
+  }
+
+  async clearPostEmbedding(postId: number) {
+    return this.prisma.$executeRaw`
+      UPDATE posts SET embedding = NULL WHERE id = ${postId}
+    `;
+  }
 }

@@ -40,7 +40,8 @@ export interface GamificationJob {
     | 'UNDO_COMMENT'
     | 'UNDO_REPLY'
     | 'UNDO_LIKE'
-    | 'REDEEM_VOUCHER';
+    | 'REDEEM_VOUCHER'
+    | 'CLAIM_CODE';
   voucherPointsCost?: number;
   resolve: (value: GamificationResult) => void;
   reject: (reason: unknown) => void;
@@ -265,6 +266,9 @@ export class GamificationQueueService implements OnModuleInit {
       case 'REDEEM_VOUCHER':
         pointsAmount = -(voucherPointsCost ?? 0);
         break;
+      case 'CLAIM_CODE':
+        pointsAmount = voucherPointsCost ?? 0;
+        break;
       default:
         throw new Error(`Invalid action type: ${action as string}`);
     }
@@ -296,6 +300,8 @@ export class GamificationQueueService implements OnModuleInit {
 
       if (action === 'REDEEM_VOUCHER') {
         nextPoints = Math.max(MIN_POINTS_OR_XP, user.points + pointsAmount); // pointsAmount is negative voucherPointsCost
+      } else if (action === 'CLAIM_CODE') {
+        nextPoints = user.points + pointsAmount;
       } else {
         // Social action (like, comment, review)
         nextXp = Math.max(MIN_POINTS_OR_XP, user.xp + pointsAmount); // pointsAmount is reward/deduction amount
@@ -431,7 +437,9 @@ export class GamificationQueueService implements OnModuleInit {
         level: nextLevel,
         badgeTitle: nextBadge,
         pointsChanged:
-          action === 'REDEEM_VOUCHER' ? pointsAmount : rewardEarned,
+          action === 'REDEEM_VOUCHER' || action === 'CLAIM_CODE'
+            ? pointsAmount
+            : rewardEarned,
       };
     });
   }

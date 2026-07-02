@@ -8,7 +8,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/base/SafeImage';
 import { Section } from '@/components/base/Section';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
@@ -92,7 +92,7 @@ export const CategorySection = ({ handleCategoryClick, selectedCategory }: Categ
               }`}
           >
             <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm border border-gray-100 dark:border-gray-700 group-hover:scale-110 transition-transform p-2 overflow-hidden">
-              <Image
+              <SafeImage
                 src={cat.icon}
                 alt={cat.name}
                 width={72}

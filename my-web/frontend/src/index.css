@@ -604,3 +604,69 @@ input[type=number] {
 .dark * {
   scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
 }
+
+/* Custom ticket stub styling and neon glow shadow utilities */
+.ticket-cutout-left,
+.ticket-cutout-right {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: var(--background);
+  z-index: 10;
+  top: 48%;
+  transform: translateY(-50%);
+  transition: background-color 300ms;
+}
+
+.ticket-cutout-left {
+  left: -9px;
+  box-shadow: inset -4px 0 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.ticket-cutout-right {
+  right: -9px;
+  box-shadow: inset 4px 0 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.dark .ticket-cutout-left {
+  box-shadow: inset -4px 0 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+.dark .ticket-cutout-right {
+  box-shadow: inset 4px 0 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+.mixed .ticket-cutout-left,
+.mixed .ticket-cutout-right {
+  background-color: var(--background);
+}
+
+.glow-rose {
+  box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.08), 0 8px 10px -6px rgba(244, 63, 94, 0.08);
+}
+.hover-glow-rose:hover {
+  box-shadow: 0 20px 30px -5px rgba(244, 63, 94, 0.22), 0 10px 15px -5px rgba(244, 63, 94, 0.15);
+}
+
+.glow-amber {
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.08), 0 8px 10px -6px rgba(245, 158, 11, 0.08);
+}
+.hover-glow-amber:hover {
+  box-shadow: 0 20px 30px -5px rgba(245, 158, 11, 0.22), 0 10px 15px -5px rgba(245, 158, 11, 0.15);
+}
+
+.glow-emerald {
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08), 0 8px 10px -6px rgba(16, 185, 129, 0.08);
+}
+.hover-glow-emerald:hover {
+  box-shadow: 0 20px 30px -5px rgba(16, 185, 129, 0.22), 0 10px 15px -5px rgba(16, 185, 129, 0.15);
+}
+
+.glow-indigo {
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.08), 0 8px 10px -6px rgba(99, 102, 241, 0.08);
+}
+.hover-glow-indigo:hover {
+  box-shadow: 0 20px 30px -5px rgba(99, 102, 241, 0.22), 0 10px 15px -5px rgba(99, 102, 241, 0.15);
+}
+

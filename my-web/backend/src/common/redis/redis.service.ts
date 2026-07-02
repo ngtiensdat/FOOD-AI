@@ -9,7 +9,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { appConfig } from '../../../config/app.config';
+import { appConfig } from '../../config/app.config';
 import type { Redis } from 'ioredis';
 
 @Injectable()

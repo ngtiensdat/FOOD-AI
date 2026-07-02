@@ -12,12 +12,14 @@ import {
   UseGuards,
   Body,
   Post,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
+import { ToggleFollowDto } from './dto/toggle-follow.dto';
 
 @Controller('user')
 export class UserController {
@@ -25,13 +27,11 @@ export class UserController {
 
   @Get('profile/:id')
   async getProfile(
-    @Param('id') id: string,
-    @Query('requesterId') requesterId?: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Query('requesterId', new ParseIntPipe({ optional: true }))
+    requesterId?: number,
   ) {
-    return this.userService.getProfile(
-      parseInt(id),
-      requesterId ? parseInt(requesterId) : undefined,
-    );
+    return this.userService.getProfile(id, requesterId);
   }
 
   @Post('update-profile')
@@ -47,7 +47,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async toggleFollowUser(
     @GetUser('id') userId: number,
-    @Body() body: { followingId: number },
+    @Body() body: ToggleFollowDto,
   ) {
     return this.userService.toggleFollow(userId, body.followingId);
   }

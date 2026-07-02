@@ -54,7 +54,7 @@ import { IntentDetectorService } from './services/intent-detector.service';
 import { FoodKnowledgeService } from './services/food-knowledge.service';
 import { RecommendationService } from './services/recommendation.service';
 import { ResponseGeneratorService } from './services/response-generator.service';
-import { RedisService } from './services/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService, WeatherData } from './services/weather.service';
 import { SlotExtractorService } from './services/slot-extractor.service';

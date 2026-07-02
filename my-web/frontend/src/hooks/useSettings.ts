@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { authService } from '@/services/auth.service';
+import { User } from '@/types/user';
 
 export interface UseSettingsProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
@@ -35,7 +36,7 @@ export function useSettings({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [profileData, setProfileData] = useState<{ profile?: { preferences?: { showFollowList?: boolean, showPersonalInfo?: boolean } }; [key: string]: unknown } | null>(null);
+  const [profileData, setProfileData] = useState<User | null>(null);
   const [showPersonalInfo, setShowPersonalInfo] = useState(() => {
     const stored = typeof window !== 'undefined' && localStorage.getItem('showPersonalInfo');
     return stored ? JSON.parse(stored) : true;

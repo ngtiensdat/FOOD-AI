@@ -31,7 +31,7 @@ import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
-import { RedisService } from '../ai/services/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 

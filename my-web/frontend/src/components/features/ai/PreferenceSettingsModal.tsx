@@ -5,7 +5,7 @@
 // Các biến, hàm đặc biệt trong file: PreferenceSettingsModal component.
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -66,12 +66,14 @@ export function PreferenceSettingsModal({
 }: PreferenceSettingsModalProps) {
   const { user } = useAuth();
   
+  const [isMounted, setIsMounted] = useState(false);
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [activeSubTab, setActiveSubTab] = useState<'like' | 'dislike'>('like');
   const [removingId, setRemovingId] = useState<number | null>(null);
   const [clearingFeedbacks, setClearingFeedbacks] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   // General settings state
   const { theme, setTheme } = useTheme();
@@ -81,6 +83,7 @@ export function PreferenceSettingsModal({
   const [pendingLang, setPendingLang] = useState<'auto' | 'vi' | 'en'>('auto');
 
   useEffect(() => {
+    setIsMounted(true);
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem('lang') as 'vi' | 'en' | null;
       if (savedLang) {
@@ -134,31 +137,34 @@ export function PreferenceSettingsModal({
       setRemovingId(null);
     }
   };
-
   const handleClearAllFeedbacks = async () => {
-    if (window.confirm(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_CONFIRM)) {
-      setClearingFeedbacks(true);
-      try {
-        const res = await aiService.clearAllFeedback();
-        if (res) {
-          setFeedbacks([]);
-          toast.success(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_SUCCESS);
-        }
-      } catch (err) {
-        console.error('Lỗi khi xóa tất cả phản hồi:', err);
-        toast.error(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_ERROR);
-      } finally {
-        setClearingFeedbacks(false);
+    setShowConfirmClear(true);
+  };
+
+  const executeClearAllFeedbacks = async () => {
+    setShowConfirmClear(false);
+    setClearingFeedbacks(true);
+    try {
+      const res = await aiService.clearAllFeedback();
+      if (res) {
+        setFeedbacks([]);
+        toast.success(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_SUCCESS);
       }
+    } catch (err) {
+      console.error('Lỗi khi xóa tất cả phản hồi:', err);
+      toast.error(LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_ERROR);
+    } finally {
+      setClearingFeedbacks(false);
     }
   };
 
-  if (!isOpen) return null;
+  // Declare hooks first (always executed, never conditional)
+  const likedItems = useMemo(() => feedbacks.filter((f) => f.feedbackType === 'LIKE'), [feedbacks]);
+  const dislikedItems = useMemo(() => feedbacks.filter((f) => f.feedbackType === 'DISLIKE'), [feedbacks]);
+  const currentItems = useMemo(() => (activeSubTab === 'like' ? likedItems : dislikedItems), [activeSubTab, likedItems, dislikedItems]);
 
-  const likedItems = feedbacks.filter((f) => f.feedbackType === 'LIKE');
-  const dislikedItems = feedbacks.filter((f) => f.feedbackType === 'DISLIKE');
-  const currentItems = activeSubTab === 'like' ? likedItems : dislikedItems;
-
+  // Early return statement (placed after React hooks)
+  if (!isMounted || !isOpen) return null;
   const tabsConfig = [
     { id: 'general' as SettingsTab, label: LABELS.AI_CHAT.PREFERENCES.TAB_GENERAL, icon: Settings },
     { id: 'personalization' as SettingsTab, label: LABELS.AI_CHAT.PREFERENCES.TAB_PERSONALIZATION, icon: Heart },
@@ -280,7 +286,7 @@ export function PreferenceSettingsModal({
 
               {activeTab === 'account' && (
                 <AccountTab
-                  user={user as any}
+                  user={user}
                 />
               )}
 
@@ -309,6 +315,19 @@ export function PreferenceSettingsModal({
         }}
         onCancel={() => {
           setShowConfirmLang(false);
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmClear}
+        title={LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_CONFIRM}
+        message={LABELS.AI_CHAT.PREFERENCES.DELETE_FEEDBACKS_CONFIRM}
+        confirmText={LABELS.COMMON.DELETE || 'Xóa'}
+        cancelText={LABELS.COMMON.CANCEL}
+        variant="danger"
+        onConfirm={executeClearAllFeedbacks}
+        onCancel={() => {
+          setShowConfirmClear(false);
         }}
       />
     </AnimatePresence>

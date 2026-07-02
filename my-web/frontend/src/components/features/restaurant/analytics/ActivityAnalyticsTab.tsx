@@ -18,7 +18,7 @@ export const ActivityAnalyticsTab = React.memo(() => {
   }, [myFoods, searchQuery]);
 
   const activities = useMemo(() => {
-    const analyticsLabels = LABELS.ANALYTICS as any;
+    const analyticsLabels = LABELS.ANALYTICS;
     return filteredFoods.map(food => {
       let icon = <Clock3 className="text-orange-500" size={18} />;
       let title = '';
@@ -27,30 +27,18 @@ export const ActivityAnalyticsTab = React.memo(() => {
 
       if (food.status === 'APPROVED') {
         icon = <CheckCircle className="text-emerald-500" size={18} />;
-        title = typeof analyticsLabels.ACTIVITY_APPROVED_TITLE === 'function'
-          ? analyticsLabels.ACTIVITY_APPROVED_TITLE(food.name)
-          : `Món ăn "${food.name}" đã được duyệt`;
-        desc = typeof analyticsLabels.ACTIVITY_APPROVED_DESC === 'function'
-          ? analyticsLabels.ACTIVITY_APPROVED_DESC(food.name)
-          : `Admin hệ thống đã phê duyệt món "${food.name}" hiển thị trên trang Khám phá.`;
+        title = analyticsLabels.ACTIVITY_APPROVED_TITLE(food.name);
+        desc = analyticsLabels.ACTIVITY_APPROVED_DESC(food.name);
         statusColor = 'text-emerald-500';
       } else if (food.status === 'PENDING') {
         icon = <Clock3 className="text-amber-500" size={18} />;
-        title = typeof analyticsLabels.ACTIVITY_PENDING_TITLE === 'function'
-          ? analyticsLabels.ACTIVITY_PENDING_TITLE(food.name)
-          : `Đang chờ duyệt món "${food.name}"`;
-        desc = typeof analyticsLabels.ACTIVITY_PENDING_DESC === 'function'
-          ? analyticsLabels.ACTIVITY_PENDING_DESC(food.name)
-          : `Yêu cầu đăng món "${food.name}" đã được ghi nhận và đang chờ Admin phê duyệt.`;
+        title = analyticsLabels.ACTIVITY_PENDING_TITLE(food.name);
+        desc = analyticsLabels.ACTIVITY_PENDING_DESC(food.name);
         statusColor = 'text-amber-500';
       } else {
         icon = <XCircle className="text-rose-500" size={18} />;
-        title = typeof analyticsLabels.ACTIVITY_REJECTED_TITLE === 'function'
-          ? analyticsLabels.ACTIVITY_REJECTED_TITLE(food.name)
-          : `Bác bỏ món "${food.name}"`;
-        desc = typeof analyticsLabels.ACTIVITY_REJECTED_DESC === 'function'
-          ? analyticsLabels.ACTIVITY_REJECTED_DESC(food.name)
-          : `Yêu cầu đăng món "${food.name}" không đạt tiêu chuẩn nội dung của hệ thống.`;
+        title = analyticsLabels.ACTIVITY_REJECTED_TITLE(food.name);
+        desc = analyticsLabels.ACTIVITY_REJECTED_DESC(food.name);
         statusColor = 'text-rose-500';
       }
 
@@ -58,7 +46,7 @@ export const ActivityAnalyticsTab = React.memo(() => {
         id: food.id,
         title,
         desc,
-        time: food.createdAt ? new Date(food.createdAt).toLocaleDateString() : (LABELS.ANALYTICS as any).ACTIVITY_JUST_NOW,
+        time: food.createdAt ? new Date(food.createdAt).toLocaleDateString() : LABELS.ANALYTICS.ACTIVITY_JUST_NOW,
         icon,
         statusColor,
       };
@@ -83,7 +71,7 @@ export const ActivityAnalyticsTab = React.memo(() => {
           {LABELS.RESTAURANT.RECENT_ACTIVITY}
         </h2>
         <p className="text-sm text-gray-500 mt-1">
-          {(LABELS.ANALYTICS as any).ACTIVITY_SUBTITLE}
+          {LABELS.ANALYTICS.ACTIVITY_SUBTITLE}
         </p>
       </header>
 
@@ -126,7 +114,7 @@ export const ActivityAnalyticsTab = React.memo(() => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-400 py-12 text-xs font-bold">{(LABELS.ANALYTICS as any).NO_ACTIVITIES}</p>
+          <p className="text-center text-gray-400 py-12 text-xs font-bold">{LABELS.ANALYTICS.NO_ACTIVITIES}</p>
         )}
       </div>
     </div>

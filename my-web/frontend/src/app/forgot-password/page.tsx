@@ -57,9 +57,10 @@ export default function ForgotPasswordPage() {
       setTimeout(() => {
         router.push(`/reset-password?email=${encodeURIComponent(email.trim())}`);
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || LABELS.AUTH.SEND_OTP_ERROR);
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.AUTH.SEND_OTP_ERROR);
     } finally {
       setIsLoading(false);
     }

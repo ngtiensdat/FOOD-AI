@@ -62,7 +62,9 @@ export const RestaurantHeaderCard = ({
     ? `url(${restaurantData.profile.coverImage})`
     : DEFAULT_COVER_GRADIENT;
 
-  const badgeTitle = (restaurantData.owner as any)?.badgeTitle || (restaurantData as any).merchantBadge;
+  const owner = restaurantData.owner as { badgeTitle?: string | null } | undefined;
+  const merchantBadge = restaurantData.merchantBadge as string | undefined;
+  const badgeTitle = owner?.badgeTitle || merchantBadge;
   const mapUrl = getGoogleMapsUrl(
     restaurantData.latitude,
     restaurantData.longitude,

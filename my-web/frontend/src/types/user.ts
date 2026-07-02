@@ -52,6 +52,11 @@ export interface User {
   level?: number;
   highestLevel?: number;
   badgeTitle?: string | null;
+  _count?: {
+    posts?: number;
+    followers?: number;
+    following?: number;
+  };
 }
 
 export interface UpdateProfileData {

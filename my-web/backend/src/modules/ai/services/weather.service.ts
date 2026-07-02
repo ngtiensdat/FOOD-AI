@@ -7,7 +7,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { RedisService } from './redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { CircuitBreaker } from '../../../common/utils/circuit-breaker';
 
 /** Kết quả thời tiết đã xử lý, trả về cho AI pipeline và frontend */

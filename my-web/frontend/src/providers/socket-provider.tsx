@@ -22,7 +22,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket] = useState<Socket | null>(() => {
     if (typeof window === 'undefined') return null;
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
     return io(`${socketUrl}/notifications`, {
       withCredentials: true,
       autoConnect: false,

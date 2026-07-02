@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { FoodIntent } from '../constants/food-intent.enum';
 import { INTENT_ANALYZER_PROMPT_TEMPLATE } from '../prompts/intent-analyzer.prompt';
 import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
-import { RedisService } from './redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { LangchainService } from './langchain.service';
 import * as crypto from 'crypto';
 
