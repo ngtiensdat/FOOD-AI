@@ -29,6 +29,10 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { MediaModule } from './modules/media/media.module';
 import { MailModule } from './modules/mail/mail.module';
 import { RedisModule } from './common/redis/redis.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { TableModule } from './modules/table/table.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -49,6 +53,10 @@ import { RedisModule } from './common/redis/redis.module';
     NotificationModule,
     BugReportModule,
     MediaModule,
+    InventoryModule,
+    TableModule,
+    ChatModule,
+    OrderModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

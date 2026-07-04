@@ -11,7 +11,8 @@ import {
   Users, 
   UserCheck, 
   Lock, 
-  Settings 
+  Settings,
+  Star
 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
@@ -140,8 +141,8 @@ export const RestaurantHeaderCard = ({
                   )}
                 </div>
                 {restaurantData.ratingAvg !== undefined && restaurantData.ratingAvg !== null && (
-                  <div className="flex items-center gap-1.5 text-sm text-yellow-500 font-extrabold mb-2">
-                    <span>⭐</span>
+                  <div className="flex items-center gap-1 text-sm text-yellow-500 font-extrabold mb-2">
+                    <Star size={14} className="text-yellow-500 fill-current" />
                     <span>{Number(restaurantData.ratingAvg).toFixed(1)}</span>
                     <span className="text-gray-400 font-bold">{LABELS.RESTAURANT.CARD_LABELS.REVIEWS_COUNT(Number(restaurantData.ratingCount) || 0)}</span>
                   </div>

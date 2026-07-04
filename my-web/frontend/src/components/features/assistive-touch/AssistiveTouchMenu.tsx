@@ -7,10 +7,11 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { SafeImage } from '@/components/base/SafeImage';
 import { useAssistiveTouch } from '@/hooks/useAssistiveTouch';
+import { toast } from '@/store/useToastStore';
 import { Button } from '@/components/base/Button';
 import { AiChatWindow } from '@/components/features/ai/AiChatWindow';
 import { FoodDetailModal } from '@/components/features/food/FoodDetailModal';
@@ -32,11 +33,22 @@ export const AssistiveTouchMenu = () => {
     handleDragStart,
     handleDragEnd,
     quadrant,
+    isCustomizing,
+    setIsCustomizing,
+    customItemIds,
+    allPossibleItems,
+    saveCustomItems,
   } = useAssistiveTouch();
 
-  // Tạo mảng 6 phần tử gồm 5 tính năng chính và 1 nút đóng (X)
+  // Tạo mảng gồm các phím tắt đã chọn + nút Cấu hình + nút Đóng (X)
   const allItems = [
     ...menuItems,
+    {
+      id: 'customize',
+      label: 'Cài đặt nút',
+      icon: <Settings size={20} />,
+      action: () => setIsCustomizing(true),
+    },
     {
       id: 'close',
       label: LABELS.COMMON.CLOSE,
@@ -75,7 +87,7 @@ export const AssistiveTouchMenu = () => {
         animate={controls}
         className="fixed z-[995] w-20 h-20 pointer-events-auto"
         style={{
-          right: 24,
+          left: 24,
           bottom: 96,
         }}
       >
@@ -120,7 +132,7 @@ export const AssistiveTouchMenu = () => {
               style={{
                 transformOrigin: `${quadrant.isLeft ? 'left' : 'right'} ${quadrant.isTop ? '40px' : 'calc(100% - 40px)'}`
               }}
-              className={`absolute w-[290px] h-[210px] rounded-[32px] bg-gradient-to-br from-primary-light/95 to-primary/95 border border-white/20 shadow-2xl shadow-primary/30 backdrop-blur-md p-4 z-20 flex flex-col justify-center ${
+              className={`absolute w-[290px] h-[260px] rounded-[32px] bg-gradient-to-br from-primary-light/95 to-primary/95 border border-white/20 shadow-2xl shadow-primary/30 backdrop-blur-md p-4 z-20 flex flex-col justify-center ${
                 quadrant.isLeft ? 'left-[92px]' : 'right-[92px]'
               } ${
                 quadrant.isTop ? 'top-2' : 'bottom-2'
@@ -269,6 +281,98 @@ export const AssistiveTouchMenu = () => {
               food={selectedFood} 
               onClose={() => setSelectedFood(null)} 
             />
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 6. Modal Tùy chỉnh Phím Tắt AssistiveTouch */}
+      <AnimatePresence>
+        {isCustomizing && (
+          <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCustomizing(false)}
+              className="absolute inset-0 bg-transparent pointer-events-auto cursor-pointer"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl rounded-3xl p-6 z-10 border border-gray-150 dark:border-slate-800 pointer-events-auto"
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-slate-800">
+                <h3 className="text-sm font-black text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  <Settings size={18} className="text-primary animate-spin-slow" />
+                  Cấu hình TouchMenu
+                </h3>
+                <button
+                  onClick={() => setIsCustomizing(false)}
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-400 hover:text-gray-650 transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="py-4 space-y-3">
+                <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold">
+                  Chọn tối đa 5 phím tắt hiển thị trong TouchMenu:
+                </p>
+                
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                  {allPossibleItems.map((item) => {
+                    const isChecked = customItemIds.includes(item.id);
+                    return (
+                      <label
+                        key={item.id}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${
+                          isChecked
+                            ? 'bg-primary/5 dark:bg-primary/10 border-primary'
+                            : 'bg-gray-50 dark:bg-slate-800/40 border-gray-150 dark:border-slate-850 hover:bg-gray-100/50 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isChecked ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-slate-800 text-gray-500'}`}>
+                            {item.icon}
+                          </div>
+                          <span className="text-xs font-black text-gray-700 dark:text-slate-200">
+                            {item.label}
+                          </span>
+                        </div>
+
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            if (isChecked) {
+                              if (customItemIds.length <= 1) return;
+                              saveCustomItems(customItemIds.filter(id => id !== item.id));
+                            } else {
+                              if (customItemIds.length >= 5) {
+                                toast.info('Chỉ được chọn tối đa 5 phím tắt!');
+                                return;
+                              }
+                              saveCustomItems([...customItemIds, item.id]);
+                            }
+                          }}
+                          className="w-4 h-4 accent-primary rounded cursor-pointer"
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-gray-100 dark:border-slate-800 flex justify-end">
+                <Button
+                  onClick={() => setIsCustomizing(false)}
+                  className="py-2 px-5 font-black text-[10px] uppercase tracking-wider rounded-xl"
+                >
+                  Hoàn tất
+                </Button>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

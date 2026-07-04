@@ -79,9 +79,17 @@ export class GamificationQueueService implements OnModuleInit {
       )
       .subscribe();
 
-    setTimeout(() => {
-      void this.runFullSweep();
-    }, GamificationQueueService.SWEEP_INITIAL_DELAY_MS);
+    // Only run startup sweep in production to avoid severe CPU/DB load during local dev restarts
+    if (process.env.NODE_ENV === 'production') {
+      setTimeout(() => {
+        void this.runFullSweep();
+      }, GamificationQueueService.SWEEP_INITIAL_DELAY_MS);
+    } else {
+      this.logger.log(
+        'Development mode: Skipping badge gamification startup sweep.',
+      );
+    }
+
     setInterval(() => {
       void this.runFullSweep();
     }, GamificationQueueService.SWEEP_INTERVAL_MS);

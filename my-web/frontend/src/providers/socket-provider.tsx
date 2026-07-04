@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/useAuthStore';
+import { BACKEND_URL } from '@/configs/api.config';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -22,7 +23,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket] = useState<Socket | null>(() => {
     if (typeof window === 'undefined') return null;
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+    const socketUrl = BACKEND_URL;
     return io(`${socketUrl}/notifications`, {
       withCredentials: true,
       autoConnect: false,

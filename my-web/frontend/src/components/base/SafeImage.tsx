@@ -8,6 +8,7 @@ const WHITELISTED_DOMAINS = [
   "images.unsplash.com",
   "lh3.googleusercontent.com",
   "cafefcdn.com",
+  "api.dicebear.com",
 ];
 
 const isWhitelisted = (src: unknown): boolean => {

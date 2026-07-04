@@ -433,6 +433,12 @@ export class AuthService {
           : undefined,
     });
 
+    if (user.role === UserRole.CUSTOMER) {
+      this.aiService.updateUserEmbedding(userId).catch((err) => {
+        this.logger.error(`Lỗi cập nhật user embedding sau onboarding: ${err}`);
+      });
+    }
+
     return { message: MESSAGES.AUTH.ONBOARDING_SUCCESS };
   }
 

@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { foodService } from '@/services/food.service';
 import { aiService } from '@/services/ai.service';
 import { authService as authServiceApi } from '@/services/auth.service';
@@ -43,21 +44,20 @@ export const useHomeActions = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [suggestedFoods, setSuggestedFoods] = useState<AiSuggestedFood[]>([]);
 
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (
-        tabParam === 'home' ||
-        tabParam === 'explore' ||
-        tabParam === 'offers' ||
-        tabParam === 'settings'
-      ) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setActiveTab(tabParam);
-      }
+    if (!tabParam || tabParam === 'home') {
+      setActiveTab('home');
+    } else if (
+      tabParam === 'explore' ||
+      tabParam === 'offers' ||
+      tabParam === 'settings'
+    ) {
+      setActiveTab(tabParam);
     }
-  }, []);
+  }, [tabParam]);
 
   useEffect(() => {
     if (isAuthenticated && user) {

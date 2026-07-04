@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Clock, Phone, Mail, Globe } from 'lucide-react';
+import { MapPin, Clock, Phone, Mail, Globe, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/base/Input';
 import { LOCATION_DATA } from '@/constants/location.constant';
 import { LABELS } from '@/constants/labels';
@@ -92,8 +92,9 @@ export const RestaurantOperatingTab: React.FC<RestaurantOperatingTabProps> = ({
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
-        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1.5 font-medium leading-relaxed bg-orange-50/50 dark:bg-orange-950/10 px-3 py-1.5 rounded-lg border border-orange-100/30 dark:border-orange-900/20">
-          ⚠️ {LABELS.RESTAURANT.EDIT_MODAL.ADDRESS_TIP}
+        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1.5 font-medium leading-relaxed bg-orange-50/50 dark:bg-orange-950/10 px-3 py-1.5 rounded-lg border border-orange-100/30 dark:border-orange-900/20 flex items-center gap-1.5">
+          <AlertTriangle size={14} className="shrink-0" />
+          <span>{LABELS.RESTAURANT.EDIT_MODAL.ADDRESS_TIP}</span>
         </p>
       </div>
 

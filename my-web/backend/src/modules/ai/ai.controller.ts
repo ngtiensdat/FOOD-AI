@@ -73,6 +73,7 @@ export class AiController {
     return this.aiLearningService.getFeedbackAnalytics();
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(CustomThrottlerGuard)
   @Post('chat')
   async chat(@GetUser('id') userId: number, @Body() dto: AiChatDto) {

@@ -1,0 +1,1 @@
+export { TableManager } from './TableManager';

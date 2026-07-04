@@ -1,0 +1,53 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../../node_modules/@prisma/inventory-client"
+}
+
+// Bảng lưu nguyên liệu thô (nhập theo cân, kg, cái, lít...)
+model Ingredient {
+  id           String             @id @default(uuid())
+  restaurantId Int                @map("restaurant_id") // ID chi nhánh nhà hàng từ DB chính
+  name         String
+  sku          String?
+  quantity     Float              @default(0.0)         // Số lượng hiện tại trong kho (Float để định lượng chính xác)
+  unit         String             // Đơn vị tính (kg, cái, cân, lít, gam...)
+  minStock     Float              @default(0.0) @map("min_stock") // Ngưỡng báo động sắp hết hàng
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  
+  recipes      RecipeItem[]
+  logs         InventoryLog[]
+
+  @@map("ingredients")
+}
+
+// Bảng định nghĩa định lượng quy đổi (Món ăn cần bao nhiêu nguyên liệu)
+model RecipeItem {
+  id           String     @id @default(uuid())
+  foodId       Int        @map("food_id")        // ID món ăn lấy từ DB chính
+  ingredientId String     @map("ingredient_id")
+  usedQuantity Float      @map("used_quantity")  // Lượng tiêu hao để làm ra 1 món (ví dụ: 0.15 kg thịt bò)
+  
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([foodId, ingredientId])
+  @@map("recipe_items")
+}
+
+// Nhật ký nhập/xuất kho (Phục vụ báo cáo và kiểm kho)
+model InventoryLog {
+  id           String     @id @default(uuid())
+  ingredientId String     @map("ingredient_id")
+  type         String     // IMPORT (Nhập kho), ORDER_DEDUCTION (Trừ bán hàng), ADJUSTMENT (Kiểm kê), WASTE (Hao hụt/Hỏng)
+  quantity     Float      // Lượng thay đổi (+/-)
+  note         String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_logs")
+}

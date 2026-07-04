@@ -6,7 +6,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Store, User, Settings, LogOut } from 'lucide-react';
+import { Shield, Store, User, Settings, LogOut, Ticket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
@@ -47,8 +47,11 @@ export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserD
           <p className="text-xs font-bold text-gray-800 dark:text-gray-900 truncate group-hover:text-primary transition-colors">
             {user.name}
           </p>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-            {user.role}
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">
+            {user.role === 'ADMIN' ? LABELS.AUTH.ADMIN :
+             user.role === 'RESTAURANT' ? LABELS.AUTH.RESTAURANT_ROLE :
+             user.role === 'STAFF' ? LABELS.AUTH.STAFF :
+             LABELS.AUTH.CUSTOMER}
           </p>
         </div>
       </Link>
@@ -67,6 +70,12 @@ export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserD
       <Link href="/dashboard" onClick={(e) => handleItemClick(e)} className="dropdown-item">
         <User size={18} className="text-primary" /> {LABELS.NAV.DASHBOARD}
       </Link>
+
+      {(user.role === UserRole.RESTAURANT || user.role === UserRole.STAFF) && (
+        <Link href="/pos" onClick={(e) => handleItemClick(e)} className="dropdown-item">
+          <Ticket size={18} className="text-primary" /> {LABELS.NAV.POS}
+        </Link>
+      )}
 
       <Button
         onClick={(e) => handleItemClick(e, onSettingsClick)}

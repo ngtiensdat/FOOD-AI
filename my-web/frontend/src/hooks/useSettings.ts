@@ -24,7 +24,7 @@ export function useSettings({
   fetchUserProfile,
   handleDeleteAccount,
 }: UseSettingsProps) {
-  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone'>('profile');
+  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone' | 'job_invitations'>('profile');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -127,7 +127,7 @@ export function useSettings({
     }
   };
 
-  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone') => {
+  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone' | 'job_invitations') => {
     setSettingsTab(tabId);
     if (tabId === 'verification') {
       fetchUserProfile();

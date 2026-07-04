@@ -2,6 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import RestaurantClientPage from './RestaurantClientPage';
 import { LABELS } from '@/constants/labels';
+import { BACKEND_URL } from '@/configs/api.config';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -9,7 +10,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+  const apiUrl = BACKEND_URL;
   
   try {
     const res = await fetch(`${apiUrl}/restaurants/${id}/public`, {

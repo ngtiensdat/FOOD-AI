@@ -95,6 +95,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(`Redis connection failed: ${errMsg}`);
       this.isRedisAvailable = false;
 
+      // CRITICAL: Explicitly disconnect the client to stop ioredis's internal
+      // exponential-backoff reconnect loop. Without this, ioredis retries
+      // every ~2s forever, consuming CPU + generating console I/O even though
+      // we already fell back to in-memory mode.
+      if (this.redisClient) {
+        try {
+          this.redisClient.disconnect();
+        } catch (_disconnectErr) {
+          // Ignored - we just want to stop reconnect attempts
+        }
+        this.redisClient = null;
+      }
+
       if (isProduction) {
         this.logger.error(
           'CRITICAL: Redis is required in Production environment! Application is shutting down.',

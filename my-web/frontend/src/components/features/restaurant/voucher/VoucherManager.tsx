@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   Tag, Plus, Trash2, Copy, Check, Search,
-  Clock, Award, BarChart3, X, Gift, AlertCircle, CheckCircle2, Edit2
+  Clock, Award, BarChart3, X, Gift, AlertCircle, CheckCircle2, Edit2, Star
 } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
-import { useVoucherManager, VoucherData, PointCodeData } from '@/hooks/useVoucherManager';
+import { useVoucherManager, VoucherData, PointCodeData } from './useVoucherManager';
 import { PromotionManager } from './PromotionManager';
 
 interface VoucherManagerProps {
@@ -177,7 +177,12 @@ const VoucherRow = ({ voucher, copiedId, handleCopy, handleDeleteClick, handleEd
 
       <td className="px-6 py-4">
         <span className="text-primary font-extrabold text-xs block">{voucher.discountValue}</span>
-        <span className="text-[9px] text-amber-600 dark:text-amber-500 font-bold block mt-0.5">⭐ {voucher.pointsCost} {t.POINTS_SUFFIX}</span>
+        <span className="text-[9px] text-amber-600 dark:text-amber-500 font-bold block mt-0.5">
+          <span className="inline-flex items-center gap-0.5">
+            <Star size={10} className="text-amber-500 fill-current" />
+            {voucher.pointsCost} {t.POINTS_SUFFIX}
+          </span>
+        </span>
       </td>
 
       <td className="px-6 py-4">
@@ -418,7 +423,10 @@ export const VoucherManager = ({ restaurantId, restaurantName, activeSubTab, onT
                           : 'bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      ⭐ {val}
+                      <span className="inline-flex items-center justify-center gap-1">
+                        <Star size={11} className={`${pointAmountSelect === val ? 'text-white fill-current' : 'text-amber-500 fill-current'}`} />
+                        {val}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -489,7 +497,12 @@ export const VoucherManager = ({ restaurantId, restaurantName, activeSubTab, onT
                         return (
                           <tr key={code.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-950/20 transition-all">
                             <td className="px-6 py-4 font-mono font-extrabold text-slate-700 dark:text-white uppercase tracking-wider">{code.code}</td>
-                            <td className="px-6 py-4 text-amber-500 font-black">⭐ {code.points}</td>
+                            <td className="px-6 py-4 text-amber-500 font-black">
+                              <span className="inline-flex items-center gap-1">
+                                <Star size={12} className="text-amber-500 fill-current" />
+                                {code.points}
+                              </span>
+                            </td>
                             <td className="px-6 py-4 text-gray-400 text-[10px]">
                               {new Date(code.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </td>

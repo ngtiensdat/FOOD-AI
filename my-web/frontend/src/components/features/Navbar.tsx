@@ -9,13 +9,15 @@ import { ThemeToggle } from '@/components/base/ThemeToggle';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket } from 'lucide-react';
+import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
 import { useNotifications, NotificationItem } from '@/hooks/useNotifications';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
+import { ChatCenter } from './chat/ChatCenter';
+import { chatService } from '@/services/chat.service';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -27,12 +29,50 @@ interface NavbarProps {
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const { user, logout, isAdmin, isRestaurant, isCustomer } = useAuth();
+  const { socket } = useSocket();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
   const prevScrollPos = useRef(0);
+
+  const [showChatCenter, setShowChatCenter] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  const fetchUnreadMessagesCount = async () => {
+    if (!user) return;
+    try {
+      const convs = await chatService.getConversations('inbox');
+      const requests = await chatService.getConversations('requests');
+      
+      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as any).isRead && c.lastMessage.sender.id !== user.id).length;
+      const unreadRequests = requests.length;
+      
+      setUnreadMessagesCount(unreadInbox + unreadRequests);
+    } catch (e) {
+      console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadMessagesCount();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, showChatCenter]); // use user?.id (stable primitive) not user object to prevent infinite re-render
+
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+
+    const handleMsg = () => {
+      fetchUnreadMessagesCount();
+    };
+
+    socket.on('direct_message', handleMsg);
+    return () => {
+      socket.off('direct_message', handleMsg);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, user?.id]); // stable primitive dependency
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,8 +99,6 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   }, []);
   const pathname = usePathname();
   const router = useRouter();
-
-  const { socket } = useSocket();
 
   // DIP: Notification logic được ủy quyền cho useNotifications hook
   const {
@@ -220,6 +258,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   if (pathname === '/' && setActiveTab && (tab.id === 'home' || tab.id === 'offers')) {
                     e.preventDefault();
                     setActiveTab(tab.id);
+                    router.push(tab.id === 'home' ? '/' : `/?tab=${tab.id}`);
                   }
                 }}
                 className={`h-full px-6 flex items-center justify-center border-b-4 transition-all ${
@@ -253,6 +292,24 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
         {user ? (
           <div className="flex items-center gap-3 relative">
+            {/* Direct Message Icon */}
+            <div className="relative">
+              <Button
+                onClick={() => setShowChatCenter(!showChatCenter)}
+                className="p-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 transition-colors relative focus:outline-none cursor-pointer"
+                aria-label="Direct Messages"
+                variant="none"
+                size="none"
+              >
+                <MessageCircle size={20} className={unreadMessagesCount > 0 ? 'animate-bounce' : ''} />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center animate-pulse">
+                    {unreadMessagesCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+
             {/* Notification Bell */}
             <div className="relative">
               <Button
@@ -474,6 +531,14 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           </div>
         </div>
       </>
+    )}
+    {user && user.id && (
+      <ChatCenter
+        userId={user.id}
+        isOpen={showChatCenter}
+        onClose={() => setShowChatCenter(false)}
+        onOpen={() => setShowChatCenter(true)}
+      />
     )}
   </>
 );

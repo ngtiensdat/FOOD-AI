@@ -8,7 +8,7 @@
 
 import React from 'react';
 import {
-  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, HelpCircle, FolderTree, ChevronDown, Check, X, Search, Home, Compass, MessageSquare, User, Shield, FileUp, Tag
+  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Check, X, FileUp, Tag, Users, Package, Grid
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,15 +17,11 @@ import { Sidebar, SidebarItem, useSidebarCollapse } from '@/components/base/Side
 import { Navbar } from '@/components/features/Navbar';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
-import { UserDropdown } from '@/components/features/UserDropdown';
-import { ThemeToggle } from '@/components/base/ThemeToggle';
 import { LABELS } from '@/constants/labels';
 import { formatCurrency } from '@/utils/formatters';
 import { getValidImageUrl } from '@/utils/helpers';
 import { LIMITS } from '@/constants/limits.constant';
 import { SafeImage } from '@/components/base/SafeImage';
-import Link from 'next/link';
-import { Avatar } from '@/components/base/Avatar';
 import { useRouter } from 'next/navigation';
 
 // Feature Components
@@ -41,7 +37,10 @@ import { ViewsAnalyticsTab } from '@/components/features/restaurant/analytics/Vi
 import { InteractionsAnalyticsTab } from '@/components/features/restaurant/analytics/InteractionsAnalyticsTab';
 import { ConversionAnalyticsTab } from '@/components/features/restaurant/analytics/ConversionAnalyticsTab';
 import { ActivityAnalyticsTab } from '@/components/features/restaurant/analytics/ActivityAnalyticsTab';
-import { VoucherManager } from '@/components/features/restaurant/VoucherManager';
+import { VoucherManager } from '@/components/features/restaurant/voucher';
+import { StaffManager } from '@/components/features/restaurant/staff';
+import { InventoryManager } from '@/components/features/restaurant/inventory';
+import { TableManager } from '@/components/features/restaurant/table';
 
 export default function RestaurantDashboard() {
   const { user, logout, isAdmin, isRestaurant, loading: authLoading } = useAuth();
@@ -176,7 +175,7 @@ export default function RestaurantDashboard() {
 
   const voucherSubItems = [
     {
-      label: 'Quản lý Voucher',
+      label: LABELS.RESTAURANT.VOUCHER_TABS.MANAGE,
       active: activeTab === 'vouchers' && voucherSubTab === 'VOUCHER',
       onClick: () => {
         setActiveTab('vouchers');
@@ -184,7 +183,7 @@ export default function RestaurantDashboard() {
       }
     },
     {
-      label: 'Mã tích điểm',
+      label: LABELS.RESTAURANT.VOUCHER_TABS.POINT_CODE,
       active: activeTab === 'vouchers' && voucherSubTab === 'POINT_CODE',
       onClick: () => {
         setActiveTab('vouchers');
@@ -192,7 +191,7 @@ export default function RestaurantDashboard() {
       }
     },
     {
-      label: 'Kiểm tra & Áp dụng',
+      label: LABELS.RESTAURANT.VOUCHER_TABS.VERIFY,
       active: activeTab === 'vouchers' && voucherSubTab === 'VERIFY_VOUCHER',
       onClick: () => {
         setActiveTab('vouchers');
@@ -200,7 +199,7 @@ export default function RestaurantDashboard() {
       }
     },
     {
-      label: 'Tin khuyến mãi',
+      label: LABELS.RESTAURANT.VOUCHER_TABS.PROMOTIONS,
       active: activeTab === 'vouchers' && voucherSubTab === 'PROMOTION',
       onClick: () => {
         setActiveTab('vouchers');
@@ -221,6 +220,60 @@ export default function RestaurantDashboard() {
       label: LABELS.RESTAURANT.SUGGESTION_HISTORY,
       active: activeTab === 'ai-history',
       onClick: () => setActiveTab('ai-history')
+    }
+  ];
+
+  const staffSubItems = [
+    {
+      label: LABELS.RESTAURANT.STAFF_TABS.ACTIVE,
+      active: activeTab === 'staff-list',
+      onClick: () => setActiveTab('staff-list')
+    },
+    {
+      label: LABELS.RESTAURANT.STAFF_TABS.PENDING,
+      active: activeTab === 'staff-waiting',
+      onClick: () => setActiveTab('staff-waiting')
+    },
+    {
+      label: LABELS.RESTAURANT.STAFF_TABS.HISTORY,
+      active: activeTab === 'staff-history',
+      onClick: () => setActiveTab('staff-history')
+    },
+    {
+      label: LABELS.RESTAURANT.STAFF_TABS.REVIEWS,
+      active: activeTab === 'staff-review',
+      onClick: () => setActiveTab('staff-review')
+    }
+  ];
+
+  const inventorySubItems = [
+    {
+      label: LABELS.RESTAURANT.INVENTORY_TABS.INGREDIENTS,
+      active: activeTab === 'inventory-ingredients',
+      onClick: () => setActiveTab('inventory-ingredients')
+    },
+    {
+      label: LABELS.RESTAURANT.INVENTORY_TABS.RECIPES,
+      active: activeTab === 'inventory-recipes',
+      onClick: () => setActiveTab('inventory-recipes')
+    },
+    {
+      label: LABELS.RESTAURANT.INVENTORY_TABS.LOGS,
+      active: activeTab === 'inventory-logs',
+      onClick: () => setActiveTab('inventory-logs')
+    }
+  ];
+
+  const tableSubItems = [
+    {
+      label: 'Danh sách bàn',
+      active: activeTab === 'tables-list',
+      onClick: () => setActiveTab('tables-list')
+    },
+    {
+      label: 'Thêm hàng loạt',
+      active: activeTab === 'tables-bulk',
+      onClick: () => setActiveTab('tables-bulk')
     }
   ];
 
@@ -284,6 +337,24 @@ export default function RestaurantDashboard() {
             label={LABELS.RESTAURANT.AI_ASSISTANT}
             active={activeTab === 'ai-history'}
             subItems={aiSubItems}
+          />
+          <SidebarItem
+            icon={Users}
+            label={LABELS.RESTAURANT.STAFF_TABS.TITLE}
+            active={['staff', 'staff-list', 'staff-waiting', 'staff-history', 'staff-review'].includes(activeTab)}
+            subItems={staffSubItems}
+          />
+          <SidebarItem
+            icon={Package}
+            label={LABELS.RESTAURANT.INVENTORY_TABS.TITLE}
+            active={['inventory', 'inventory-ingredients', 'inventory-recipes', 'inventory-logs'].includes(activeTab)}
+            subItems={inventorySubItems}
+          />
+          <SidebarItem
+            icon={Grid}
+            label={LABELS.RESTAURANT.TABLE_MANAGER.TITLE}
+            active={['tables', 'tables-list', 'tables-bulk'].includes(activeTab)}
+            subItems={tableSubItems}
           />
           <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
         </Sidebar>
@@ -484,10 +555,10 @@ export default function RestaurantDashboard() {
               <div className="space-y-6">
                 <header className="mb-6">
                   <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
-                    Quản lý Voucher
+                    {LABELS.RESTAURANT.VOUCHER_MANAGEMENT_TITLE}
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    Thiết lập, cập nhật voucher đổi điểm và đăng tải tin khuyến mãi cho khách hàng của nhà hàng.
+                    {LABELS.RESTAURANT.VOUCHER_MANAGEMENT_DESC}
                   </p>
                 </header>
                 <VoucherManager
@@ -529,6 +600,62 @@ export default function RestaurantDashboard() {
 
             {activeTab === 'activity' && (
               <ActivityAnalyticsTab />
+            )}
+
+            {(activeTab === 'staff' || activeTab === 'staff-list' || activeTab === 'staff-waiting' || activeTab === 'staff-history' || activeTab === 'staff-review') && (
+              <StaffManager 
+                restaurant={restaurant} 
+                myBranches={myBranches} 
+                selectedSubTab={
+                  activeTab === 'staff-list' ? 'active_staff' :
+                  activeTab === 'staff-waiting' ? 'pending_invitations' :
+                  activeTab === 'staff-history' ? 'staff_histories' :
+                  activeTab === 'staff-review' ? 'staff_reviews' :
+                  undefined
+                }
+                onSubTabChange={(tabId) => {
+                  setActiveTab(
+                    tabId === 'active_staff' ? 'staff-list' :
+                    tabId === 'pending_invitations' ? 'staff-waiting' :
+                    tabId === 'staff_histories' ? 'staff-history' :
+                    'staff-review'
+                  );
+                }}
+              />
+            )}
+
+            {(activeTab === 'inventory' || activeTab === 'inventory-ingredients' || activeTab === 'inventory-recipes' || activeTab === 'inventory-logs') && (
+              <InventoryManager 
+                restaurant={restaurant} 
+                myBranches={myBranches}
+                selectedSubTab={
+                  activeTab === 'inventory-recipes' ? 'recipes' :
+                  activeTab === 'inventory-logs' ? 'logs' :
+                  'ingredients'
+                }
+                onSubTabChange={(tabId) => {
+                  setActiveTab(
+                    tabId === 'recipes' ? 'inventory-recipes' :
+                    tabId === 'logs' ? 'inventory-logs' :
+                    'inventory-ingredients'
+                  );
+                }}
+              />
+            )}
+
+            {(activeTab === 'tables' || activeTab === 'tables-list' || activeTab === 'tables-bulk') && (
+              <TableManager 
+                restaurant={restaurant} 
+                myBranches={myBranches}
+                selectedSubTab={
+                  activeTab === 'tables-bulk' ? 'bulk' : 'list'
+                }
+                onSubTabChange={(tabId) => {
+                  setActiveTab(
+                    tabId === 'bulk' ? 'tables-bulk' : 'tables-list'
+                  );
+                }}
+              />
             )}
           </motion.div>
         </main>

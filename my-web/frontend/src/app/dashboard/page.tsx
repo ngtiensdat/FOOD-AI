@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { User, Heart, Clock, ArrowLeft, ChevronDown, Compass, Home, MessageSquare, Tag, Search, Shield, Store } from 'lucide-react';
+import { User, Heart, Clock, ArrowLeft, ChevronDown, Compass, Home, MessageSquare, Tag, Search, Shield, Store, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { OnboardingModal } from '@/components/features/OnboardingModal';
@@ -25,6 +25,7 @@ import { FoodDetailModal, FoodDetailData } from '@/components/features/food/Food
 import { FoodCard, FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
+import { JobInvitationsTab } from '@/components/features/profile/JobInvitationsTab';
 
 export default function CustomerDashboard() {
   const { user, login: updateMe, logout, isAdmin, isRestaurant } = useAuth();
@@ -97,6 +98,12 @@ export default function CustomerDashboard() {
             label={LABELS.CUSTOMER.AI_HISTORY}
             active={activeTab === 'history'}
             onClick={() => setActiveTab('history')}
+          />
+          <SidebarItem
+            icon={Mail}
+            label={LABELS.JOB_INVITATIONS.TITLE}
+            active={activeTab === 'invitations'}
+            onClick={() => setActiveTab('invitations')}
           />
         </Sidebar>
 
@@ -191,6 +198,10 @@ export default function CustomerDashboard() {
                   {LABELS.COMMON.DEVELOPING_DESC}
                 </p>
               </div>
+            )}
+
+            {activeTab === 'invitations' && (
+              <JobInvitationsTab />
             )}
           </motion.div>
         </main>

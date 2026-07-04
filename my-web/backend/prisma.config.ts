@@ -3,13 +3,15 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+const isInventory = process.argv.some(arg => arg.includes("inventory.prisma"));
+
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: isInventory ? "prisma/inventory.prisma" : "prisma/schema.prisma",
   migrations: {
-    path: "prisma/migrations",
-    seed: "node prisma/seed.js",
+    path: isInventory ? "prisma/inventory-migrations" : "prisma/migrations",
+    seed: isInventory ? undefined : "node prisma/seed.js",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: isInventory ? process.env["INVENTORY_DATABASE_URL"] : process.env["DATABASE_URL"],
   },
 });

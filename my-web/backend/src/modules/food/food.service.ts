@@ -12,7 +12,13 @@ import { AiLearningService } from '../ai/services/ai-learning.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
 import { FoodQueryDto } from './dto/food-query.dto';
-import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
+import {
+  UserRole,
+  FoodStatus,
+  Prisma,
+  User,
+  FeedbackType,
+} from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
@@ -146,10 +152,10 @@ export class FoodService {
           userId,
           conversationId: conversation.id,
           foodId,
-          feedbackType: 'LIKE',
+          feedbackType: FeedbackType.LIKE,
         },
         update: {
-          feedbackType: 'LIKE',
+          feedbackType: FeedbackType.LIKE,
           createdAt: new Date(),
         },
       });
@@ -162,7 +168,10 @@ export class FoodService {
           },
         },
       });
-      if (existingFeedback && existingFeedback.feedbackType === 'LIKE') {
+      if (
+        existingFeedback &&
+        existingFeedback.feedbackType === FeedbackType.LIKE
+      ) {
         await this.prisma.aiFeedback.delete({
           where: {
             userId_foodId: {

@@ -15,7 +15,9 @@ import {
   User, 
   Shield, 
   Store, 
-  LogIn
+  LogIn,
+  Ticket,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { LABELS } from '@/constants/labels';
@@ -28,18 +30,41 @@ export const useAssistiveTouch = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodDetailData | null>(null);
-  const [quadrant, setQuadrant] = useState({ isLeft: false, isTop: false });
+  const [quadrant, setQuadrant] = useState({ isLeft: true, isTop: false });
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [customItemIds, setCustomItemIds] = useState<string[]>(['home', 'explore', 'ai', 'forum', 'profile']);
   
   const parentRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
   const isDragging = useRef(false);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('assistive_touch_items');
+      if (saved) {
+        try {
+          const ids = JSON.parse(saved);
+          if (Array.isArray(ids) && ids.length > 0) {
+            setCustomItemIds(ids);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
+
+  const saveCustomItems = (ids: string[]) => {
+    setCustomItemIds(ids);
+    localStorage.setItem('assistive_touch_items', JSON.stringify(ids));
+  };
+
   // 1. Xác định vai trò người dùng để tạo tùy chọn động cho nút thứ 5
   const getProfileItem = () => {
     if (!isAuthenticated || !user) {
       return {
-        label: LABELS.AUTH.LOGIN,
+        label: LABELS.AUTH?.LOGIN || 'Đăng nhập',
         icon: React.createElement(LogIn, { size: 20 }),
         href: '/login',
       };
@@ -47,7 +72,7 @@ export const useAssistiveTouch = () => {
 
     if (isAdmin) {
       return {
-        label: LABELS.NAV.ADMIN_PANEL,
+        label: LABELS.NAV?.ADMIN_PANEL || 'Quản trị',
         icon: React.createElement(Shield, { size: 20 }),
         href: '/admin',
       };
@@ -55,14 +80,14 @@ export const useAssistiveTouch = () => {
 
     if (isRestaurant) {
       return {
-        label: LABELS.NAV.RESTAURANT_PANEL,
+        label: LABELS.NAV?.RESTAURANT_PANEL || 'Cửa hàng',
         icon: React.createElement(Store, { size: 20 }),
         href: '/restaurant-admin',
       };
     }
 
     return {
-      label: LABELS.NAV.DASHBOARD,
+      label: LABELS.NAV?.DASHBOARD || 'Cá nhân',
       icon: React.createElement(User, { size: 20 }),
       href: '/dashboard',
     };
@@ -70,13 +95,19 @@ export const useAssistiveTouch = () => {
 
   const profileItem = getProfileItem();
 
-  const menuItems = [
-    { id: 'home', label: LABELS.NAV.HOME, icon: React.createElement(Home, { size: 20 }), href: '/' },
-    { id: 'explore', label: LABELS.NAV.EXPLORE, icon: React.createElement(Compass, { size: 20 }), href: '/explore' },
-    { id: 'ai', label: LABELS.NAV.AI_CHAT, icon: React.createElement(Sparkles, { size: 20 }), action: () => setIsAiChatOpen(true) },
-    { id: 'forum', label: LABELS.NAV.FORUM, icon: React.createElement(MessageSquare, { size: 20 }), href: '/forum' },
+  const allPossibleItems = [
+    { id: 'home', label: LABELS.NAV?.HOME || 'Trang chủ', icon: React.createElement(Home, { size: 20 }), href: '/' },
+    { id: 'explore', label: LABELS.NAV?.EXPLORE || 'Khám phá', icon: React.createElement(Compass, { size: 20 }), href: '/explore' },
+    { id: 'ai', label: LABELS.NAV?.AI_CHAT || 'Trợ lý AI', icon: React.createElement(Sparkles, { size: 20 }), action: () => setIsAiChatOpen(true) },
+    { id: 'forum', label: LABELS.NAV?.FORUM || 'Diễn đàn', icon: React.createElement(MessageSquare, { size: 20 }), href: '/forum' },
+    { id: 'vouchers', label: 'Ví Voucher', icon: React.createElement(Ticket, { size: 20 }), href: '/vouchers' },
+    { id: 'pos', label: 'Hệ thống POS', icon: React.createElement(Store, { size: 20 }), href: '/pos' },
     { id: 'profile', ...profileItem }
   ];
+
+  const menuItems = customItemIds
+    .map(id => allPossibleItems.find(item => item.id === id))
+    .filter(Boolean) as typeof allPossibleItems;
 
   // 2. Xử lý sự kiện Drag & Snap
   const handleDragStart = () => {
@@ -199,5 +230,10 @@ export const useAssistiveTouch = () => {
     angles,
     radius,
     quadrant,
+    isCustomizing,
+    setIsCustomizing,
+    customItemIds,
+    allPossibleItems,
+    saveCustomItems,
   };
 };

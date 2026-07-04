@@ -7,11 +7,13 @@ export enum UserRole {
   CUSTOMER = 'CUSTOMER',
   RESTAURANT = 'RESTAURANT',
   ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
 }
 
 export const isAdmin = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.ADMIN;
 export const isRestaurant = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.RESTAURANT;
 export const isCustomer = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.CUSTOMER;
+export const isStaff = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.STAFF;
 
 export enum UserStatus {
   PENDING = 'PENDING',
@@ -52,6 +54,7 @@ export interface User {
   level?: number;
   highestLevel?: number;
   badgeTitle?: string | null;
+  restaurantId?: number;
   _count?: {
     posts?: number;
     followers?: number;

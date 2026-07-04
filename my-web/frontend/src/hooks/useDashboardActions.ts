@@ -24,7 +24,7 @@ export const useDashboardActions = (
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'favorites' | 'history'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'favorites' | 'history' | 'invitations'>('profile');
   const [selectedFood, setSelectedFoodState] = useState<Food | null>(null);
 
   useEffect(() => {

@@ -54,14 +54,20 @@ export class UserController {
 
   @Get('followers/:id')
   @UseGuards(JwtAuthOptionalGuard)
-  async getFollowers(@Param('id') id: string, @GetUser('id') userId?: number) {
-    return this.userService.getFollowers(parseInt(id), userId);
+  async getFollowers(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser('id') userId?: number,
+  ) {
+    return this.userService.getFollowers(id, userId);
   }
 
   @Get('following/:id')
   @UseGuards(JwtAuthOptionalGuard)
-  async getFollowing(@Param('id') id: string, @GetUser('id') userId?: number) {
-    return this.userService.getFollowing(parseInt(id), userId);
+  async getFollowing(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser('id') userId?: number,
+  ) {
+    return this.userService.getFollowing(id, userId);
   }
 
   @Get('leaderboard')

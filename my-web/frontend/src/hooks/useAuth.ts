@@ -28,6 +28,7 @@ export const useAuth = () => {
   const isCustomer = user?.role === UserRole.CUSTOMER;
   const isAdmin = user?.role === UserRole.ADMIN;
   const isRestaurant = user?.role === UserRole.RESTAURANT;
+  const isStaff = user?.role === UserRole.STAFF;
 
   return {
     user,
@@ -36,6 +37,7 @@ export const useAuth = () => {
     isCustomer,
     isAdmin,
     isRestaurant,
+    isStaff,
     login,
     logout,
   };
