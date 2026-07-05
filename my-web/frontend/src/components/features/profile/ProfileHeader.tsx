@@ -6,7 +6,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import Image from 'next/image';
 import SafeImage from '@/components/base/SafeImage';
 import { Camera, Shield, Store, Grid, Edit3, Clock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
@@ -174,7 +173,7 @@ export const ProfileHeader = ({
                   variant="none"
                   size="none"
                 >
-                  <Image src="/images/badges/badge_star.png" alt="Star" width={14} height={14} className="object-contain shrink-0" />
+                  <SafeImage src="/images/badges/badge_star.png" alt="Star" width={14} height={14} className="object-contain shrink-0" />
                   <span>{profile.badgeTitle}</span>
                 </Button>
               </div>

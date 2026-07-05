@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/base/SafeImage';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { Avatar } from '@/components/base/Avatar';
@@ -87,11 +87,11 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                   {/* Rank number or Crown */}
                   <div className="w-8 h-8 shrink-0 flex items-center justify-center">
                     {isTop1 ? (
-                      <Image src="/images/badges/medal_gold.png" alt="Gold" width={28} height={28} className="object-contain" />
+                      <SafeImage src="/images/badges/medal_gold.png" alt="Gold" width={28} height={28} className="object-contain" />
                     ) : isTop2 ? (
-                      <Image src="/images/badges/medal_silver.png" alt="Silver" width={28} height={28} className="object-contain" />
+                      <SafeImage src="/images/badges/medal_silver.png" alt="Silver" width={28} height={28} className="object-contain" />
                     ) : isTop3 ? (
-                      <Image src="/images/badges/medal_bronze.png" alt="Bronze" width={28} height={28} className="object-contain" />
+                      <SafeImage src="/images/badges/medal_bronze.png" alt="Bronze" width={28} height={28} className="object-contain" />
                     ) : (
                       <span className="text-sm font-black text-gray-400 dark:text-slate-500">#{index + 1}</span>
                     )}
@@ -115,7 +115,7 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                     </h4>
                     {item.badgeTitle && (
                       <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate flex items-center gap-1 mt-0.5">
-                        <Image src="/images/badges/badge_star.png" alt="Star" width={12} height={12} className="object-contain shrink-0" />
+                        <SafeImage src="/images/badges/badge_star.png" alt="Star" width={12} height={12} className="object-contain shrink-0" />
                         <span>{item.badgeTitle}</span>
                       </p>
                     )}
