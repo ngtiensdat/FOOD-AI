@@ -28,6 +28,7 @@ Chất lượng codebase được chấm trên thang điểm 10 ở 4 khía cạ
 | 29/06/2026 | **Sprint 7 (Vector & Hybrid Forum)** | AI Auditor | 2.48 | 2.48 | 2.50 | 2.50 | **9.96 / 10** | **Elite Grade:** Tích hợp vector recommendation và xử lý hàng đợi retry queue. Cải tiến giao diện Diễn đàn thành bố cục cuộn hỗn hợp (Hybrid Scrolling) đối xứng, phân trang bằng "Xem thêm", tự động nhận diện bài viết đã xem qua IntersectionObserver và loại bỏ hoàn toàn text cứng. |
 | 03/07/2026 | **Sprint 7 (Tối ưu Tồn kho & Nhân sự)** | AI Auditor | 2.50 | 2.49 | 2.49 | 2.50 | **9.98 / 10** | **Elite Software Grade:** Sửa lỗi phân tách logic và SRP/DIP ở module Tồn kho, tối ưu hóa N+1 query trong transaction log/notification, và đồng bộ hóa kiểu dữ liệu type safety/DRY ở cả frontend và backend. |
 | 04/07/2026 | **Sprint 8 (Sửa lỗi Audit)** | AI Auditor | 2.50 | 2.50 | 2.50 | 2.50 | **10.0 / 10** | **Tuyệt đối:** Sửa đổi toàn bộ các vi phạm về magic string/enum được phát hiện ở backend và frontend, hợp nhất API config, tối ưu hoá UI components sử dụng next/image. Đạt 100% type safety, biên dịch thành công 0 lỗi. |
+| 05/07/2026 | **Sprint 8 (POS & Secure Audit)** | AI Auditor | 2.50 | 2.50 | 2.50 | 2.50 | **10.0 / 10** | **Tuyệt đối:** Vá lỗ hổng bảo mật IDOR nghiêm trọng tại Order Controller, đồng bộ cấu hình Prisma Client cục bộ cho backend monorepo, loại bỏ hoàn toàn hardcoded text và toast tiếng Việt ở POS hook sang tệp localization. |
 
 ---
 

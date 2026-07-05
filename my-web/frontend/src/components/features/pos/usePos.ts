@@ -8,6 +8,7 @@ import { tableService, DiningTable } from '@/services/table.service';
 import { toast } from '@/store/useToastStore';
 import { User, UserRole } from '@/types/user';
 import { Restaurant } from '@/types/restaurant';
+import { LABELS } from '@/constants/labels';
 
 export interface CartItem {
   id: number;
@@ -35,6 +36,8 @@ interface UsePosParams {
 }
 
 export function usePos({ user }: UsePosParams) {
+  const t = LABELS.POS;
+  
   const [branches, setBranches] = useState<Restaurant[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   
@@ -80,7 +83,7 @@ export function usePos({ user }: UsePosParams) {
           }
         } catch (e) {
           console.error('Lỗi khi tải chi nhánh:', e);
-          toast.error('Không thể tải danh sách chi nhánh');
+          toast.error(t.TOAST.LOAD_BRANCHES_ERROR);
         }
       };
       fetchBranches();
@@ -88,7 +91,7 @@ export function usePos({ user }: UsePosParams) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedBranchId(user.restaurantId);
     }
-  }, [user]);
+  }, [user, t]);
 
   // Fetch foods and categories when branch changes
   useEffect(() => {
@@ -123,13 +126,13 @@ export function usePos({ user }: UsePosParams) {
         setTableCarts({});
       } catch (e) {
         console.error('Lỗi khi tải menu/danh mục POS:', e);
-        toast.error('Không thể tải thông tin thực đơn của quán');
+        toast.error(t.TOAST.LOAD_MENU_ERROR);
       } finally {
         setLoadingMenu(false);
       }
     };
     fetchMenuAndCategories();
-  }, [selectedBranchId]);
+  }, [selectedBranchId, t]);
 
   // Lọc món ăn theo chi nhánh, tìm kiếm và phân loại danh mục
   const filteredMenu = useMemo(() => {
@@ -207,20 +210,20 @@ export function usePos({ user }: UsePosParams) {
         setSelectedTableId(null);
         setCart([]);
       }
-      toast.success('Bàn ăn đã được trả thành công.');
+      toast.success(t.TOAST.RELEASE_SUCCESS);
     } catch (e) {
-      toast.error('Không thể trả bàn ăn');
+      toast.error(t.TOAST.RELEASE_ERROR);
     }
   };
 
   const handleTransferTable = async (toTableId: number) => {
     if (selectedTableId === null) {
-      toast.error('Vui lòng chọn bàn ăn hiện tại trước');
+      toast.error(t.TOAST.SELECT_TABLE_FIRST);
       return;
     }
     const toTable = tables.find(t => t.id === toTableId);
     if (!toTable || toTable.status !== 'FREE') {
-      toast.error('Bàn đích phải đang ở trạng thái Trống');
+      toast.error(t.TOAST.TABLE_TARGET_FREE);
       return;
     }
 
@@ -251,21 +254,21 @@ export function usePos({ user }: UsePosParams) {
 
       // Chuyển sang bàn mới
       setSelectedTableId(toTableId);
-      toast.success(`Đã đổi bàn thành công sang ${toTable.name}.`);
+      toast.success(t.TOAST.TRANSFER_SUCCESS(toTable.name));
     } catch (e) {
       console.error('Lỗi chuyển bàn:', e);
-      toast.error('Không thể chuyển bàn ăn');
+      toast.error(t.TOAST.TRANSFER_ERROR);
     }
   };
 
   // Handlers for cart
   const addToCart = (food: PosFoodItem) => {
     if (selectedTableId === null) {
-      toast.error('Vui lòng chọn bàn ăn trước khi đặt món');
+      toast.error(t.TOAST.SELECT_TABLE_ORDER);
       return;
     }
     if (food.stock <= 0) {
-      toast.error(`Món "${food.name}" đã hết hàng!`);
+      toast.error(t.TOAST.OUT_OF_STOCK(food.name));
       return;
     }
 
@@ -280,7 +283,7 @@ export function usePos({ user }: UsePosParams) {
       let newCart;
       if (existing) {
         if (existing.quantity >= food.stock) {
-          toast.error(`Không thể thêm! Tồn kho tối đa chỉ còn ${food.stock} phần.`);
+          toast.error(t.TOAST.STOCK_LIMIT(food.stock));
           return prev;
         }
         newCart = prev.map((item) =>
@@ -303,7 +306,7 @@ export function usePos({ user }: UsePosParams) {
             const nextQty = item.quantity + delta;
             if (nextQty <= 0) return null;
             if (nextQty > item.stock) {
-              toast.error(`Vượt quá số lượng tồn kho còn lại (${item.stock})`);
+              toast.error(t.TOAST.STOCK_EXCEEDED(item.stock));
               return item;
             }
             return { ...item, quantity: nextQty };
@@ -385,7 +388,7 @@ export function usePos({ user }: UsePosParams) {
         }
 
         if (cartTotals.subtotal < minSpendValue) {
-          toast.error(`Hóa đơn chưa đạt mức chi tiêu tối thiểu để áp dụng Voucher này (Yêu cầu tối thiểu: ${voucher.minSpend})`);
+          toast.error(t.TOAST.MIN_SPEND_REQUIRED(voucher.minSpend));
           setVerifyingVoucher(false);
           return;
         }
@@ -404,14 +407,14 @@ export function usePos({ user }: UsePosParams) {
           discountValue: voucher.discountValue,
           discountAmount: discountVal,
         });
-        toast.success(`Đã áp dụng Voucher thành công! Giảm ${voucher.discountValue}`);
+        toast.success(t.TOAST.VOUCHER_APPLIED(voucher.discountValue));
       } else {
-        toast.error(res.reason || 'Voucher không hợp lệ hoặc không áp dụng được cho cửa hàng này.');
+        toast.error(res.reason || t.TOAST.VOUCHER_INVALID);
       }
     } catch (err: unknown) {
       const e = err as { message?: string };
       console.error('Lỗi kiểm tra voucher:', e);
-      toast.error(e?.message || 'Không thể kiểm tra voucher');
+      toast.error(e?.message || t.TOAST.VOUCHER_VERIFY_ERROR);
     } finally {
       setVerifyingVoucher(false);
     }
@@ -422,7 +425,7 @@ export function usePos({ user }: UsePosParams) {
     setAppliedVoucher(null);
   };
 
-  // Submit Order (giả lập thanh toán & cập nhật stock cục bộ)
+  // Submit Order
   const handleCreateOrder = async () => {
     if (cart.length === 0 || !selectedBranchId || selectedTableId === null) return;
     
@@ -445,7 +448,7 @@ export function usePos({ user }: UsePosParams) {
 
       await orderService.createOrder(payload);
 
-      toast.success('Thanh toán thành công và đã trừ tồn kho nguyên liệu thô!');
+      toast.success(t.TOAST.CHECKOUT_SUCCESS);
       
       // Cập nhật tồn kho cục bộ trong state allFoods
       setAllFoods((prev) =>
@@ -484,7 +487,7 @@ export function usePos({ user }: UsePosParams) {
     } catch (err: unknown) {
       const e = err as { message?: string };
       console.error('Lỗi khi gửi đơn hàng:', e);
-      toast.error(e?.message || 'Có lỗi xảy ra khi tạo đơn hàng');
+      toast.error(e?.message || t.TOAST.CHECKOUT_ERROR);
     } finally {
       setSubmittingOrder(false);
     }

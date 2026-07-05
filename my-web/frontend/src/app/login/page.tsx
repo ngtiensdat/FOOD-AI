@@ -9,7 +9,7 @@ import React from 'react';
 import Link from 'next/link';
 import { SafeImage } from '@/components/base/SafeImage';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Star, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 // Hooks
 import { useLoginActions } from '@/hooks/useLoginActions';
 import { Button } from '@/components/base/Button';
@@ -27,6 +27,17 @@ export default function LoginPage() {
     handleLogin,
     handleBlur,
   } = useLoginActions();
+
+  const testimonials = LABELS.AUTH.LOGIN_PANEL_TESTIMONIALS || [];
+  const [activeIdx, setActiveIdx] = React.useState(0);
+
+  React.useEffect(() => {
+    if (testimonials.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % testimonials.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [testimonials]);
 
   return (
     <div className="min-h-screen flex">
@@ -84,32 +95,47 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Bottom testimonial */}
-        <div className="relative z-10 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-          <p className="text-white/90 text-sm font-medium leading-relaxed">
-            &ldquo;{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL}&rdquo;
-          </p>
-          <div className="flex items-center gap-2.5 mt-3">
-            <div className="w-9 h-9 rounded-full border-2 border-white/40 overflow-hidden flex-shrink-0 bg-white/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://api.dicebear.com/9.x/personas/svg?seed=Khoa&size=36&backgroundColor=ffdfbf`}
-                alt={LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}
-                width={36}
-                height={36}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <span className="text-white/90 text-xs font-bold block">{LABELS.AUTH.LOGIN_PANEL_TESTIMONIAL_AUTHOR}</span>
-              <div className="flex gap-0.5 mt-0.5">
-                {[1,2,3,4,5].map((s) => (
-                  <Star key={s} className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
-                ))}
-              </div>
-            </div>
+        {/* Bottom testimonial slider with vertical scroll effect */}
+        {testimonials.length > 0 && (
+          <div className="relative z-10 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/20 p-5 h-36 overflow-hidden flex flex-col justify-center shadow-xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeIdx}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.55, ease: 'easeInOut' }}
+                className="absolute inset-x-5"
+              >
+                <p className="text-white/95 text-sm font-medium leading-relaxed italic">
+                  &ldquo;{testimonials[activeIdx].quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-3 mt-3.5">
+                  <div className="w-9 h-9 rounded-full border-2 border-white/45 overflow-hidden flex-shrink-0 bg-white/20">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://api.dicebear.com/9.x/personas/svg?seed=${testimonials[activeIdx].seed}&size=36&backgroundColor=ffdfbf`}
+                      alt={testimonials[activeIdx].author}
+                      width={36}
+                      height={36}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-white/95 text-xs font-extrabold block">
+                      {testimonials[activeIdx].author} · {testimonials[activeIdx].location}
+                    </span>
+                    <div className="flex gap-0.5 mt-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Right Panel: Login Form ── */}

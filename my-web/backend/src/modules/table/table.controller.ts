@@ -20,7 +20,8 @@ import {
   BulkCreateTablesDto,
   TransferTableDto,
 } from './dto/table.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole, type User } from '@prisma/client';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('tables')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,26 +30,29 @@ export class TableController {
 
   @Get()
   @Roles(UserRole.RESTAURANT, UserRole.STAFF, UserRole.ADMIN)
-  async getTables(@Query('restaurantId', ParseIntPipe) restaurantId: number) {
-    return this.tableService.getTables(restaurantId);
+  async getTables(
+    @Query('restaurantId', ParseIntPipe) restaurantId: number,
+    @GetUser() user: User,
+  ) {
+    return this.tableService.getTables(restaurantId, user);
   }
 
   @Post()
   @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
-  async createTable(@Body() dto: CreateTableDto) {
-    return this.tableService.createTable(dto);
+  async createTable(@Body() dto: CreateTableDto, @GetUser() user: User) {
+    return this.tableService.createTable(dto, user);
   }
 
   @Post('bulk')
   @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
-  async bulkCreate(@Body() dto: BulkCreateTablesDto) {
-    return this.tableService.bulkCreate(dto);
+  async bulkCreate(@Body() dto: BulkCreateTablesDto, @GetUser() user: User) {
+    return this.tableService.bulkCreate(dto, user);
   }
 
   @Post('transfer')
   @Roles(UserRole.RESTAURANT, UserRole.STAFF, UserRole.ADMIN)
-  async transferTable(@Body() dto: TransferTableDto) {
-    return this.tableService.transferTable(dto);
+  async transferTable(@Body() dto: TransferTableDto, @GetUser() user: User) {
+    return this.tableService.transferTable(dto, user);
   }
 
   @Patch(':id')
@@ -56,13 +60,17 @@ export class TableController {
   async updateTable(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTableDto,
+    @GetUser() user: User,
   ) {
-    return this.tableService.updateTable(id, dto);
+    return this.tableService.updateTable(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.RESTAURANT, UserRole.ADMIN)
-  async deleteTable(@Param('id', ParseIntPipe) id: number) {
-    return this.tableService.deleteTable(id);
+  async deleteTable(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ) {
+    return this.tableService.deleteTable(id, user);
   }
 }

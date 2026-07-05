@@ -130,7 +130,7 @@ export const useAssistiveTouch = () => {
 
     // Tính toán targetX để hít về lề gần nhất (cách lề 16px)
     const targetLeft = isLeft ? 16 : W - 16 - buttonWidth;
-    const targetX = targetLeft - (W - 24 - buttonWidth);
+    const targetX = targetLeft - 24;
 
     // Giới hạn trục Y trong khoảng an toàn
     const boundedTop = Math.max(16, Math.min(H - 16 - buttonHeight, rect.top));
@@ -159,7 +159,7 @@ export const useAssistiveTouch = () => {
 
       const isLeft = rect.left + buttonWidth / 2 < W / 2;
       const targetLeft = isLeft ? 16 : W - 16 - buttonWidth;
-      const targetX = targetLeft - (W - 24 - buttonWidth);
+      const targetX = targetLeft - 24;
       
       const boundedTop = Math.max(16, Math.min(H - 16 - buttonHeight, rect.top));
       const targetY = boundedTop - (H - 96 - buttonHeight);

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -10,19 +11,46 @@ import {
   BulkCreateTablesDto,
   TransferTableDto,
 } from './dto/table.dto';
+import { UserRole, type User } from '@prisma/client';
 
 @Injectable()
 export class TableService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getTables(restaurantId: number) {
+  private async checkRestaurantAccess(restaurantId: number, user: User) {
+    if (user.role === UserRole.RESTAURANT) {
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: restaurantId },
+        select: { ownerId: true },
+      });
+      if (!restaurant || restaurant.ownerId !== user.id) {
+        throw new ForbiddenException(
+          'Bạn không có quyền quản lý bàn ăn của nhà hàng này.',
+        );
+      }
+    } else if (user.role === UserRole.STAFF) {
+      if (user.restaurantId !== restaurantId) {
+        throw new ForbiddenException(
+          'Bạn không có quyền quản lý bàn ăn của chi nhánh này.',
+        );
+      }
+    } else if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Không có quyền thực hiện chức năng này.');
+    }
+  }
+
+  async getTables(restaurantId: number, user: User) {
+    await this.checkRestaurantAccess(restaurantId, user);
+
     return this.prisma.diningTable.findMany({
       where: { restaurantId },
       orderBy: { name: 'asc' },
     });
   }
 
-  async createTable(dto: CreateTableDto) {
+  async createTable(dto: CreateTableDto, user: User) {
+    await this.checkRestaurantAccess(dto.restaurantId, user);
+
     const existing = await this.prisma.diningTable.findFirst({
       where: { restaurantId: dto.restaurantId, name: dto.name },
     });
@@ -42,7 +70,9 @@ export class TableService {
     });
   }
 
-  async bulkCreate(dto: BulkCreateTablesDto) {
+  async bulkCreate(dto: BulkCreateTablesDto, user: User) {
+    await this.checkRestaurantAccess(dto.restaurantId, user);
+
     const count = dto.toNumber - dto.fromNumber + 1;
     if (count > 100) {
       throw new ConflictException(
@@ -78,11 +108,12 @@ export class TableService {
     });
   }
 
-  async updateTable(id: number, dto: UpdateTableDto) {
+  async updateTable(id: number, dto: UpdateTableDto, user: User) {
     const table = await this.prisma.diningTable.findUnique({ where: { id } });
     if (!table) {
       throw new NotFoundException('Không tìm thấy bàn ăn');
     }
+    await this.checkRestaurantAccess(table.restaurantId, user);
 
     if (dto.name) {
       const existing = await this.prisma.diningTable.findFirst({
@@ -112,7 +143,7 @@ export class TableService {
     });
   }
 
-  async transferTable(dto: TransferTableDto) {
+  async transferTable(dto: TransferTableDto, user: User) {
     const fromTable = await this.prisma.diningTable.findUnique({
       where: { id: dto.fromTableId },
     });
@@ -123,6 +154,9 @@ export class TableService {
     if (!fromTable || !toTable) {
       throw new NotFoundException('Không tìm thấy bàn ăn nguồn hoặc đích');
     }
+
+    await this.checkRestaurantAccess(fromTable.restaurantId, user);
+    await this.checkRestaurantAccess(toTable.restaurantId, user);
 
     if (fromTable.restaurantId !== toTable.restaurantId) {
       throw new ConflictException('Hai bàn ăn phải thuộc cùng một chi nhánh');
@@ -145,11 +179,12 @@ export class TableService {
     });
   }
 
-  async deleteTable(id: number) {
+  async deleteTable(id: number, user: User) {
     const table = await this.prisma.diningTable.findUnique({ where: { id } });
     if (!table) {
       throw new NotFoundException('Không tìm thấy bàn ăn');
     }
+    await this.checkRestaurantAccess(table.restaurantId, user);
 
     await this.prisma.diningTable.delete({ where: { id } });
     return { success: true };

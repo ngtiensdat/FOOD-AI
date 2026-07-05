@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { usePos } from '@/hooks/usePos';
 import { Navbar } from '@/components/features/Navbar';
-import { PosTableSelector, PosMenuGrid, PosCartPanel, PosTransferModal } from '@/components/features/pos';
+import { usePos, PosTableSelector, PosMenuGrid, PosCartPanel, PosTransferModal } from '@/components/features/pos';
 import { LABELS } from '@/constants/labels';
 
 export default function PosPage() {
