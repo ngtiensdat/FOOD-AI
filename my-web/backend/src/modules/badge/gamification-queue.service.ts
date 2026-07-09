@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Quản lý hàng đợi và tính toán cộng/trừ điểm thưởng, kiểm tra và nâng cấp độ, danh hiệu của người dùng.
+ * Các file khác hay file này có ý nghĩa như nào: Thực hiện tính điểm bất đồng bộ qua concatMap tránh race condition, gọi NotificationGateway để bắn thông báo thời gian thực.
+ * Các chức năng đặc biệt: processJob xử lý cộng/trừ điểm và XP, checkLevelAndBadges kiểm tra điều kiện thăng hạng và cấp danh hiệu cho cả Diner và Restaurant.
+ */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
@@ -241,6 +246,7 @@ export class GamificationQueueService implements OnModuleInit {
       config?.deductionMultiplier ?? DEFAULT_DEDUCTION_MULTIPLIER;
     const levelUpPointsReward =
       config?.levelUpPointsReward ?? DEFAULT_LEVEL_UP_POINTS_REWARD;
+    const dailyCommentLimit = config?.dailyCommentLimit ?? 5;
 
     let pointsAmount = 0;
 
@@ -298,6 +304,24 @@ export class GamificationQueueService implements OnModuleInit {
 
       if (!user) {
         throw new Error(`User with ID ${userId} not found`);
+      }
+
+      // Giới hạn số lượng bình luận được cộng điểm trong ngày để chống spam
+      if (action === 'COMMENT' || action === 'REPLY') {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const commentsCountToday = await tx.comment.count({
+          where: {
+            userId,
+            createdAt: { gte: startOfToday },
+            deletedAt: null,
+          },
+        });
+
+        if (commentsCountToday > dailyCommentLimit) {
+          pointsAmount = 0; // Vượt quá giới hạn -> không cộng điểm/XP
+        }
       }
 
       let nextPoints = user.points;

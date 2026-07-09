@@ -150,6 +150,32 @@ export function useOffers({ user, login }: UseOffersParams) {
     }
   };
 
+  const handleCreateOffer = async (dto: {
+    title: string;
+    description: string;
+    promoType: 'DISCOUNT' | 'COMBO' | 'GIFT' | 'OTHER';
+    discountValue: string;
+    image: string;
+    validUntil: string;
+    status?: string;
+  }) => {
+    try {
+      const newOffer = await offerService.createOffer(dto);
+      if (newOffer.status === 'APPROVED') {
+        setPromotions((prev) => [newOffer, ...prev]);
+        toast.success(LABELS.OFFERS.TOAST.CREATE_SUCCESS);
+      } else {
+        toast.success(LABELS.OFFERS.TOAST.CREATE_PENDING_SUCCESS);
+      }
+      return true;
+    } catch (err: unknown) {
+      console.error(err);
+      const errorResponse = err as { message?: string };
+      toast.error(errorResponse.message || LABELS.OFFERS.TOAST.CREATE_ERROR);
+      return false;
+    }
+  };
+
   return {
     activeSection,
     setActiveSection,
@@ -162,5 +188,6 @@ export function useOffers({ user, login }: UseOffersParams) {
     toggleGroup,
     handleDeleteOffer,
     handleRedeem,
+    handleCreateOffer,
   };
 }

@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa Controller tiếp nhận các HTTP requests RESTful API cho đối tượng Khuyến mãi (Offer).
+ * Các file khác hay file này có ý nghĩa như nào: Nhận DTO đầu vào, chuyển tiếp cho OfferService xử lý nghiệp vụ và bảo vệ bằng RolesGuard / JwtAuthGuard.
+ * Các chức năng đặc biệt: approveOffer, rejectOffer (phê duyệt khuyến mãi tự nhập cho Admin), createOffer/updateOffer/deleteOffer.
+ */
 import {
   Controller,
   Get,
@@ -27,9 +32,24 @@ export class OfferController {
   async getAllOffers(
     @Query('promoType') promoType?: string,
     @Query('restaurantId') restaurantId?: string,
+    @Query('status') status?: string,
   ) {
     const restId = restaurantId ? parseInt(restaurantId, 10) : undefined;
-    return this.offerService.getAllOffers(promoType, restId);
+    return this.offerService.getAllOffers(promoType, restId, status);
+  }
+
+  @Patch(':id/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async approveOffer(@Param('id', ParseIntPipe) offerId: number) {
+    return this.offerService.approveOffer(offerId);
+  }
+
+  @Patch(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async rejectOffer(@Param('id', ParseIntPipe) offerId: number) {
+    return this.offerService.rejectOffer(offerId);
   }
 
   @Post()

@@ -1,3 +1,7 @@
+/**
+ * Mục đích file này: Unit test kiểm thử các kịch bản của OrderService (tạo đơn, xác thực voucher, trừ kho).
+ * Các file khác hay file này có ý nghĩa như nào: Thực thi kiểm định tính đúng đắn của logic tính toán tiền và kiểm tra voucher trên server.
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderService } from './order.service';
 import { PrismaService } from '../../database/prisma.service';
@@ -7,19 +11,30 @@ import { ForbiddenException, BadRequestException } from '@nestjs/common';
 
 describe('OrderService', () => {
   let service: OrderService;
-  let prisma: any;
-  let inventoryDeductionService: any;
+  let prisma: typeof mockPrismaService;
+  let inventoryDeductionService: typeof mockInventoryDeductionService;
 
   const mockPrismaService = {
+    $transaction: jest.fn((callback) => callback(mockPrismaService)),
     diningTable: {
       findUnique: jest.fn(),
     },
     restaurant: {
       findUnique: jest.fn(),
     },
+    food: {
+      findMany: jest.fn(),
+    },
     order: {
       create: jest.fn(),
       findMany: jest.fn(),
+    },
+    userVoucher: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    voucher: {
+      update: jest.fn(),
     },
   };
 
@@ -43,7 +58,7 @@ describe('OrderService', () => {
     prisma = module.get<PrismaService>(PrismaService);
     inventoryDeductionService = module.get<InventoryDeductionService>(
       InventoryDeductionService,
-    );
+    ) as unknown as typeof mockInventoryDeductionService;
 
     jest.clearAllMocks();
   });
@@ -55,6 +70,7 @@ describe('OrderService', () => {
       subtotal: 100,
       discount: 10,
       total: 90,
+      voucherCode: 'VOUCHER_123',
       items: [{ foodId: 2, quantity: 2, price: 50 }],
     };
 
@@ -64,6 +80,27 @@ describe('OrderService', () => {
       prisma.diningTable.findUnique.mockResolvedValue({
         id: 10,
         restaurantId: 1,
+      });
+      prisma.food.findMany.mockResolvedValue([
+        { id: 2, price: 50, name: 'Món ăn test', isActive: true },
+      ]);
+      prisma.userVoucher.findUnique.mockResolvedValue({
+        id: 'uv-1',
+        userId: 100,
+        voucherId: 'v-1',
+        code: 'VOUCHER_123',
+        redeemedAt: new Date(),
+        isUsed: false,
+        voucher: {
+          id: 'v-1',
+          code: 'VOUCHER_123',
+          title: 'Voucher 10%',
+          discountValue: '10%',
+          minSpend: '50',
+          expiryDays: 30,
+          expiryDate: null,
+          restaurantId: 1,
+        },
       });
       prisma.order.create.mockResolvedValue({ id: 999, ...dto });
 

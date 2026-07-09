@@ -9,7 +9,7 @@ import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { PostData } from '@/components/features/profile/PostCard';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { apiClient } from '@/lib/api-client';
 
 export interface UseSocialActionsParams {
@@ -74,12 +74,18 @@ export const useSocialActions = ({
           );
         }
 
-        let diff = 0;
+        // Calculate point and XP changes
+        let diffPoints = 0;
+        let diffXp = 0;
+
         if (me.points !== undefined && me.points !== null) {
-          diff = (updatedMe.points ?? 0) - me.points;
+          diffPoints = (updatedMe.points ?? 0) - me.points;
+        }
+        if (me.xp !== undefined && me.xp !== null) {
+          diffXp = (updatedMe.xp ?? 0) - me.xp;
         } else {
-          // OCP: Lookup map — thêm action mới chỉ cần thêm entry, không sửa logic
-          const REASON_TO_POINTS: Record<string, number> = {
+          // OCP: Lookup map fallback if xp is undefined on me
+          const REASON_TO_XP: Record<string, number> = {
             [LABELS.LOYALTY.REASONS.LIKE_POST]:      LIMITS.LOYALTY_POINTS.LIKE_POST,
             [LABELS.LOYALTY.REASONS.UNLIKE_POST]:    LIMITS.LOYALTY_POINTS.UNLIKE_POST,
             [LABELS.LOYALTY.REASONS.COMMENT_POST]:   LIMITS.LOYALTY_POINTS.COMMENT_POST,
@@ -90,7 +96,7 @@ export const useSocialActions = ({
             [LABELS.LOYALTY.REASONS.DELETE_POST]:    LIMITS.LOYALTY_POINTS.DELETE_POST,
             [LABELS.LOYALTY.REASONS.SHARE_POST]:     LIMITS.LOYALTY_POINTS.SHARE_POST,
           };
-          diff = REASON_TO_POINTS[reason] ?? 0;
+          diffXp = REASON_TO_XP[reason] ?? 0;
         }
 
         // 2. If the active profile on the page is me, update the page's profile state
@@ -108,15 +114,22 @@ export const useSocialActions = ({
         login({
           ...me,
           points: updatedMe.points,
+          xp: updatedMe.xp,
           level: updatedMe.level,
           badgeTitle: updatedMe.badgeTitle,
         });
 
-        // 4. Show point change notification
-        if (diff > 0) {
-          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diff, reason));
-        } else if (diff < 0) {
-          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diff), reason));
+        // 4. Show point and XP change notifications
+        if (diffPoints > 0) {
+          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diffPoints, reason));
+        } else if (diffPoints < 0) {
+          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diffPoints), reason));
+        }
+
+        if (diffXp > 0) {
+          toast.success(LABELS.LOYALTY.AWARD_XP_SUCCESS(diffXp, reason));
+        } else if (diffXp < 0) {
+          toast.info(LABELS.LOYALTY.DEDUCT_XP_SUCCESS(Math.abs(diffXp), reason));
         }
       }
     } catch (err) {

@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa service thực hiện CRUD khuyến mãi (Offer) và kiểm duyệt (approve/reject).
+ * Các file khác hay file này có ý nghĩa như nào: Được dùng bởi OfferController để xử lý logic lưu trữ qua Prisma.
+ * Các chức năng đặc biệt: approveOffer, rejectOffer cho Admin, getAllOffers lọc theo status PENDING/APPROVED.
+ */
 import {
   Injectable,
   ForbiddenException,
@@ -12,7 +17,11 @@ import { UpdateOfferDto } from './dto/update-offer.dto';
 export class OfferService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllOffers(promoType?: string, restaurantId?: number) {
+  async getAllOffers(
+    promoType?: string,
+    restaurantId?: number,
+    status?: string,
+  ) {
     const where: Prisma.OfferWhereInput = {};
     if (promoType && promoType !== 'ALL') {
       where.promoType = promoType;
@@ -20,6 +29,7 @@ export class OfferService {
     if (restaurantId !== undefined) {
       where.restaurantId = restaurantId;
     }
+    where.status = status || 'APPROVED';
     return this.prisma.offer.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -73,6 +83,12 @@ export class OfferService {
         terms: dto.terms,
         quantity: dto.quantity !== undefined ? Number(dto.quantity) : 100,
         usedCount: 0,
+        status:
+          role === UserRole.ADMIN
+            ? dto.status || 'APPROVED'
+            : dto.status === 'PENDING'
+              ? 'PENDING'
+              : 'APPROVED',
       },
     });
 
@@ -112,7 +128,7 @@ export class OfferService {
       }
     }
 
-    const updateData: any = {
+    const updateData: Prisma.OfferUpdateInput = {
       title: dto.title !== undefined ? dto.title : offer.title,
       description:
         dto.description !== undefined ? dto.description : offer.description,
@@ -189,6 +205,32 @@ export class OfferService {
       where: { id: offerId },
     });
 
+    return { success: true };
+  }
+
+  async approveOffer(offerId: number) {
+    const offer = await this.prisma.offer.findUnique({
+      where: { id: offerId },
+    });
+    if (!offer) {
+      throw new NotFoundException('Không tìm thấy khuyến mãi');
+    }
+    return this.prisma.offer.update({
+      where: { id: offerId },
+      data: { status: 'APPROVED' },
+    });
+  }
+
+  async rejectOffer(offerId: number) {
+    const offer = await this.prisma.offer.findUnique({
+      where: { id: offerId },
+    });
+    if (!offer) {
+      throw new NotFoundException('Không tìm thấy khuyến mãi');
+    }
+    await this.prisma.offer.delete({
+      where: { id: offerId },
+    });
     return { success: true };
   }
 }

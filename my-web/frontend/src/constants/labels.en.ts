@@ -603,6 +603,14 @@ export const LABELS_EN = {
       FOLLOWERS_LABEL_SHORT: 'Followers: ',
       RATING_AVG_LABEL_SHORT: 'Average Rating: ',
       RATING_COUNT_LABEL_SHORT: 'Rating Count: ',
+      // Daily comment limit fields
+      DAILY_COMMENT_LIMIT_LABEL: 'Daily Comment Point Limit',
+      DAILY_COMMENT_LIMIT_HELP: 'Maximum times points are awarded for commenting daily.',
+      // Badge list toggle
+      TOGGLE_SHOW_BADGES: 'Show Badge List',
+      TOGGLE_HIDE_BADGES: 'Hide Badge List',
+      // Save rules console error
+      RULES_SAVE_CONSOLE_ERROR: 'Error saving points config:',
     },
     NOTIFICATION_TAB: {
       TITLE: 'Send System Notification',
@@ -1478,6 +1486,8 @@ export const LABELS_EN = {
     LEVEL_UP_SUCCESS: (level: number) => `🎉 Congratulations! You have leveled up to Level ${level}!`,
     AWARD_POINTS_SUCCESS: (points: number, reason: string) => `+${points} reward points: ${reason}`,
     DEDUCT_POINTS_SUCCESS: (points: number, reason: string) => `-${points} reward points: ${reason}`,
+    AWARD_XP_SUCCESS: (xp: number, reason: string) => `+${xp} XP: ${reason}`,
+    DEDUCT_XP_SUCCESS: (xp: number, reason: string) => `-${xp} XP: ${reason}`,
     CLAIM_POINT_CODE_TITLE: 'Claim Point Code',
     CLAIM_POINT_CODE_DESC: 'Enter the 6-digit code from your receipt/restaurant to receive instant reward points.',
     CLAIM_POINT_CODE_PLACEHOLDER: '6-digit code...',
@@ -1587,6 +1597,7 @@ export const LABELS_EN = {
       ACT_REPLY_DESC: 'Reply to an existing comment.',
       ACT_LIKE: 'Likes',
       ACT_LIKE_DESC: 'Like a food or restaurant review post.',
+      DAILY_LIMIT_LABEL: (limit: number) => `(Max ${limit} times/day)`,
       ANTI_FARM_WARNING_TITLE: '⚠️ Anti-farming policy (Undo actions)',
       ANTI_FARM_WARNING_BODY: (multiplier: number, likePoints: number) =>
         `When you delete a post, comment, or unlike a post, your points will be deducted using a penalty multiplier of ${multiplier}x. (E.g., liking grants +${likePoints} pts; unliking deducts -${Math.round(likePoints * multiplier)} pts). Please contribute responsibly!`,
@@ -1660,11 +1671,17 @@ export const LABELS_EN = {
       EXPIRY_LABEL: 'Campaign Expiry Date',
       MERCHANT_LABEL: 'Posting Restaurant (Default)',
       MERCHANT_FALLBACK: 'Your Restaurant',
+      MODAL_SUBTITLE: (name?: string) => `Post promotion for: ${name || 'Your Restaurant'}`,
       DESC_LABEL: 'Detailed Campaign Description',
       DESC_PLACEHOLDER: 'Enter details about applicable dishes, conditions, etc...',
       IMAGE_LABEL: 'Select Illustration Image',
       CANCEL: 'Cancel',
       SUBMIT: 'Post Now',
+      // Custom value option
+      CUSTOM_OPTION: 'Other (Enter custom value)...',
+      CUSTOM_LABEL: 'Enter Custom Promotion Value',
+      CUSTOM_PLACEHOLDER: 'E.g., 45% Off, Buy 2 Get 2, Free juice...',
+      CUSTOM_PENDING_WARN: '⚠️ Custom promotion campaign will be sent to the Admin for approval before being visible publicly.',
     },
     TOAST: {
       TITLE_REQUIRED: 'Please enter a promotion title!',
@@ -1672,6 +1689,7 @@ export const LABELS_EN = {
       EXPIRY_REQUIRED: 'Please select an expiry date!',
       DESC_REQUIRED: 'Please enter a description!',
       CREATE_SUCCESS: 'Promotion posted successfully!',
+      CREATE_PENDING_SUCCESS: 'Promotion request submitted successfully! Pending Admin approval.',
       CREATE_ERROR: 'Failed to create promotion!',
       DELETE_CONFIRM: 'Are you sure you want to delete this promotion?',
       DELETE_SUCCESS: 'Promotion deleted successfully!',
@@ -1684,10 +1702,10 @@ export const LABELS_EN = {
       OTHER: 'OTHER DEAL',
     },
     TYPE_IMAGES: {
-      DISCOUNT: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80',
-      COMBO: 'https://images.unsplash.com/photo-1543353071-10c8ba85a904?auto=format&fit=crop&w=600&q=80',
-      GIFT: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80',
-      OTHER: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80',
+      DISCOUNT: '/images/offers/discount.png',
+      COMBO: '/images/offers/combo.png',
+      GIFT: '/images/offers/gift.png',
+      OTHER: '/images/offers/other.png',
     }
   },
   VOUCHER_MANAGER: {
@@ -2007,7 +2025,11 @@ export const LABELS_EN = {
   },
   MODERATION: {
     TITLE: 'Content Moderation',
+    DESCRIPTION: 'Moderate content violation reports or approve custom promotions submitted by merchants.',
     PENDING_REPORTS: 'Report Moderation Queue',
+    TAB_REPORTS: 'Reports',
+    TAB_REPORTS_COUNT: (count: number) => `Reports (${count})`,
+    TAB_PROMOTIONS_COUNT: (count: number) => `Pending Promotions (${count})`,
     TARGET_TYPE: 'Target Type:',
     TARGET_ID: 'Target ID:',
     REPORT_REASON: 'Report Reason:',
@@ -2048,7 +2070,22 @@ export const LABELS_EN = {
       REPORT_RESOLVED_TITLE: 'Report processed',
       REPORT_RESOLVED_BODY: (targetType: string, id: number) => `Your report about ${targetType === 'POST' ? 'post' : 'comment'} #${id} has been processed: The violating content has been removed.`,
       REPORT_DISMISSED_BODY: (targetType: string, id: number) => `Your report about ${targetType === 'POST' ? 'post' : 'comment'} #${id} has been reviewed: No violations found.`,
-    }
+    },
+    // Promotions tab
+    PROMOTIONS_EMPTY: 'No promotions pending approval',
+    PROMOTIONS_EMPTY_DESC: 'The system is clean and running smoothly! ✨',
+    PROMOTIONS_COL_STORE: 'Merchant',
+    PROMOTIONS_COL_TYPE: 'Type',
+    PROMOTIONS_COL_TITLE_VALUE: 'Title / Promotion',
+    PROMOTIONS_COL_DESC: 'Description',
+    PROMOTIONS_COL_ACTION: 'Action',
+    PROMOTIONS_VALUE_PREFIX: 'Value: ',
+    PROMOTIONS_APPROVE: 'Approve',
+    PROMOTIONS_REJECT: 'Reject',
+    PROMOTIONS_APPROVE_SUCCESS: 'Promotion approved successfully!',
+    PROMOTIONS_APPROVE_ERROR: 'Error approving promotion!',
+    PROMOTIONS_REJECT_SUCCESS: 'Promotion rejected and deleted successfully!',
+    PROMOTIONS_REJECT_ERROR: 'Error rejecting promotion!',
   },
   ANALYTICS: {
     TITLE: 'Merchant Statistics & Analytics',

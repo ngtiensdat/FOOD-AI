@@ -32,16 +32,16 @@ export function resolvePrivacyValue(
   profilePreferences: Record<string, unknown> | null | undefined,
   isOwner: boolean
 ): boolean {
-  // 1. Kiểm tra trong preferences từ DB (do server trả về)
+  // Nếu là chủ sở hữu (bản thân người dùng xem trang cá nhân của chính mình), luôn hiển thị mọi thông tin
+  if (isOwner) {
+    return true;
+  }
+
+  // 1. Kiểm tra trong preferences từ DB (cấu hình ẩn/hiện đối với người khác)
   if (profilePreferences && profilePreferences[key] !== undefined) {
     return profilePreferences[key] === true;
   }
 
-  // 2. Nếu là chủ sở hữu và chưa có trên DB, đọc từ localStorage làm fallback
-  if (isOwner) {
-    return getPrivacyValue(key);
-  }
-
-  // 3. Mặc định là hiển thị nếu không có cấu hình và là khách xem
+  // 2. Mặc định là hiển thị nếu không cấu hình và là khách truy cập
   return true;
 }

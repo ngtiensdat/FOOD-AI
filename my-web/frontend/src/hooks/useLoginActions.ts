@@ -1,9 +1,10 @@
+/**
+ * Mục đích file: Hook quản lý state và logic cho luồng Đăng nhập (Login).
+ * Ý nghĩa: Tách biệt logic xử lý form đăng nhập, validate và gọi API ra khỏi component giao diện.
+ * Các chức năng đặc biệt: Validate form bằng Zod schema, hiển thị lỗi động, set user vào Zustand store.
+ * Các biến, hàm đặc biệt: ApiError, handleLogin, validate.
+ */
 'use client';
-
-// Mục đích file: Hook quản lý state và logic cho luồng Đăng nhập (Login).
-// Ý nghĩa: Tách biệt logic xử lý form đăng nhập, validate và gọi API ra khỏi component giao diện.
-// Các chức năng đặc biệt: Validate form bằng Zod schema, hiển thị lỗi động, set user vào Zustand store.
-// Các biến, hàm đặc biệt: ApiError, handleLogin, validate.
 
 import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
@@ -59,13 +60,17 @@ export const useLoginActions = () => {
       setUser(data.user);
 
       // Nếu email chưa được xác thực, hiển thị thông báo nhắc nhở (vẫn cho đăng nhập)
-      if (data.user && data.user.isEmailVerified === false) {
+      const isUnverified = data.user && data.user.isEmailVerified === false;
+      if (isUnverified) {
         toast.info(LABELS.AUTH.LOGIN_SUCCESS_UNVERIFIED);
       } else {
         toast.success(LABELS.COMMON.SUCCESS);
       }
 
-      window.location.href = '/';
+      // Trì hoãn reload trang để người dùng kịp đọc thông báo
+      setTimeout(() => {
+        window.location.href = '/';
+      }, isUnverified ? 4000 : 1200);
     } catch (error) {
       const err = error as ApiError;
       const msg = err.message || LABELS.COMMON.ERROR;

@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa service thực hiện nghiệp vụ tạo và kiểm tra đơn hàng (Order) cùng các ràng buộc voucher, giá.
+ * Các file khác hay file này có ý nghĩa như nào: Được gọi bởi OrderController, phối hợp với InventoryDeductionService để tự động trừ kho khi đơn hàng hợp lệ.
+ * Các chức năng đặc biệt: createOrder (xác thực giá món ăn chống bypass từ client, kiểm tra minSpend/hạn sử dụng của voucher và đánh dấu sử dụng).
+ */
 import {
   Injectable,
   ForbiddenException,
@@ -48,26 +53,187 @@ export class OrderService {
       }
     }
 
-    // 3. Tạo đơn hàng và chi tiết đơn hàng trong PostgreSQL
-    const order = await this.prisma.order.create({
-      data: {
+    // 2.5. Kiểm tra tính toàn vẹn của giá món ăn và tính toán lại tổng tiền (Bảo mật tránh bypass giá)
+    const foodIds = dto.items.map((i) => i.foodId);
+    const dbFoods = await this.prisma.food.findMany({
+      where: {
+        id: { in: foodIds },
         restaurantId: dto.restaurantId,
-        tableId: dto.tableId || null,
-        voucherCode: dto.voucherCode || null,
-        subtotal: dto.subtotal,
-        discount: dto.discount,
-        total: dto.total,
-        items: {
-          create: dto.items.map((item) => ({
-            foodId: item.foodId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
+        deletedAt: null,
+      },
+      select: { id: true, price: true, name: true, isActive: true },
+    });
+
+    if (dbFoods.length !== new Set(foodIds).size) {
+      throw new BadRequestException(
+        'Một hoặc nhiều món ăn không tồn tại hoặc không thuộc chi nhánh nhà hàng này.',
+      );
+    }
+
+    const inactiveFood = dbFoods.find((f) => !f.isActive);
+    if (inactiveFood) {
+      throw new BadRequestException(
+        `Món ăn "${inactiveFood.name}" hiện đang ngừng kinh doanh.`,
+      );
+    }
+
+    let expectedSubtotal = 0;
+    const foodPriceMap = new Map(dbFoods.map((f) => [f.id, f.price]));
+
+    for (const item of dto.items) {
+      const dbPrice = foodPriceMap.get(item.foodId);
+      if (dbPrice === undefined) {
+        throw new BadRequestException('Món ăn không hợp lệ.');
+      }
+
+      // Kiểm tra chênh lệch đơn giá của món ăn gửi từ client
+      if (Math.abs(item.price - dbPrice) > 0.01) {
+        throw new BadRequestException(
+          `Đơn giá của món ăn "${dbFoods.find((f) => f.id === item.foodId)?.name}" không khớp với hệ thống.`,
+        );
+      }
+
+      expectedSubtotal += dbPrice * item.quantity;
+    }
+
+    // Kiểm tra chênh lệch subtotal
+    if (Math.abs(dto.subtotal - expectedSubtotal) > 0.01) {
+      throw new BadRequestException(
+        'Tổng tiền tạm tính (subtotal) không khớp với giá trị trên hệ thống.',
+      );
+    }
+
+    // Xác minh voucher và tính toán giảm giá thực tế trên server
+    let expectedDiscount = 0;
+    if (dto.voucherCode) {
+      const userVoucher = await this.prisma.userVoucher.findUnique({
+        where: { code: dto.voucherCode },
+        include: { voucher: true },
+      });
+
+      if (!userVoucher) {
+        throw new BadRequestException(
+          'Mã voucher không tồn tại hoặc không hợp lệ.',
+        );
+      }
+
+      if (userVoucher.isUsed) {
+        throw new BadRequestException('Voucher này đã được sử dụng trước đó.');
+      }
+
+      const voucher = userVoucher.voucher;
+
+      // Kiểm tra xem voucher có áp dụng được tại restaurant này không
+      const isVoucherApplicable =
+        voucher.restaurantId === dto.restaurantId ||
+        (voucher.restaurantId === null &&
+          (voucher.applicableRestaurantIds.length === 0 ||
+            voucher.applicableRestaurantIds.includes(dto.restaurantId)));
+
+      if (!isVoucherApplicable) {
+        throw new BadRequestException(
+          'Voucher này không được áp dụng tại chi nhánh nhà hàng này.',
+        );
+      }
+
+      // Kiểm tra hạn sử dụng của voucher
+      const now = new Date();
+      const isExpiredDate = voucher.expiryDate && now > voucher.expiryDate;
+      const expiryLimit = new Date(
+        userVoucher.redeemedAt.getTime() +
+          voucher.expiryDays * 24 * 60 * 60 * 1000,
+      );
+      const isExpiredDays = now > expiryLimit;
+
+      if (isExpiredDate || isExpiredDays) {
+        throw new BadRequestException('Voucher này đã hết hạn sử dụng.');
+      }
+
+      // Kiểm tra chi tiêu tối thiểu (minSpend)
+      let minSpendValue = 0;
+      if (voucher.minSpend) {
+        minSpendValue = Number(voucher.minSpend.replace(/[^0-9]/g, '')) || 0;
+      }
+      if (expectedSubtotal < minSpendValue) {
+        throw new BadRequestException(
+          `Đơn hàng chưa đạt giá trị tối thiểu ${voucher.minSpend} để áp dụng voucher này.`,
+        );
+      }
+
+      // Tính toán giá trị giảm giá
+      const discountValStr = voucher.discountValue;
+      if (discountValStr.includes('%')) {
+        const percent = Number(discountValStr.replace(/[^0-9]/g, '')) || 0;
+        expectedDiscount = (expectedSubtotal * percent) / 100;
+      } else {
+        expectedDiscount = Number(discountValStr.replace(/[^0-9]/g, '')) || 0;
+      }
+    }
+
+    // Kiểm tra chênh lệch discount
+    if (Math.abs(dto.discount - expectedDiscount) > 0.01) {
+      throw new BadRequestException(
+        'Số tiền giảm giá (discount) không khớp với hệ thống.',
+      );
+    }
+
+    // Tính toán tổng số tiền thanh toán cuối cùng
+    const expectedTotal = Math.max(0, expectedSubtotal - expectedDiscount);
+
+    // Kiểm tra chênh lệch tổng tiền
+    if (Math.abs(dto.total - expectedTotal) > 0.01) {
+      throw new BadRequestException(
+        'Tổng tiền thanh toán cuối cùng (total) không khớp với giá trị hệ thống.',
+      );
+    }
+
+    // 3. Tạo đơn hàng và đánh dấu voucher đã sử dụng trong một transaction duy nhất (Atomic Transaction)
+    const order = await this.prisma.$transaction(async (tx) => {
+      const ord = await tx.order.create({
+        data: {
+          restaurantId: dto.restaurantId,
+          tableId: dto.tableId || null,
+          voucherCode: dto.voucherCode || null,
+          subtotal: dto.subtotal,
+          discount: dto.discount,
+          total: dto.total,
+          items: {
+            create: dto.items.map((item) => ({
+              foodId: item.foodId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
         },
-      },
-      include: {
-        items: true,
-      },
+        include: {
+          items: true,
+        },
+      });
+
+      // Đánh dấu voucher đã sử dụng để tránh race condition hoặc reuse
+      if (dto.voucherCode) {
+        await tx.userVoucher.update({
+          where: { code: dto.voucherCode },
+          data: {
+            isUsed: true,
+            usedAt: new Date(),
+          },
+        });
+
+        // Tăng usedCount của voucher gốc
+        const userVoucher = await tx.userVoucher.findUnique({
+          where: { code: dto.voucherCode },
+          select: { voucherId: true },
+        });
+        if (userVoucher) {
+          await tx.voucher.update({
+            where: { id: userVoucher.voucherId },
+            data: { usedCount: { increment: 1 } },
+          });
+        }
+      }
+
+      return ord;
     });
 
     // 4. Kích hoạt luồng trừ kho tự động ở SQLite thông qua InventoryDeductionService

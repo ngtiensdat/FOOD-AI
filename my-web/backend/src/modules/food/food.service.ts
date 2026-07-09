@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa service thực hiện logic nghiệp vụ cho đối tượng Món ăn (Food).
+ * Các file khác hay file này có ý nghĩa như nào: Phối hợp giữa FoodRepository và VectorSyncService để lưu trữ, cập nhật thông tin món ăn và đồng bộ vector embedding cho AI.
+ * Các chức năng đặc biệt: createFood, updateFood, deleteFood, tìm kiếm món ăn kết hợp phân trang và lọc theo danh mục.
+ */
 import {
   Injectable,
   ForbiddenException,
@@ -442,6 +447,44 @@ export class FoodService {
 
   async search(query: string) {
     if (!query) return { data: [], meta: { total: 0 } };
+
+    // 1. Thử nghiệm tìm kiếm ngữ nghĩa qua AI (Semantic Vector Search)
+    try {
+      const semanticResults = await this.aiService.semanticSearch(query, 20);
+      if (semanticResults && semanticResults.length > 0) {
+        const data = semanticResults.map((r) => ({
+          id: r.id,
+          name: r.name,
+          price: r.price,
+          description: r.description,
+          image: r.image,
+          tags: r.tags,
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          categoryId: null,
+          restaurantId: null,
+          restaurant: {
+            name: r.restaurantName,
+            address: r.address,
+            isActive: true,
+          },
+        }));
+
+        return {
+          data,
+          meta: {
+            total: semanticResults.length,
+          },
+        };
+      }
+    } catch (err) {
+      console.error(
+        'Lỗi tìm kiếm ngữ nghĩa AI, chuyển sang tìm kiếm từ khóa thông thường:',
+        err,
+      );
+    }
+
+    // 2. Dự phòng (Fallback) - Tìm kiếm từ khóa nếu AI lỗi hoặc không có kết quả phù hợp
     const result = await this.repository.findAll({
       AND: [
         {

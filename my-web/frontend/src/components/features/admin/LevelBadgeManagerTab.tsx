@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Tab quản lý cấu hình điểm thưởng, danh hiệu và cấp độ (Gamification Rules) trong Admin Panel.
+ * Các file khác hay file này có ý nghĩa như nào: Tương tác với backend qua badgeService và apiClient để lưu các cấu hình điểm cộng, hệ số phạt, giới hạn hàng ngày.
+ * Các chức năng đặc biệt: handleAddBadge, handleSaveRules, hiển thị danh sách danh hiệu phân loại theo Diner / Restaurant.
+ */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -28,6 +33,7 @@ interface GamificationRules {
   commentPoints: number;
   likePoints: number;
   deductionMultiplier: number;
+  dailyCommentLimit?: number;
 }
 
 export const LevelBadgeManagerTab = () => {
@@ -50,6 +56,7 @@ export const LevelBadgeManagerTab = () => {
   const [commentPoints, setCommentPoints] = useState('10');
   const [likePoints, setLikePoints] = useState('5');
   const [deductionMultiplier, setDeductionMultiplier] = useState('1.0');
+  const [dailyCommentLimit, setDailyCommentLimit] = useState('5');
 
   const [loadingBadges, setLoadingBadges] = useState(true);
   const [loadingRules, setLoadingRules] = useState(true);
@@ -75,6 +82,7 @@ export const LevelBadgeManagerTab = () => {
         setCommentPoints(rulesData.commentPoints?.toString() ?? '10');
         setLikePoints(rulesData.likePoints?.toString() ?? '5');
         setDeductionMultiplier(rulesData.deductionMultiplier?.toString() ?? '1.0');
+        setDailyCommentLimit(rulesData.dailyCommentLimit?.toString() ?? '5');
       }
     } catch (err) {
       console.error(bmLabels.RULES_LOAD_ERROR, err);
@@ -162,11 +170,12 @@ export const LevelBadgeManagerTab = () => {
         commentPoints: parseInt(commentPoints) || 0,
         likePoints: parseInt(likePoints) || 0,
         deductionMultiplier: parseFloat(deductionMultiplier) || 1.0,
+        dailyCommentLimit: parseInt(dailyCommentLimit) || 5,
       });
 
       toast.success(bmLabels.RULES_SAVE_SUCCESS);
     } catch (err) {
-      console.error('Lỗi lưu cấu hình điểm:', err);
+      console.error(bmLabels.RULES_SAVE_CONSOLE_ERROR, err);
       toast.error(bmLabels.RULES_SAVE_ERROR);
     } finally {
       setSavingRules(false);
@@ -194,7 +203,7 @@ export const LevelBadgeManagerTab = () => {
             }`}
           >
             <Award size={16} className="mr-2" />
-            {showBadgeLists ? "Ẩn danh sách Danh hiệu" : "Xem danh sách Danh hiệu"}
+            {showBadgeLists ? bmLabels.TOGGLE_HIDE_BADGES : bmLabels.TOGGLE_SHOW_BADGES}
           </Button>
           <Button
             variant="outline"
@@ -416,22 +425,41 @@ export const LevelBadgeManagerTab = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  {bmLabels.RULES_DEDUCTION_MULTIPLIER}
-                </label>
-                <Input
-                  variant="none"
-                  type="number"
-                  step="0.1"
-                  className="form-input"
-                  value={deductionMultiplier}
-                  onChange={(e) => setDeductionMultiplier((e.target as HTMLInputElement).value)}
-                  required
-                />
-                <p className="text-[10px] text-gray-400 font-medium mt-1">
-                  {bmLabels.RULES_DEDUCTION_HELP}
-                </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.RULES_DEDUCTION_MULTIPLIER}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    step="0.1"
+                    className="form-input"
+                    value={deductionMultiplier}
+                    onChange={(e) => setDeductionMultiplier((e.target as HTMLInputElement).value)}
+                    required
+                  />
+                  <p className="text-[10px] text-gray-400 font-medium mt-1">
+                    {bmLabels.RULES_DEDUCTION_HELP}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {bmLabels.DAILY_COMMENT_LIMIT_LABEL}
+                  </label>
+                  <Input
+                    variant="none"
+                    type="number"
+                    className="form-input"
+                    value={dailyCommentLimit}
+                    onChange={(e) => setDailyCommentLimit((e.target as HTMLInputElement).value)}
+                    required
+                  />
+                  <p className="text-[10px] text-gray-400 font-medium mt-1">
+                    {bmLabels.DAILY_COMMENT_LIMIT_HELP}
+                  </p>
+                </div>
               </div>
 
               <Button
@@ -540,5 +568,3 @@ export const LevelBadgeManagerTab = () => {
     </div>
   );
 };
-
-

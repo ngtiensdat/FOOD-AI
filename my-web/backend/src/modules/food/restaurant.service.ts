@@ -11,6 +11,7 @@ import { RestaurantRepository } from './restaurant.repository';
 import { FoodRepository } from './food.repository';
 import { PrismaService } from '../../database/prisma.service';
 import { CacheService } from '../../common/services/cache.service';
+import { AiService } from '../ai/ai.service';
 import {
   User,
   FoodStatus,
@@ -44,6 +45,7 @@ export class RestaurantService {
     private foodRepository: FoodRepository,
     private prisma: PrismaService,
     private cacheService: CacheService,
+    private aiService: AiService,
   ) {}
 
   async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
@@ -251,7 +253,35 @@ export class RestaurantService {
     page?: number;
     pageSize?: number;
   }) {
-    return this.repository.findManyPublicRestaurants(filters);
+    let restaurantIdsFromAi: number[] | undefined = undefined;
+
+    const queryTerm = filters.tag || filters.search;
+    if (queryTerm) {
+      try {
+        const semanticFoods = await this.aiService.semanticSearch(
+          queryTerm,
+          50,
+        );
+        if (semanticFoods && semanticFoods.length > 0) {
+          const ids = semanticFoods
+            .map((f) => f.restaurantId)
+            .filter((id): id is number => id !== null && id !== undefined);
+          if (ids.length > 0) {
+            restaurantIdsFromAi = Array.from(new Set(ids));
+          }
+        }
+      } catch (err) {
+        console.error(
+          'Lỗi khi thực hiện tìm kiếm ngữ nghĩa tại RestaurantService:',
+          err,
+        );
+      }
+    }
+
+    return this.repository.findManyPublicRestaurants({
+      ...filters,
+      restaurantIdsFromAi,
+    });
   }
 
   async getMyAnalytics(user: User) {

@@ -617,6 +617,14 @@ const LABELS_VI = {
       FOLLOWERS_LABEL_SHORT: '👥 Người theo dõi: ',
       RATING_AVG_LABEL_SHORT: '🌟 Đánh giá trung bình: ',
       RATING_COUNT_LABEL_SHORT: '📈 Số lượt đánh giá: ',
+      // Daily comment limit fields
+      DAILY_COMMENT_LIMIT_LABEL: 'Giới hạn bình luận được cộng điểm/ngày',
+      DAILY_COMMENT_LIMIT_HELP: 'Số lần tối đa nhận điểm từ bình luận/ngày.',
+      // Badge list toggle
+      TOGGLE_SHOW_BADGES: 'Xem danh sách Danh hiệu',
+      TOGGLE_HIDE_BADGES: 'Ẩn danh sách Danh hiệu',
+      // Save rules console error
+      RULES_SAVE_CONSOLE_ERROR: 'Lỗi lưu cấu hình điểm:',
     },
     NOTIFICATION_TAB: {
       TITLE: 'Gửi thông báo hệ thống',
@@ -1502,6 +1510,8 @@ const LABELS_VI = {
     LEVEL_UP_SUCCESS: (level: number) => `🎉 Chúc mừng! Bạn đã thăng cấp lên Level ${level}!`,
     AWARD_POINTS_SUCCESS: (points: number, reason: string) => `+${points} điểm tích lũy: ${reason}`,
     DEDUCT_POINTS_SUCCESS: (points: number, reason: string) => `-${points} điểm tích lũy: ${reason}`,
+    AWARD_XP_SUCCESS: (xp: number, reason: string) => `+${xp} XP: ${reason}`,
+    DEDUCT_XP_SUCCESS: (xp: number, reason: string) => `-${xp} XP: ${reason}`,
     BADGES: {
       EXPERT: 'Chuyên Gia Ẩm Thực',
       VIP: 'Thánh Review Cao Cấp',
@@ -1592,6 +1602,7 @@ const LABELS_VI = {
       ACT_REPLY_DESC: 'Trả lời một bình luận đã có sẵn.',
       ACT_LIKE: 'Lượt thích',
       ACT_LIKE_DESC: 'Thích bài đăng đánh giá món ăn/nhà hàng.',
+      DAILY_LIMIT_LABEL: (limit: number) => `(Tối đa ${limit} lần/ngày)`,
       ANTI_FARM_WARNING_TITLE: '⚠️ Quy chế chống farm điểm (Thao tác hoàn tác)',
       ANTI_FARM_WARNING_BODY: (multiplier: number, likePoints: number) =>
         `Khi bạn xóa bài đăng, bình luận hoặc hủy thích bài viết, điểm số sẽ bị trừ nhân theo hệ số phạt là ${multiplier}x. (Ví dụ: Thích bài nhận +${likePoints} điểm; hủy thích sẽ bị phạt trừ -${Math.round(likePoints * multiplier)} điểm). Hãy đóng góp một cách văn minh!`,
@@ -1665,11 +1676,17 @@ const LABELS_VI = {
       EXPIRY_LABEL: 'Hạn sử dụng chương trình',
       MERCHANT_LABEL: 'Nhà hàng đăng tin (Mặc định)',
       MERCHANT_FALLBACK: 'Nhà hàng của bạn',
+      MODAL_SUBTITLE: (name?: string) => `Đăng tin khuyến mãi cho: ${name || 'Nhà hàng của bạn'}`,
       DESC_LABEL: 'Mô tả chi tiết chương trình',
       DESC_PLACEHOLDER: 'Nhập mô tả cụ thể về món ăn áp dụng, điều kiện áp dụng nếu có...',
       IMAGE_LABEL: 'Chọn hình ảnh minh họa phù hợp',
       CANCEL: 'Hủy bỏ',
       SUBMIT: 'Đăng ngay',
+      // Custom value option
+      CUSTOM_OPTION: 'Khác (Tự nhập)...',
+      CUSTOM_LABEL: 'Nhập mốc ưu đãi tùy chỉnh',
+      CUSTOM_PLACEHOLDER: 'Ví dụ: Giảm 45%, Mua 2 Tặng 2, Free nước ép...',
+      CUSTOM_PENDING_WARN: '⚠️ Tin khuyến mãi tùy chỉnh sẽ được gửi để Admin phê duyệt trước khi hiển thị công khai.',
     },
     TOAST: {
       TITLE_REQUIRED: 'Vui lòng nhập tiêu đề chương trình khuyến mãi!',
@@ -1677,6 +1694,7 @@ const LABELS_VI = {
       EXPIRY_REQUIRED: 'Vui lòng chọn hạn sử dụng ưu đãi!',
       DESC_REQUIRED: 'Vui lòng nhập mô tả chi tiết!',
       CREATE_SUCCESS: 'Đăng bài khuyến mãi thành công!',
+      CREATE_PENDING_SUCCESS: 'Gửi yêu cầu khuyến mãi thành công! Đang chờ Admin duyệt.',
       CREATE_ERROR: 'Lỗi khi tạo tin khuyến mại!',
       DELETE_CONFIRM: 'Bạn có chắc chắn muốn xóa chương trình khuyến mại này không?',
       DELETE_SUCCESS: 'Xóa khuyến mại thành công!',
@@ -1689,10 +1707,10 @@ const LABELS_VI = {
       OTHER: 'ƯU ĐÃI KHÁC',
     },
     TYPE_IMAGES: {
-      DISCOUNT: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80',
-      COMBO: 'https://images.unsplash.com/photo-1543353071-10c8ba85a904?auto=format&fit=crop&w=600&q=80',
-      GIFT: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80',
-      OTHER: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80',
+      DISCOUNT: '/images/offers/discount.png',
+      COMBO: '/images/offers/combo.png',
+      GIFT: '/images/offers/gift.png',
+      OTHER: '/images/offers/other.png',
     }
   },
   VOUCHER_MANAGER: {
@@ -2011,7 +2029,11 @@ const LABELS_VI = {
   },
   MODERATION: {
     TITLE: 'Kiểm duyệt nội dung',
+    DESCRIPTION: 'Kiểm duyệt các nội dung báo cáo vi phạm hoặc phê duyệt các tin khuyến mãi tự nhập của cửa hàng.',
     PENDING_REPORTS: 'Hàng đợi báo cáo vi phạm',
+    TAB_REPORTS: 'Báo cáo vi phạm',
+    TAB_REPORTS_COUNT: (count: number) => `Báo cáo vi phạm (${count})`,
+    TAB_PROMOTIONS_COUNT: (count: number) => `Khuyến mãi chờ duyệt (${count})`,
     TARGET_TYPE: 'Loại vi phạm:',
     TARGET_ID: 'ID mục tiêu:',
     REPORT_REASON: 'Lý do báo cáo:',
@@ -2052,7 +2074,22 @@ const LABELS_VI = {
       REPORT_RESOLVED_TITLE: 'Báo cáo đã xử lý',
       REPORT_RESOLVED_BODY: (targetType: string, id: number) => `Báo cáo của bạn về ${targetType === 'POST' ? 'bài viết' : 'bình luận'} #${id} đã được xử lý: Nội dung vi phạm đã bị gỡ bỏ.`,
       REPORT_DISMISSED_BODY: (targetType: string, id: number) => `Báo cáo của bạn về ${targetType === 'POST' ? 'bài viết' : 'bình luận'} #${id} đã được kiểm duyệt: Không phát hiện vi phạm.`,
-    }
+    },
+    // Promotions tab
+    PROMOTIONS_EMPTY: 'Không có khuyến mãi nào chờ duyệt',
+    PROMOTIONS_EMPTY_DESC: 'Hệ thống đang hoạt động ổn định và sạch sẽ! ✨',
+    PROMOTIONS_COL_STORE: 'Cửa hàng',
+    PROMOTIONS_COL_TYPE: 'Loại',
+    PROMOTIONS_COL_TITLE_VALUE: 'Tiêu đề / Mốc ưu đãi',
+    PROMOTIONS_COL_DESC: 'Mô tả chi tiết',
+    PROMOTIONS_COL_ACTION: 'Thao tác',
+    PROMOTIONS_VALUE_PREFIX: 'Giá trị: ',
+    PROMOTIONS_APPROVE: 'Duyệt',
+    PROMOTIONS_REJECT: 'Từ chối',
+    PROMOTIONS_APPROVE_SUCCESS: 'Duyệt chương trình khuyến mãi thành công!',
+    PROMOTIONS_APPROVE_ERROR: 'Lỗi khi duyệt khuyến mãi!',
+    PROMOTIONS_REJECT_SUCCESS: 'Từ chối và xóa khuyến mãi thành công!',
+    PROMOTIONS_REJECT_ERROR: 'Lỗi khi từ chối khuyến mãi!',
   },
   ANALYTICS: {
     TITLE: 'Thống kê & Phân tích Cửa hàng',

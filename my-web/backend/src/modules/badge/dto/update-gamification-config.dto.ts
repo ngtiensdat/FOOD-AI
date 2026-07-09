@@ -25,4 +25,9 @@ export class UpdateGamificationConfigDto {
   @IsNumber()
   @Min(0)
   deductionMultiplier?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  dailyCommentLimit?: number;
 }

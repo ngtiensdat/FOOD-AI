@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Tag, Calendar, Store, Gift, Flame, Percent, ChevronRight, Trash2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Tag, Calendar, Store, Gift, Flame, Percent, ChevronRight, Trash2, Sparkles, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { toast } from '@/store/useToastStore';
 import { SafeImage } from '@/components/base/SafeImage';
@@ -9,6 +9,7 @@ import { LABELS } from '@/constants/labels';
 import { useAuth } from '@/hooks/useAuth';
 import { useOffers } from '@/hooks/useOffers';
 import { User, UserRole } from '@/types/user';
+import { useRouter } from 'next/navigation';
 
 interface OffersSectionProps {
   user: Partial<User> | null;
@@ -17,6 +18,25 @@ interface OffersSectionProps {
 
 export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
   const { login } = useAuth();
+  const router = useRouter();
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [promoType, setPromoType] = React.useState<'DISCOUNT' | 'COMBO' | 'GIFT' | 'OTHER'>('DISCOUNT');
+  const [promoValue, setPromoValue] = React.useState('');
+  const [promoExpiry, setPromoExpiry] = React.useState('');
+  const [promoDesc, setPromoDesc] = React.useState('');
+  const [isCustomValue, setIsCustomValue] = React.useState(false);
+  const [customValue, setCustomValue] = React.useState('');
+
+  // Tự động chọn mốc khuyến mãi đầu tiên của loại tương ứng khi loại thay đổi
+  React.useEffect(() => {
+    const presets = LABELS.VOUCHER_MANAGER.FORM_OPTIONS.DISCOUNT_VALUES[promoType];
+    if (presets && presets.length > 0) {
+      setPromoValue(presets[0]);
+      setIsCustomValue(false);
+      setCustomValue('');
+    }
+  }, [promoType]);
 
   // DIP: Tất cả data fetching và business logic được ủy quyền cho useOffers hook
   const {
@@ -31,7 +51,53 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
     toggleGroup,
     handleDeleteOffer,
     handleRedeem,
+    handleCreateOffer,
   } = useOffers({ user, login });
+
+  const handleSubmitOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const finalValue = isCustomValue ? customValue.trim() : promoValue.trim();
+
+    if (!finalValue) {
+      toast.error(LABELS.OFFERS.TOAST.VALUE_REQUIRED);
+      return;
+    }
+    if (!promoExpiry) {
+      toast.error(LABELS.OFFERS.TOAST.EXPIRY_REQUIRED);
+      return;
+    }
+    if (!promoDesc.trim()) {
+      toast.error(LABELS.OFFERS.TOAST.DESC_REQUIRED);
+      return;
+    }
+
+    // Tự động sinh tiêu đề: [Tên Nhà Hàng] - [Loại] [Mốc ưu đãi]
+    const typePrefix = promoType === 'DISCOUNT' ? 'Giảm giá ' : promoType === 'GIFT' ? 'Tặng kèm ' : '';
+    const autoTitle = `${user?.name || 'Nhà hàng'} - ${typePrefix}${finalValue}`;
+    // Tự động gán ảnh 3D mặc định theo loại
+    const autoImage = LABELS.OFFERS.TYPE_IMAGES[promoType];
+
+    const success = await handleCreateOffer({
+      title: autoTitle,
+      description: promoDesc.trim(),
+      promoType,
+      discountValue: finalValue,
+      image: autoImage,
+      validUntil: promoExpiry,
+      status: isCustomValue ? 'PENDING' : 'APPROVED',
+    });
+
+    if (success) {
+      setIsCreateModalOpen(false);
+      // Reset form
+      setPromoType('DISCOUNT');
+      setPromoExpiry('');
+      setPromoDesc('');
+      setIsCustomValue(false);
+      setCustomValue('');
+    }
+  };
 
   const getPromoBadgeColor = (type: string) => {
     switch (type) {
@@ -252,6 +318,18 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
               <span className="text-xs font-bold text-gray-400">
                 {LABELS.OFFERS.SHOWING_COUNT(filteredPromotions.length)}
               </span>
+              
+              {user?.role === UserRole.RESTAURANT && (
+                <Button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  variant="primary"
+                  size="none"
+                  className="px-4 py-2 flex items-center gap-1.5 text-xs font-bold rounded-2xl cursor-pointer shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <Plus size={14} />
+                  {LABELS.OFFERS.CREATE_BTN}
+                </Button>
+              )}
             </div>
 
             {/* Grid List */}
@@ -268,13 +346,13 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 {filteredPromotions.map((offer) => (
                   <article key={offer.id} className="card-premium overflow-hidden flex flex-col group hover:-translate-y-1.5 transition-all duration-300">
                     {/* Image Container */}
-                    <div className="relative h-48 w-full bg-gray-100 overflow-hidden shrink-0">
+                    <div className="relative h-48 w-full bg-white dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800/80 overflow-hidden shrink-0 flex items-center justify-center p-4">
                       <SafeImage
                         src={offer.image}
                         alt={offer.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-contain group-hover:scale-105 transition-transform duration-500 p-2"
                       />
                       
                       {/* Promo Badge */}
@@ -330,7 +408,13 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                         </div>
                         
                         <Button 
-                          onClick={() => toast.info(LABELS.OFFERS.CONTACT_TOAST(offer.restaurantName))}
+                          onClick={() => {
+                            if (offer.restaurantId) {
+                              router.push(`/restaurant/${offer.restaurantId}`);
+                            } else {
+                              toast.info(LABELS.OFFERS.CONTACT_TOAST(offer.restaurantName));
+                            }
+                          }}
                           className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer bg-transparent border-none p-0 font-bold"
                           variant="none"
                           size="none"
@@ -362,6 +446,131 @@ export const OffersSection = ({ user, setActiveTab }: OffersSectionProps) => {
                 {LABELS.OFFERS.RIGHT_CARD_DESC}
               </p>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Create Promotion Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-3xl w-full max-w-lg shadow-2xl p-6 md:p-8 space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-200">
+            <div>
+              <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">
+                {LABELS.OFFERS.CREATE_MODAL_TITLE}
+              </h3>
+              <p className="text-xs text-gray-400 mt-1 font-semibold">
+                {LABELS.OFFERS.FORM.MODAL_SUBTITLE(user?.name)}
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmitOffer} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    {LABELS.OFFERS.FORM.TYPE_LABEL}
+                  </label>
+                  <select
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                    value={promoType}
+                    onChange={(e) => setPromoType(e.target.value as any)}
+                  >
+                    <option value="DISCOUNT">{LABELS.OFFERS.FORM.TYPE_OPTIONS.DISCOUNT}</option>
+                    <option value="COMBO">{LABELS.OFFERS.FORM.TYPE_OPTIONS.COMBO}</option>
+                    <option value="GIFT">{LABELS.OFFERS.FORM.TYPE_OPTIONS.GIFT}</option>
+                    <option value="OTHER">{LABELS.OFFERS.FORM.TYPE_OPTIONS.OTHER}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    {LABELS.OFFERS.FORM.VALUE_LABEL}
+                  </label>
+                  <select
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                    value={isCustomValue ? 'CUSTOM' : promoValue}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'CUSTOM') {
+                        setIsCustomValue(true);
+                      } else {
+                        setIsCustomValue(false);
+                        setPromoValue(val);
+                      }
+                    }}
+                  >
+                    {LABELS.VOUCHER_MANAGER.FORM_OPTIONS.DISCOUNT_VALUES[promoType].map((preset) => (
+                      <option key={preset} value={preset}>
+                        {preset}
+                      </option>
+                    ))}
+                    <option value="CUSTOM">{LABELS.OFFERS.FORM.CUSTOM_OPTION}</option>
+                  </select>
+                </div>
+              </div>
+
+              {isCustomValue && (
+                <div className="animate-in slide-in-from-top-2 duration-200">
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    {LABELS.OFFERS.FORM.CUSTOM_LABEL}
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:border-primary/50 transition-all"
+                    placeholder={LABELS.OFFERS.FORM.CUSTOM_PLACEHOLDER}
+                    value={customValue}
+                    onChange={(e) => setCustomValue(e.target.value)}
+                    required
+                  />
+                  <p className="text-[10px] text-amber-500 dark:text-amber-400 font-bold mt-1.5 flex items-center gap-1">
+                    {LABELS.OFFERS.FORM.CUSTOM_PENDING_WARN}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  {LABELS.OFFERS.FORM.EXPIRY_LABEL}
+                </label>
+                <input
+                  type="date"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                  value={promoExpiry}
+                  onChange={(e) => setPromoExpiry(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  {LABELS.OFFERS.FORM.DESC_LABEL}
+                </label>
+                <textarea
+                  rows={4}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:border-primary/50 transition-all resize-none"
+                  placeholder={LABELS.OFFERS.FORM.DESC_PLACEHOLDER}
+                  value={promoDesc}
+                  onChange={(e) => setPromoDesc(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="font-bold border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer"
+                >
+                  {LABELS.OFFERS.FORM.CANCEL}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="font-bold rounded-2xl cursor-pointer"
+                >
+                  {LABELS.OFFERS.FORM.SUBMIT}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

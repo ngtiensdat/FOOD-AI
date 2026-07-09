@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Component hiển thị bảng quy chế tính điểm thưởng và các điều kiện phạt (anti-farm) trên giao diện Cấp độ & Danh hiệu.
+ * Các file khác hay file này có ý nghĩa như nào: Hiển thị dữ liệu động cấu hình gamification lấy từ backend hoặc fallback hằng số mặc định.
+ * Các chức năng đặc biệt: hiển thị trực quan các mức điểm cộng cho review/like/comment/reply và giới hạn hàng ngày.
+ */
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Eye, MessageSquare, Heart } from 'lucide-react';
@@ -10,6 +15,7 @@ interface PointsRulesTableProps {
     commentPoints?: number;
     likePoints?: number;
     deductionMultiplier?: number;
+    dailyCommentLimit?: number;
   } | null;
   labels: {
     RULES_TITLE: string;
@@ -27,6 +33,7 @@ interface PointsRulesTableProps {
     ACT_LIKE_DESC: string;
     ANTI_FARM_WARNING_TITLE: string;
     ANTI_FARM_WARNING_BODY: (multiplier: number, points: number) => string;
+    DAILY_LIMIT_LABEL: (limit: number) => string;
   };
   constants: {
     FALLBACK_RULES: {
@@ -93,7 +100,7 @@ export const PointsRulesTable: React.FC<PointsRulesTableProps> = ({ rules, label
                 </span>
               </td>
               <td className="py-3.5 pl-4 text-right text-xs text-gray-500 dark:text-slate-400">
-                {labels.ACT_COMMENT_DESC}
+                {labels.ACT_COMMENT_DESC} {rules?.dailyCommentLimit !== undefined && labels.DAILY_LIMIT_LABEL(rules.dailyCommentLimit)}
               </td>
             </tr>
             <tr>
@@ -106,7 +113,7 @@ export const PointsRulesTable: React.FC<PointsRulesTableProps> = ({ rules, label
                 </span>
               </td>
               <td className="py-3.5 pl-4 text-right text-xs text-gray-500 dark:text-slate-400">
-                {labels.ACT_REPLY_DESC}
+                {labels.ACT_REPLY_DESC} {rules?.dailyCommentLimit !== undefined && labels.DAILY_LIMIT_LABEL(rules.dailyCommentLimit)}
               </td>
             </tr>
             <tr>

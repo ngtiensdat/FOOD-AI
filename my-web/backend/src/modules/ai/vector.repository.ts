@@ -17,6 +17,7 @@ export interface SearchResult {
   description: string;
   image: string;
   tags: string[];
+  restaurantId?: number;
   restaurantName: string;
   address: string;
   lat: number;
@@ -51,6 +52,7 @@ export class VectorRepository {
     return this.prisma.$queryRaw<SearchResult[]>`
       WITH retrieved_foods AS (
         SELECT f.id, f.name, f.price, f.description, f.image, f.tags,
+               f.restaurant_id as "restaurantId",
                r.name as "restaurantName", r.address, f.lat, f.lng,
                c.name as "categoryName",
                u.badge_title as "merchantBadge",
@@ -77,7 +79,7 @@ export class VectorRepository {
             (CAST(${categoryFilter} AS text) = 'FOOD' AND (c.name IS NULL OR c.name NOT ILIKE '%uống%'))
           )
       )
-      SELECT id, name, price, description, image, tags, "restaurantName", address, lat, lng, "categoryName", "merchantBadge", "embeddingSimilarity", "distance_km",
+      SELECT id, name, price, description, image, tags, "restaurantId", "restaurantName", address, lat, lng, "categoryName", "merchantBadge", "embeddingSimilarity", "distance_km",
              "embeddingSimilarity" as similarity
       FROM retrieved_foods
       WHERE (CAST(${maxDistanceKm} AS float) IS NULL OR "distance_km" IS NULL OR "distance_km" <= CAST(${maxDistanceKm} AS float))

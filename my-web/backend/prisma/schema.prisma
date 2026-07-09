@@ -490,6 +490,7 @@ model Offer {
   terms          String?  @map("terms")
   quantity       Int?     @default(100)
   usedCount      Int      @default(0) @map("used_count")
+  status         String   @default("APPROVED")
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("offers")
@@ -517,6 +518,7 @@ model GamificationConfig {
   likePoints          Int      @default(5) @map("like_points")
   deductionMultiplier Float    @default(1.0) @map("deduction_multiplier")
   levelUpPointsReward Int      @default(100) @map("level_up_points_reward")
+  dailyCommentLimit   Int      @default(5) @map("daily_comment_limit")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@map("gamification_configs")

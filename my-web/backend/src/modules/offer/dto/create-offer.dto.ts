@@ -48,4 +48,8 @@ export class CreateOfferDto {
   @Min(1)
   @Type(() => Number)
   quantity?: number;
+
+  @IsString()
+  @IsOptional()
+  status?: string;
 }

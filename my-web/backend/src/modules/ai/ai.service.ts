@@ -877,4 +877,14 @@ export class AiService implements OnModuleInit {
   async updatePostEmbedding(postId: number) {
     return this.vectorSyncService.updatePostEmbedding(postId);
   }
+
+  async semanticSearch(query: string, limit = 20): Promise<SearchResult[]> {
+    const vector = await this.getEmbedding(query);
+    return this.vectorRepository.hybridSearch(
+      vector,
+      undefined,
+      undefined,
+      limit,
+    );
+  }
 }
