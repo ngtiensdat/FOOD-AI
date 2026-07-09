@@ -6,17 +6,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { foodService } from '@/services/food.service';
 import { aiService } from '@/services/ai.service';
 import { authService as authServiceApi } from '@/services/auth.service';
 import { useAuth } from '@/hooks/useAuth';
-import { LIMITS } from '@/constants/limits.constant';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
 import { OnboardingData, ChangePasswordData } from '@/types/user';
-import { Food } from '@/types/food';
 import { FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { AiSuggestedFood } from '@/components/features/ai/AiResponseBox';
 
@@ -44,19 +42,32 @@ export const useHomeActions = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [suggestedFoods, setSuggestedFoods] = useState<AiSuggestedFood[]>([]);
 
+  const fetchUserProfile = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const profile = await authServiceApi.getProfile(user.id);
+      setIsEmailVerifiedInProfile(!!profile.isEmailVerified);
+    } catch (err) {
+      console.error('Lỗi lấy profile:', err);
+    }
+  }, [user]);
+
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
 
   useEffect(() => {
-    if (!tabParam || tabParam === 'home') {
-      setActiveTab('home');
-    } else if (
-      tabParam === 'explore' ||
-      tabParam === 'offers' ||
-      tabParam === 'settings'
-    ) {
-      setActiveTab(tabParam);
-    }
+    const timer = setTimeout(() => {
+      if (!tabParam || tabParam === 'home') {
+        setActiveTab('home');
+      } else if (
+        tabParam === 'explore' ||
+        tabParam === 'offers' ||
+        tabParam === 'settings'
+      ) {
+        setActiveTab(tabParam);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [tabParam]);
 
   useEffect(() => {
@@ -69,6 +80,15 @@ export const useHomeActions = () => {
       }
     }
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      const timer = setTimeout(() => {
+        fetchUserProfile();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user?.id, fetchUserProfile]);
 
   useEffect(() => {
     if (selectedFood?.id && isAuthenticated) {
@@ -166,15 +186,6 @@ export const useHomeActions = () => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    if (!user?.id) return;
-    try {
-      const profile = await authServiceApi.getProfile(user.id);
-      setIsEmailVerifiedInProfile(!!profile.isEmailVerified);
-    } catch (err) { 
-      console.error('Lỗi lấy profile:', err); 
-    }
-  };
 
   const handleDeleteAccount = async (password: string) => {
     if (!user?.id) return;

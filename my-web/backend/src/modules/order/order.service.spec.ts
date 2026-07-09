@@ -11,8 +11,10 @@ import { ForbiddenException, BadRequestException } from '@nestjs/common';
 
 describe('OrderService', () => {
   let service: OrderService;
-  let prisma: typeof mockPrismaService;
-  let inventoryDeductionService: typeof mockInventoryDeductionService;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let prisma: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let inventoryDeductionService: any;
 
   const mockPrismaService = {
     $transaction: jest.fn((callback) => callback(mockPrismaService)),
@@ -58,7 +60,7 @@ describe('OrderService', () => {
     prisma = module.get<PrismaService>(PrismaService);
     inventoryDeductionService = module.get<InventoryDeductionService>(
       InventoryDeductionService,
-    ) as unknown as typeof mockInventoryDeductionService;
+    );
 
     jest.clearAllMocks();
   });

@@ -6,7 +6,7 @@
  */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LABELS } from '@/constants/labels';
@@ -27,7 +27,7 @@ export const useLoginActions = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const validate = (currentEmail = email, currentPassword = password, forceCheckAll = false) => {
+  const validate = useCallback((currentEmail = email, currentPassword = password, forceCheckAll = false) => {
     const result = loginSchema.safeParse({ email: currentEmail, password: currentPassword });
     const newErrors: Record<string, string> = {};
     if (!result.success) {
@@ -40,15 +40,18 @@ export const useLoginActions = () => {
     }
     setErrors(newErrors);
     return result.success;
-  };
+  }, [email, password, touched]);
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   useEffect(() => {
-    validate(email, password, false);
-  }, [email, password, touched]);
+    const timer = setTimeout(() => {
+      validate(email, password, false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [email, password, touched, validate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,17 +63,8 @@ export const useLoginActions = () => {
       setUser(data.user);
 
       // Nếu email chưa được xác thực, hiển thị thông báo nhắc nhở (vẫn cho đăng nhập)
-      const isUnverified = data.user && data.user.isEmailVerified === false;
-      if (isUnverified) {
-        toast.info(LABELS.AUTH.LOGIN_SUCCESS_UNVERIFIED);
-      } else {
-        toast.success(LABELS.COMMON.SUCCESS);
-      }
-
-      // Trì hoãn reload trang để người dùng kịp đọc thông báo
-      setTimeout(() => {
-        window.location.href = '/';
-      }, isUnverified ? 4000 : 1200);
+      toast.success(LABELS.COMMON.SUCCESS);
+      window.location.href = '/';
     } catch (error) {
       const err = error as ApiError;
       const msg = err.message || LABELS.COMMON.ERROR;
