@@ -410,13 +410,13 @@ export default function ForumPage() {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Rank number or medal */}
-                          <span className="w-6 font-black text-center text-xs flex justify-center items-center">
+                          <span className="w-6 h-6 shrink-0 font-black text-center text-xs flex items-center justify-center">
                             {isTop1 ? (
-                              <img src="/images/badges/medal_gold.png" alt="Gold" className="w-6 h-6 object-contain" />
+                              <img src="/images/badges/medal_gold.png" alt="Gold" className="w-6 h-6 object-contain shrink-0" />
                             ) : isTop2 ? (
-                              <img src="/images/badges/medal_silver.png" alt="Silver" className="w-6 h-6 object-contain" />
+                              <img src="/images/badges/medal_silver.png" alt="Silver" className="w-6 h-6 object-contain shrink-0" />
                             ) : isTop3 ? (
-                              <img src="/images/badges/medal_bronze.png" alt="Bronze" className="w-6 h-6 object-contain" />
+                              <img src="/images/badges/medal_bronze.png" alt="Bronze" className="w-6 h-6 object-contain shrink-0" />
                             ) : (
                               <span className="text-gray-400 dark:text-gray-500 font-bold">{idx + 1}</span>
                             )}

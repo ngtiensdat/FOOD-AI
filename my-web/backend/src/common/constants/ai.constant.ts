@@ -6,7 +6,7 @@
 export const AI_CONSTANTS = {
   MODELS: {
     EMBEDDING: 'text-embedding-3-small',
-    CHAT: 'gpt-4.1-mini',
+    CHAT: 'gpt-4o',
   },
   CACHE: {
     MAX_SIZE: 1000,

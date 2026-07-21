@@ -526,6 +526,13 @@ export class FoodService {
           : [];
       }
       where.restaurantId = restaurant.id;
+    } else if (user.role === UserRole.STAFF) {
+      if (!user.restaurantId) {
+        return page && pageSize
+          ? { data: [], meta: { total: 0, page, pageSize } }
+          : [];
+      }
+      where.restaurantId = user.restaurantId;
     }
 
     if (page && pageSize) {

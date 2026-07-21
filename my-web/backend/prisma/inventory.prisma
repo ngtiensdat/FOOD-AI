@@ -53,3 +53,77 @@ model InventoryLog {
   @@index([ingredientId, createdAt])
   @@map("inventory_logs")
 }
+
+// Lịch sử đơn hàng (bản sao nhẹ từ PG để báo cáo offline)
+model OrderHistory {
+  id            String             @id @default(uuid())
+  orderId       Int                @map("order_id")       // ID đơn hàng từ DB chính PostgreSQL
+  restaurantId  Int                @map("restaurant_id")
+  tableId       Int?               @map("table_id")
+  tableName     String?            @map("table_name")
+  staffId       Int?               @map("staff_id")       // ID nhân viên tạo đơn
+  staffName     String?            @map("staff_name")
+  subtotal      Float
+  discount      Float
+  total         Float
+  voucherCode   String?            @map("voucher_code")
+  paymentMethod String             @default("CASH") @map("payment_method") // CASH | TRANSFER
+  status        String             @default("COMPLETED")  // COMPLETED | CANCELLED
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  items         OrderHistoryItem[]
+
+  @@index([restaurantId, createdAt])
+  @@map("order_histories")
+}
+
+// Chi tiết từng món trong lịch sử đơn hàng
+model OrderHistoryItem {
+  id           String       @id @default(uuid())
+  historyId    String       @map("history_id")
+  foodId       Int          @map("food_id")
+  foodName     String       @map("food_name")
+  quantity     Int
+  price        Float
+
+  history      OrderHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
+
+  @@map("order_history_items")
+}
+
+// Ca làm việc của nhân viên POS
+model StaffShift {
+  id           String    @id @default(uuid())
+  staffId      Int       @map("staff_id")       // ID nhân viên từ DB chính
+  staffName    String    @map("staff_name")
+  restaurantId Int       @map("restaurant_id")
+  terminalId   Int?      @map("terminal_id")    // ID máy POS
+  terminalName String?   @map("terminal_name")
+  clockIn      DateTime  @map("clock_in")
+  clockOut     DateTime? @map("clock_out")
+  totalOrders  Int       @default(0) @map("total_orders") // Số đơn trong ca
+  totalRevenue Float     @default(0.0) @map("total_revenue") // Doanh thu trong ca
+
+  @@index([staffId, clockIn])
+  @@index([restaurantId, clockIn])
+  @@map("staff_shifts")
+}
+
+// Báo cáo doanh số tổng hợp theo ngày, theo chi nhánh
+model DailySalesSummary {
+  id              String   @id @default(uuid())
+  restaurantId    Int      @map("restaurant_id")
+  date            String   // Dạng "YYYY-MM-DD" cho SQLite
+  totalRevenue    Float    @default(0.0) @map("total_revenue")     // Doanh thu thực tế (sau giảm giá)
+  totalOrders     Int      @default(0) @map("total_orders")        // Số đơn hoàn thành
+  cancelledOrders Int      @default(0) @map("cancelled_orders")    // Số đơn hủy
+  cashRevenue     Float    @default(0.0) @map("cash_revenue")      // Doanh thu tiền mặt
+  transferRevenue Float    @default(0.0) @map("transfer_revenue")  // Doanh thu chuyển khoản
+  totalDiscount   Float    @default(0.0) @map("total_discount")    // Tổng giảm giá voucher
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([restaurantId, date])
+  @@index([restaurantId])
+  @@map("daily_sales_summaries")
+}

@@ -791,6 +791,59 @@ export class RestaurantService {
     return { success: true };
   }
 
+  async resignStaff(user: User) {
+    if (user.role !== UserRole.STAFF || !user.restaurantId) {
+      throw new ForbiddenException(
+        'Bạn không có vai trò nhân viên hoặc chưa thuộc chi nhánh nào.',
+      );
+    }
+
+    const oldRestaurantId = user.restaurantId;
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          role: UserRole.CUSTOMER,
+          restaurantId: null,
+        },
+      });
+
+      // Giải phóng mọi phiên làm việc trên máy POS của nhân viên này nếu có
+      await tx.posTerminal.updateMany({
+        where: { currentUserId: user.id },
+        data: { currentUserId: null },
+      });
+
+      await tx.staffHistory.create({
+        data: {
+          userId: user.id,
+          userName: user.name || 'Nhân viên',
+          userEmail: user.email,
+          restaurantId: oldRestaurantId,
+          action: StaffAction.LEFT,
+          performedById: user.id,
+        },
+      });
+
+      const restaurant = await tx.restaurant.findUnique({
+        where: { id: oldRestaurantId },
+      });
+      if (restaurant) {
+        await tx.notification.create({
+          data: {
+            userId: restaurant.ownerId,
+            type: NotificationType.SYSTEM,
+            title: 'Nhân viên thôi việc',
+            content: `Nhân viên "${user.name || user.email}" đã xin thôi việc và rời khỏi chi nhánh "${restaurant.name}".`,
+          },
+        });
+      }
+
+      return { success: true };
+    });
+  }
+
   private async ensureRestaurantOwnership(userId: number) {
     const restaurant = await this.repository.findRestaurantByOwnerId(userId);
     if (!restaurant) {

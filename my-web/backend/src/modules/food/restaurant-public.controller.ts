@@ -121,4 +121,10 @@ export class RestaurantPublicController {
       accept,
     );
   }
+
+  @Post('user/resign')
+  @UseGuards(JwtAuthGuard)
+  resignStaff(@GetUser() user: PrismaClient.User) {
+    return this.restaurantService.resignStaff(user);
+  }
 }

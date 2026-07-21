@@ -225,5 +225,15 @@ export const restaurantService = {
       console.error('Error responding to job invitation:', err);
       throw err;
     }
+  },
+
+  async resignStaff() {
+    try {
+      const response = await apiClient.post('/restaurants/user/resign');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error resigning staff member:', err);
+      throw err;
+    }
   }
 };

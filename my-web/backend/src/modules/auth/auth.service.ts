@@ -546,7 +546,24 @@ export class AuthService {
         role: user.role,
         hasCompletedOnboarding: user.profile?.hasCompletedOnboarding || false,
         isEmailVerified: user.isEmailVerified,
+        restaurantId: user.restaurantId,
       },
     };
+  }
+
+  async clearPosSession(userId: number) {
+    try {
+      await this.prisma.posTerminal.updateMany({
+        where: { currentUserId: userId },
+        data: { currentUserId: null },
+      });
+      this.logger.log(
+        `Released POS session for user ID: ${userId} during logout.`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to release POS session for user ID ${userId} during logout: ${err}`,
+      );
+    }
   }
 }

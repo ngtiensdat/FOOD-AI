@@ -27,6 +27,10 @@ export class CreateOrderDto {
   @IsOptional()
   tableId?: number;
 
+  @IsNumber()
+  @IsOptional()
+  posTerminalId?: number;
+
   @IsString()
   @IsOptional()
   voucherCode?: string;
@@ -39,6 +43,10 @@ export class CreateOrderDto {
 
   @IsNumber()
   total: number;
+
+  @IsString()
+  @IsOptional()
+  paymentMethod?: string;
 
   @IsArray()
   @ArrayMinSize(1)

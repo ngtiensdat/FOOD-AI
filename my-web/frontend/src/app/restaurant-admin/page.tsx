@@ -8,7 +8,7 @@
 
 import React from 'react';
 import {
-  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Check, X, FileUp, Tag, Users, Package, Grid
+  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Check, X, FileUp, Tag, Users, Package, Grid, Monitor, History
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,6 +41,8 @@ import { VoucherManager } from '@/components/features/restaurant/voucher';
 import { StaffManager } from '@/components/features/restaurant/staff';
 import { InventoryManager } from '@/components/features/restaurant/inventory';
 import { TableManager } from '@/components/features/restaurant/table';
+import { PosTerminalManager } from '@/components/features/restaurant/pos-terminal/PosTerminalManager';
+import { HistoryManager, HistoryTab } from '@/components/features/restaurant/history';
 
 export default function RestaurantDashboard() {
   const { user, logout, isAdmin, isRestaurant, loading: authLoading } = useAuth();
@@ -97,6 +99,8 @@ export default function RestaurantDashboard() {
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [voucherSubTab, setVoucherSubTab] = React.useState<'VOUCHER' | 'POINT_CODE' | 'VERIFY_VOUCHER' | 'PROMOTION'>('VOUCHER');
+  const [posSubTab, setPosSubTab] = React.useState<'machines' | 'logs'>('machines');
+  const [historySubTab, setHistorySubTab] = React.useState<HistoryTab>('sales');
   const [openingHoursText, setOpeningHoursText] = React.useState('');
 
   React.useEffect(() => {
@@ -277,6 +281,52 @@ export default function RestaurantDashboard() {
     }
   ];
 
+  const posSubItems = [
+    {
+      label: 'Danh sách máy',
+      active: activeTab === 'pos-terminals' && posSubTab === 'machines',
+      onClick: () => {
+        setActiveTab('pos-terminals');
+        setPosSubTab('machines');
+      }
+    },
+    {
+      label: 'Nhật ký hoạt động',
+      active: activeTab === 'pos-terminals' && posSubTab === 'logs',
+      onClick: () => {
+        setActiveTab('pos-terminals');
+        setPosSubTab('logs');
+      }
+    }
+  ];
+
+  const historySubItems = [
+    {
+      label: 'Báo cáo Doanh số',
+      active: activeTab === 'history' && historySubTab === 'sales',
+      onClick: () => {
+        setActiveTab('history');
+        setHistorySubTab('sales');
+      }
+    },
+    {
+      label: 'Lịch sử Đơn hàng',
+      active: activeTab === 'history' && historySubTab === 'orders',
+      onClick: () => {
+        setActiveTab('history');
+        setHistorySubTab('orders');
+      }
+    },
+    {
+      label: 'Ca trực nhân viên',
+      active: activeTab === 'history' && historySubTab === 'shifts',
+      onClick: () => {
+        setActiveTab('history');
+        setHistorySubTab('shifts');
+      }
+    }
+  ];
+
   return (
     <div className="admin-layout flex flex-col min-h-screen bg-gray-50 dark:bg-slate-950">
       <Navbar />
@@ -355,6 +405,18 @@ export default function RestaurantDashboard() {
             label={LABELS.RESTAURANT.TABLE_MANAGER.TITLE}
             active={['tables', 'tables-list', 'tables-bulk'].includes(activeTab)}
             subItems={tableSubItems}
+          />
+          <SidebarItem
+            icon={Monitor}
+            label="Quản lý máy POS"
+            active={activeTab === 'pos-terminals'}
+            subItems={posSubItems}
+          />
+          <SidebarItem
+            icon={History}
+            label="Báo cáo & Lịch sử POS"
+            active={activeTab === 'history'}
+            subItems={historySubItems}
           />
           <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
         </Sidebar>
@@ -655,6 +717,24 @@ export default function RestaurantDashboard() {
                     tabId === 'bulk' ? 'tables-bulk' : 'tables-list'
                   );
                 }}
+              />
+            )}
+
+            {activeTab === 'pos-terminals' && restaurant && (
+              <PosTerminalManager
+                restaurant={restaurant}
+                myBranches={myBranches}
+                selectedSubTab={posSubTab}
+                onSubTabChange={setPosSubTab}
+              />
+            )}
+            
+            {activeTab === 'history' && restaurant && (
+              <HistoryManager
+                restaurant={restaurant}
+                myBranches={myBranches}
+                selectedSubTab={historySubTab}
+                onSubTabChange={setHistorySubTab}
               />
             )}
           </motion.div>

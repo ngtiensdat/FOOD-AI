@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShoppingBag, Plus, Minus, Trash2, Tag, X, Send } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, Tag, X, Send, Banknote, QrCode } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
 import { formatCurrency } from '@/utils/formatters';
@@ -43,6 +43,9 @@ interface PosCartPanelProps {
   handleCancelVoucher: () => void;
   submittingOrder: boolean;
   handleCreateOrder: () => void;
+  paymentMethod: 'CASH' | 'TRANSFER';
+  setPaymentMethod: (method: 'CASH' | 'TRANSFER') => void;
+  onOpenPaymentModal: () => void;
 }
 
 export const PosCartPanel = ({
@@ -59,7 +62,17 @@ export const PosCartPanel = ({
   handleCancelVoucher,
   submittingOrder,
   handleCreateOrder,
+  paymentMethod,
+  setPaymentMethod,
+  onOpenPaymentModal,
 }: PosCartPanelProps) => {
+  const handleCheckoutClick = () => {
+    if (paymentMethod === 'TRANSFER') {
+      onOpenPaymentModal();
+    } else {
+      handleCreateOrder();
+    }
+  };
   return (
     <div className="w-full lg:w-96 flex flex-col gap-4 shrink-0">
       
@@ -201,17 +214,52 @@ export const PosCartPanel = ({
           </div>
         )}
 
+        {/* Payment Method Selector */}
+        {cart.length > 0 && (
+          <div className="border-t border-gray-50 dark:border-slate-800/60 pt-4 mt-3">
+            <label className="text-[10px] font-black uppercase text-gray-400 block mb-2">
+              Hình thức thanh toán
+            </label>
+            <div className="grid grid-cols-2 gap-2 text-[11px] font-extrabold">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CASH')}
+                className={`py-2.5 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  paymentMethod === 'CASH'
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 font-extrabold'
+                    : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-950 text-gray-600 dark:text-slate-400 font-bold'
+                }`}
+              >
+                <Banknote size={14} />
+                <span>Tiền mặt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('TRANSFER')}
+                className={`py-2.5 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  paymentMethod === 'TRANSFER'
+                    ? 'border-primary bg-primary/10 text-primary dark:text-primary-light font-extrabold'
+                    : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-950 text-gray-600 dark:text-slate-400 font-bold'
+                }`}
+              >
+                <QrCode size={14} />
+                <span>Chuyển khoản</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Action Checkout button */}
         {cart.length > 0 && (
           <div className="pt-4 mt-auto">
             <Button
-              onClick={handleCreateOrder}
+              onClick={handleCheckoutClick}
               disabled={submittingOrder}
               fullWidth
               className="py-3 rounded-2xl flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white font-black shadow-md shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer"
             >
-              <Send size={16} />
-              <span>{LABELS.POS.SUBMIT_ORDER}</span>
+              {paymentMethod === 'TRANSFER' ? <QrCode size={16} /> : <Send size={16} />}
+              <span>{paymentMethod === 'TRANSFER' ? 'Hiện mã QR thanh toán' : LABELS.POS.SUBMIT_ORDER}</span>
             </Button>
           </div>
         )}

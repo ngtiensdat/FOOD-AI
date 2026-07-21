@@ -33,6 +33,8 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { TableModule } from './modules/table/table.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { OrderModule } from './modules/order/order.module';
+import { PosTerminalModule } from './modules/pos-terminal/pos-terminal.module';
+import { HistoryModule } from './modules/history/history.module';
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { OrderModule } from './modules/order/order.module';
     TableModule,
     ChatModule,
     OrderModule,
+    PosTerminalModule,
+    HistoryModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

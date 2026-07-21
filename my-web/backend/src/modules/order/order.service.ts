@@ -12,15 +12,26 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { InventoryDeductionService } from '../inventory/inventory-deduction.service';
 import { UserRole, type User } from '@prisma/client';
+import { PosTerminalService } from '../pos-terminal/pos-terminal.service';
+import { InventoryPrismaService } from '../../database/inventory-prisma.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventoryDeductionService: InventoryDeductionService,
+    private readonly posTerminalService: PosTerminalService,
+    private readonly inventoryPrisma: InventoryPrismaService,
   ) {}
 
   async createOrder(dto: CreateOrderDto, user: User) {
+    // 0. Kiểm tra phiên hoạt động của máy POS
+    if (dto.posTerminalId) {
+      await this.posTerminalService.verifyActiveSession(
+        dto.posTerminalId,
+        user.id,
+      );
+    }
     // 1. Kiểm tra tính hợp lệ của TableId đối với RestaurantId
     if (dto.tableId) {
       const table = await this.prisma.diningTable.findUnique({
@@ -189,10 +200,22 @@ export class OrderService {
 
     // 3. Tạo đơn hàng và đánh dấu voucher đã sử dụng trong một transaction duy nhất (Atomic Transaction)
     const order = await this.prisma.$transaction(async (tx) => {
+      // Kích hoạt luồng trừ kho tự động ở SQLite thông qua InventoryDeductionService trước
+      // Nếu hết hàng, giao dịch SQLite rollback và ném lỗi làm rollback luôn PG transaction này
+      const deductItems = dto.items.map((item) => ({
+        foodId: item.foodId,
+        quantity: item.quantity,
+      }));
+      await this.inventoryDeductionService.deductIngredientsForOrder(
+        dto.restaurantId,
+        deductItems,
+      );
+
       const ord = await tx.order.create({
         data: {
           restaurantId: dto.restaurantId,
           tableId: dto.tableId || null,
+          posTerminalId: dto.posTerminalId || null,
           voucherCode: dto.voucherCode || null,
           subtotal: dto.subtotal,
           discount: dto.discount,
@@ -209,6 +232,18 @@ export class OrderService {
           items: true,
         },
       });
+
+      // Tạo log hoạt động cho máy POS
+      if (dto.posTerminalId) {
+        await tx.posTerminalLog.create({
+          data: {
+            terminalId: dto.posTerminalId,
+            userId: user.id,
+            action: 'CREATE_ORDER',
+            details: `Thanh toán hóa đơn #${ord.id} trị giá ${dto.total.toLocaleString()}đ thành công.`,
+          },
+        });
+      }
 
       // Đánh dấu voucher đã sử dụng để tránh race condition hoặc reuse
       if (dto.voucherCode) {
@@ -236,18 +271,99 @@ export class OrderService {
       return ord;
     });
 
-    // 4. Kích hoạt luồng trừ kho tự động ở SQLite thông qua InventoryDeductionService
+    // Ghi nhận lịch sử đơn hàng vào SQLite
     try {
-      const deductItems = dto.items.map((item) => ({
-        foodId: item.foodId,
-        quantity: item.quantity,
-      }));
-      await this.inventoryDeductionService.deductIngredientsForOrder(
-        dto.restaurantId,
-        deductItems,
-      );
-    } catch (error) {
-      console.error('Lỗi khi thực hiện trừ kho tự động:', error);
+      // 1. Lấy tên bàn
+      let tableName = 'Mang ve';
+      if (order.tableId) {
+        const table = await this.prisma.diningTable.findUnique({
+          where: { id: order.tableId },
+          select: { name: true },
+        });
+        if (table) tableName = table.name;
+      }
+
+      // 2. Lấy tên nhân viên
+      const staffName = user.name || user.email || `Nhan vien #${user.id}`;
+
+      // 3. Tạo OrderHistory cùng items
+      await this.inventoryPrisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          restaurantId: order.restaurantId,
+          tableId: order.tableId || null,
+          tableName,
+          staffId: user.id,
+          staffName,
+          subtotal: order.subtotal,
+          discount: order.discount,
+          total: order.total,
+          voucherCode: order.voucherCode || null,
+          paymentMethod: dto.paymentMethod || 'CASH',
+          status: 'COMPLETED',
+          items: {
+            create: dbFoods.map((f) => {
+              const itemDto = dto.items.find((i) => i.foodId === f.id);
+              return {
+                foodId: f.id,
+                foodName: f.name,
+                quantity: itemDto ? itemDto.quantity : 1,
+                price: f.price,
+              };
+            }),
+          },
+        },
+      });
+
+      // 4. Cập nhật ca làm việc (Staff Shift)
+      const openShift = await this.inventoryPrisma.staffShift.findFirst({
+        where: {
+          staffId: user.id,
+          clockOut: null,
+        },
+      });
+      if (openShift) {
+        await this.inventoryPrisma.staffShift.update({
+          where: { id: openShift.id },
+          data: {
+            totalOrders: { increment: 1 },
+            totalRevenue: { increment: order.total },
+          },
+        });
+      }
+
+      // 5. Cập nhật báo cáo doanh số ngày (Daily Sales Summary)
+      const todayStr = new Date().toISOString().split('T')[0]; // SQLite YYYY-MM-DD
+      const isCash = (dto.paymentMethod || 'CASH').toUpperCase() === 'CASH';
+
+      await this.inventoryPrisma.dailySalesSummary.upsert({
+        where: {
+          restaurantId_date: {
+            restaurantId: order.restaurantId,
+            date: todayStr,
+          },
+        },
+        create: {
+          restaurantId: order.restaurantId,
+          date: todayStr,
+          totalRevenue: order.total,
+          totalOrders: 1,
+          cancelledOrders: 0,
+          cashRevenue: isCash ? order.total : 0,
+          transferRevenue: isCash ? 0 : order.total,
+          totalDiscount: order.discount,
+        },
+        update: {
+          totalRevenue: { increment: order.total },
+          totalOrders: { increment: 1 },
+          cashRevenue: isCash ? { increment: order.total } : undefined,
+          transferRevenue: isCash ? undefined : { increment: order.total },
+          totalDiscount: { increment: order.discount },
+        },
+      });
+    } catch (historyErr) {
+      console.error('Lỗi khi ghi lịch sử đơn hàng vào SQLite:', historyErr);
+      // Không ném lỗi ra ngoài để tránh làm rollback order thực tế trên PG
     }
 
     return order;

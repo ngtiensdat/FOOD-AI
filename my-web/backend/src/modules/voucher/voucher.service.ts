@@ -482,14 +482,23 @@ export class VoucherService {
     }
 
     return await this.prisma.$transaction(async (tx) => {
-      await tx.pointCode.update({
-        where: { id: pointCode.id },
+      const updateResult = await tx.pointCode.updateMany({
+        where: {
+          id: pointCode.id,
+          usedById: null,
+        },
         data: {
           usedById: userId,
           usedByName: user.name || user.email,
           usedAt: new Date(),
         },
       });
+
+      if (updateResult.count === 0) {
+        throw new BadRequestException(
+          'Mã tích điểm này đã được sử dụng hoặc không hợp lệ.',
+        );
+      }
 
       const gamificationResult = await this.gamificationQueue.addJob(
         userId,

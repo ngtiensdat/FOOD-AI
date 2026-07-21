@@ -107,14 +107,13 @@ export const SettingsSection = ({
               { id: 'profile', label: LABELS.SETTINGS.TABS.PROFILE, icon: User },
               { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
               { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
-              { id: 'job_invitations', label: LABELS.SETTINGS.TABS.JOB_INVITATIONS, icon: Briefcase },
               { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
               { id: 'bug_report', label: LABELS.BUG_REPORT.TITLE, icon: Bug },
               { id: 'danger_zone', label: LABELS.SETTINGS.TABS.DANGER_ZONE, icon: AlertTriangle },
             ].map((tab) => (
               <Button
                 key={tab.id}
-                onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone' | 'job_invitations')}
+                onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone')}
                 className={`w-full py-2.5 px-4 rounded-xl transition-all flex items-center gap-3 font-semibold ${
                   settingsTab === tab.id 
                     ? 'text-primary bg-primary/5 border-l-4 border-primary pl-3' 
@@ -167,8 +166,6 @@ export const SettingsSection = ({
                 setVerifyEmail={setVerifyEmail}
                 isLoading={isLoading}
               />
-            ) : settingsTab === 'job_invitations' ? (
-              <JobInvitationsTab />
             ) : settingsTab === 'language' ? (
               <LanguageSettingsTab />
             ) : settingsTab === 'bug_report' ? (

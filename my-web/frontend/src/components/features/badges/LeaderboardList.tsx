@@ -3,6 +3,7 @@ import SafeImage from '@/components/base/SafeImage';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { Avatar } from '@/components/base/Avatar';
+import { LABELS } from '@/constants/labels';
 
 import { User } from '@/types/user';
 
@@ -113,12 +114,10 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                         </span>
                       )}
                     </h4>
-                    {item.badgeTitle && (
-                      <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate flex items-center gap-1 mt-0.5">
-                        <SafeImage src="/images/badges/badge_star.png" alt="Star" width={12} height={12} className="object-contain shrink-0" />
-                        <span>{item.badgeTitle}</span>
-                      </p>
-                    )}
+                    <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate flex items-center gap-1 mt-0.5">
+                      <SafeImage src="/images/badges/badge_star.png" alt="Star" width={12} height={12} className="object-contain shrink-0" />
+                      <span>{item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}</span>
+                    </p>
                   </div>
                 </div>
 

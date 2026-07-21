@@ -9,6 +9,8 @@ import { toast } from '@/store/useToastStore';
 import { User, UserRole } from '@/types/user';
 import { Restaurant } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
+import { posTerminalService } from '@/services/pos-terminal.service';
+import { useSocket } from '@/providers/socket-provider';
 
 export interface CartItem {
   id: number;
@@ -37,9 +39,14 @@ interface UsePosParams {
 
 export function usePos({ user }: UsePosParams) {
   const t = LABELS.POS;
+  const { socket } = useSocket();
   
   const [branches, setBranches] = useState<Restaurant[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  
+  // POS Terminal states
+  const [activeTerminal, setActiveTerminal] = useState<{ id: number; name: string; code: string; restaurantId: number } | null>(null);
+  const [loadingTerminal, setLoadingTerminal] = useState(true);
   
   const [allFoods, setAllFoods] = useState<PosFoodItem[]>([]);
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
@@ -47,8 +54,63 @@ export function usePos({ user }: UsePosParams) {
   
   // Table states
   const [tables, setTables] = useState<DiningTable[]>([]);
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTableId = params.get('tableId');
+      if (urlTableId) {
+        const numId = Number(urlTableId);
+        return isNaN(numId) ? null : numId;
+      }
+    }
+    return null;
+  });
   const [tableCarts, setTableCarts] = useState<Record<number, CartItem[]>>({});
+
+  // Đồng bộ selectedTableId với URL để hỗ trợ nút Quay lại (Back/Forward) và tải lại trang
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlTableId = params.get('tableId');
+
+    if (selectedTableId !== null) {
+      const currentUrlId = urlTableId ? Number(urlTableId) : null;
+      if (currentUrlId !== selectedTableId) {
+        window.history.pushState(
+          { tableId: selectedTableId },
+          '',
+          `/pos?tableId=${selectedTableId}`
+        );
+      }
+    } else {
+      if (urlTableId !== null) {
+        window.history.pushState(null, '', '/pos');
+      }
+    }
+  }, [selectedTableId]);
+
+  // Lắng nghe sự kiện popstate để cập nhật state khi người dùng nhấn nút Quay lại của trình duyệt
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlTableId = params.get('tableId');
+      if (urlTableId) {
+        const numId = Number(urlTableId);
+        if (!isNaN(numId)) {
+          setSelectedTableId(numId);
+        }
+      } else {
+        setSelectedTableId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
   
   // Category filter states
   const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
@@ -56,6 +118,7 @@ export function usePos({ user }: UsePosParams) {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   
   // Voucher verify/apply states
   const [voucherCode, setVoucherCode] = useState('');
@@ -69,6 +132,48 @@ export function usePos({ user }: UsePosParams) {
 
   const [submittingOrder, setSubmittingOrder] = useState(false);
   
+  // Load active terminal session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('active_pos_terminal');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (user?.role === UserRole.STAFF) {
+            if (user.restaurantId === parsed.restaurantId) {
+              setActiveTerminal(parsed);
+            } else {
+              localStorage.removeItem('active_pos_terminal');
+            }
+          } else {
+            setActiveTerminal(parsed);
+          }
+        } catch {
+          localStorage.removeItem('active_pos_terminal');
+        }
+      }
+      setLoadingTerminal(false);
+    }
+  }, [user]);
+
+  // Lắng nghe sự kiện bị đá phiên đăng nhập máy POS qua WebSocket
+  useEffect(() => {
+    if (!socket || !activeTerminal) return;
+
+    const handlePosKicked = (data: { terminalId: number; terminalName: string; kickedBy: string }) => {
+      if (data.terminalId === activeTerminal.id) {
+        localStorage.removeItem('active_pos_terminal');
+        setActiveTerminal(null);
+        toast.error(`Thiết bị POS "${data.terminalName}" đã được đăng nhập từ tài khoản của nhân viên "${data.kickedBy}". Phiên làm việc của bạn trên máy này đã kết thúc.`);
+      }
+    };
+
+    socket.on('pos_kicked', handlePosKicked);
+    return () => {
+      socket.off('pos_kicked', handlePosKicked);
+    };
+  }, [socket, activeTerminal]);
+
   // Fetch branches for RESTAURANT role
   useEffect(() => {
     if (!user) return;
@@ -96,6 +201,7 @@ export function usePos({ user }: UsePosParams) {
   // Fetch foods and categories when branch changes
   useEffect(() => {
     if (!selectedBranchId) return;
+    if (user?.role === UserRole.STAFF && !activeTerminal) return;
 
     const fetchMenuAndCategories = async () => {
       setLoadingMenu(true);
@@ -132,7 +238,7 @@ export function usePos({ user }: UsePosParams) {
       }
     };
     fetchMenuAndCategories();
-  }, [selectedBranchId, t]);
+  }, [selectedBranchId, activeTerminal, user?.role, t]);
 
   // Lọc món ăn theo chi nhánh, tìm kiếm và phân loại danh mục
   const filteredMenu = useMemo(() => {
@@ -177,6 +283,7 @@ export function usePos({ user }: UsePosParams) {
     }
     setVoucherCode('');
     setAppliedVoucher(null);
+    setPaymentMethod('CASH');
   }, [selectedTableId]);
 
   const setTableStatusOnServer = async (tableId: number, status: 'FREE' | 'OCCUPIED') => {
@@ -342,6 +449,7 @@ export function usePos({ user }: UsePosParams) {
     setCart([]);
     setVoucherCode('');
     setAppliedVoucher(null);
+    setPaymentMethod('CASH');
     if (selectedTableId !== null) {
       setTableCarts(tc => {
         const copy = { ...tc };
@@ -425,6 +533,32 @@ export function usePos({ user }: UsePosParams) {
     setAppliedVoucher(null);
   };
 
+  const handleLoginTerminal = async (code: string, password?: string) => {
+    try {
+      const res = await posTerminalService.loginPosTerminal({ code, password });
+      localStorage.setItem('active_pos_terminal', JSON.stringify(res));
+      setActiveTerminal(res);
+      toast.success(LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.SUCCESS);
+      return true;
+    } catch (err: any) {
+      const msg = err?.message || LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.ERROR;
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const handleLogoutTerminal = async () => {
+    if (!activeTerminal) return;
+    try {
+      await posTerminalService.logoutPosTerminal(activeTerminal.id);
+    } catch (err) {
+      console.warn('Lỗi khi đăng xuất máy POS:', err);
+    }
+    localStorage.removeItem('active_pos_terminal');
+    setActiveTerminal(null);
+    toast.success('Đã đăng xuất máy POS thành công.');
+  };
+
   // Submit Order
   const handleCreateOrder = async () => {
     if (cart.length === 0 || !selectedBranchId || selectedTableId === null) return;
@@ -435,10 +569,12 @@ export function usePos({ user }: UsePosParams) {
       const payload = {
         restaurantId: selectedBranchId,
         tableId: selectedTableId,
+        posTerminalId: activeTerminal?.id || undefined,
         voucherCode: appliedVoucher?.code || undefined,
         subtotal: cartTotals.subtotal,
         discount: cartTotals.discountAmount,
         total: cartTotals.total,
+        paymentMethod: paymentMethod, // CASH or TRANSFER
         items: cart.map((item) => ({
           foodId: item.id,
           quantity: item.quantity,
@@ -484,10 +620,17 @@ export function usePos({ user }: UsePosParams) {
 
       setSelectedTableId(null);
       setCart([]);
-    } catch (err: unknown) {
-      const e = err as { message?: string };
-      console.error('Lỗi khi gửi đơn hàng:', e);
-      toast.error(e?.message || t.TOAST.CHECKOUT_ERROR);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.message;
+      if (errorMsg === 'POS_SESSION_EXPIRED' || err?.response?.status === 403) {
+        localStorage.removeItem('active_pos_terminal');
+        setActiveTerminal(null);
+        toast.error(LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.SESSION_EXPIRED);
+      } else {
+        const e = err as { message?: string };
+        console.error('Lỗi khi gửi đơn hàng:', e);
+        toast.error(e?.message || t.TOAST.CHECKOUT_ERROR);
+      }
     } finally {
       setSubmittingOrder(false);
     }
@@ -526,5 +669,11 @@ export function usePos({ user }: UsePosParams) {
     handleSelectTable,
     handleReleaseTable,
     handleTransferTable,
+    activeTerminal,
+    loadingTerminal,
+    handleLoginTerminal,
+    handleLogoutTerminal,
+    paymentMethod,
+    setPaymentMethod,
   };
 }

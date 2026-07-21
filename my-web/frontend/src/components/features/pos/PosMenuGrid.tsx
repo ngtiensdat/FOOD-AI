@@ -9,7 +9,6 @@ import { DiningTable } from '@/services/table.service';
 import { Restaurant } from '@/types/restaurant';
 import { User } from '@/types/user';
 import { LABELS } from '@/constants/labels';
-import Link from 'next/link';
 
 interface CategoryGroup {
   id: number;
@@ -74,9 +73,14 @@ export const PosMenuGrid = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 p-5 rounded-3xl shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-gray-400 hover:text-primary transition-colors">
+            <button
+              type="button"
+              onClick={() => setSelectedTableId(null)}
+              className="text-gray-400 hover:text-primary transition-colors"
+              title="Quay lại danh sách bàn"
+            >
               <ArrowLeft size={18} />
-            </Link>
+            </button>
             <h1 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
               <Store size={22} className="text-primary" />
               {LABELS.POS.SCREEN_TITLE}

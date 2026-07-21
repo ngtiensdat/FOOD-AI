@@ -49,6 +49,7 @@ export function useOffers({ user, login }: UseOffersParams) {
   const [vouchers, setVouchers] = useState<VoucherData[]>([]);
   const [loadingVouchers, setLoadingVouchers] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch promotions on mount
   useEffect(() => {
@@ -84,8 +85,17 @@ export function useOffers({ user, login }: UseOffersParams) {
   // Group vouchers by restaurant for the accordion UI
   const groupedVouchers = useMemo(() => {
     const groups: Record<string, { id: number | null; name: string; list: VoucherData[] }> = {};
+    const filteredVouchers = searchQuery.trim()
+      ? vouchers.filter(
+          (v) =>
+            v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            v.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (v.restaurantName && v.restaurantName.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      : vouchers;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vouchers.forEach((v: any) => {
+    filteredVouchers.forEach((v: any) => {
       const key = v.restaurantId ? String(v.restaurantId) : 'system';
       if (!groups[key]) {
         groups[key] = {
@@ -97,18 +107,32 @@ export function useOffers({ user, login }: UseOffersParams) {
       groups[key].list.push(v);
     });
 
-    return Object.values(groups).sort((a, b) => {
-      if (a.id === null) return -1;
-      if (b.id === null) return 1;
-      return a.name.localeCompare(b.name);
-    });
-  }, [vouchers]);
+    return Object.values(groups)
+      .sort((a, b) => {
+        if (a.id === null) return -1;
+        if (b.id === null) return 1;
+        return a.name.localeCompare(b.name);
+      })
+      .filter((group) => group.list.length > 0);
+  }, [vouchers, searchQuery]);
 
-  // Filter promotions by type
-  const filteredPromotions = useMemo(
-    () => (filterType === 'ALL' ? promotions : promotions.filter((p) => p.promoType === filterType)),
-    [promotions, filterType]
-  );
+  // Filter promotions by type and search query
+  const filteredPromotions = useMemo(() => {
+    let result = promotions;
+    if (filterType !== 'ALL') {
+      result = result.filter((p) => p.promoType === filterType);
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.title.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.restaurantName.toLowerCase().includes(query)
+      );
+    }
+    return result;
+  }, [promotions, filterType, searchQuery]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -189,5 +213,7 @@ export function useOffers({ user, login }: UseOffersParams) {
     handleDeleteOffer,
     handleRedeem,
     handleCreateOffer,
+    searchQuery,
+    setSearchQuery,
   };
 }

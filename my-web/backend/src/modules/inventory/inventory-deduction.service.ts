@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { UserRole, UserStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { InventoryPrismaService } from '../../database/inventory-prisma.service';
@@ -62,6 +62,12 @@ export class InventoryDeductionService {
               },
             },
           });
+
+          if (updatedIngredient.quantity < 0) {
+            throw new BadRequestException(
+              `Nguyên liệu "${ingredientName}" không đủ để hoàn thành món ăn này (cần ${neededQty} ${recipe.ingredient.unit}, hiện có ${(updatedIngredient.quantity + neededQty).toFixed(2)} ${recipe.ingredient.unit}).`,
+            );
+          }
 
           // Ghi nhật ký xuất kho
           await tx.inventoryLog.create({

@@ -26,6 +26,7 @@ import { FoodCard, FoodCardData } from '@/components/features/food/FoodCard';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { JobInvitationsTab } from '@/components/features/profile/JobInvitationsTab';
+import { StaffJobManager } from '@/components/features/profile/StaffJobManager';
 
 export default function CustomerDashboard() {
   const { user, login: updateMe, logout, isAdmin, isRestaurant } = useAuth();
@@ -99,12 +100,21 @@ export default function CustomerDashboard() {
             active={activeTab === 'history'}
             onClick={() => setActiveTab('history')}
           />
-          <SidebarItem
-            icon={Mail}
-            label={LABELS.JOB_INVITATIONS.TITLE}
-            active={activeTab === 'invitations'}
-            onClick={() => setActiveTab('invitations')}
-          />
+          {user.role === 'STAFF' ? (
+            <SidebarItem
+              icon={Shield}
+              label="Quản lý công việc"
+              active={activeTab === 'staff-jobs'}
+              onClick={() => setActiveTab('staff-jobs')}
+            />
+          ) : (
+            <SidebarItem
+              icon={Mail}
+              label={LABELS.JOB_INVITATIONS.TITLE}
+              active={activeTab === 'invitations'}
+              onClick={() => setActiveTab('invitations')}
+            />
+          )}
         </Sidebar>
 
         {/* Content Area with slide transition */}
@@ -202,6 +212,10 @@ export default function CustomerDashboard() {
 
             {activeTab === 'invitations' && (
               <JobInvitationsTab />
+            )}
+
+            {activeTab === 'staff-jobs' && (
+              <StaffJobManager />
             )}
           </motion.div>
         </main>

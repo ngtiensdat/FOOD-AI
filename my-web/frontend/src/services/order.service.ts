@@ -21,4 +21,10 @@ export const orderService = {
   getOrders: async (restaurantId: number) => {
     return apiClient.get(`/orders/restaurant/${restaurantId}`);
   },
+  createPaymentLink: async (amount: number, description: string): Promise<any> => {
+    return apiClient.post('/orders/payment-link', { amount, description });
+  },
+  getPaymentLinkStatus: async (orderCode: number): Promise<any> => {
+    return apiClient.get(`/orders/payment-link/${orderCode}`);
+  },
 };

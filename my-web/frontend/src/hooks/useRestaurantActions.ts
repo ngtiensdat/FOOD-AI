@@ -20,7 +20,7 @@ import { foodSchema } from '@/schemas/food.schema';
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'vouchers' | 'views' | 'interactions' | 'conversion' | 'activity' | 'staff' | 'inventory' | 'staff-list' | 'staff-waiting' | 'staff-history' | 'staff-review' | 'inventory-ingredients' | 'inventory-recipes' | 'inventory-logs' | 'tables' | 'tables-list' | 'tables-bulk'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'vouchers' | 'views' | 'interactions' | 'conversion' | 'activity' | 'staff' | 'inventory' | 'staff-list' | 'staff-waiting' | 'staff-history' | 'staff-review' | 'inventory-ingredients' | 'inventory-recipes' | 'inventory-logs' | 'tables' | 'tables-list' | 'tables-bulk' | 'pos-terminals' | 'history'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);

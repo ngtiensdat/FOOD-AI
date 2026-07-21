@@ -1,6 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
+  output          = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -58,6 +59,7 @@ model User {
   userFollowers                                          UserFollow[]          @relation("UserFollowers")
   profile                                                UserProfile?
   userVouchers                                           UserVoucher[]
+  posTerminalLogs                                        PosTerminalLog[]
   restaurant                                             Restaurant?           @relation("users_restaurant_idTorestaurants", fields: [restaurantId], references: [id])
 
   @@index([role, status])
@@ -115,6 +117,7 @@ model Restaurant {
   staffInvitations                       StaffInvitation[]
   staffReviews                           StaffReview[]
   staffs                                 User[]              @relation("users_restaurant_idTorestaurants")
+  posTerminals                           PosTerminal[]
 
   @@index([ownerId])
   @@index([isActive])
@@ -452,6 +455,7 @@ model Order {
   id           Int         @id @default(autoincrement())
   restaurantId Int         @map("restaurant_id")
   tableId      Int?        @map("table_id")
+  posTerminalId Int?       @map("pos_terminal_id")
   voucherCode  String?     @map("voucher_code")
   subtotal     Float
   discount     Float
@@ -460,6 +464,7 @@ model Order {
   items        OrderItem[]
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   table        DiningTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  posTerminal  PosTerminal? @relation(fields: [posTerminalId], references: [id], onDelete: SetNull)
 
   @@map("orders")
 }
@@ -728,4 +733,35 @@ enum StaffInvitationStatus {
   ACCEPTED
   DECLINED
   REVOKED
+}
+
+model PosTerminal {
+  id            Int              @id @default(autoincrement())
+  name          String           // VD: "Máy 01"
+  code          String           @unique // Mã đăng nhập duy nhất
+  password      String           // Mật khẩu đã hash
+  restaurantId  Int              @map("restaurant_id")
+  currentUserId Int?             @map("current_user_id") // ID nhân viên đang active
+  isActive      Boolean          @default(true) @map("is_active")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  restaurant    Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders        Order[]
+  logs          PosTerminalLog[]
+
+  @@unique([restaurantId, name])
+  @@map("pos_terminals")
+}
+
+model PosTerminalLog {
+  id            String       @id @default(uuid())
+  terminalId    Int          @map("terminal_id")
+  userId        Int          @map("user_id")
+  action        String       // LOGIN, LOGOUT, LOGIN_OVERRIDE, CREATE_ORDER, UPDATE_TERMINAL, DELETE_TERMINAL
+  details       String?
+  createdAt     DateTime     @default(now()) @map("created_at")
+  terminal      PosTerminal  @relation(fields: [terminalId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pos_terminal_logs")
 }
