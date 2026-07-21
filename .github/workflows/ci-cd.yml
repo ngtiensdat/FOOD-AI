@@ -42,8 +42,8 @@ jobs:
 
       - name: 🛠️ Generate Prisma Clients (Postgres & SQLite Inventory)
         run: |
-          npx prisma generate
           npx prisma generate --schema=prisma/inventory.prisma
+          npx prisma generate
 
       - name: 🔒 Security Scan (npm audit)
         run: npm audit --audit-level=high || echo "Vulnerabilities found but continuing"
