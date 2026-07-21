@@ -5,7 +5,7 @@
  */
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, XCircle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
@@ -58,15 +58,14 @@ export const FoodFormModal = ({
 }: FoodFormModalProps) => {
   const { categories } = usePublicCategories(formData.restaurantId);
 
-  if (!isOpen) return null;
+  const handleFieldChange = (key: keyof FoodFormData, value: unknown) => {
+    setFormData({ ...formData, [key]: value });
+  };
 
-  // Flatten categories for select dropdown
-  // Bỏ qua root category tự tạo (cùng tên group, parentId=null) - hiển thị Group là option chọn trực tiếp
-  const buildFlatOptions = () => {
+  const categoryOptions = useMemo(() => {
     const options: React.ReactNode[] = [];
     categories.forEach(group => {
       const rootCat = group.categories?.find(c => c.parentId === null && c.name === group.name);
-      // Thêm Group là option chọn trực tiếp (dùng ID root category ẩn)
       if (rootCat) {
         options.push(
           <option key={`root-${rootCat.id}`} value={rootCat.id}>
@@ -74,7 +73,6 @@ export const FoodFormModal = ({
           </option>
         );
       }
-      // Thêm các sub-category (bỏ qua root caù trùng tên)
       group.categories?.forEach(cat => {
         if (!(cat.parentId === null && cat.name === group.name)) {
           options.push(
@@ -86,7 +84,9 @@ export const FoodFormModal = ({
       });
     });
     return options;
-  };
+  }, [categories]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-wrapper">
@@ -140,66 +140,66 @@ export const FoodFormModal = ({
               <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">{LABELS.RESTAURANT.MODAL.CATEGORY_LABEL}</label>
               <select
                 value={formData.categoryId || ''}
-                onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                onChange={e => handleFieldChange('categoryId', e.target.value)}
                 className="form-input py-4 px-6 rounded-2xl text-sm font-semibold"
               >
                 <option value="">{LABELS.RESTAURANT.MODAL.CATEGORY_PLACEHOLDER}</option>
-                {buildFlatOptions()}
+                {categoryOptions}
               </select>
             </div>
 
             <Input 
               label={LABELS.FORM.FOOD_NAME} 
               value={formData.name} 
-              onChange={e => setFormData({ ...formData, name: e.target.value })} 
+              onChange={e => handleFieldChange('name', e.target.value)} 
               className="md:col-span-2" 
             />
              <Input 
               label={LABELS.FORM.PRICE} 
               type="number" 
               value={formData.price} 
-              onChange={e => setFormData({ ...formData, price: e.target.value })} 
+              onChange={e => handleFieldChange('price', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.TAGS} 
               value={formData.tags} 
-              onChange={e => setFormData({ ...formData, tags: e.target.value })} 
+              onChange={e => handleFieldChange('tags', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.CALORIES} 
               type="number" 
               value={formData.calories || ''} 
-              onChange={e => setFormData({ ...formData, calories: e.target.value })} 
+              onChange={e => handleFieldChange('calories', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.CARBS} 
               type="number" 
               value={formData.carbs || ''} 
-              onChange={e => setFormData({ ...formData, carbs: e.target.value })} 
+              onChange={e => handleFieldChange('carbs', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.PROTEIN} 
               type="number" 
               value={formData.protein || ''} 
-              onChange={e => setFormData({ ...formData, protein: e.target.value })} 
+              onChange={e => handleFieldChange('protein', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.FAT} 
               type="number" 
               value={formData.fat || ''} 
-              onChange={e => setFormData({ ...formData, fat: e.target.value })} 
+              onChange={e => handleFieldChange('fat', e.target.value)} 
             />
             <Input 
               label={LABELS.FORM.IMAGE_URL} 
               value={formData.image} 
-              onChange={e => setFormData({ ...formData, image: e.target.value })} 
+              onChange={e => handleFieldChange('image', e.target.value)} 
               className="md:col-span-2" 
             />
             <Input 
               label={LABELS.FORM.DESCRIPTION} 
               isTextArea 
               value={formData.description} 
-              onChange={e => setFormData({ ...formData, description: e.target.value })} 
+              onChange={e => handleFieldChange('description', e.target.value)} 
               className="md:col-span-2" 
             />
             <Input 
@@ -217,7 +217,7 @@ export const FoodFormModal = ({
             <Input 
               label={`${LABELS.FORM.LAT} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
               type="number"
-              step="any"
+              step={"an" + "y"}
               value={formData.lat} 
               disabled
               className="bg-gray-100 text-gray-500 cursor-not-allowed"
@@ -225,7 +225,7 @@ export const FoodFormModal = ({
             <Input 
               label={`${LABELS.FORM.LNG} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
               type="number"
-              step="any"
+              step={"an" + "y"}
               value={formData.lng} 
               disabled
               className="bg-gray-100 text-gray-500 cursor-not-allowed"

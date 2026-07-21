@@ -6,7 +6,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Users, Utensils, Check, Store } from 'lucide-react';
+import { MapPin, Users, Utensils, Check, Store, Star } from 'lucide-react';
 import { SafeImage } from '@/components/base/SafeImage';
 import { Restaurant } from '@/types/restaurant';
 import { LABELS } from '@/constants/labels';
@@ -92,7 +92,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
               {/* Điểm đánh giá sao */}
               {restaurant.ratingAvg !== undefined && restaurant.ratingAvg !== null && (
                 <div className="flex items-center gap-0.5 text-[10px] text-yellow-500 font-extrabold mb-0.5">
-                  <span>⭐</span>
+                  <Star size={10} className="text-yellow-500 fill-current shrink-0" />
                   <span>{restaurant.ratingAvg.toFixed(1)}</span>
                   <span className="text-gray-400 font-bold">({restaurant.ratingCount || 0})</span>
                 </div>

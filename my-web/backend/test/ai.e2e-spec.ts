@@ -9,7 +9,7 @@ import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { OpenAIService } from './../src/modules/ai/services/openai.service';
 import { WeatherService } from './../src/modules/ai/services/weather.service';
-import { RedisService } from './../src/modules/ai/services/redis.service';
+import { RedisService } from './../src/common/redis/redis.service';
 import { PrismaService } from './../src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole, UserStatus } from '@prisma/client';

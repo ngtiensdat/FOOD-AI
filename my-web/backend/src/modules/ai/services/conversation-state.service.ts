@@ -6,7 +6,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { DialogueState } from '../interfaces/dialogue-state.interface';
-import { RedisService } from './redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()

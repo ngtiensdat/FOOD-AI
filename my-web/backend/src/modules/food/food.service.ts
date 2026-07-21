@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa service thực hiện logic nghiệp vụ cho đối tượng Món ăn (Food).
+ * Các file khác hay file này có ý nghĩa như nào: Phối hợp giữa FoodRepository và VectorSyncService để lưu trữ, cập nhật thông tin món ăn và đồng bộ vector embedding cho AI.
+ * Các chức năng đặc biệt: createFood, updateFood, deleteFood, tìm kiếm món ăn kết hợp phân trang và lọc theo danh mục.
+ */
 import {
   Injectable,
   ForbiddenException,
@@ -12,7 +17,13 @@ import { AiLearningService } from '../ai/services/ai-learning.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
 import { FoodQueryDto } from './dto/food-query.dto';
-import { UserRole, FoodStatus, Prisma, User } from '@prisma/client';
+import {
+  UserRole,
+  FoodStatus,
+  Prisma,
+  User,
+  FeedbackType,
+} from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
@@ -146,10 +157,10 @@ export class FoodService {
           userId,
           conversationId: conversation.id,
           foodId,
-          feedbackType: 'LIKE',
+          feedbackType: FeedbackType.LIKE,
         },
         update: {
-          feedbackType: 'LIKE',
+          feedbackType: FeedbackType.LIKE,
           createdAt: new Date(),
         },
       });
@@ -162,7 +173,10 @@ export class FoodService {
           },
         },
       });
-      if (existingFeedback && existingFeedback.feedbackType === 'LIKE') {
+      if (
+        existingFeedback &&
+        existingFeedback.feedbackType === FeedbackType.LIKE
+      ) {
         await this.prisma.aiFeedback.delete({
           where: {
             userId_foodId: {
@@ -433,6 +447,44 @@ export class FoodService {
 
   async search(query: string) {
     if (!query) return { data: [], meta: { total: 0 } };
+
+    // 1. Thử nghiệm tìm kiếm ngữ nghĩa qua AI (Semantic Vector Search)
+    try {
+      const semanticResults = await this.aiService.semanticSearch(query, 20);
+      if (semanticResults && semanticResults.length > 0) {
+        const data = semanticResults.map((r) => ({
+          id: r.id,
+          name: r.name,
+          price: r.price,
+          description: r.description,
+          image: r.image,
+          tags: r.tags,
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          categoryId: null,
+          restaurantId: null,
+          restaurant: {
+            name: r.restaurantName,
+            address: r.address,
+            isActive: true,
+          },
+        }));
+
+        return {
+          data,
+          meta: {
+            total: semanticResults.length,
+          },
+        };
+      }
+    } catch (err) {
+      console.error(
+        'Lỗi tìm kiếm ngữ nghĩa AI, chuyển sang tìm kiếm từ khóa thông thường:',
+        err,
+      );
+    }
+
+    // 2. Dự phòng (Fallback) - Tìm kiếm từ khóa nếu AI lỗi hoặc không có kết quả phù hợp
     const result = await this.repository.findAll({
       AND: [
         {
@@ -474,6 +526,13 @@ export class FoodService {
           : [];
       }
       where.restaurantId = restaurant.id;
+    } else if (user.role === UserRole.STAFF) {
+      if (!user.restaurantId) {
+        return page && pageSize
+          ? { data: [], meta: { total: 0, page, pageSize } }
+          : [];
+      }
+      where.restaurantId = user.restaurantId;
     }
 
     if (page && pageSize) {

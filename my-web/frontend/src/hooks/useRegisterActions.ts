@@ -5,7 +5,7 @@
 // Các chức năng đặc biệt: Hỗ trợ đăng ký nhiều role (Customer/Restaurant), validate động, quản lý giấy tờ cho nhà hàng.
 // Các biến, hàm đặc biệt: ApiError, handleRegister, validate.
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { authService } from '@/services/auth.service';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -25,12 +25,13 @@ export const useRegisterActions = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<string>(UserRole.CUSTOMER);
   const [legalDocuments, setLegalDocuments] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [showAllErrors, setShowAllErrors] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiErrorMsg, setApiErrorMsg] = useState<string | null>(null);
 
-  const validate = (forceCheckAll = false) => {
+  const errors = useMemo(() => {
     const result = registerSchema.safeParse({
       name,
       email,
@@ -43,29 +44,38 @@ export const useRegisterActions = () => {
     if (!result.success) {
       result.error.issues.forEach((issue) => {
         const path = issue.path[0] as string;
-        if (path && (forceCheckAll || touched[path])) {
+        if (path && (showAllErrors || touched[path])) {
           newErrors[path] = issue.message;
         }
       });
     }
-    setErrors(newErrors);
-    return result.success;
-  };
+    if (apiErrorMsg) {
+      newErrors.form = apiErrorMsg;
+    }
+    return newErrors;
+  }, [name, email, password, confirmPassword, role, legalDocuments, touched, showAllErrors, apiErrorMsg]);
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  useEffect(() => {
-    validate(false);
-  }, [name, email, password, confirmPassword, role, legalDocuments, touched]);
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate(true)) return;
+    setShowAllErrors(true);
+    setApiErrorMsg(null);
+
+    const result = registerSchema.safeParse({
+      name,
+      email,
+      password,
+      confirmPassword,
+      role,
+      legalDocuments,
+    });
+
+    if (!result.success) return;
 
     setIsLoading(true);
-    setErrors({});
     try {
       const data = await authService.register({
         name,
@@ -89,7 +99,9 @@ export const useRegisterActions = () => {
       }
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.message || LABELS.COMMON.ERROR);
+      const errorMsg = err.message || LABELS.COMMON.ERROR;
+      setApiErrorMsg(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

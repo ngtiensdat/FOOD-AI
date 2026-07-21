@@ -4,7 +4,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { RedisService } from '../../modules/ai/services/redis.service';
+import { RedisService } from '../redis/redis.service';
 
 export interface RetryJob {
   type: 'food' | 'user' | 'post';

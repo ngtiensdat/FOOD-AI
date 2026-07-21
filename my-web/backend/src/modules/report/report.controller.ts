@@ -13,6 +13,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { UserRole } from '@prisma/client';
+import { CreateReportDto } from './dto/create-report.dto';
 
 @Controller('reports')
 export class ReportController {
@@ -22,7 +23,7 @@ export class ReportController {
   @UseGuards(JwtAuthGuard)
   async createReport(
     @GetUser('id') userId: number,
-    @Body() dto: { targetType: string; targetId: number; content: string },
+    @Body() dto: CreateReportDto,
   ) {
     return this.reportService.createReport(userId, dto);
   }

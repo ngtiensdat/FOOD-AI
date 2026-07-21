@@ -2,16 +2,18 @@
 // Ý nghĩa: Định nghĩa hệ thống kiểu dữ liệu tĩnh tập trung cho phân hệ người dùng, đảm bảo an toàn kiểu (Type Safety) trên toàn dự án.
 // Chức năng đặc biệt: Cung cấp cấu trúc dữ liệu cho quá trình đăng nhập, đăng ký, thay đổi mật khẩu và lưu trữ khảo sát sở thích (onboarding).
 // Design Pattern: Data Transfer Object (DTO) interfaces, Enum declaration.
-// Biến, hàm đặc biệt: UserRole, UserStatus, User, UserProfile, UpdateProfileData.
+/* eslint-disable unused-imports/no-unused-vars */
 export enum UserRole {
   CUSTOMER = 'CUSTOMER',
   RESTAURANT = 'RESTAURANT',
   ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
 }
 
 export const isAdmin = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.ADMIN;
 export const isRestaurant = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.RESTAURANT;
 export const isCustomer = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.CUSTOMER;
+export const isStaff = (user?: { role?: UserRole | string } | null): boolean => user?.role === UserRole.STAFF;
 
 export enum UserStatus {
   PENDING = 'PENDING',
@@ -41,6 +43,7 @@ export interface User {
   name: string;
   role: UserRole;
   status: UserStatus;
+  isEmailVerified?: boolean;
   profile?: UserProfile;
   isFollowing?: boolean;
   hasCompletedOnboarding?: boolean;
@@ -52,6 +55,12 @@ export interface User {
   level?: number;
   highestLevel?: number;
   badgeTitle?: string | null;
+  restaurantId?: number;
+  _count?: {
+    posts?: number;
+    followers?: number;
+    following?: number;
+  };
 }
 
 export interface UpdateProfileData {

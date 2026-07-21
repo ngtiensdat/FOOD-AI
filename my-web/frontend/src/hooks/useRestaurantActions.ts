@@ -20,7 +20,7 @@ import { foodSchema } from '@/schemas/food.schema';
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'views' | 'interactions' | 'conversion' | 'activity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'ai-history' | 'categories' | 'vouchers' | 'views' | 'interactions' | 'conversion' | 'activity' | 'staff' | 'inventory' | 'staff-list' | 'staff-waiting' | 'staff-history' | 'staff-review' | 'inventory-ingredients' | 'inventory-recipes' | 'inventory-logs' | 'tables' | 'tables-list' | 'tables-bulk' | 'pos-terminals' | 'history'>('overview');
   const [isAddingFood, setIsAddingFood] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -39,7 +39,7 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
     try {
       setMyFoods(await foodService.getMyFoods());
     } catch (error) {
-      console.error('Lỗi khi tải món ăn:', error);
+      console.error(LABELS.UI_MESSAGES.RESTAURANT.LOAD_FOODS_ERROR, error);
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
         setIsRestaurantActive(!!res.isActive);
       }
     } catch (error) {
-      console.error('Lỗi khi tải thông tin cửa hàng:', error);
+      console.error(LABELS.UI_MESSAGES.RESTAURANT.LOAD_RESTAURANT_ERROR, error);
     }
   };
 
@@ -64,7 +64,7 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
         setMyBranches(res);
       }
     } catch (error) {
-      console.error('Lỗi khi tải danh sách chi nhánh:', error);
+      console.error(LABELS.UI_MESSAGES.RESTAURANT.LOAD_BRANCHES_ERROR, error);
     }
   };
 

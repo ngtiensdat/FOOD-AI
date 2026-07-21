@@ -90,7 +90,7 @@ class ApiClient {
       logDev(`[ApiClient] Response Status: ${response.status} for ${method} ${endpoint}`);
 
       // Xử lý Refresh Token tự động nếu nhận lỗi 401
-      if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
+      if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login') && !endpoint.includes('/pos-terminals/login')) {
         if (!this.refreshPromise) {
           this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
@@ -123,16 +123,25 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-        errorDev(`[ApiClient] Request failed for ${endpoint}:`, errorData);
+        const isClientError = response.status < 500;
+        
+        if (isClientError) {
+          logDev(`[ApiClient] Request failed for ${endpoint}:`, errorData);
+        } else {
+          errorDev(`[ApiClient] Request failed for ${endpoint}:`, errorData);
+        }
 
-        errorDev("Request failed details", {
-          endpoint,
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-          message: errorData?.message,
-          errors: errorData?.errors
-        });
+        if (isDev) {
+          const logFn = isClientError ? console.warn : console.error;
+          logFn("Request failed details", {
+            endpoint,
+            status: response.status,
+            statusText: response.statusText,
+            errorData,
+            message: errorData?.message,
+            errors: errorData?.errors
+          });
+        }
 
         // Lấy message từ mảng errors của Backend
         let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;

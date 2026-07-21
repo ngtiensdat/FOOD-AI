@@ -114,8 +114,9 @@ function ResetPasswordForm() {
       const response = await authService.forgotPassword(email);
       toast.success(response?.message || LABELS.AUTH.RESEND_OTP_SUCCESS);
       setResendCooldown(60);
-    } catch (err: any) {
-      setError(err?.message || LABELS.AUTH.RESEND_OTP_ERROR);
+    } catch (err: unknown) {
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.AUTH.RESEND_OTP_ERROR);
     }
   };
 
@@ -146,9 +147,10 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push('/login');
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || LABELS.AUTH.RESET_ERROR);
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.AUTH.RESET_ERROR);
     } finally {
       setIsLoading(false);
     }

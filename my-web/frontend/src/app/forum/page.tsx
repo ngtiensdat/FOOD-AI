@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
-import { Info, Plus, Award, Star, Flame, Trophy, Shield, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Info, Plus, Award, Star, Flame, Trophy, Shield, Clock, Globe, UserCheck } from 'lucide-react';
 
 // Services & Components
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +16,6 @@ import { socialService } from '@/services/social.service';
 import { addNotification } from '@/utils/notifications';
 import { User, UserRole } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
-import { Footer } from '@/components/features/Footer';
 import { LevelUpModal } from '@/components/features/badges/LevelUpModal';
 import { LABELS } from '@/constants/labels';
 import { GAMIFICATION_CONSTANTS } from '@/constants/gamification.constant';
@@ -28,7 +28,16 @@ import { PostCard, PostData } from '@/components/features/profile/PostCard';
 import { CreatePostModal } from '@/components/features/profile/CreatePostModal';
 import { ReportModal } from '@/components/features/profile/ReportModal';
 
-const DEFAULT_POSTS: PostData[] = [];
+// Forum Configurations (Fixes hardcoded settings / magic values)
+const FORUM_CONFIG = {
+  PAGINATION_LIMIT: 10,
+  SEEN_POSTS_STORAGE_KEY: 'food_ai_seen_posts',
+  OBSERVER_THRESHOLD: 0.2,
+  TABS: {
+    ALL: 'all',
+    FOLLOWING: 'following',
+  } as const,
+};
 
 export default function ForumPage() {
   const { user: me, login } = useAuth();
@@ -41,6 +50,34 @@ export default function ForumPage() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [followingIds, setFollowingIds] = useState<number[]>([]);
+  const [feedTab, setFeedTab] = useState<'all' | 'following'>(FORUM_CONFIG.TABS.ALL);
+  
+  // Seen posts & pagination states
+  const [seenPostIds, setSeenPostIds] = useState<Set<number>>(new Set());
+  const [visibleCount, setVisibleCount] = useState(FORUM_CONFIG.PAGINATION_LIMIT);
+
+  // Load seen posts from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(FORUM_CONFIG.SEEN_POSTS_STORAGE_KEY);
+    if (stored) {
+      try {
+        const ids = JSON.parse(stored) as number[];
+        setSeenPostIds(new Set(ids));
+      } catch (e) {
+        console.error('Error parsing seen posts:', e);
+      }
+    }
+  }, []);
+
+  const handleMarkAsSeen = (postId: number) => {
+    setSeenPostIds((prev) => {
+      if (prev.has(postId)) return prev;
+      const next = new Set(prev);
+      next.add(postId);
+      localStorage.setItem(FORUM_CONFIG.SEEN_POSTS_STORAGE_KEY, JSON.stringify(Array.from(next)));
+      return next;
+    });
+  };
 
   // Load posts
   useEffect(() => {
@@ -64,7 +101,7 @@ export default function ForumPage() {
           const followedRestaurantIds = data?.restaurants?.map((u) => u.id) || [];
           setFollowingIds([...followedUserIds, ...followedRestaurantIds]);
         })
-        .catch(err => console.error('Lỗi lấy danh sách theo dõi:', err));
+        .catch((err: unknown) => console.error('Lỗi lấy danh sách theo dõi:', err));
     }
   }, [me?.id]);
 
@@ -83,6 +120,36 @@ export default function ForumPage() {
     }
     fetchLeaderboard();
   }, []);
+
+  // Intersection observer to track posts seen by user
+  useEffect(() => {
+    if (posts.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const postIdStr = entry.target.getAttribute('data-post-id');
+            if (postIdStr) {
+              const postId = parseInt(postIdStr, 10);
+              if (!isNaN(postId)) {
+                handleMarkAsSeen(postId);
+              }
+            }
+          }
+        });
+      },
+      { threshold: FORUM_CONFIG.OBSERVER_THRESHOLD }
+    );
+
+    const elements = document.querySelectorAll('.post-card-observer');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el));
+      observer.disconnect();
+    };
+  }, [posts, seenPostIds]);
 
   // Centralized social interactions & reports hook
   const {
@@ -119,109 +186,20 @@ export default function ForumPage() {
     <div className="page-container min-h-screen">
       <Navbar activeTab="forum" setActiveTab={() => {}} />
 
-      {/* Hero Header Section */}
-      <div className="pt-28 pb-12 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-transparent border-b border-orange-500/10">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white flex items-center gap-2 mb-2">
-              <Flame className="text-primary animate-pulse" size={36} />
-              {LABELS.SOCIAL.FEED_TITLE}
-            </h1>
-            <p className="text-gray-500 text-small max-w-xl font-medium">
-              {LABELS.SOCIAL.FEED_DESC}
-            </p>
-          </div>
-          {profile && (
-            <Button
-              onClick={() => setIsPostModalOpen(true)}
-              variant="none"
-              size="none"
-              className="px-6 py-3 bg-primary text-white rounded-full font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-            >
-              <Plus size={20} />
-              {LABELS.SOCIAL.CREATE_POST}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="w-full px-6 md:px-12 pt-24 lg:h-screen lg:overflow-hidden pb-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full items-stretch">
           
-          {/* Main Feed Column (Left) */}
-          <div className="lg:col-span-8 space-y-6">
-            
-            {/* Write Post Trigger Card */}
-            {profile && (
-              <div className="card-container !p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 rounded-2xl shadow-sm">
-                <div className="flex gap-4">
-                  <Avatar src={profile.profile?.avatar} name={me?.name} size={40} />
-                  <Button 
-                    onClick={() => setIsPostModalOpen(true)}
-                    variant="none"
-                    size="none"
-                    className="flex-1 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full px-6 py-2.5 text-left text-gray-500 transition-all text-small font-bold flex items-center justify-between border border-gray-100 dark:border-slate-800"
-                  >
-                    <span>{LABELS.SETTINGS.PROFILE.POSTS.THINKING(me?.name || '')}</span>
-                    <Plus size={18} className="text-primary" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Feed List */}
-            {(() => {
-              const forumPosts = posts.filter((post) => {
-                if (post.isShared) return false;
-                if (post.postType === 'REVIEW') return true;
-                if (post.postType === 'NORMAL') {
-                  const authorId = post.author?.id;
-                  if (!authorId) return true;
-                  return me?.id === authorId || followingIds.includes(authorId);
-                }
-                return true;
-              });
-
-              return forumPosts.length === 0 ? (
-                <div className="card-container !p-16 text-center border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-2xl">
-                  <Info size={48} className="mx-auto text-gray-300 mb-4 animate-bounce" />
-                  <h3 className="text-lg font-bold text-gray-400">{LABELS.SOCIAL.FEED_EMPTY}</h3>
-                  <p className="text-gray-400 text-small mt-1">{LABELS.SOCIAL.FEED_EMPTY_DESC}</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {forumPosts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      me={me}
-                      onLike={handleLike}
-                      onComment={handleComment}
-                      onReport={handleOpenReport}
-                      onShare={handleShare}
-                      onDeleteComment={handleDeleteComment}
-                      onReplyComment={handleReplyComment}
-                      onDeleteReply={handleDeleteReply}
-                      onDeletePost={handleDeletePost}
-                    />
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* Sidebar Column (Right) */}
-          <div className="lg:col-span-4 space-y-8">
-            
-            {/* Personal Status Card */}
+          {/* Left Column: Personal info or Community Welcome (col-span-3) */}
+          <div className="lg:col-span-3 space-y-6 lg:h-full lg:overflow-y-auto scrollbar-hide pb-8">
             {profile ? (
               <div className="card-premium p-6 space-y-5 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent border-amber-500/10">
                 <div className="flex items-center gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
-                  <Avatar src={profile.profile?.avatar} name={me?.name} size={60} className="border-2 border-white shadow" />
+                  <Avatar src={profile.profile?.avatar} name={me?.name} size={60} className="border-2 border-white shadow shrink-0" />
                   <div className="min-w-0 flex-1">
                     <h4 className="font-extrabold text-gray-800 dark:text-white truncate text-base">{me?.name}</h4>
-                    <span className="text-mini font-bold uppercase tracking-wider text-primary px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md mt-1 inline-block">
-                      ✨ {profile.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW_MEMBER}
+                    <span className="text-mini font-bold uppercase tracking-wider text-primary px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md mt-1 inline-flex items-center gap-1">
+                      <img src="/images/badges/badge_star.png" alt="Star" className="w-3.5 h-3.5 object-contain shrink-0" />
+                      <span>{profile.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW_MEMBER}</span>
                     </span>
                   </div>
                 </div>
@@ -266,6 +244,136 @@ export default function ForumPage() {
               </div>
             )}
 
+            {/* Bảng điều hướng bảng tin (Tất cả / Theo dõi) */}
+            <div className="card-premium p-4 space-y-2">
+              <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider px-3 mb-2">
+                {LABELS.SOCIAL.SIDEBAR.FEED_MENU || 'Bảng tin'}
+              </span>
+              {[
+                { id: FORUM_CONFIG.TABS.ALL, label: LABELS.SOCIAL.TAB_ALL, icon: Globe },
+                { id: FORUM_CONFIG.TABS.FOLLOWING, label: LABELS.SOCIAL.TAB_FOLLOWING, icon: UserCheck, authRequired: true },
+              ].map((tab) => {
+                const isActive = feedTab === tab.id;
+                const Icon = tab.icon;
+                
+                // Ẩn tab 'Theo dõi' nếu chưa đăng nhập
+                if (tab.authRequired && !me) return null;
+
+                return (
+                  <Button
+                    key={tab.id}
+                    onClick={() => setFeedTab(tab.id as 'all' | 'following')}
+                    variant="none"
+                    size="none"
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900/50 border border-transparent'
+                    }`}
+                  >
+                    <Icon size={16} className={isActive ? 'text-primary' : 'text-gray-400'} />
+                    <span>{tab.label}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Center Column: Main Feed (col-span-6) */}
+          <div className="lg:col-span-6 space-y-6 lg:h-full lg:overflow-y-auto scrollbar-hide pb-8">
+
+            {/* Write Post Trigger Card */}
+            {profile && (
+              <div className="card-container !p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800/80 rounded-2xl shadow-sm">
+                <div className="flex gap-4">
+                  <Avatar src={profile.profile?.avatar} name={me?.name} size={40} />
+                  <Button 
+                    onClick={() => setIsPostModalOpen(true)}
+                    variant="none"
+                    size="none"
+                    className="flex-1 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full px-6 py-2.5 text-left text-gray-500 transition-all text-small font-bold flex items-center justify-between border border-gray-100 dark:border-slate-800"
+                  >
+                    <span>{LABELS.SETTINGS.PROFILE.POSTS.THINKING(me?.name || '')}</span>
+                    <Plus size={18} className="text-primary" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Feed List */}
+            {(() => {
+              // 1. Filter out shared posts and filter by tab
+              const filteredPosts = posts.filter((post) => {
+                if (post.isShared) return false;
+                
+                // Show everything in the 'all' tab
+                if (feedTab === FORUM_CONFIG.TABS.ALL) return true;
+
+                // 'following' tab logic
+                const authorId = post.author?.id;
+                const isOwnPost = authorId && me?.id === authorId;
+                const isFollowed = authorId && followingIds.includes(authorId);
+                return isOwnPost || isFollowed;
+              });
+
+              // 2. Sort/Prioritize: Unseen posts first, Seen posts pushed to the bottom (restricted)
+              const unseen = filteredPosts.filter(post => !seenPostIds.has(post.id));
+              const seen = filteredPosts.filter(post => seenPostIds.has(post.id));
+              const sortedPosts = [...unseen, ...seen];
+
+              // 3. Paginate to visibleCount
+              const displayedPosts = sortedPosts.slice(0, visibleCount);
+
+              return sortedPosts.length === 0 ? (
+                <div className="card-container !p-16 text-center border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-2xl">
+                  <Info size={48} className="mx-auto text-gray-300 mb-4 animate-bounce" />
+                  <h3 className="text-lg font-bold text-gray-400">{LABELS.SOCIAL.FEED_EMPTY}</h3>
+                  <p className="text-gray-400 text-small mt-1">{LABELS.SOCIAL.FEED_EMPTY_DESC}</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {displayedPosts.map((post) => (
+                    <div 
+                      key={post.id} 
+                      className="post-card-observer" 
+                      data-post-id={post.id}
+                    >
+                      <PostCard
+                        post={post}
+                        me={me}
+                        onLike={handleLike}
+                        onComment={handleComment}
+                        onReport={handleOpenReport}
+                        onShare={handleShare}
+                        onDeleteComment={handleDeleteComment}
+                        onReplyComment={handleReplyComment}
+                        onDeleteReply={handleDeleteReply}
+                        onDeletePost={handleDeletePost}
+                      />
+                    </div>
+                  ))}
+
+                  {/* Load More Button */}
+                  {sortedPosts.length > visibleCount && (
+                    <div className="text-center py-4">
+                      <Button
+                        onClick={() => setVisibleCount((prev) => prev + FORUM_CONFIG.PAGINATION_LIMIT)}
+                        variant="none"
+                        size="none"
+                        className="px-8 py-3 rounded-full font-bold border border-primary text-primary hover:bg-primary/5 transition-all text-xs cursor-pointer inline-flex items-center gap-2"
+                      >
+                        <Clock size={14} className="animate-pulse" />
+                        <span>{LABELS.SOCIAL.LOAD_MORE_POSTS}</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Right Column: Leaderboard / Top Rank (col-span-3) */}
+          <div className="lg:col-span-3 space-y-6 lg:h-full lg:overflow-y-auto scrollbar-hide pb-8">
             {/* Leaderboard Card */}
             <div className="card-premium p-6 space-y-5">
               <h3 className="text-body font-black text-gray-800 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
@@ -290,7 +398,7 @@ export default function ForumPage() {
                 <p className="text-xs text-gray-400 py-4 text-center">{LABELS.SOCIAL.SIDEBAR.LEADERBOARD_EMPTY}</p>
               ) : (
                 <div className="space-y-4">
-                  {leaderboard.map((item, idx) => {
+                  {leaderboard.slice(0, 10).map((item, idx) => {
                     const isTop1 = idx === 0;
                     const isTop2 = idx === 1;
                     const isTop3 = idx === 2;
@@ -302,14 +410,25 @@ export default function ForumPage() {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {/* Rank number or medal */}
-                          <span className="w-6 font-black text-center text-xs">
-                            {isTop1 ? '🥇' : isTop2 ? '🥈' : isTop3 ? '🥉' : `${idx + 1}`}
+                          <span className="w-6 h-6 shrink-0 font-black text-center text-xs flex items-center justify-center">
+                            {isTop1 ? (
+                              <img src="/images/badges/medal_gold.png" alt="Gold" className="w-6 h-6 object-contain shrink-0" />
+                            ) : isTop2 ? (
+                              <img src="/images/badges/medal_silver.png" alt="Silver" className="w-6 h-6 object-contain shrink-0" />
+                            ) : isTop3 ? (
+                              <img src="/images/badges/medal_bronze.png" alt="Bronze" className="w-6 h-6 object-contain shrink-0" />
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500 font-bold">{idx + 1}</span>
+                            )}
                           </span>
-                          <Avatar src={item.avatar || item.profile?.avatar} name={item.name} size={36} />
+                          <Avatar src={item.profile?.avatar} name={item.name} size={36} />
                           <div className="min-w-0">
                             <h4 className="font-extrabold text-gray-800 dark:text-white truncate text-xs">{item.name}</h4>
-                            <span className="text-[10px] text-gray-400 font-bold block">
-                              Lv. {item.level || 1} • {item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}
+                            <span className="text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
+                              <span>Lv. {item.level || 1}</span>
+                              <span>•</span>
+                              <img src="/images/badges/badge_star.png" alt="Star" className="w-3 h-3 object-contain shrink-0" />
+                              <span className="truncate">{item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}</span>
                             </span>
                           </div>
                         </div>
@@ -322,7 +441,6 @@ export default function ForumPage() {
                 </div>
               )}
             </div>
-
           </div>
 
         </div>
@@ -355,8 +473,6 @@ export default function ForumPage() {
         level={levelUpData?.level || 1}
         badge={levelUpData?.badge}
       />
-
-      <Footer />
     </div>
   );
 }

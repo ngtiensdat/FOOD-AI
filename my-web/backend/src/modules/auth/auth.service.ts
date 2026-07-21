@@ -31,7 +31,7 @@ import { appConfig } from '../../config/app.config';
 import { JwtPayload } from '../../common/types/jwt-payload';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { PrismaService } from '../../database/prisma.service';
-import { RedisService } from '../ai/services/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 
@@ -433,6 +433,12 @@ export class AuthService {
           : undefined,
     });
 
+    if (user.role === UserRole.CUSTOMER) {
+      this.aiService.updateUserEmbedding(userId).catch((err) => {
+        this.logger.error(`Lỗi cập nhật user embedding sau onboarding: ${err}`);
+      });
+    }
+
     return { message: MESSAGES.AUTH.ONBOARDING_SUCCESS };
   }
 
@@ -540,7 +546,24 @@ export class AuthService {
         role: user.role,
         hasCompletedOnboarding: user.profile?.hasCompletedOnboarding || false,
         isEmailVerified: user.isEmailVerified,
+        restaurantId: user.restaurantId,
       },
     };
+  }
+
+  async clearPosSession(userId: number) {
+    try {
+      await this.prisma.posTerminal.updateMany({
+        where: { currentUserId: userId },
+        data: { currentUserId: null },
+      });
+      this.logger.log(
+        `Released POS session for user ID: ${userId} during logout.`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to release POS session for user ID ${userId} during logout: ${err}`,
+      );
+    }
   }
 }

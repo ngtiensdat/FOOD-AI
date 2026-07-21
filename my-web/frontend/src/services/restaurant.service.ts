@@ -115,5 +115,125 @@ export const restaurantService = {
       console.error('Error getting merchant following:', err);
       return [];
     }
+  },
+
+  async getMyStaffs() {
+    try {
+      const response = await apiClient.get('/restaurants/my-restaurant/staffs');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error fetching staffs:', err);
+      return [];
+    }
+  },
+
+  async inviteStaff(data: { email: string; restaurantId: number }) {
+    try {
+      const response = await apiClient.post('/restaurants/my-restaurant/staffs/invite', data);
+      return response.data || response;
+    } catch (err) {
+      console.error('Error inviting staff:', err);
+      throw err;
+    }
+  },
+
+  async updateStaff(staffId: string | number, data: any) {
+    try {
+      const response = await apiClient.patch(`/restaurants/my-restaurant/staffs/${staffId}`, data);
+      return response.data || response;
+    } catch (err) {
+      console.error('Error updating staff:', err);
+      throw err;
+    }
+  },
+
+  async deleteStaff(staffId: string | number) {
+    try {
+      const response = await apiClient.delete(`/restaurants/my-restaurant/staffs/${staffId}`);
+      return response.data || response;
+    } catch (err) {
+      console.error('Error removing staff member:', err);
+      throw err;
+    }
+  },
+
+  async getStaffInvitations() {
+    try {
+      const response = await apiClient.get('/restaurants/my-restaurant/staff-invitations');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error fetching staff invitations:', err);
+      return [];
+    }
+  },
+
+  async revokeInvitation(invitationId: string) {
+    try {
+      const response = await apiClient.delete(`/restaurants/my-restaurant/staff-invitations/${invitationId}`);
+      return response.data || response;
+    } catch (err) {
+      console.error('Error revoking staff invitation:', err);
+      throw err;
+    }
+  },
+
+  async getStaffHistories() {
+    try {
+      const response = await apiClient.get('/restaurants/my-restaurant/staff-histories');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error fetching staff histories:', err);
+      return [];
+    }
+  },
+
+  async getStaffReviews() {
+    try {
+      const response = await apiClient.get('/restaurants/my-restaurant/staff-reviews');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error fetching staff reviews:', err);
+      return [];
+    }
+  },
+
+  async createStaffReview(staffId: string | number, rating: number, feedback?: string) {
+    try {
+      const response = await apiClient.post(`/restaurants/my-restaurant/staffs/${staffId}/reviews`, { rating, feedback });
+      return response.data || response;
+    } catch (err) {
+      console.error('Error creating staff review:', err);
+      throw err;
+    }
+  },
+
+  async getUserJobInvitations() {
+    try {
+      const response = await apiClient.get('/restaurants/user/job-invitations');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error fetching user job invitations:', err);
+      return [];
+    }
+  },
+
+  async respondToJobInvitation(invitationId: string, accept: boolean) {
+    try {
+      const response = await apiClient.post(`/restaurants/user/job-invitations/${invitationId}/respond`, { accept });
+      return response.data || response;
+    } catch (err) {
+      console.error('Error responding to job invitation:', err);
+      throw err;
+    }
+  },
+
+  async resignStaff() {
+    try {
+      const response = await apiClient.post('/restaurants/user/resign');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error resigning staff member:', err);
+      throw err;
+    }
   }
 };

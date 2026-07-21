@@ -42,9 +42,11 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 
     let message = MESSAGES.AUTH.RATE_LIMIT_LOGIN;
     if (isAi) {
-      message = MESSAGES.AI.RATE_LIMIT_CHAT;
+      const waitSeconds = Math.ceil(_throttlerLimitDetail.timeToExpire / 1000);
+      message = `Bạn đã gửi quá nhiều yêu cầu tư vấn AI (Giới hạn: ${_throttlerLimitDetail.limit} tin nhắn/phút). Vui lòng thử lại sau ${waitSeconds} giây để tránh quá tải hệ thống.`;
     } else if (isRegister) {
-      message = MESSAGES.AUTH.RATE_LIMIT_REGISTER;
+      const waitSeconds = Math.ceil(_throttlerLimitDetail.timeToExpire / 1000);
+      message = `Bạn đã gửi quá nhiều yêu cầu đăng ký tài khoản. Vui lòng thử lại sau ${waitSeconds} giây.`;
     }
 
     throw new ThrottlerException(message);

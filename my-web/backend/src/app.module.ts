@@ -28,11 +28,19 @@ import { BugReportModule } from './modules/bug-report/bug-report.module';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { MediaModule } from './modules/media/media.module';
 import { MailModule } from './modules/mail/mail.module';
+import { RedisModule } from './common/redis/redis.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { TableModule } from './modules/table/table.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { OrderModule } from './modules/order/order.module';
+import { PosTerminalModule } from './modules/pos-terminal/pos-terminal.module';
+import { HistoryModule } from './modules/history/history.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    RedisModule,
     MailModule,
     AuthModule,
     UserModule,
@@ -47,6 +55,12 @@ import { MailModule } from './modules/mail/mail.module';
     NotificationModule,
     BugReportModule,
     MediaModule,
+    InventoryModule,
+    TableModule,
+    ChatModule,
+    OrderModule,
+    PosTerminalModule,
+    HistoryModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

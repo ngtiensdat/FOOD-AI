@@ -9,7 +9,7 @@ import { toast } from '@/store/useToastStore';
 import { LABELS } from '@/constants/labels';
 import { LIMITS } from '@/constants/limits.constant';
 import { PostData } from '@/components/features/profile/PostCard';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { apiClient } from '@/lib/api-client';
 
 export interface UseSocialActionsParams {
@@ -74,20 +74,29 @@ export const useSocialActions = ({
           );
         }
 
-        let diff = 0;
+        // Calculate point and XP changes
+        let diffPoints = 0;
+        let diffXp = 0;
+
         if (me.points !== undefined && me.points !== null) {
-          diff = (updatedMe.points ?? 0) - me.points;
+          diffPoints = (updatedMe.points ?? 0) - me.points;
+        }
+        if (me.xp !== undefined && me.xp !== null) {
+          diffXp = (updatedMe.xp ?? 0) - me.xp;
         } else {
-          // Fallback standard points for actions if session points are not initialized yet
-          if (reason === LABELS.LOYALTY.REASONS.LIKE_POST) diff = LIMITS.LOYALTY_POINTS.LIKE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.UNLIKE_POST) diff = LIMITS.LOYALTY_POINTS.UNLIKE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.COMMENT_POST) diff = LIMITS.LOYALTY_POINTS.COMMENT_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_COMMENT) diff = LIMITS.LOYALTY_POINTS.DELETE_COMMENT;
-          else if (reason === LABELS.LOYALTY.REASONS.REPLY_COMMENT) diff = LIMITS.LOYALTY_POINTS.REPLY_COMMENT;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_REPLY) diff = LIMITS.LOYALTY_POINTS.DELETE_REPLY;
-          else if (reason === LABELS.LOYALTY.REASONS.CREATE_POST) diff = LIMITS.LOYALTY_POINTS.CREATE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.DELETE_POST) diff = LIMITS.LOYALTY_POINTS.DELETE_POST;
-          else if (reason === LABELS.LOYALTY.REASONS.SHARE_POST) diff = LIMITS.LOYALTY_POINTS.SHARE_POST;
+          // OCP: Lookup map fallback if xp is undefined on me
+          const REASON_TO_XP: Record<string, number> = {
+            [LABELS.LOYALTY.REASONS.LIKE_POST]:      LIMITS.LOYALTY_POINTS.LIKE_POST,
+            [LABELS.LOYALTY.REASONS.UNLIKE_POST]:    LIMITS.LOYALTY_POINTS.UNLIKE_POST,
+            [LABELS.LOYALTY.REASONS.COMMENT_POST]:   LIMITS.LOYALTY_POINTS.COMMENT_POST,
+            [LABELS.LOYALTY.REASONS.DELETE_COMMENT]: LIMITS.LOYALTY_POINTS.DELETE_COMMENT,
+            [LABELS.LOYALTY.REASONS.REPLY_COMMENT]:  LIMITS.LOYALTY_POINTS.REPLY_COMMENT,
+            [LABELS.LOYALTY.REASONS.DELETE_REPLY]:   LIMITS.LOYALTY_POINTS.DELETE_REPLY,
+            [LABELS.LOYALTY.REASONS.CREATE_POST]:    LIMITS.LOYALTY_POINTS.CREATE_POST,
+            [LABELS.LOYALTY.REASONS.DELETE_POST]:    LIMITS.LOYALTY_POINTS.DELETE_POST,
+            [LABELS.LOYALTY.REASONS.SHARE_POST]:     LIMITS.LOYALTY_POINTS.SHARE_POST,
+          };
+          diffXp = REASON_TO_XP[reason] ?? 0;
         }
 
         // 2. If the active profile on the page is me, update the page's profile state
@@ -105,15 +114,22 @@ export const useSocialActions = ({
         login({
           ...me,
           points: updatedMe.points,
+          xp: updatedMe.xp,
           level: updatedMe.level,
           badgeTitle: updatedMe.badgeTitle,
         });
 
-        // 4. Show point change notification
-        if (diff > 0) {
-          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diff, reason));
-        } else if (diff < 0) {
-          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diff), reason));
+        // 4. Show point and XP change notifications
+        if (diffPoints > 0) {
+          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diffPoints, reason));
+        } else if (diffPoints < 0) {
+          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diffPoints), reason));
+        }
+
+        if (diffXp > 0) {
+          toast.success(LABELS.LOYALTY.AWARD_XP_SUCCESS(diffXp, reason));
+        } else if (diffXp < 0) {
+          toast.info(LABELS.LOYALTY.DEDUCT_XP_SUCCESS(Math.abs(diffXp), reason));
         }
       }
     } catch (err) {
@@ -356,10 +372,10 @@ export const useSocialActions = ({
         actions.setProfile({
           ...profile,
           _count: {
-            ...(profile as any)._count,
-            posts: Math.max(0, ((profile as any)._count?.posts || 1) - 1),
+            ...profile._count,
+            posts: Math.max(0, (profile._count?.posts || 1) - 1),
           },
-        } as any);
+        });
       }
       toast.success(LABELS.SOCIAL.TOAST.POST_DELETE_SUCCESS);
       awardPoints(LABELS.LOYALTY.REASONS.DELETE_POST);

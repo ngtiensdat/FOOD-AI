@@ -1,7 +1,9 @@
 import React from 'react';
+import SafeImage from '@/components/base/SafeImage';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { Avatar } from '@/components/base/Avatar';
+import { LABELS } from '@/constants/labels';
 
 import { User } from '@/types/user';
 
@@ -72,26 +74,25 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
             const isTop2 = index === 1;
             const isTop3 = index === 2;
             const isMe = me?.id === item.id;
+            const containerClass = isMe
+              ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/5 border-amber-500/50 shadow-sm ring-1 ring-amber-500/20'
+              : 'bg-gray-50 dark:bg-slate-900/40 border-gray-100 dark:border-slate-800/80 hover:bg-gray-100 dark:hover:bg-slate-800/50';
 
             return (
               <div
                 key={item.id}
                 onClick={() => onUserClick(item.id)}
-                className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                  isMe
-                    ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/5 border-amber-500/50 shadow-sm ring-1 ring-amber-500/20'
-                    : 'bg-gray-50 dark:bg-slate-900/40 border-gray-100 dark:border-slate-800/80 hover:bg-gray-100 dark:hover:bg-slate-800/50'
-                }`}
+                className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${containerClass}`}
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   {/* Rank number or Crown */}
                   <div className="w-8 h-8 shrink-0 flex items-center justify-center">
                     {isTop1 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(1) || 'Hạng 1'}>👑</span>
+                      <SafeImage src="/images/badges/medal_gold.png" alt="Gold" width={28} height={28} className="object-contain" />
                     ) : isTop2 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(2) || 'Hạng 2'}>🥈</span>
+                      <SafeImage src="/images/badges/medal_silver.png" alt="Silver" width={28} height={28} className="object-contain" />
                     ) : isTop3 ? (
-                      <span className="text-2xl" title={labels.RANK_TOOLTIP?.(3) || 'Hạng 3'}>🥉</span>
+                      <SafeImage src="/images/badges/medal_bronze.png" alt="Bronze" width={28} height={28} className="object-contain" />
                     ) : (
                       <span className="text-sm font-black text-gray-400 dark:text-slate-500">#{index + 1}</span>
                     )}
@@ -113,11 +114,10 @@ export const LeaderboardList: React.FC<LeaderboardListProps> = ({
                         </span>
                       )}
                     </h4>
-                    {item.badgeTitle && (
-                      <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate">
-                        ✨ {item.badgeTitle}
-                      </p>
-                    )}
+                    <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 truncate flex items-center gap-1 mt-0.5">
+                      <SafeImage src="/images/badges/badge_star.png" alt="Star" width={12} height={12} className="object-contain shrink-0" />
+                      <span>{item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}</span>
+                    </p>
                   </div>
                 </div>
 

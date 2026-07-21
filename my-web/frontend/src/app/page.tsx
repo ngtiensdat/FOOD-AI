@@ -7,7 +7,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, MapPin, Star, Flame, TrendingUp, Plus } from 'lucide-react';
+import { Sparkles, MapPin, Flame, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/base/Button';
 // Hooks
@@ -96,11 +96,14 @@ export default function Home() {
 
   // Reset trạng thái mở rộng khi đổi địa điểm lọc
   useEffect(() => {
-    setExpandedTabs({
-      recommended: false,
-      today: false,
-      weekly: false
-    });
+    const timer = setTimeout(() => {
+      setExpandedTabs({
+        recommended: false,
+        today: false,
+        weekly: false
+      });
+    }, 0);
+    return () => clearTimeout(timer);
   }, [selectedCity, selectedDistrict]);
 
   const isExpanded = expandedTabs[activeFoodTab];
@@ -140,9 +143,26 @@ export default function Home() {
     };
   }, []);
 
+  const isEmailVerified = isEmailVerifiedInProfile !== null ? isEmailVerifiedInProfile : user?.isEmailVerified;
+
   return (
     <main className="page-container min-h-screen">
       <Navbar activeTab={activeTab} setActiveTab={(tab: string) => setActiveTab(tab as 'home' | 'explore' | 'offers' | 'settings')} />
+
+      {isAuthenticated && isEmailVerified === false && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-800 dark:text-amber-400 px-4 py-3 text-xs md:text-sm font-bold flex items-center justify-between gap-4 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <p>{LABELS.COMMON.EMAIL_UNVERIFIED_BANNER}</p>
+          </div>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl transition-all cursor-pointer font-bold text-xs"
+          >
+            {LABELS.COMMON.VERIFY_NOW}
+          </button>
+        </div>
+      )}
 
       {activeTab === 'home' ? (
         <>

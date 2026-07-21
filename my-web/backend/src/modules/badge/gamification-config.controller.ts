@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Định nghĩa Controller quản lý cấu hình các quy tắc cộng điểm và giới hạn (GamificationConfig) của hệ thống.
+ * Các file khác hay file này có ý nghĩa như nào: Chỉ cho phép tài khoản vai trò ADMIN truy cập (qua JwtAuthGuard/RolesGuard) để đọc và thay đổi cấu hình điểm.
+ * Các chức năng đặc biệt: getConfig, updateConfig với cơ chế Upsert cho bản ghi singleton cấu hình duy nhất.
+ */
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -26,6 +31,7 @@ export class GamificationConfigController {
         commentPoints: 10,
         likePoints: 5,
         deductionMultiplier: 1.0,
+        dailyCommentLimit: 5,
       };
     }
 
@@ -55,6 +61,10 @@ export class GamificationConfigController {
           dto.deductionMultiplier !== undefined
             ? Number(dto.deductionMultiplier)
             : undefined,
+        dailyCommentLimit:
+          dto.dailyCommentLimit !== undefined
+            ? Number(dto.dailyCommentLimit)
+            : undefined,
       },
       create: {
         id: 'singleton',
@@ -71,6 +81,10 @@ export class GamificationConfigController {
           dto.deductionMultiplier !== undefined
             ? Number(dto.deductionMultiplier)
             : 1.0,
+        dailyCommentLimit:
+          dto.dailyCommentLimit !== undefined
+            ? Number(dto.dailyCommentLimit)
+            : 5,
       },
     });
   }

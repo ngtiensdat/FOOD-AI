@@ -319,7 +319,7 @@ export class UserService {
   }
 
   async getLeaderboard() {
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
         role: { not: UserRole.ADMIN },
         deletedAt: null,
@@ -329,6 +329,7 @@ export class UserService {
         name: true,
         role: true,
         points: true,
+        xp: true,
         level: true,
         badgeTitle: true,
         profile: {
@@ -338,9 +339,19 @@ export class UserService {
         },
       },
       orderBy: {
-        points: 'desc',
+        xp: 'desc',
       },
       take: 10,
     });
+
+    return users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      points: user.xp, // Ánh xạ xp sang points để FE hiển thị đúng chỉ số XP trên bảng xếp hạng
+      level: user.level,
+      badgeTitle: user.badgeTitle,
+      profile: user.profile,
+    }));
   }
 }

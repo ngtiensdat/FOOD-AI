@@ -54,7 +54,7 @@ import { IntentDetectorService } from './services/intent-detector.service';
 import { FoodKnowledgeService } from './services/food-knowledge.service';
 import { RecommendationService } from './services/recommendation.service';
 import { ResponseGeneratorService } from './services/response-generator.service';
-import { RedisService } from './services/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService, WeatherData } from './services/weather.service';
 import { SlotExtractorService } from './services/slot-extractor.service';
@@ -137,9 +137,9 @@ export class AiService implements OnModuleInit {
       where: { id: userId },
       select: { role: true },
     });
-    if (!user || user.role !== UserRole.CUSTOMER) {
+    if (!user) {
       return {
-        reply: MESSAGES.AI.CUSTOMER_ONLY,
+        reply: 'Người dùng không tồn tại.',
         suggestions: [],
       };
     }
@@ -281,8 +281,60 @@ export class AiService implements OnModuleInit {
       const messageCount = chatHistory.length;
 
       // 7. Get User Context & Preferences & Feedback Profile
-      const [profile, favorites, histories, feedbackProfile] =
-        await Promise.all([
+      let userPrefContext = '';
+      let feedbackProfile: any = undefined;
+
+      if (user.role === UserRole.RESTAURANT) {
+        const restaurant = await this.prisma.restaurant.findFirst({
+          where: { ownerId: userId },
+        });
+        if (restaurant) {
+          const foods = await this.prisma.food.findMany({
+            where: { restaurantId: restaurant.id, deletedAt: null },
+            select: { id: true, name: true, price: true },
+          });
+          const foodIds = foods.map((f) => f.id);
+          const [viewCounts, aiCounts] = await Promise.all([
+            this.prisma.history.groupBy({
+              by: ['foodId'],
+              where: { foodId: { in: foodIds } },
+              _count: { foodId: true },
+            }),
+            this.prisma.aiFeedback.groupBy({
+              by: ['foodId'],
+              where: { foodId: { in: foodIds } },
+              _count: { foodId: true },
+            }),
+          ]);
+          const viewMap = new Map(
+            viewCounts.map((v) => [v.foodId, v._count.foodId]),
+          );
+          const aiMap = new Map(
+            aiCounts.map((a) => [a.foodId, a._count.foodId]),
+          );
+
+          userPrefContext =
+            `\nĐÂY LÀ SỐ LIỆU HOẠT ĐỘNG CỦA CỬA HÀNG "${restaurant.name}":\n` +
+            foods
+              .map(
+                (f) =>
+                  `- Món "${f.name}" (giá ${f.price.toLocaleString('vi-VN')}đ): ${viewMap.get(f.id) ?? 0} lượt khách xem trực tiếp, ${aiMap.get(f.id) ?? 0} lượt được AI gợi ý cho khách hàng.`,
+              )
+              .join('\n');
+        } else {
+          userPrefContext = '\nChưa đăng ký cửa hàng trên hệ thống.';
+        }
+      } else if (user.role === UserRole.ADMIN) {
+        const [totalUsers, totalFoods, totalRestaurants, totalReports] =
+          await Promise.all([
+            this.prisma.user.count({ where: { deletedAt: null } }),
+            this.prisma.food.count({ where: { deletedAt: null } }),
+            this.prisma.restaurant.count({ where: { deletedAt: null } }),
+            this.prisma.report.count({ where: { status: 'PENDING' } }),
+          ]);
+        userPrefContext = `\nTHÔNG TIN HỆ THỐNG DÀNH CHO ADMIN:\n- Tổng số người dùng: ${totalUsers}\n- Tổng số món ăn: ${totalFoods}\n- Tổng số nhà hàng: ${totalRestaurants}\n- Báo cáo lỗi/vi phạm chưa xử lý: ${totalReports}`;
+      } else {
+        const [profile, favorites, histories, fbProfile] = await Promise.all([
           this.prisma.userProfile.findUnique({ where: { userId } }),
           this.prisma.favorite.findMany({
             where: { userId },
@@ -298,13 +350,14 @@ export class AiService implements OnModuleInit {
           }),
           this.aiLearningService.getUserPreferenceProfile(userId),
         ]);
-
-      const userPrefContext = this.promptBuilderService.buildUserPrefContext(
-        profile,
-        favorites,
-        histories,
-        feedbackProfile,
-      );
+        feedbackProfile = fbProfile;
+        userPrefContext = this.promptBuilderService.buildUserPrefContext(
+          profile,
+          favorites,
+          histories,
+          feedbackProfile,
+        );
+      }
 
       // 8. RAG Embedding Retrieval
       const userVector = await this.openaiService.getEmbedding(
@@ -488,6 +541,7 @@ export class AiService implements OnModuleInit {
         promptInstructions,
         JSON.stringify(currentState.slots),
         candidatesSection,
+        user.role,
       );
 
       // 10. Generate response in single OpenAI Completion (delegated to ResponseGeneratorService)
@@ -822,5 +876,15 @@ export class AiService implements OnModuleInit {
 
   async updatePostEmbedding(postId: number) {
     return this.vectorSyncService.updatePostEmbedding(postId);
+  }
+
+  async semanticSearch(query: string, limit = 20): Promise<SearchResult[]> {
+    const vector = await this.getEmbedding(query);
+    return this.vectorRepository.hybridSearch(
+      vector,
+      undefined,
+      undefined,
+      limit,
+    );
   }
 }

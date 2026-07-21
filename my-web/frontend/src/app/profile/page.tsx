@@ -59,7 +59,16 @@ function ProfileContent() {
     modals
   } = useProfileData(targetId);
 
+  const tabParam = searchParams.get('tab');
   const router = useRouter();
+
+  useEffect(() => {
+    if (tabParam === 'loyalty') {
+      router.replace('/vouchers');
+    } else if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, setActiveTab, router]);
 
   // Social Feed local states
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -163,13 +172,10 @@ function ProfileContent() {
         <div className="flex items-center mt-6 border-b border-gray-100 dark:border-gray-200 bg-white dark:bg-gray-100 rounded-t-card px-4 md:px-8 transition-colors duration-300">
           {[
             { id: 'posts', label: LABELS.SETTINGS.PROFILE.TABS.POSTS },
-            { id: 'loyalty', label: LABELS.LOYALTY.TITLE },
             { id: 'about', label: LABELS.SETTINGS.PROFILE.TABS.ABOUT },
             { id: 'friends', label: LABELS.SETTINGS.PROFILE.TABS.FRIENDS },
             { id: 'photos', label: LABELS.SETTINGS.PROFILE.TABS.PHOTOS },
           ].map(tab => {
-            // Only show loyalty tab for Customer role
-            if (tab.id === 'loyalty' && profile.role !== 'CUSTOMER') return null;
             return (
               <Button
                 key={tab.id}

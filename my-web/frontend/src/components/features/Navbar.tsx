@@ -2,19 +2,22 @@
  * Mục đích file này để làm gì: Component Thanh điều hướng (Navbar) chính của website.
  * Các file khác hay file này có ý nghĩa như nào: Hiển thị thanh menu ngang ở trên cùng, chứa logo, các tab chuyển hướng chính và nút tài khoản người dùng/menu mở rộng.
  * Các chức năng đặc biệt: Tích hợp chế độ Dark Mode (ThemeToggle), tự động theo dõi trạng thái đăng nhập để hiển thị nút Đăng nhập hoặc Avatar.
+ * Kiến thức: DIP – notification logic được ủy quyền cho useNotifications hook.
  */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
-import { notificationService } from '@/services/notification.service';
+import { useNotifications, NotificationItem } from '@/hooks/useNotifications';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { UserDropdown } from './UserDropdown';
+import { ChatCenter } from './chat/ChatCenter';
+import { chatService } from '@/services/chat.service';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -25,11 +28,51 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
-  const { user, logout, isAdmin, isRestaurant } = useAuth();
+  const { user, logout, isAdmin, isRestaurant, isCustomer } = useAuth();
+  const { socket } = useSocket();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
   const prevScrollPos = useRef(0);
+
+  const [showChatCenter, setShowChatCenter] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  const fetchUnreadMessagesCount = async () => {
+    if (!user) return;
+    try {
+      const convs = await chatService.getConversations('inbox');
+      const requests = await chatService.getConversations('requests');
+      
+      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as any).isRead && c.lastMessage.sender.id !== user.id).length;
+      const unreadRequests = requests.length;
+      
+      setUnreadMessagesCount(unreadInbox + unreadRequests);
+    } catch (e) {
+      console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadMessagesCount();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, showChatCenter]); // use user?.id (stable primitive) not user object to prevent infinite re-render
+
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+
+    const handleMsg = () => {
+      fetchUnreadMessagesCount();
+    };
+
+    socket.on('direct_message', handleMsg);
+    return () => {
+      socket.off('direct_message', handleMsg);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, user?.id]); // stable primitive dependency
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,84 +100,20 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { socket } = useSocket();
-  interface NotificationItem {
-    id: string;
-    title: string;
-    content: string;
-    type: 'LIKE' | 'COMMENT' | 'REPLY' | 'SHARE' | 'LEVEL_UP' | 'PROFILE_UPDATE' | 'SYSTEM' | 'WARNING' | 'PROMOTION' | 'MODERATION_REMOVE' | 'MODERATION_RESOLVE' | 'MODERATION_DISMISS' | string;
-    isRead: boolean;
-    senderAvatar?: string;
-    createdAt: string;
-    postId?: number;
-  }
-
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [activeNotification, setActiveNotification] = useState<NotificationItem | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-
-  useEffect(() => {
-    if (user?.id) {
-      const fetchNotifications = async () => {
-        try {
-          const res = await notificationService.getNotifications(1, 50);
-          setNotifications(res || []);
-        } catch (e) {
-          console.error('Lỗi khi tải thông báo:', e);
-        }
-      };
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewNotification = (notif: NotificationItem) => {
-      setNotifications((prev) => [notif, ...prev]);
-      toast.success(notif.title || LABELS.NAV.NOTIFICATIONS.NEW_NOTIFICATION);
-    };
-
-    socket.on('notification', handleNewNotification);
-
-    return () => {
-      socket.off('notification', handleNewNotification);
-    };
-  }, [socket]);
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const handleNotificationClick = async (notifId: string) => {
-    try {
-      await notificationService.markAsRead(notifId);
-      const updated = notifications.map(n => n.id === notifId ? { ...n, isRead: true } : n);
-      setNotifications(updated);
-    } catch (e) {
-      console.error('Lỗi khi đọc thông báo:', e);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationService.markAllAsRead();
-      const updated = notifications.map(n => ({ ...n, isRead: true }));
-      setNotifications(updated);
-    } catch (e) {
-      console.error('Lỗi khi đọc tất cả thông báo:', e);
-    }
-  };
-
-  const handleClearAll = async () => {
-    try {
-      await notificationService.clearAll();
-      setNotifications([]);
-    } catch (e) {
-      console.error('Lỗi khi xoá tất cả thông báo:', e);
-    }
-  };
+  // DIP: Notification logic được ủy quyền cho useNotifications hook
+  const {
+    notifications,
+    showNotifications,
+    setShowNotifications,
+    activeNotification,
+    setActiveNotification,
+    showDetailModal,
+    setShowDetailModal,
+    unreadCount,
+    handleNotificationClick,
+    handleMarkAllAsRead,
+    handleClearAll,
+  } = useNotifications({ userId: user?.id, socket });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -205,6 +184,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     if (tabId === 'dashboard') return '/dashboard';
     if (tabId === 'restaurant-admin') return '/restaurant-admin';
     if (tabId === 'admin') return '/admin';
+    if (tabId === 'vouchers') return '/vouchers';
     if (tabId === 'home') return '/';
     return `/?tab=${tabId}`;
   };
@@ -215,6 +195,8 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     router.prefetch('/dashboard');
     router.prefetch('/restaurant-admin');
     router.prefetch('/admin');
+    router.prefetch('/profile');
+    router.prefetch('/vouchers');
     router.prefetch('/');
   }, [router]);
 
@@ -228,6 +210,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     else if (pathname === '/dashboard') currentActive = 'dashboard';
     else if (pathname === '/restaurant-admin') currentActive = 'restaurant-admin';
     else if (pathname === '/admin') currentActive = 'admin';
+    else if (pathname === '/vouchers') currentActive = 'vouchers';
     else currentActive = 'home';
   }
 
@@ -239,6 +222,9 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   ];
 
   if (user) {
+    if (isCustomer) {
+      tabs.push({ id: 'vouchers', label: LABELS.LOYALTY.TITLE || 'Ví Voucher', icon: Ticket });
+    }
     tabs.push({ id: 'dashboard', label: LABELS.AUTH?.PROFILE || 'Trang cá nhân', icon: User });
     if (isRestaurant) {
       tabs.push({ id: 'restaurant-admin', label: LABELS.RESTAURANT?.MERCHANT_HUB || 'Quản lý quán ăn', icon: Store });
@@ -272,6 +258,7 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   if (pathname === '/' && setActiveTab && (tab.id === 'home' || tab.id === 'offers')) {
                     e.preventDefault();
                     setActiveTab(tab.id);
+                    router.push(tab.id === 'home' ? '/' : `/?tab=${tab.id}`);
                   }
                 }}
                 className={`h-full px-6 flex items-center justify-center border-b-4 transition-all ${
@@ -305,6 +292,24 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
         {user ? (
           <div className="flex items-center gap-3 relative">
+            {/* Direct Message Icon */}
+            <div className="relative">
+              <Button
+                onClick={() => setShowChatCenter(!showChatCenter)}
+                className="p-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary rounded-xl hover:bg-gray-50/50 dark:hover:bg-slate-900/50 transition-colors relative focus:outline-none cursor-pointer"
+                aria-label="Direct Messages"
+                variant="none"
+                size="none"
+              >
+                <MessageCircle size={20} className={unreadMessagesCount > 0 ? 'animate-bounce' : ''} />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center animate-pulse">
+                    {unreadMessagesCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+
             {/* Notification Bell */}
             <div className="relative">
               <Button
@@ -526,6 +531,14 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           </div>
         </div>
       </>
+    )}
+    {user && user.id && (
+      <ChatCenter
+        userId={user.id}
+        isOpen={showChatCenter}
+        onClose={() => setShowChatCenter(false)}
+        onOpen={() => setShowChatCenter(true)}
+      />
     )}
   </>
 );

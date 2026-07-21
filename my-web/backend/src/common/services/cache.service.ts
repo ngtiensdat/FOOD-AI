@@ -3,7 +3,7 @@
 // Thiết kế: Sử dụng Dependency Injection của NestJS để gọi trực tiếp RedisService.
 
 import { Injectable, Logger } from '@nestjs/common';
-import { RedisService } from '../../modules/ai/services/redis.service';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class CacheService {

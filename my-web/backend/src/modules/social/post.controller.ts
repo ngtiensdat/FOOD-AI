@@ -14,7 +14,10 @@ import { PostService } from './post.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
-import { PostType, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Controller('posts')
 export class PostController {
@@ -40,22 +43,7 @@ export class PostController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createPost(
-    @GetUser('id') userId: number,
-    @Body()
-    dto: {
-      title?: string;
-      content?: string;
-      image?: string;
-      images?: string[];
-      rating?: number;
-      postType?: PostType;
-      restaurantId?: number;
-      foodId?: number;
-      isShared?: boolean;
-      sharedFromId?: number;
-    },
-  ) {
+  async createPost(@GetUser('id') userId: number, @Body() dto: CreatePostDto) {
     return this.postService.createPost(userId, dto);
   }
 
@@ -73,7 +61,7 @@ export class PostController {
   async createComment(
     @GetUser('id') userId: number,
     @Param('id', ParseIntPipe) postId: number,
-    @Body() dto: { content: string; parentId?: number },
+    @Body() dto: CreateCommentDto,
   ) {
     return this.postService.createComment(userId, postId, dto);
   }
@@ -119,17 +107,7 @@ export class PostController {
     @GetUser('id') userId: number,
     @GetUser('role') role: UserRole,
     @Param('id', ParseIntPipe) postId: number,
-    @Body()
-    dto: {
-      title?: string;
-      content?: string;
-      image?: string;
-      images?: string[];
-      rating?: number;
-      postType?: PostType;
-      restaurantId?: number;
-      foodId?: number;
-    },
+    @Body() dto: UpdatePostDto,
   ) {
     return this.postService.updatePost(userId, role, postId, dto);
   }

@@ -18,6 +18,7 @@ import {
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtAuthOptionalGuard } from '../../common/guards/jwt-auth-optional.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -27,6 +28,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { Throttle } from '@nestjs/throttler';
@@ -81,18 +83,20 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async deleteAccount(
     @GetUser('id') userId: number,
-    @Body() body: { password?: string },
+    @Body() body: DeleteAccountDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.deleteAccount(userId, body.password);
     // Xóa cookies sau khi xóa tài khoản thành công
     const isProd = process.env.NODE_ENV === 'production';
     res.clearCookie('accessToken', {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
     });
     res.clearCookie('refreshToken', {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
@@ -112,15 +116,24 @@ export class AuthController {
     return { user: result.user };
   }
 
+  @UseGuards(JwtAuthOptionalGuard)
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
+  async logout(
+    @GetUser() user: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (user && user.id) {
+      await this.authService.clearPosSession(user.id);
+    }
     const isProd = process.env.NODE_ENV === 'production';
     res.clearCookie('accessToken', {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
     });
     res.clearCookie('refreshToken', {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
@@ -175,13 +188,15 @@ export class AuthController {
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
     const isProd = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      maxAge: 15 * 60 * 1000, // 15 phút
+      maxAge: 30 * 60 * 1000, // 30 phút
     });
 
     res.cookie('refreshToken', refreshToken, {
+      path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',

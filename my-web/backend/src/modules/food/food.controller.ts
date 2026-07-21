@@ -57,7 +57,11 @@ export class FoodController {
 
   @Get('my-foods')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(PrismaClient.UserRole.RESTAURANT, PrismaClient.UserRole.ADMIN)
+  @Roles(
+    PrismaClient.UserRole.RESTAURANT,
+    PrismaClient.UserRole.STAFF,
+    PrismaClient.UserRole.ADMIN,
+  )
   getMerchantFoods(
     @GetUser() user: PrismaClient.User,
     @Query('page') page?: string,

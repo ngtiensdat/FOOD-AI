@@ -5,9 +5,13 @@
 // Các biến, hàm đặc biệt trong file: PromptBuilderService.
 
 import { Injectable } from '@nestjs/common';
-import { Favorite, History, UserProfile } from '@prisma/client';
+import { Favorite, History, UserProfile, UserRole } from '@prisma/client';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { SYSTEM_PROMPT_TEMPLATE } from '../prompts/system.prompt';
+import {
+  SYSTEM_PROMPT_TEMPLATE,
+  MERCHANT_SYSTEM_PROMPT_TEMPLATE,
+  ADMIN_SYSTEM_PROMPT_TEMPLATE,
+} from '../prompts/system.prompt';
 import { RECOMMENDATION_PROMPT_TEMPLATE } from '../prompts/recommendation.prompt';
 import { SLOT_FILLING_PROMPT_TEMPLATE } from '../prompts/slot-filling.prompt';
 import { AI_CONSTANTS } from '../../../common/constants/ai.constant';
@@ -149,11 +153,19 @@ export class PromptBuilderService {
     promptInstructions: string,
     currentSlotsJson: string,
     candidatesSection: string,
+    userRole: UserRole = UserRole.CUSTOMER,
   ): Promise<string> {
-    const template = PromptTemplate.fromTemplate(SYSTEM_PROMPT_TEMPLATE);
+    let rawTemplate = SYSTEM_PROMPT_TEMPLATE;
+    if (userRole === UserRole.RESTAURANT) {
+      rawTemplate = MERCHANT_SYSTEM_PROMPT_TEMPLATE;
+    } else if (userRole === UserRole.ADMIN) {
+      rawTemplate = ADMIN_SYSTEM_PROMPT_TEMPLATE;
+    }
+
+    const template = PromptTemplate.fromTemplate(rawTemplate);
     return template.format({
       currentDayTimeStr,
-      userPrefContext: userPrefContext || '- Chưa có thông tin sở thích',
+      userPrefContext: userPrefContext || '- Chưa có thông tin',
       promptInstructions,
       currentSlotsJson,
       candidatesSection,

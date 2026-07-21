@@ -2,7 +2,7 @@ process.env.JWT_SECRET = 'test-secret';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { WeatherService, WeatherData } from './weather.service';
-import { RedisService } from './redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 
 describe('WeatherService', () => {
   let service: WeatherService;

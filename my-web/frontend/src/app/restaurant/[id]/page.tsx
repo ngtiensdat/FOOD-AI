@@ -1,6 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import RestaurantClientPage from './RestaurantClientPage';
+import { LABELS } from '@/constants/labels';
+import { BACKEND_URL } from '@/configs/api.config';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -8,7 +10,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = BACKEND_URL;
   
   try {
     const res = await fetch(`${apiUrl}/restaurants/${id}/public`, {
@@ -17,8 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     
     if (!res.ok) {
       return {
-        title: 'Không tìm thấy nhà hàng | FOOD AI',
-        description: 'Không tìm thấy thông tin nhà hàng yêu cầu.',
+        title: LABELS.METADATA.RESTAURANT_NOT_FOUND_TITLE,
+        description: LABELS.METADATA.RESTAURANT_NOT_FOUND_DESC,
       };
     }
     
@@ -29,13 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     
     if (!restaurant) {
       return {
-        title: 'Không tìm thấy nhà hàng | FOOD AI',
-        description: 'Không tìm thấy thông tin nhà hàng yêu cầu.',
+        title: LABELS.METADATA.RESTAURANT_NOT_FOUND_TITLE,
+        description: LABELS.METADATA.RESTAURANT_NOT_FOUND_DESC,
       };
     }
 
     const name = restaurant.name;
-    const description = restaurant.description || `Khám phá các món ăn ngon tại ${name} trên FOOD AI.`;
+    const description = restaurant.description || `${LABELS.METADATA.RESTAURANT_DEFAULT_DESC_PREFIX}${name}${LABELS.METADATA.RESTAURANT_DEFAULT_DESC_SUFFIX}`;
     const coverImage = restaurant.profile?.coverImage || '';
 
     return {
@@ -57,8 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch (error) {
     console.error('Error generating metadata for restaurant:', error);
     return {
-      title: 'Chi tiết nhà hàng | FOOD AI',
-      description: 'Khám phá quán ăn ngon trên hệ thống FOOD AI.',
+      title: LABELS.METADATA.RESTAURANT_DETAIL_TITLE,
+      description: LABELS.METADATA.RESTAURANT_DETAIL_DESC,
     };
   }
 }

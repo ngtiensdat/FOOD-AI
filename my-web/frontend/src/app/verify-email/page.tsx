@@ -118,9 +118,10 @@ function VerifyEmailForm() {
           router.push('/');
         }, 1500);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || LABELS.AUTH.VERIFY_OTP_INVALID);
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.AUTH.VERIFY_OTP_INVALID);
     } finally {
       setIsLoading(false);
     }
@@ -134,8 +135,9 @@ function VerifyEmailForm() {
       const response = await authService.resendOtp(email);
       toast.success(response?.message || LABELS.AUTH.RESEND_OTP_SUCCESS);
       setResendCooldown(60); // 60s cooldown
-    } catch (err: any) {
-      setError(err?.message || LABELS.AUTH.RESEND_OTP_ERROR);
+    } catch (err: unknown) {
+      const errorResponse = err as { message?: string };
+      setError(errorResponse?.message || LABELS.AUTH.RESEND_OTP_ERROR);
     }
   };
 

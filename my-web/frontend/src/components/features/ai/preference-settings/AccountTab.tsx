@@ -2,20 +2,10 @@
 
 import React from 'react';
 import { LABELS } from '@/constants/labels';
-
-interface UserProfileData {
-  avatar?: string | null;
-}
-
-interface UserData {
-  name: string;
-  email: string;
-  role: string;
-  profile?: UserProfileData | null;
-}
+import { User } from '@/types/user';
 
 interface AccountTabProps {
-  user: UserData | null;
+  user: Partial<User> | null;
 }
 
 export function AccountTab({ user }: AccountTabProps) {

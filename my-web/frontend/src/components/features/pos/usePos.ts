@@ -1,0 +1,679 @@
+import { useState, useEffect, useMemo } from 'react';
+import { foodService } from '@/services/food.service';
+import { restaurantService } from '@/services/restaurant.service';
+import { voucherService } from '@/services/voucher.service';
+import { orderService } from '@/services/order.service';
+import { categoryService, CategoryGroup, Category } from '@/services/category.service';
+import { tableService, DiningTable } from '@/services/table.service';
+import { toast } from '@/store/useToastStore';
+import { User, UserRole } from '@/types/user';
+import { Restaurant } from '@/types/restaurant';
+import { LABELS } from '@/constants/labels';
+import { posTerminalService } from '@/services/pos-terminal.service';
+import { useSocket } from '@/providers/socket-provider';
+
+export interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  image?: string | null;
+  quantity: number;
+  stock: number;
+}
+
+export interface PosFoodItem {
+  id: number;
+  name: string;
+  price: number;
+  description?: string | null;
+  image?: string | null;
+  tags?: string[];
+  stock: number; // Giả lập hoặc mặc định
+  categoryId?: number | null;
+  restaurantId?: number | null;
+}
+
+interface UsePosParams {
+  user: User | Partial<User> | null;
+}
+
+export function usePos({ user }: UsePosParams) {
+  const t = LABELS.POS;
+  const { socket } = useSocket();
+  
+  const [branches, setBranches] = useState<Restaurant[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  
+  // POS Terminal states
+  const [activeTerminal, setActiveTerminal] = useState<{ id: number; name: string; code: string; restaurantId: number } | null>(null);
+  const [loadingTerminal, setLoadingTerminal] = useState(true);
+  
+  const [allFoods, setAllFoods] = useState<PosFoodItem[]>([]);
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(false);
+  
+  // Table states
+  const [tables, setTables] = useState<DiningTable[]>([]);
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTableId = params.get('tableId');
+      if (urlTableId) {
+        const numId = Number(urlTableId);
+        return isNaN(numId) ? null : numId;
+      }
+    }
+    return null;
+  });
+  const [tableCarts, setTableCarts] = useState<Record<number, CartItem[]>>({});
+
+  // Đồng bộ selectedTableId với URL để hỗ trợ nút Quay lại (Back/Forward) và tải lại trang
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlTableId = params.get('tableId');
+
+    if (selectedTableId !== null) {
+      const currentUrlId = urlTableId ? Number(urlTableId) : null;
+      if (currentUrlId !== selectedTableId) {
+        window.history.pushState(
+          { tableId: selectedTableId },
+          '',
+          `/pos?tableId=${selectedTableId}`
+        );
+      }
+    } else {
+      if (urlTableId !== null) {
+        window.history.pushState(null, '', '/pos');
+      }
+    }
+  }, [selectedTableId]);
+
+  // Lắng nghe sự kiện popstate để cập nhật state khi người dùng nhấn nút Quay lại của trình duyệt
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlTableId = params.get('tableId');
+      if (urlTableId) {
+        const numId = Number(urlTableId);
+        if (!isNaN(numId)) {
+          setSelectedTableId(numId);
+        }
+      } else {
+        setSelectedTableId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+  
+  // Category filter states
+  const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+  
+  // Voucher verify/apply states
+  const [voucherCode, setVoucherCode] = useState('');
+  const [verifyingVoucher, setVerifyingVoucher] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<{
+    code: string;
+    discountValue: string;
+    title: string;
+    discountAmount: number;
+  } | null>(null);
+
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+  
+  // Load active terminal session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('active_pos_terminal');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (user?.role === UserRole.STAFF) {
+            if (user.restaurantId === parsed.restaurantId) {
+              setActiveTerminal(parsed);
+            } else {
+              localStorage.removeItem('active_pos_terminal');
+            }
+          } else {
+            setActiveTerminal(parsed);
+          }
+        } catch {
+          localStorage.removeItem('active_pos_terminal');
+        }
+      }
+      setLoadingTerminal(false);
+    }
+  }, [user]);
+
+  // Lắng nghe sự kiện bị đá phiên đăng nhập máy POS qua WebSocket
+  useEffect(() => {
+    if (!socket || !activeTerminal) return;
+
+    const handlePosKicked = (data: { terminalId: number; terminalName: string; kickedBy: string }) => {
+      if (data.terminalId === activeTerminal.id) {
+        localStorage.removeItem('active_pos_terminal');
+        setActiveTerminal(null);
+        toast.error(`Thiết bị POS "${data.terminalName}" đã được đăng nhập từ tài khoản của nhân viên "${data.kickedBy}". Phiên làm việc của bạn trên máy này đã kết thúc.`);
+      }
+    };
+
+    socket.on('pos_kicked', handlePosKicked);
+    return () => {
+      socket.off('pos_kicked', handlePosKicked);
+    };
+  }, [socket, activeTerminal]);
+
+  // Fetch branches for RESTAURANT role
+  useEffect(() => {
+    if (!user) return;
+    
+    if (user.role === UserRole.RESTAURANT) {
+      const fetchBranches = async () => {
+        try {
+          const res = await restaurantService.getMyBranches();
+          setBranches(res || []);
+          if (res && res.length > 0) {
+            setSelectedBranchId(res[0].id);
+          }
+        } catch (e) {
+          console.error('Lỗi khi tải chi nhánh:', e);
+          toast.error(t.TOAST.LOAD_BRANCHES_ERROR);
+        }
+      };
+      fetchBranches();
+    } else if (user.role === UserRole.STAFF && user.restaurantId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedBranchId(user.restaurantId);
+    }
+  }, [user, t]);
+
+  // Fetch foods and categories when branch changes
+  useEffect(() => {
+    if (!selectedBranchId) return;
+    if (user?.role === UserRole.STAFF && !activeTerminal) return;
+
+    const fetchMenuAndCategories = async () => {
+      setLoadingMenu(true);
+      try {
+        // 1. Lấy tất cả món ăn của quán từ foodService
+        const foodsRes = await foodService.getMyFoods();
+        // Gán stock giả lập là 99 cho mỗi món
+        const mappedFoods: PosFoodItem[] = (foodsRes || []).map((f: any) => ({
+          ...f,
+          stock: 99, // Mặc định tồn kho là 99
+        }));
+        setAllFoods(mappedFoods);
+
+        // 2. Lấy phân cấp danh mục từ categoryService
+        const catsRes = await categoryService.getPublicHierarchy(selectedBranchId);
+        setCategoryGroups(catsRes || []);
+        
+        // Reset category filter khi đổi chi nhánh
+        setActiveGroupId(null);
+        setActiveCategoryId(null);
+
+        // 3. Lấy bàn ăn của quán
+        const tablesRes = await tableService.getTables(selectedBranchId);
+        setTables(tablesRes || []);
+
+        // Reset selected table
+        setSelectedTableId(null);
+        setTableCarts({});
+      } catch (e) {
+        console.error('Lỗi khi tải menu/danh mục POS:', e);
+        toast.error(t.TOAST.LOAD_MENU_ERROR);
+      } finally {
+        setLoadingMenu(false);
+      }
+    };
+    fetchMenuAndCategories();
+  }, [selectedBranchId, activeTerminal, user?.role, t]);
+
+  // Lọc món ăn theo chi nhánh, tìm kiếm và phân loại danh mục
+  const filteredMenu = useMemo(() => {
+    // Lọc theo chi nhánh được chọn trước
+    let result = allFoods.filter((item) => item.restaurantId === selectedBranchId);
+
+    // Lọc theo từ khóa tìm kiếm
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter((item) => item.name.toLowerCase().includes(q));
+    }
+
+    // Lọc theo danh mục
+    if (activeCategoryId !== null) {
+      // Lọc chính xác theo categoryId
+      result = result.filter((item) => item.categoryId === activeCategoryId);
+    } else if (activeGroupId !== null) {
+      // Lọc theo tất cả category thuộc group được chọn
+      const currentGroup = categoryGroups.find((g) => g.id === activeGroupId);
+      if (currentGroup) {
+        const subCatIds = (currentGroup.categories || []).map((c) => c.id);
+        // Bao gồm cả trường hợp món ăn gán trực tiếp vào Group (nếu backend cho phép gán categoryId = groupId)
+        // hoặc món ăn thuộc các sub-category con.
+        result = result.filter(
+          (item) =>
+            item.categoryId !== null &&
+            item.categoryId !== undefined &&
+            (subCatIds.includes(item.categoryId) || item.categoryId === activeGroupId)
+        );
+      }
+    }
+
+    return result;
+  }, [allFoods, selectedBranchId, searchQuery, activeGroupId, activeCategoryId, categoryGroups]);
+
+  // Load table cart when selectedTableId changes
+  useEffect(() => {
+    if (selectedTableId !== null) {
+      setCart(tableCarts[selectedTableId] || []);
+    } else {
+      setCart([]);
+    }
+    setVoucherCode('');
+    setAppliedVoucher(null);
+    setPaymentMethod('CASH');
+  }, [selectedTableId]);
+
+  const setTableStatusOnServer = async (tableId: number, status: 'FREE' | 'OCCUPIED') => {
+    try {
+      await tableService.updateTable(tableId, { status });
+      setTables(prev => prev.map(t => t.id === tableId ? { ...t, status } : t));
+    } catch (e) {
+      console.error(`Lỗi cập nhật trạng thái bàn ${tableId} sang ${status}:`, e);
+    }
+  };
+
+  const handleSelectTable = async (tableId: number) => {
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+    
+    // Chỉ chọn bàn, không tự động đặt OCCUPIED nếu giỏ hàng rỗng
+    setSelectedTableId(tableId);
+  };
+
+  const handleReleaseTable = async (tableId: number) => {
+    try {
+      await setTableStatusOnServer(tableId, 'FREE');
+      
+      setTableCarts(prev => {
+        const copy = { ...prev };
+        delete copy[tableId];
+        return copy;
+      });
+
+      if (selectedTableId === tableId) {
+        setSelectedTableId(null);
+        setCart([]);
+      }
+      toast.success(t.TOAST.RELEASE_SUCCESS);
+    } catch (e) {
+      toast.error(t.TOAST.RELEASE_ERROR);
+    }
+  };
+
+  const handleTransferTable = async (toTableId: number) => {
+    if (selectedTableId === null) {
+      toast.error(t.TOAST.SELECT_TABLE_FIRST);
+      return;
+    }
+    const toTable = tables.find(t => t.id === toTableId);
+    if (!toTable || toTable.status !== 'FREE') {
+      toast.error(t.TOAST.TABLE_TARGET_FREE);
+      return;
+    }
+
+    try {
+      await tableService.transferTable({
+        fromTableId: selectedTableId,
+        toTableId,
+      });
+
+      // Di chuyển giỏ hàng
+      const fromCart = tableCarts[selectedTableId] || [];
+      setTableCarts((prev) => {
+        const copy = { ...prev };
+        copy[toTableId] = fromCart;
+        delete copy[selectedTableId];
+        return copy;
+      });
+
+      // Cập nhật state tables local
+      const fromId = selectedTableId;
+      setTables((prev) =>
+        prev.map((t) => {
+          if (t.id === fromId) return { ...t, status: 'FREE' };
+          if (t.id === toTableId) return { ...t, status: 'OCCUPIED' };
+          return t;
+        })
+      );
+
+      // Chuyển sang bàn mới
+      setSelectedTableId(toTableId);
+      toast.success(t.TOAST.TRANSFER_SUCCESS(toTable.name));
+    } catch (e) {
+      console.error('Lỗi chuyển bàn:', e);
+      toast.error(t.TOAST.TRANSFER_ERROR);
+    }
+  };
+
+  // Handlers for cart
+  const addToCart = (food: PosFoodItem) => {
+    if (selectedTableId === null) {
+      toast.error(t.TOAST.SELECT_TABLE_ORDER);
+      return;
+    }
+    if (food.stock <= 0) {
+      toast.error(t.TOAST.OUT_OF_STOCK(food.name));
+      return;
+    }
+
+    // Nếu giỏ hàng hiện tại đang trống, tự động chiếm bàn
+    const currentTableCart = tableCarts[selectedTableId] || [];
+    if (currentTableCart.length === 0) {
+      setTableStatusOnServer(selectedTableId, 'OCCUPIED');
+    }
+
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === food.id);
+      let newCart;
+      if (existing) {
+        if (existing.quantity >= food.stock) {
+          toast.error(t.TOAST.STOCK_LIMIT(food.stock));
+          return prev;
+        }
+        newCart = prev.map((item) =>
+          item.id === food.id ? { ...item, quantity: item.quantity + 1 } : item,
+        );
+      } else {
+        newCart = [...prev, { id: food.id, name: food.name, price: food.price, image: food.image, quantity: 1, stock: food.stock }];
+      }
+      setTableCarts(tc => ({ ...tc, [selectedTableId!]: newCart }));
+      return newCart;
+    });
+  };
+
+  const updateCartQuantity = (foodId: number, delta: number) => {
+    if (selectedTableId === null) return;
+    setCart((prev) => {
+      const newCart = prev
+        .map((item) => {
+          if (item.id === foodId) {
+            const nextQty = item.quantity + delta;
+            if (nextQty <= 0) return null;
+            if (nextQty > item.stock) {
+              toast.error(t.TOAST.STOCK_EXCEEDED(item.stock));
+              return item;
+            }
+            return { ...item, quantity: nextQty };
+          }
+          return item;
+        })
+        .filter(Boolean) as CartItem[];
+      setTableCarts(tc => ({ ...tc, [selectedTableId!]: newCart }));
+      
+      // Nếu sau khi update giỏ hàng rỗng, tự động giải phóng bàn
+      if (newCart.length === 0) {
+        setTableStatusOnServer(selectedTableId!, 'FREE');
+      }
+      return newCart;
+    });
+  };
+
+  const removeFromCart = (foodId: number) => {
+    if (selectedTableId === null) return;
+    setCart((prev) => {
+      const newCart = prev.filter((item) => item.id !== foodId);
+      setTableCarts(tc => ({ ...tc, [selectedTableId!]: newCart }));
+      
+      // Nếu sau khi xóa giỏ hàng rỗng, tự động giải phóng bàn
+      if (newCart.length === 0) {
+        setTableStatusOnServer(selectedTableId!, 'FREE');
+      }
+      return newCart;
+    });
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    setVoucherCode('');
+    setAppliedVoucher(null);
+    setPaymentMethod('CASH');
+    if (selectedTableId !== null) {
+      setTableCarts(tc => {
+        const copy = { ...tc };
+        delete copy[selectedTableId];
+        return copy;
+      });
+      // Tự động giải phóng bàn
+      setTableStatusOnServer(selectedTableId, 'FREE');
+    }
+  };
+
+  // Cart statistics
+  const cartTotals = useMemo(() => {
+    const totalItems = cart.reduce((acc, curr) => acc + curr.quantity, 0);
+    const subtotal = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
+    
+    let discountAmount = 0;
+    if (appliedVoucher) {
+      const val = appliedVoucher.discountValue;
+      if (val.includes('%')) {
+        const percent = Number(val.replace(/[^0-9]/g, '')) || 0;
+        discountAmount = (subtotal * percent) / 100;
+      } else {
+        discountAmount = Number(val.replace(/[^0-9]/g, '')) || 0;
+      }
+    }
+    
+    const total = Math.max(0, subtotal - discountAmount);
+    return { totalItems, subtotal, discountAmount, total };
+  }, [cart, appliedVoucher]);
+
+  // Verify and Apply Voucher from customer loyalty points
+  const handleVerifyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVerifyingVoucher(true);
+    try {
+      const res = await voucherService.verifyVoucher(voucherCode.trim());
+      if (res && res.isValid) {
+        const voucher = res.details;
+        
+        let minSpendValue = 0;
+        if (voucher.minSpend) {
+          minSpendValue = Number(voucher.minSpend.replace(/[^0-9]/g, '')) || 0;
+        }
+
+        if (cartTotals.subtotal < minSpendValue) {
+          toast.error(t.TOAST.MIN_SPEND_REQUIRED(voucher.minSpend));
+          setVerifyingVoucher(false);
+          return;
+        }
+
+        let discountVal = 0;
+        if (voucher.discountValue.includes('%')) {
+          const percent = Number(voucher.discountValue.replace(/[^0-9]/g, '')) || 0;
+          discountVal = (cartTotals.subtotal * percent) / 100;
+        } else {
+          discountVal = Number(voucher.discountValue.replace(/[^0-9]/g, '')) || 0;
+        }
+
+        setAppliedVoucher({
+          code: voucherCode.trim(),
+          title: voucher.title,
+          discountValue: voucher.discountValue,
+          discountAmount: discountVal,
+        });
+        toast.success(t.TOAST.VOUCHER_APPLIED(voucher.discountValue));
+      } else {
+        toast.error(res.reason || t.TOAST.VOUCHER_INVALID);
+      }
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      console.error('Lỗi kiểm tra voucher:', e);
+      toast.error(e?.message || t.TOAST.VOUCHER_VERIFY_ERROR);
+    } finally {
+      setVerifyingVoucher(false);
+    }
+  };
+
+  const handleCancelVoucher = () => {
+    setVoucherCode('');
+    setAppliedVoucher(null);
+  };
+
+  const handleLoginTerminal = async (code: string, password?: string) => {
+    try {
+      const res = await posTerminalService.loginPosTerminal({ code, password });
+      localStorage.setItem('active_pos_terminal', JSON.stringify(res));
+      setActiveTerminal(res);
+      toast.success(LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.SUCCESS);
+      return true;
+    } catch (err: any) {
+      const msg = err?.message || LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.ERROR;
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const handleLogoutTerminal = async () => {
+    if (!activeTerminal) return;
+    try {
+      await posTerminalService.logoutPosTerminal(activeTerminal.id);
+    } catch (err) {
+      console.warn('Lỗi khi đăng xuất máy POS:', err);
+    }
+    localStorage.removeItem('active_pos_terminal');
+    setActiveTerminal(null);
+    toast.success('Đã đăng xuất máy POS thành công.');
+  };
+
+  // Submit Order
+  const handleCreateOrder = async () => {
+    if (cart.length === 0 || !selectedBranchId || selectedTableId === null) return;
+    
+    setSubmittingOrder(true);
+    try {
+      // 1. Gửi API tạo Order thật lên Server
+      const payload = {
+        restaurantId: selectedBranchId,
+        tableId: selectedTableId,
+        posTerminalId: activeTerminal?.id || undefined,
+        voucherCode: appliedVoucher?.code || undefined,
+        subtotal: cartTotals.subtotal,
+        discount: cartTotals.discountAmount,
+        total: cartTotals.total,
+        paymentMethod: paymentMethod, // CASH or TRANSFER
+        items: cart.map((item) => ({
+          foodId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      await orderService.createOrder(payload);
+
+      toast.success(t.TOAST.CHECKOUT_SUCCESS);
+      
+      // Cập nhật tồn kho cục bộ trong state allFoods
+      setAllFoods((prev) =>
+        prev.map((item) => {
+          const cartItem = cart.find((c) => c.id === item.id);
+          if (cartItem) {
+            return { ...item, stock: Math.max(0, item.stock - cartItem.quantity) };
+          }
+          return item;
+        })
+      );
+
+      // Gọi API sử dụng voucher thực tế của dự án để đánh dấu voucher đã dùng trên server (nếu có)
+      if (appliedVoucher) {
+        try {
+          await voucherService.applyVoucher(appliedVoucher.code);
+        } catch (err) {
+          console.warn('Lỗi đồng bộ sử dụng voucher lên server:', err);
+        }
+      }
+
+      // Giải phóng bàn ăn trên server và local state
+      const tableId = selectedTableId;
+      await tableService.updateTable(tableId, { status: 'FREE' });
+      setTables(prev => prev.map(t => t.id === tableId ? { ...t, status: 'FREE' } : t));
+
+      // Xoá giỏ hàng của bàn này
+      setTableCarts(prev => {
+        const copy = { ...prev };
+        delete copy[tableId];
+        return copy;
+      });
+
+      setSelectedTableId(null);
+      setCart([]);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.message;
+      if (errorMsg === 'POS_SESSION_EXPIRED' || err?.response?.status === 403) {
+        localStorage.removeItem('active_pos_terminal');
+        setActiveTerminal(null);
+        toast.error(LABELS.RESTAURANT.POS_TERMINAL_MANAGER.LOGIN_MODAL.SESSION_EXPIRED);
+      } else {
+        const e = err as { message?: string };
+        console.error('Lỗi khi gửi đơn hàng:', e);
+        toast.error(e?.message || t.TOAST.CHECKOUT_ERROR);
+      }
+    } finally {
+      setSubmittingOrder(false);
+    }
+  };
+
+  return {
+    branches,
+    selectedBranchId,
+    setSelectedBranchId,
+    categoryGroups,
+    activeGroupId,
+    setActiveGroupId,
+    activeCategoryId,
+    setActiveCategoryId,
+    loadingMenu,
+    searchQuery,
+    setSearchQuery,
+    filteredMenu,
+    cart,
+    addToCart,
+    updateCartQuantity,
+    removeFromCart,
+    clearCart,
+    cartTotals,
+    voucherCode,
+    setVoucherCode,
+    verifyingVoucher,
+    appliedVoucher,
+    handleVerifyVoucher,
+    handleCancelVoucher,
+    submittingOrder,
+    handleCreateOrder,
+    tables,
+    selectedTableId,
+    setSelectedTableId,
+    handleSelectTable,
+    handleReleaseTable,
+    handleTransferTable,
+    activeTerminal,
+    loadingTerminal,
+    handleLoginTerminal,
+    handleLogoutTerminal,
+    paymentMethod,
+    setPaymentMethod,
+  };
+}

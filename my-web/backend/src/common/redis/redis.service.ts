@@ -9,7 +9,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { appConfig } from '../../../config/app.config';
+import { appConfig } from '../../config/app.config';
 import type { Redis } from 'ioredis';
 
 @Injectable()
@@ -94,6 +94,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       const errMsg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`Redis connection failed: ${errMsg}`);
       this.isRedisAvailable = false;
+
+      // CRITICAL: Explicitly disconnect the client to stop ioredis's internal
+      // exponential-backoff reconnect loop. Without this, ioredis retries
+      // every ~2s forever, consuming CPU + generating console I/O even though
+      // we already fell back to in-memory mode.
+      if (this.redisClient) {
+        try {
+          this.redisClient.disconnect();
+        } catch (_disconnectErr) {
+          // Ignored - we just want to stop reconnect attempts
+        }
+        this.redisClient = null;
+      }
 
       if (isProduction) {
         this.logger.error(

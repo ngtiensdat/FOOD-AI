@@ -8,6 +8,7 @@ import {
   Controller,
   Get,
   Post,
+  Body,
   Param,
   Query,
   UseGuards,
@@ -99,5 +100,31 @@ export class RestaurantPublicController {
     @GetUser() user: PrismaClient.User,
   ) {
     return this.restaurantService.toggleFollowRestaurant(user.id, id);
+  }
+
+  @Get('user/job-invitations')
+  @UseGuards(JwtAuthGuard)
+  getUserJobInvitations(@GetUser() user: PrismaClient.User) {
+    return this.restaurantService.getUserJobInvitations(user);
+  }
+
+  @Post('user/job-invitations/:id/respond')
+  @UseGuards(JwtAuthGuard)
+  respondToJobInvitation(
+    @GetUser() user: PrismaClient.User,
+    @Param('id') invitationId: string,
+    @Body('accept') accept: boolean,
+  ) {
+    return this.restaurantService.respondToJobInvitation(
+      user,
+      invitationId,
+      accept,
+    );
+  }
+
+  @Post('user/resign')
+  @UseGuards(JwtAuthGuard)
+  resignStaff(@GetUser() user: PrismaClient.User) {
+    return this.restaurantService.resignStaff(user);
   }
 }

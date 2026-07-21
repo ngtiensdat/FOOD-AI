@@ -17,7 +17,16 @@ export const useAuth = () => {
     setUser(userData);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      const { authService } = await import('@/services/auth.service');
+      await authService.logout();
+    } catch (err) {
+      console.warn('Lỗi gọi API đăng xuất:', err);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('active_pos_terminal');
+    }
     storeLogout();
     if (typeof window !== 'undefined') {
       window.location.href = '/';
@@ -28,6 +37,7 @@ export const useAuth = () => {
   const isCustomer = user?.role === UserRole.CUSTOMER;
   const isAdmin = user?.role === UserRole.ADMIN;
   const isRestaurant = user?.role === UserRole.RESTAURANT;
+  const isStaff = user?.role === UserRole.STAFF;
 
   return {
     user,
@@ -36,6 +46,7 @@ export const useAuth = () => {
     isCustomer,
     isAdmin,
     isRestaurant,
+    isStaff,
     login,
     logout,
   };

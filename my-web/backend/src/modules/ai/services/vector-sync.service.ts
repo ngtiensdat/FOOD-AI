@@ -23,20 +23,34 @@ export class VectorSyncService {
 
   async updateFoodEmbedding(foodId: number) {
     try {
+      const food = await this.prisma.food.findUnique({
+        where: { id: foodId },
+        include: { restaurant: true, category: true },
+      });
+
+      if (!food) {
+        await this.vectorRepository
+          .clearFoodEmbedding(foodId)
+          .catch((clearErr) => {
+            this.logger.error(
+              `Failed to clear food embedding for deleted food ${foodId}:`,
+              clearErr,
+            );
+          });
+        return;
+      }
+
+      const tagsStr =
+        food.tags && food.tags.length > 0
+          ? food.tags.join(', ')
+          : AI_CONSTANTS.EMBEDDING_LABELS.NO_TAGS;
+      const categoryName =
+        food.category?.name || AI_CONSTANTS.EMBEDDING_LABELS.CATEGORY_OTHER;
+      const priceVal = Number(food.price);
+      const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${priceVal.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
+
       await retry(
         async () => {
-          const food = await this.prisma.food.findUnique({
-            where: { id: foodId },
-            include: { restaurant: true, category: true },
-          });
-          if (!food) return;
-          const tagsStr =
-            food.tags && food.tags.length > 0
-              ? food.tags.join(', ')
-              : AI_CONSTANTS.EMBEDDING_LABELS.NO_TAGS;
-          const categoryName =
-            food.category?.name || AI_CONSTANTS.EMBEDDING_LABELS.CATEGORY_OTHER;
-          const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${food.price.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
           const embedding = await this.getEmbedding(textToEmbed);
           await this.vectorRepository.updateFoodEmbedding(foodId, embedding);
         },
@@ -57,17 +71,30 @@ export class VectorSyncService {
 
   async updateUserEmbedding(userId: number) {
     try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { userId },
+      });
+
+      if (!profile || !profile.preferences) {
+        await this.vectorRepository
+          .clearUserEmbedding(userId)
+          .catch((clearErr) => {
+            this.logger.error(
+              `Failed to clear user embedding for user ${userId}:`,
+              clearErr,
+            );
+          });
+        return;
+      }
+
+      const prefs = profile.preferences as Record<string, string>;
+      const goalStr = prefs.goal
+        ? AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal
+        : AI_CONSTANTS.EMBEDDING_LABELS.NO_GOAL;
+      const textToEmbed = `Người dùng thích ${prefs.cuisine || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_CUISINE}. Ngân sách ${prefs.budget || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_BUDGET}. Mục tiêu sức khỏe: ${goalStr}.`;
+
       await retry(
         async () => {
-          const profile = await this.prisma.userProfile.findUnique({
-            where: { userId },
-          });
-          if (!profile || !profile.preferences) return;
-          const prefs = profile.preferences as Record<string, string>;
-          const goalStr = prefs.goal
-            ? AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal
-            : AI_CONSTANTS.EMBEDDING_LABELS.NO_GOAL;
-          const textToEmbed = `Người dùng thích ${prefs.cuisine || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_CUISINE}. Ngân sách ${prefs.budget || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_BUDGET}. Mục tiêu sức khỏe: ${goalStr}.`;
           const embedding = await this.getEmbedding(textToEmbed);
           await this.vectorRepository.updateUserEmbedding(userId, embedding);
         },
@@ -88,31 +115,41 @@ export class VectorSyncService {
 
   async updatePostEmbedding(postId: number) {
     try {
+      const post = await this.prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+          author: true,
+          food: { include: { category: true } },
+          restaurant: true,
+        },
+      });
+
+      if (!post || post.deletedAt) {
+        await this.vectorRepository
+          .clearPostEmbedding(postId)
+          .catch((clearErr) => {
+            this.logger.error(
+              `Failed to clear post embedding for post ${postId}:`,
+              clearErr,
+            );
+          });
+        return;
+      }
+
+      const authorName = post.author.name || 'Người dùng';
+      const titleStr = post.title ? `Tiêu đề: ${post.title}. ` : '';
+      const contentStr = post.content ? `Nội dung: ${post.content}. ` : '';
+      const foodStr = post.food
+        ? `Món ăn liên quan: ${post.food.name} (${post.food.category?.name || ''}). Mô tả món: ${post.food.description || ''}. `
+        : '';
+      const restaurantStr = post.restaurant
+        ? `Nhà hàng liên kết: ${post.restaurant.name}. Địa chỉ: ${post.restaurant.address}. Lĩnh vực ẩm thực: ${post.restaurant.cuisines?.join(', ') || ''}.`
+        : '';
+
+      const textToEmbed = `Bài viết ẩm thực của tác giả ${authorName}. ${titleStr}${contentStr}${foodStr}${restaurantStr}`;
+
       await retry(
         async () => {
-          const post = await this.prisma.post.findUnique({
-            where: { id: postId },
-            include: {
-              author: true,
-              food: { include: { category: true } },
-              restaurant: true,
-            },
-          });
-
-          if (!post || post.deletedAt) return;
-
-          const authorName = post.author.name || 'Người dùng';
-          const titleStr = post.title ? `Tiêu đề: ${post.title}. ` : '';
-          const contentStr = post.content ? `Nội dung: ${post.content}. ` : '';
-          const foodStr = post.food
-            ? `Món ăn liên quan: ${post.food.name} (${post.food.category?.name || ''}). Mô tả món: ${post.food.description || ''}. `
-            : '';
-          const restaurantStr = post.restaurant
-            ? `Nhà hàng liên kết: ${post.restaurant.name}. Địa chỉ: ${post.restaurant.address}. Lĩnh vực ẩm thực: ${post.restaurant.cuisines?.join(', ') || ''}.`
-            : '';
-
-          const textToEmbed = `Bài viết ẩm thực của tác giả ${authorName}. ${titleStr}${contentStr}${foodStr}${restaurantStr}`;
-
           const embedding = await this.getEmbedding(textToEmbed);
           await this.vectorRepository.updatePostEmbedding(postId, embedding);
         },

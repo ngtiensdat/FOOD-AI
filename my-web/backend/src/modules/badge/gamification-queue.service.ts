@@ -1,3 +1,8 @@
+/**
+ * Mục đích file này: Quản lý hàng đợi và tính toán cộng/trừ điểm thưởng, kiểm tra và nâng cấp độ, danh hiệu của người dùng.
+ * Các file khác hay file này có ý nghĩa như nào: Thực hiện tính điểm bất đồng bộ qua concatMap tránh race condition, gọi NotificationGateway để bắn thông báo thời gian thực.
+ * Các chức năng đặc biệt: processJob xử lý cộng/trừ điểm và XP, checkLevelAndBadges kiểm tra điều kiện thăng hạng và cấp danh hiệu cho cả Diner và Restaurant.
+ */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
@@ -40,7 +45,8 @@ export interface GamificationJob {
     | 'UNDO_COMMENT'
     | 'UNDO_REPLY'
     | 'UNDO_LIKE'
-    | 'REDEEM_VOUCHER';
+    | 'REDEEM_VOUCHER'
+    | 'CLAIM_CODE';
   voucherPointsCost?: number;
   resolve: (value: GamificationResult) => void;
   reject: (reason: unknown) => void;
@@ -78,9 +84,17 @@ export class GamificationQueueService implements OnModuleInit {
       )
       .subscribe();
 
-    setTimeout(() => {
-      void this.runFullSweep();
-    }, GamificationQueueService.SWEEP_INITIAL_DELAY_MS);
+    // Only run startup sweep in production to avoid severe CPU/DB load during local dev restarts
+    if (process.env.NODE_ENV === 'production') {
+      setTimeout(() => {
+        void this.runFullSweep();
+      }, GamificationQueueService.SWEEP_INITIAL_DELAY_MS);
+    } else {
+      this.logger.log(
+        'Development mode: Skipping badge gamification startup sweep.',
+      );
+    }
+
     setInterval(() => {
       void this.runFullSweep();
     }, GamificationQueueService.SWEEP_INTERVAL_MS);
@@ -232,6 +246,7 @@ export class GamificationQueueService implements OnModuleInit {
       config?.deductionMultiplier ?? DEFAULT_DEDUCTION_MULTIPLIER;
     const levelUpPointsReward =
       config?.levelUpPointsReward ?? DEFAULT_LEVEL_UP_POINTS_REWARD;
+    const dailyCommentLimit = config?.dailyCommentLimit ?? 5;
 
     let pointsAmount = 0;
 
@@ -265,6 +280,9 @@ export class GamificationQueueService implements OnModuleInit {
       case 'REDEEM_VOUCHER':
         pointsAmount = -(voucherPointsCost ?? 0);
         break;
+      case 'CLAIM_CODE':
+        pointsAmount = voucherPointsCost ?? 0;
+        break;
       default:
         throw new Error(`Invalid action type: ${action as string}`);
     }
@@ -288,6 +306,24 @@ export class GamificationQueueService implements OnModuleInit {
         throw new Error(`User with ID ${userId} not found`);
       }
 
+      // Giới hạn số lượng bình luận được cộng điểm trong ngày để chống spam
+      if (action === 'COMMENT' || action === 'REPLY') {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const commentsCountToday = await tx.comment.count({
+          where: {
+            userId,
+            createdAt: { gte: startOfToday },
+            deletedAt: null,
+          },
+        });
+
+        if (commentsCountToday > dailyCommentLimit) {
+          pointsAmount = 0; // Vượt quá giới hạn -> không cộng điểm/XP
+        }
+      }
+
       let nextPoints = user.points;
       let nextXp = user.xp;
       let nextLevel = user.level;
@@ -296,6 +332,8 @@ export class GamificationQueueService implements OnModuleInit {
 
       if (action === 'REDEEM_VOUCHER') {
         nextPoints = Math.max(MIN_POINTS_OR_XP, user.points + pointsAmount); // pointsAmount is negative voucherPointsCost
+      } else if (action === 'CLAIM_CODE') {
+        nextPoints = user.points + pointsAmount;
       } else {
         // Social action (like, comment, review)
         nextXp = Math.max(MIN_POINTS_OR_XP, user.xp + pointsAmount); // pointsAmount is reward/deduction amount
@@ -431,7 +469,9 @@ export class GamificationQueueService implements OnModuleInit {
         level: nextLevel,
         badgeTitle: nextBadge,
         pointsChanged:
-          action === 'REDEEM_VOUCHER' ? pointsAmount : rewardEarned,
+          action === 'REDEEM_VOUCHER' || action === 'CLAIM_CODE'
+            ? pointsAmount
+            : rewardEarned,
       };
     });
   }

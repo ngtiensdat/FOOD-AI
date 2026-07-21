@@ -9,7 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaModule } from '../../database/prisma.module';
-import { AiModule } from '../ai/ai.module';
 
 import { JwtStrategy } from '../../common/strategies/jwt.strategy';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -17,12 +16,13 @@ import { AuthorizationService } from '../../common/services/authorization.servic
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { appConfig } from '../../config/app.config';
 import { UserModule } from '../user/user.module';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
   imports: [
     PrismaModule,
-    AiModule,
     UserModule,
+    AiModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

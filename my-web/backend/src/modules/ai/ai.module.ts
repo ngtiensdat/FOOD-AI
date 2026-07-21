@@ -18,7 +18,6 @@ import { EmbeddingCacheService } from './services/embedding-cache.service';
 import { ConversationStateService } from './services/conversation-state.service';
 import { RecommendationService } from './services/recommendation.service';
 import { RerankingService } from './services/reranking.service';
-import { RedisService } from './services/redis.service';
 import { IntentDetectorService } from './services/intent-detector.service';
 import { DialogueStateManagerService } from './services/dialogue-state-manager.service';
 import { BusinessRuleEngineService } from './services/business-rule-engine.service';
@@ -45,7 +44,6 @@ import { VectorSyncService } from './services/vector-sync.service';
     ConversationStateService,
     RecommendationService,
     RerankingService,
-    RedisService,
     IntentDetectorService,
     DialogueStateManagerService,
     BusinessRuleEngineService,
@@ -69,7 +67,6 @@ import { VectorSyncService } from './services/vector-sync.service';
     ConversationStateService,
     RecommendationService,
     RerankingService,
-    RedisService,
     IntentDetectorService,
     DialogueStateManagerService,
     BusinessRuleEngineService,

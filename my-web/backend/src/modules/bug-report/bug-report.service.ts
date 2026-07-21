@@ -4,6 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { BugReport } from '@prisma/client';
+import { BugReportStatus } from '../../common/constants/enums.constant';
 
 @Injectable()
 export class BugReportService {
@@ -23,7 +24,7 @@ export class BugReportService {
         userId,
         title,
         content,
-        status: 'PENDING',
+        status: BugReportStatus.PENDING,
       },
     });
   }

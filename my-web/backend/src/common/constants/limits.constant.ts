@@ -15,4 +15,10 @@ export const LIMITS = {
   POSTS_DEFAULT_PAGE_SIZE: 20,
   ADMIN_FOODS_PAGE_SIZE: 50,
   MERCHANT_FOODS_PAGE_SIZE: 50,
+  INVENTORY_LOG_LIMIT: 100,
+};
+
+/** Cache TTL tính bằng giây */
+export const CACHE_TTL = {
+  RESTAURANT_PUBLIC: 600, // 10 phút
 };

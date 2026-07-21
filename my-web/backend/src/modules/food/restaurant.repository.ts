@@ -315,8 +315,17 @@ export class RestaurantRepository {
     tag?: string;
     page?: number;
     pageSize?: number;
+    restaurantIdsFromAi?: number[];
   }) {
-    const { search, city, district, tag, page = 1, pageSize = 10 } = filters;
+    const {
+      search,
+      city,
+      district,
+      tag,
+      page = 1,
+      pageSize = 10,
+      restaurantIdsFromAi,
+    } = filters;
 
     const where: Prisma.RestaurantWhereInput = {
       isActive: true,
@@ -324,10 +333,47 @@ export class RestaurantRepository {
 
     const andFilters: Prisma.RestaurantWhereInput[] = [];
 
-    if (search) {
-      andFilters.push({
-        name: { contains: search, mode: 'insensitive' },
-      });
+    if (search || tag) {
+      const orFilters: Prisma.RestaurantWhereInput[] = [];
+
+      if (restaurantIdsFromAi && restaurantIdsFromAi.length > 0) {
+        orFilters.push({
+          id: { in: restaurantIdsFromAi },
+        });
+      }
+
+      if (search) {
+        orFilters.push({
+          name: { contains: search, mode: 'insensitive' },
+        });
+      }
+
+      if (tag) {
+        orFilters.push({
+          foods: {
+            some: {
+              isActive: true,
+              status: FoodStatus.APPROVED,
+              tags: {
+                has: tag,
+              },
+            },
+          },
+        });
+
+        orFilters.push({
+          name: { contains: tag, mode: 'insensitive' },
+        });
+        orFilters.push({
+          cuisines: { has: tag },
+        });
+      }
+
+      if (orFilters.length > 0) {
+        andFilters.push({
+          OR: orFilters,
+        });
+      }
     }
 
     if (city) {
@@ -339,20 +385,6 @@ export class RestaurantRepository {
     if (district) {
       andFilters.push({
         district: { equals: district, mode: 'insensitive' },
-      });
-    }
-
-    if (tag) {
-      andFilters.push({
-        foods: {
-          some: {
-            isActive: true,
-            status: FoodStatus.APPROVED,
-            tags: {
-              has: tag,
-            },
-          },
-        },
       });
     }
 

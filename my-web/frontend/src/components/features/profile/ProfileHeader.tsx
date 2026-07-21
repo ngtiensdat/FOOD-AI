@@ -5,9 +5,9 @@
  */
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import SafeImage from '@/components/base/SafeImage';
-import { Camera, Shield, Store, Grid, Edit3, MoreHorizontal, Clock, AlertTriangle } from 'lucide-react';
+import { Camera, Shield, Store, Grid, Edit3, Clock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
@@ -69,6 +69,13 @@ export const ProfileHeader = ({
   const isOpen = restaurant
     ? isRestaurantCurrentlyOpen(restaurant.profile?.openingHours, restaurant.isActive)
     : true;
+
+  const xpPercentage = useMemo(() => {
+    const currentXp = profile?.xp || 0;
+    const pointsPerLevel = GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL;
+    const progress = (currentXp % pointsPerLevel) / pointsPerLevel;
+    return Math.max(GAMIFICATION_CONSTANTS.MIN_XP_PERCENT, progress * GAMIFICATION_CONSTANTS.PERCENT_FACTOR);
+  }, [profile?.xp]);
 
   return (
     <div className="card-container !p-0 overflow-hidden">
@@ -162,11 +169,12 @@ export const ProfileHeader = ({
               <div className="flex justify-center md:justify-start mt-1 mb-2">
                 <Button
                   onClick={() => router.push('/badges')}
-                  className="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md shadow-sm hover:bg-primary/20 transition-all cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md shadow-sm hover:bg-primary/20 transition-all cursor-pointer flex items-center gap-1.5"
                   variant="none"
                   size="none"
                 >
-                  ✨ {profile.badgeTitle}
+                  <SafeImage src="/images/badges/badge_star.png" alt="Star" width={14} height={14} className="object-contain shrink-0" />
+                  <span>{profile.badgeTitle}</span>
                 </Button>
               </div>
             )}
@@ -196,7 +204,7 @@ export const ProfileHeader = ({
                     {(user?.role === UserRole.CUSTOMER || user?.role === UserRole.RESTAURANT) && (
                       <>
                         <span className="text-gray-500">
-                          {profile?._count?.posts || 0} bài đăng
+                          {LABELS.SETTINGS.PROFILE.POSTS_COUNT(profile?._count?.posts || 0)}
                         </span>
                         <span>•</span>
                       </>
@@ -229,7 +237,7 @@ export const ProfileHeader = ({
                         <span>•</span>
                         <div className="flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-full text-xs font-extrabold border border-amber-200 dark:border-amber-900/50">
                           <span>⭐</span>
-                          <span>{profile?.points?.toLocaleString() || 0} {LABELS.LOYALTY.TITLE.split(' & ')[0]}</span>
+                          <span>{profile?.points?.toLocaleString() || 0} {LABELS.LOYALTY.POINTS}</span>
                         </div>
                       </>
                     )}
@@ -243,7 +251,7 @@ export const ProfileHeader = ({
                       <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-slate-700">
                         <div 
                           className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.max(GAMIFICATION_CONSTANTS.MIN_XP_PERCENT, (((profile?.xp || 0) % GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL) / GAMIFICATION_CONSTANTS.DEFAULT_POINTS_PER_LEVEL) * GAMIFICATION_CONSTANTS.PERCENT_FACTOR)}%` }}
+                          style={{ width: `${xpPercentage}%` }}
                         />
                       </div>
                     </div>
@@ -283,9 +291,6 @@ export const ProfileHeader = ({
                 </Button>
               </>
             ) : null}
-            <Button variant="outline" className="w-12 h-12 p-0" aria-label={LABELS.COMMON.OTHER}>
-              <MoreHorizontal size={20} />
-            </Button>
           </div>
         </div>
       </div>

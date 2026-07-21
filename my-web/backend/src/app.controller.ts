@@ -2,7 +2,7 @@ import { Controller, Get, Query, Res, HttpStatus } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AiService } from './modules/ai/ai.service';
 import { PrismaService } from './database/prisma.service';
-import { RedisService } from './modules/ai/services/redis.service';
+import { RedisService } from './common/redis/redis.service';
 import type { Response } from 'express';
 
 @Controller()
