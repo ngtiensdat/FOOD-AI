@@ -9,6 +9,7 @@ import { InventoryDeductionService } from '../inventory/inventory-deduction.serv
 import { User, UserRole } from '@prisma/client';
 import { ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PosTerminalService } from '../pos-terminal/pos-terminal.service';
+import { InventoryPrismaService } from '../../database/inventory-prisma.service';
 
 describe('OrderService', () => {
   let service: OrderService;
@@ -49,6 +50,19 @@ describe('OrderService', () => {
     verifyActiveSession: jest.fn(),
   };
 
+  const mockInventoryPrismaService = {
+    orderHistory: {
+      create: jest.fn(),
+    },
+    staffShift: {
+      findFirst: jest.fn(),
+      update: jest.fn(),
+    },
+    dailySalesSummary: {
+      upsert: jest.fn(),
+    },
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -61,6 +75,10 @@ describe('OrderService', () => {
         {
           provide: PosTerminalService,
           useValue: mockPosTerminalService,
+        },
+        {
+          provide: InventoryPrismaService,
+          useValue: mockInventoryPrismaService,
         },
       ],
     }).compile();
