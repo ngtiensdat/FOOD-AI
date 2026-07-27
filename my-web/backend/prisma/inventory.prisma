@@ -4,7 +4,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  output          = "../../../node_modules/@prisma/inventory-client"
+  output          = "../node_modules/@prisma/inventory-client"
 }
 
 // Bảng lưu nguyên liệu thô (nhập theo cân, kg, cái, lít...)
