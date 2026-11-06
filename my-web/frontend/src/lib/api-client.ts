@@ -36,7 +36,8 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T = unknown>(method: HttpMethod, endpoint: string, options: RequestOptions = {}): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async request<T = any>(method: HttpMethod, endpoint: string, options: RequestOptions = {}): Promise<T> {
     const maxRetries = options.retries !== undefined ? options.retries : (method === 'GET' ? 1 : 0);
     const fullPath = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
@@ -201,24 +202,29 @@ class ApiClient {
     }
   }
 
-  async get(endpoint: string, options?: RequestOptions) {
-    return this.request('GET', endpoint, options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async get<T = any>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>('GET', endpoint, options);
   }
 
-  async post(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('POST', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async post<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('POST', endpoint, { ...options, body });
   }
 
-  async put(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('PUT', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async put<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('PUT', endpoint, { ...options, body });
   }
 
-  async patch(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('PATCH', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async patch<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('PATCH', endpoint, { ...options, body });
   }
 
-  async delete(endpoint: string, options?: RequestOptions) {
-    return this.request('DELETE', endpoint, options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async delete<T = any>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>('DELETE', endpoint, options);
   }
 
   /**

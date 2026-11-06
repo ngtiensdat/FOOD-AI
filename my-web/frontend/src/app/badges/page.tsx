@@ -104,23 +104,23 @@ export default function BadgesPage() {
 
     try {
       // Fetch public leaderboard
-      const leaderboardData = await apiClient.get(API_ENDPOINTS.LEADERBOARD).catch(() => []);
+      const leaderboardData = await apiClient.get<LeaderboardUser[]>(API_ENDPOINTS.LEADERBOARD).catch(() => []);
       setLeaderboard(leaderboardData);
 
       // Fetch badges threshold list
-      const badgesData = await apiClient.get(API_ENDPOINTS.BADGES).catch(() => []);
+      const badgesData = await apiClient.get<BadgeConfig[]>(API_ENDPOINTS.BADGES).catch(() => []);
       setBadges(badgesData);
 
       // Fetch dynamic rules configuration
-      const rulesData = await apiClient.get(API_ENDPOINTS.RULES).catch(() => null);
+      const rulesData = await apiClient.get<GamificationRules | null>(API_ENDPOINTS.RULES).catch(() => null);
       setRules(rulesData);
 
       // Fetch user profile if logged in to get counts
       if (me?.id) {
-        const profileData = await apiClient.get(API_ENDPOINTS.PROFILE(me.id)).catch(() => null);
+        const profileData = await apiClient.get<GamificationProfile | null>(API_ENDPOINTS.PROFILE(me.id)).catch(() => null);
         setProfile(profileData);
         if (profileData?.role) {
-          setActiveRoleTab(profileData.role === UserRole.ADMIN ? UserRole.CUSTOMER : profileData.role);
+          setActiveRoleTab(profileData.role === UserRole.RESTAURANT ? UserRole.RESTAURANT : UserRole.CUSTOMER);
         }
       }
     } catch (error) {
