@@ -25,6 +25,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 interface RequestOptions extends Omit<RequestInit, 'method' | 'body'> {
   params?: Record<string, string | number | boolean | null | undefined>;
   body?: unknown;
+  retries?: number;
 }
 
 class ApiClient {
@@ -35,7 +36,8 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request(method: HttpMethod, endpoint: string, options: RequestOptions = {}) {
+  private async request<T = unknown>(method: HttpMethod, endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const maxRetries = options.retries !== undefined ? options.retries : (method === 'GET' ? 1 : 0);
     const fullPath = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const url = fullPath.startsWith('http') ? new URL(fullPath) : new URL(fullPath, baseOrigin);
@@ -69,7 +71,7 @@ class ApiClient {
       headers['Content-Type'] = 'application/json';
     }
 
-    const { body, params, ...restOptions } = options;
+    const { body, params: _params, ...restOptions } = options;
     const config: RequestInit = {
       method,
       headers,
@@ -132,6 +134,13 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        // Tự động retry 1 lần nếu gặp lỗi server tạm thời (500, 502, 503 do backend dev đang reload)
+        if (response.status >= 500 && maxRetries > 0) {
+          logDev(`[ApiClient] Server transient status ${response.status} on ${method} ${endpoint}, retrying in 800ms... (remaining retries: ${maxRetries - 1})`);
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          return this.request(method, endpoint, { ...options, retries: maxRetries - 1 });
+        }
+
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
         const isClientError = response.status < 500;
         
@@ -172,6 +181,13 @@ class ApiClient {
 
       return result;
     } catch (error: unknown) {
+      // Tự động retry nếu gặp lỗi mạng (network_error / ECONNREFUSED)
+      if (maxRetries > 0) {
+        logDev(`[ApiClient] Network exception on ${method} ${endpoint}, retrying in 800ms... (remaining retries: ${maxRetries - 1})`);
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return this.request(method, endpoint, { ...options, retries: maxRetries - 1 });
+      }
+
       const err = error as { message?: string; stack?: string; response?: { data?: unknown }; status?: string | number };
       errorDev("Request failed", {
         endpoint,
