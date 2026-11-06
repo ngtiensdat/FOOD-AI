@@ -146,20 +146,22 @@ export class NotificationGateway
     });
 
     // 2. Phát thời gian thực cho tất cả các thiết bị/tab của user
-    this.server.to(`user_${userId}`).emit('notification', {
-      id: notification.id,
-      userId: notification.userId,
-      title: notification.title,
-      content: notification.content,
-      isRead: notification.isRead,
-      type: notification.type,
-      senderId: notification.senderId,
-      postId: notification.postId,
-      createdAt: notification.createdAt.toISOString(),
-    });
-    this.logger.log(
-      `[WebSocket] Real-time notification emitted to Room user_${userId}`,
-    );
+    if (this.server) {
+      this.server.to(`user_${userId}`).emit('notification', {
+        id: notification.id,
+        userId: notification.userId,
+        title: notification.title,
+        content: notification.content,
+        isRead: notification.isRead,
+        type: notification.type,
+        senderId: notification.senderId,
+        postId: notification.postId,
+        createdAt: notification.createdAt.toISOString(),
+      });
+      this.logger.log(
+        `[WebSocket] Real-time notification emitted to Room user_${userId}`,
+      );
+    }
 
     return notification;
   }

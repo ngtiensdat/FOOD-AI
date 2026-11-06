@@ -439,13 +439,25 @@ export default function RestaurantDashboard() {
           >
             {activeTab === 'overview' && (
               <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <header className="mb-2">
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
-                    {LABELS.RESTAURANT.DASHBOARD_TITLE}
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {LABELS.RESTAURANT.SUBTITLE}
-                  </p>
+                <header className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
+                      {LABELS.RESTAURANT.DASHBOARD_TITLE}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {LABELS.RESTAURANT.SUBTITLE}
+                    </p>
+                  </div>
+                  {(restaurant?.id || (user as { restaurantId?: number })?.restaurantId) && (
+                    <Link
+                      href={`/restaurant/${restaurant?.id || (user as { restaurantId?: number })?.restaurantId}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-sm self-start sm:self-auto"
+                    >
+                      <ExternalLink size={15} />
+                      <span>{LABELS.NAV.VIEW_PUBLIC_PAGE}</span>
+                    </Link>
+                  )}
                 </header>
 
                 {/* 2-Column Facebook Studio layout style */}

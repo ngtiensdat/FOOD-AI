@@ -14,6 +14,7 @@ export const PRIVACY_KEYS = {
   showEmail: 'privacy_showEmail',
   showPhone: 'privacy_showPhone',
   showAddress: 'privacy_showAddress',
+  showPointNotifications: 'privacy_showPointNotifications',
 } as const;
 
 /** Đọc giá trị từ localStorage, mặc định true (hiển thị) */

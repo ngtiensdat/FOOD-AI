@@ -202,6 +202,10 @@ export function PostCard({
   };
 
   const handleLikeToggle = () => {
+    if (!me) {
+      toast.error(LABELS.AUTH.LOGIN_REQUIRED);
+      return;
+    }
     const nextLiked = !isLiked;
     setIsLiked(nextLiked);
     setLikesCount(prev => nextLiked ? prev + 1 : Math.max(0, prev - 1));
@@ -210,6 +214,10 @@ export function PostCard({
 
   const handleSendComment = React.useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    if (!me) {
+      toast.error(LABELS.AUTH.LOGIN_REQUIRED);
+      return;
+    }
     if (!newCommentText.trim()) return;
 
     const newComment: CommentData = {
@@ -229,6 +237,10 @@ export function PostCard({
 
   const handleSendReply = React.useCallback((e: React.FormEvent, commentId: number) => {
     e.preventDefault();
+    if (!me) {
+      toast.error(LABELS.AUTH.LOGIN_REQUIRED);
+      return;
+    }
     if (!replyText.trim()) return;
 
     const newReply: ReplyData = {

@@ -22,6 +22,7 @@ interface UserDropdownProps {
 
 export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserDropdownProps) => {
   const handleItemClick = (e: React.MouseEvent, action?: () => void) => {
+    e.stopPropagation();
     if (action) {
       action();
     }
@@ -66,8 +67,8 @@ export const UserDropdown = ({ user, onLogout, onSettingsClick, onClose }: UserD
           <Link href="/restaurant-admin" onClick={(e) => handleItemClick(e)} className="dropdown-item">
             <Store size={18} className="text-primary" /> {LABELS.NAV.RESTAURANT_PANEL}
           </Link>
-          {user.restaurantId ? (
-            <Link href={`/restaurant/${user.restaurantId}`} onClick={(e) => handleItemClick(e)} className="dropdown-item">
+          {(user as { restaurantId?: number }).restaurantId ? (
+            <Link href={`/restaurant/${(user as { restaurantId?: number }).restaurantId}`} onClick={(e) => handleItemClick(e)} className="dropdown-item">
               <ExternalLink size={18} className="text-primary" /> {LABELS.NAV.MY_RESTAURANT_PAGE}
             </Link>
           ) : null}

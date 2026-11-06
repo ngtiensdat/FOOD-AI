@@ -41,6 +41,7 @@ export const ProfileSettingsTab = ({
     { key: 'showEmail' as const, ...LABELS.SETTINGS.PROFILE.PRIVACY_FIELDS.showEmail },
     { key: 'showPhone' as const, ...LABELS.SETTINGS.PROFILE.PRIVACY_FIELDS.showPhone },
     { key: 'showAddress' as const, ...LABELS.SETTINGS.PROFILE.PRIVACY_FIELDS.showAddress },
+    { key: 'showPointNotifications' as const, ...LABELS.SETTINGS.PROFILE.PRIVACY_FIELDS.showPointNotifications },
   ];
 
   // State cho từng toggle nguyên tử
@@ -55,6 +56,7 @@ export const ProfileSettingsTab = ({
       showEmail: dbPrefs?.showEmail !== undefined ? dbPrefs.showEmail === true : getPrivacyValue('showEmail'),
       showPhone: dbPrefs?.showPhone !== undefined ? dbPrefs.showPhone === true : getPrivacyValue('showPhone'),
       showAddress: dbPrefs?.showAddress !== undefined ? dbPrefs.showAddress === true : getPrivacyValue('showAddress'),
+      showPointNotifications: dbPrefs?.showPointNotifications !== undefined ? dbPrefs.showPointNotifications === true : getPrivacyValue('showPointNotifications'),
     };
   });
 
@@ -71,6 +73,7 @@ export const ProfileSettingsTab = ({
         showEmail: dbPrefs?.showEmail !== undefined ? dbPrefs.showEmail === true : getPrivacyValue('showEmail'),
         showPhone: dbPrefs?.showPhone !== undefined ? dbPrefs.showPhone === true : getPrivacyValue('showPhone'),
         showAddress: dbPrefs?.showAddress !== undefined ? dbPrefs.showAddress === true : getPrivacyValue('showAddress'),
+        showPointNotifications: dbPrefs?.showPointNotifications !== undefined ? dbPrefs.showPointNotifications === true : getPrivacyValue('showPointNotifications'),
       });
     }
   }, [profileData]);

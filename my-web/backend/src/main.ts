@@ -90,7 +90,7 @@ async function bootstrap() {
   // Graceful shutdown — đóng Prisma/Redis connections sạch sẽ khi container bị kill
   app.enableShutdownHooks();
 
-  await app.listen(config.port);
+  await app.listen(config.port, '0.0.0.0');
   logger.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
 bootstrap().catch((err) => {

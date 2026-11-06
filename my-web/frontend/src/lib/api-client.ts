@@ -92,8 +92,18 @@ class ApiClient {
       // Xử lý Refresh Token tự động nếu nhận lỗi 401
       if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login') && !endpoint.includes('/pos-terminals/login')) {
         if (!this.refreshPromise) {
+          const refreshHeaders: Record<string, string> = {};
+          if (typeof window !== 'undefined') {
+            const parts = `; ${document.cookie}`.split(`; XSRF-TOKEN=`);
+            const csrfToken = parts.length === 2 ? parts.pop()?.split(';').shift() : undefined;
+            if (csrfToken) {
+              refreshHeaders['X-XSRF-TOKEN'] = csrfToken;
+            }
+          }
+
           this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
+            headers: refreshHeaders,
             credentials: 'include'
           })
             .then((res) => res.ok)

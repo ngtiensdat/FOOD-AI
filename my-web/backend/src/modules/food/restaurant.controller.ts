@@ -13,6 +13,7 @@ import {
   Delete,
   Param,
   ParseIntPipe,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { RestaurantService } from './restaurant.service';
@@ -60,8 +61,12 @@ export class RestaurantController {
   }
 
   @Get('my-analytics')
-  getMyAnalytics(@GetUser() user: PrismaClient.User) {
-    return this.restaurantService.getMyAnalytics(user);
+  getMyAnalytics(
+    @GetUser() user: PrismaClient.User,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.restaurantService.getMyAnalytics(user, startDate, endDate);
   }
 
   @Get('my-restaurant/staffs')

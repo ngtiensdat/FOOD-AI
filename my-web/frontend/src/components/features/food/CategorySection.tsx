@@ -36,30 +36,65 @@ const SUGGESTED_TAGS = [
 
 interface CategorySectionProps {
   handleCategoryClick: (category: string) => void;
+  handleSearch?: (query: string) => void;
   selectedCategory: string | null;
 }
 
-export const CategorySection = ({ handleCategoryClick, selectedCategory }: CategorySectionProps) => {
+export const CategorySection = ({ handleCategoryClick, handleSearch, selectedCategory }: CategorySectionProps) => {
+  const [searchValue, setSearchValue] = React.useState('');
+
+  const submitSearch = () => {
+    const val = searchValue.trim();
+    if (!val) return;
+    if (handleSearch) {
+      handleSearch(val);
+    } else {
+      handleCategoryClick(val);
+    }
+  };
+
   return (
     <Section id="categories">
       <div className="text-center mb-6">
         <h2 className="text-h2 text-gray-900 mb-4">{LABELS.EXPLORE.TITLE}</h2>
 
-        {/* Thanh tìm kiếm Tag */}
+        {/* Thanh tìm kiếm Món ăn, Quán ăn hoặc Tag */}
         <div className="max-w-xl mx-auto mb-6 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
+          <Button
+            type="button"
+            variant="none"
+            size="none"
+            onClick={submitSearch}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors cursor-pointer z-10"
+            aria-label="Tìm kiếm"
+          >
+            <Search size={18} />
+          </Button>
           <Input
             variant="none"
             suppressHydrationWarning
             type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder={LABELS.EXPLORE.TAG_PLACEHOLDER}
-            className="form-input rounded-input py-3 pl-12 pr-4 shadow-sm text-body"
+            className="form-input rounded-input py-3 pl-12 pr-16 shadow-sm text-body w-full"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                handleCategoryClick((e.target as HTMLInputElement).value);
+                submitSearch();
               }
             }}
           />
+          {searchValue.trim() && (
+            <Button
+              type="button"
+              variant="none"
+              size="none"
+              onClick={submitSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-orange-600 shadow-sm transition-all z-10"
+            >
+              Tìm
+            </Button>
+          )}
         </div>
 
         {/* Gợi ý Tag */}

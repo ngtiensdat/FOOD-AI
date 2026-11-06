@@ -29,10 +29,14 @@ interface ImageUploaderProps {
   onUploaded: (url: string) => void;
   /** Aspect ratio của preview */
   aspectRatio?: 'square' | 'cover' | 'food';
-  /** Cho phép nhập thủ công URL ảnh nếu cần */
+  /** Đã deprecated - chỉ tải ảnh từ máy hoặc import link qua file */
   allowManualUrl?: boolean;
-  /** Placeholder cho ô nhập URL thủ công */
+  /** Đã deprecated */
   placeholderUrl?: string;
+  /** Thông báo khi trạng thái upload thay đổi */
+  onUploadingChange?: (isUploading: boolean) => void;
+  /** Trả về Promise upload để component cha có thể await khi người dùng bấm Lưu sớm */
+  onUploadPromise?: (promise: Promise<string> | null) => void;
 }
 
 /** Tỉ lệ khung hình crop theo loại ảnh */
@@ -61,6 +65,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   aspectRatio = 'square',
   allowManualUrl = false,
   placeholderUrl,
+  onUploadingChange,
+  onUploadPromise,
 }) => {
   const labels = LABELS;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,6 +104,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     const localPreview = URL.createObjectURL(croppedBlob);
     setPreviewUrl(localPreview);
     setIsUploading(true);
+    onUploadingChange?.(true);
 
     // Chuyển blob thành File để upload
     const croppedFile = new File(
@@ -106,7 +113,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       { type: 'image/jpeg' },
     );
 
-    try {
+    const uploadTask = async (): Promise<string> => {
       let url: string;
       if (uploadType === 'avatar') {
         url = await mediaService.uploadAvatar(croppedFile);
@@ -119,13 +126,23 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
       onUploaded(url);
       toast.success(labels.UPLOADER.UPLOAD_SUCCESS);
+      return url;
+    };
+
+    const taskPromise = uploadTask();
+    onUploadPromise?.(taskPromise);
+
+    try {
+      await taskPromise;
     } catch {
       toast.error(labels.UPLOADER.UPLOAD_FAIL);
       setPreviewUrl(null);
     } finally {
       setIsUploading(false);
+      onUploadingChange?.(false);
+      onUploadPromise?.(null);
     }
-  }, [uploadType, onUploaded, pendingFile, labels.UPLOADER]);
+  }, [uploadType, onUploaded, pendingFile, labels.UPLOADER, onUploadingChange, onUploadPromise]);
 
   const handleCropCancel = useCallback(() => {
     if (cropSrc) URL.revokeObjectURL(cropSrc);
@@ -278,18 +295,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               )}
               {isDeleting ? labels.UPLOADER.DELETING : labels.UPLOADER.DELETE_IMAGE}
             </Button>
-          </div>
-        )}
-
-        {allowManualUrl && (
-          <div className="pt-2">
-            <Input
-              type="text"
-              placeholder={placeholderUrl || labels.FORM.IMAGE_URL}
-              value={currentUrl || ''}
-              onChange={(e) => onUploaded(e.target.value)}
-              className="text-xs py-2 px-3"
-            />
           </div>
         )}
 

@@ -36,8 +36,6 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
             onUploaded={setLogo}
             uploadType="avatar"
             aspectRatio="square"
-            allowManualUrl
-            placeholderUrl={LABELS.RESTAURANT.EDIT_MODAL.LOGO_PLACEHOLDER}
           />
         </div>
 
@@ -65,8 +63,6 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
             onUploaded={setCoverImage}
             uploadType="cover"
             aspectRatio="cover"
-            allowManualUrl
-            placeholderUrl={LABELS.RESTAURANT.EDIT_MODAL.COVER_PLACEHOLDER}
           />
         </div>
 

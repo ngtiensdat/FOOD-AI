@@ -410,8 +410,17 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
                   user={user}
                   onLogout={logout}
                   onSettingsClick={() => {
-                    router.push('/?tab=settings');
                     setShowMenu(false);
+                    if (setActiveTab) {
+                      setActiveTab('settings');
+                    }
+                    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+                      const url = new URL(window.location.href);
+                      url.searchParams.set('tab', 'settings');
+                      window.history.replaceState({}, '', url.toString());
+                    } else {
+                      router.push('/?tab=settings');
+                    }
                   }}
                   onClose={() => setShowMenu(false)}
                 />

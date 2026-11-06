@@ -30,8 +30,10 @@ import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
 import { MediaService } from '../media/media.service';
 import { extractPublicId } from '../../common/utils/cloudinary.helper';
+import { FoodModerationService } from '../ai/services/food-moderation.service';
+import { buildFoodFilterConditions } from './food-category.constant';
 
-const FOOD_DISPLAY_LIMIT = 20;
+const FOOD_DISPLAY_LIMIT = 50;
 
 @Injectable()
 export class FoodService {
@@ -44,6 +46,7 @@ export class FoodService {
     private aiLearningService: AiLearningService,
     private cacheService: CacheService,
     private mediaService: MediaService,
+    private foodModerationService: FoodModerationService,
   ) {}
 
   async getAllFoods(query: FoodQueryDto) {
@@ -51,7 +54,7 @@ export class FoodService {
     return this.cacheService.wrap(
       cacheKey,
       async () => {
-        const { tag, city, district } = query;
+        const { tag, search, city, district, limit } = query;
         const where: Prisma.FoodWhereInput = {
           isActive: true,
           status: FoodStatus.APPROVED,
@@ -90,31 +93,55 @@ export class FoodService {
         }
 
         if (tag) {
-          const searchTags = tag
-            .split(',')
-            .map((t) => t.trim().toLowerCase())
-            .filter((t) => t);
-          if (searchTags.length > 0) {
-            andFilters.push({
-              tags: {
-                hasEvery: searchTags,
-              },
-            });
-          }
+          andFilters.push({ OR: buildFoodFilterConditions(tag, true) });
+        }
+
+        if (search) {
+          andFilters.push({ OR: buildFoodFilterConditions(search, false) });
         }
 
         if (andFilters.length > 0) {
           where.AND = andFilters;
         }
 
-        const result = await this.repository.findAll(where);
+        const displayLimit = limit
+          ? Math.min(Math.max(limit, 1), 100)
+          : FOOD_DISPLAY_LIMIT;
+        const result = await this.repository.findAll(where, 1, displayLimit);
         const foods = result.data;
 
+        if (search || tag) {
+          const queryTerm = (search || tag || '').trim().toLowerCase();
+          foods.sort((a, b) => {
+            const aNameMatch = a.name.toLowerCase().includes(queryTerm)
+              ? 100
+              : 0;
+            const bNameMatch = b.name.toLowerCase().includes(queryTerm)
+              ? 100
+              : 0;
+            if (aNameMatch !== bNameMatch) return bNameMatch - aNameMatch;
+
+            const aTagMatch = (a.tags || []).some((t) =>
+              t.toLowerCase().includes(queryTerm),
+            )
+              ? 50
+              : 0;
+            const bTagMatch = (b.tags || []).some((t) =>
+              t.toLowerCase().includes(queryTerm),
+            )
+              ? 50
+              : 0;
+            if (aTagMatch !== bTagMatch) return bTagMatch - aTagMatch;
+
+            return 0;
+          });
+        }
+
         return {
-          data: foods.slice(0, FOOD_DISPLAY_LIMIT),
+          data: foods,
           meta: {
             total: result.total,
-            limit: FOOD_DISPLAY_LIMIT,
+            limit: displayLimit,
           },
         };
       },
@@ -260,6 +287,29 @@ export class FoodService {
       mapUrl = mapUrl || restaurant.mapUrl || undefined;
     }
 
+    let initialStatus: FoodStatus = FoodStatus.APPROVED;
+    if (user.role === UserRole.RESTAURANT) {
+      const moderation = await this.foodModerationService.moderateFood({
+        name: dto.name,
+        description: dto.description,
+        tags: dto.tags,
+        price: dto.price,
+        image: dto.image,
+      });
+
+      if (moderation.isApproved) {
+        initialStatus = FoodStatus.APPROVED;
+        this.logger.log(
+          `[AI Moderation APPROVED] Món mới "${dto.name}" được AI phê duyệt tự động. Lý do: ${moderation.reason}`,
+        );
+      } else {
+        initialStatus = FoodStatus.PENDING;
+        this.logger.warn(
+          `[AI Moderation PENDING] Món mới "${dto.name}" cần Admin duyệt thủ công. Lý do: ${moderation.reason}`,
+        );
+      }
+    }
+
     const food = await this.repository.create({
       name: dto.name,
       price: dto.price,
@@ -276,8 +326,7 @@ export class FoodService {
       fat: dto.fat ?? 0,
       categoryId: dto.categoryId || null,
       restaurantId: dto.restaurantId,
-      status:
-        user.role === UserRole.ADMIN ? FoodStatus.APPROVED : FoodStatus.PENDING,
+      status: initialStatus,
       isActive: true,
     });
 
@@ -369,7 +418,26 @@ export class FoodService {
 
     const data: Prisma.FoodUpdateInput = { ...dto };
     if (user.role === UserRole.RESTAURANT && hasChanges) {
-      data.status = FoodStatus.PENDING;
+      const moderation = await this.foodModerationService.moderateFood({
+        name: dto.name ?? food.name,
+        description:
+          dto.description !== undefined ? dto.description : food.description,
+        tags: dto.tags ?? food.tags,
+        price: dto.price ?? food.price,
+        image: dto.image ?? food.image,
+      });
+
+      if (moderation.isApproved) {
+        data.status = FoodStatus.APPROVED;
+        this.logger.log(
+          `[AI Moderation APPROVED] Cập nhật món "${dto.name || food.name}" được AI phê duyệt tự động. Lý do: ${moderation.reason}`,
+        );
+      } else {
+        data.status = FoodStatus.PENDING;
+        this.logger.warn(
+          `[AI Moderation PENDING] Cập nhật món "${dto.name || food.name}" cần Admin duyệt thủ công. Lý do: ${moderation.reason}`,
+        );
+      }
     }
 
     const updatedFood = await this.repository.update(id, data);

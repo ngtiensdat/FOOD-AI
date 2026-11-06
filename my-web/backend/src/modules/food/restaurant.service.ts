@@ -316,7 +316,7 @@ export class RestaurantService {
     });
   }
 
-  async getMyAnalytics(user: User) {
+  async getMyAnalytics(user: User, startDate?: string, endDate?: string) {
     const restaurant = await this.prisma.restaurant.findFirst({
       where: { ownerId: user.id },
     });
@@ -331,15 +331,47 @@ export class RestaurantService {
 
     const foodIds = foods.map((f) => f.id);
 
+    const historyWhere: Prisma.HistoryWhereInput = { foodId: { in: foodIds } };
+    const feedbackWhere: Prisma.AiFeedbackWhereInput = {
+      foodId: { in: foodIds },
+    };
+
+    if (startDate || endDate) {
+      const historyDate: Prisma.DateTimeFilter = {};
+      const feedbackDate: Prisma.DateTimeFilter = {};
+      if (startDate) {
+        const s = new Date(startDate);
+        if (!isNaN(s.getTime())) {
+          s.setHours(0, 0, 0, 0);
+          historyDate.gte = s;
+          feedbackDate.gte = s;
+        }
+      }
+      if (endDate) {
+        const e = new Date(endDate);
+        if (!isNaN(e.getTime())) {
+          e.setHours(23, 59, 59, 999);
+          historyDate.lte = e;
+          feedbackDate.lte = e;
+        }
+      }
+      if (historyDate.gte || historyDate.lte) {
+        historyWhere.visitedAt = historyDate;
+      }
+      if (feedbackDate.gte || feedbackDate.lte) {
+        feedbackWhere.createdAt = feedbackDate;
+      }
+    }
+
     const [viewCounts, aiCounts] = await Promise.all([
       this.prisma.history.groupBy({
         by: ['foodId'],
-        where: { foodId: { in: foodIds } },
+        where: historyWhere,
         _count: { foodId: true },
       }),
       this.prisma.aiFeedback.groupBy({
         by: ['foodId'],
-        where: { foodId: { in: foodIds } },
+        where: feedbackWhere,
         _count: { foodId: true },
       }),
     ]);

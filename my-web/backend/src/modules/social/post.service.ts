@@ -495,6 +495,15 @@ export class PostService {
   }
 
   async toggleLike(userId: number, postId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true, title: true, foodId: true, deletedAt: true },
+    });
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
     const existing = await this.prisma.like.findUnique({
       where: {
         userId_postId: {
@@ -502,11 +511,6 @@ export class PostService {
           postId,
         },
       },
-    });
-
-    const post = await this.prisma.post.findUnique({
-      where: { id: postId },
-      select: { authorId: true, title: true, foodId: true },
     });
 
     if (existing) {
@@ -640,6 +644,15 @@ export class PostService {
     postId: number,
     dto: { content: string; parentId?: number },
   ) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true, title: true, foodId: true, deletedAt: true },
+    });
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
     const sanitizedContent = dto.content
       ? DOMPurify.sanitize(dto.content)
       : dto.content;
@@ -661,11 +674,7 @@ export class PostService {
     });
 
     // Gửi thông báo real-time & lưu DB cho tác giả bài viết
-    const post = await this.prisma.post.findUnique({
-      where: { id: postId },
-      select: { authorId: true, title: true, foodId: true },
-    });
-    if (post && post.authorId !== userId) {
+    if (post.authorId !== userId) {
       const commenterName = comment.user.name || 'Ai đó';
       await this.notificationGateway.sendNotificationToUser(post.authorId, {
         type: NotificationType.COMMENT,
