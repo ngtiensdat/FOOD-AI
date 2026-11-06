@@ -7,6 +7,7 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { FoodRepository } from './food.repository';
 import { RestaurantRepository } from './restaurant.repository';
@@ -27,11 +28,14 @@ import {
 import { LIMITS } from '../../common/constants/limits.constant';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { BulkCreateFoodDto } from './dto/bulk-create-food.dto';
+import { MediaService } from '../media/media.service';
+import { extractPublicId } from '../../common/utils/cloudinary.helper';
 
 const FOOD_DISPLAY_LIMIT = 20;
 
 @Injectable()
 export class FoodService {
+  private readonly logger = new Logger(FoodService.name);
   constructor(
     private repository: FoodRepository,
     private restaurantRepository: RestaurantRepository,
@@ -39,6 +43,7 @@ export class FoodService {
     private prisma: PrismaService,
     private aiLearningService: AiLearningService,
     private cacheService: CacheService,
+    private mediaService: MediaService,
   ) {}
 
   async getAllFoods(query: FoodQueryDto) {
@@ -145,44 +150,40 @@ export class FoodService {
       });
     }
 
+    const existingFeedback = await this.prisma.aiFeedback.findFirst({
+      where: {
+        userId,
+        foodId,
+      },
+    });
+
     if (isFavorite) {
-      await this.prisma.aiFeedback.upsert({
-        where: {
-          userId_foodId: {
-            userId,
-            foodId,
+      if (existingFeedback) {
+        await this.prisma.aiFeedback.update({
+          where: { id: existingFeedback.id },
+          data: {
+            feedbackType: FeedbackType.LIKE,
+            createdAt: new Date(),
           },
-        },
-        create: {
-          userId,
-          conversationId: conversation.id,
-          foodId,
-          feedbackType: FeedbackType.LIKE,
-        },
-        update: {
-          feedbackType: FeedbackType.LIKE,
-          createdAt: new Date(),
-        },
-      });
+        });
+      } else {
+        await this.prisma.aiFeedback.create({
+          data: {
+            userId,
+            conversationId: conversation.id,
+            foodId,
+            feedbackType: FeedbackType.LIKE,
+          },
+        });
+      }
     } else {
-      const existingFeedback = await this.prisma.aiFeedback.findUnique({
-        where: {
-          userId_foodId: {
-            userId,
-            foodId,
-          },
-        },
-      });
       if (
         existingFeedback &&
         existingFeedback.feedbackType === FeedbackType.LIKE
       ) {
         await this.prisma.aiFeedback.delete({
           where: {
-            userId_foodId: {
-              userId,
-              foodId,
-            },
+            id: existingFeedback.id,
           },
         });
       }
@@ -372,6 +373,18 @@ export class FoodService {
     }
 
     const updatedFood = await this.repository.update(id, data);
+
+    // Dọn dẹp ảnh cũ trên Cloudinary nếu người dùng thay ảnh mới
+    if (dto.image && food.image && dto.image !== food.image) {
+      const publicId = extractPublicId(food.image);
+      if (publicId) {
+        this.mediaService.deleteImage(publicId).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`Lỗi xóa ảnh món ăn cũ: ${msg}`);
+        });
+      }
+    }
+
     void this.aiService.updateFoodEmbedding(updatedFood.id);
     await this.cacheService.invalidatePattern('foods:*');
     return updatedFood;
@@ -563,6 +576,18 @@ export class FoodService {
     }
 
     const result = await this.repository.delete(id);
+
+    // Xóa ảnh món ăn trên Cloudinary khi món bị xóa
+    if (food.image) {
+      const publicId = extractPublicId(food.image);
+      if (publicId) {
+        this.mediaService.deleteImage(publicId).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`Lỗi xóa ảnh món ăn khi xóa món: ${msg}`);
+        });
+      }
+    }
+
     await this.cacheService.invalidatePattern('foods:*');
     return result;
   }

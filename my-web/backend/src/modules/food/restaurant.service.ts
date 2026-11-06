@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   NotFoundException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { RestaurantRepository } from './restaurant.repository';
 import { FoodRepository } from './food.repository';
@@ -29,6 +30,8 @@ import { UpdateStaffDto } from './dto/update-staff.dto';
 import { InviteStaffDto } from './dto/invite-staff.dto';
 import { CreateStaffReviewDto } from './dto/create-staff-review.dto';
 import { StaffAction } from '../../common/constants/enums.constant';
+import { MediaService } from '../media/media.service';
+import { extractPublicId } from '../../common/utils/cloudinary.helper';
 
 /** Locale hỗ trợ format ngày giᤁ theo chuẩn tiếng Việt */
 const VI_LOCALE = 'vi-VN' as const;
@@ -40,12 +43,15 @@ interface UserFollowPreferences {
 
 @Injectable()
 export class RestaurantService {
+  private readonly logger = new Logger(RestaurantService.name);
+
   constructor(
     private repository: RestaurantRepository,
     private foodRepository: FoodRepository,
     private prisma: PrismaService,
     private cacheService: CacheService,
     private aiService: AiService,
+    private mediaService: MediaService,
   ) {}
 
   async getNearbyRestaurants(query: RestaurantNearbyQueryDto) {
@@ -87,11 +93,37 @@ export class RestaurantService {
 
   async updateMyRestaurantProfile(user: User, dto: UpdateRestaurantProfileDto) {
     const restaurant = await this.ensureRestaurantOwnership(user.id);
+    const oldLogo = restaurant.profile?.logo;
+    const oldCover = restaurant.profile?.coverImage;
+
     const result = await this.repository.updateRestaurantProfileTransaction(
       restaurant.id,
       user.id,
       dto,
     );
+
+    // Dọn dẹp logo cũ trên Cloudinary nếu cập nhật logo mới
+    if (dto.logo && oldLogo && dto.logo !== oldLogo) {
+      const publicId = extractPublicId(oldLogo);
+      if (publicId) {
+        this.mediaService.deleteImage(publicId).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`Lỗi xóa logo nhà hàng cũ: ${msg}`);
+        });
+      }
+    }
+
+    // Dọn dẹp ảnh bìa cũ trên Cloudinary nếu cập nhật ảnh bìa mới
+    if (dto.coverImage && oldCover && dto.coverImage !== oldCover) {
+      const publicId = extractPublicId(oldCover);
+      if (publicId) {
+        this.mediaService.deleteImage(publicId).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`Lỗi xóa ảnh bìa nhà hàng cũ: ${msg}`);
+        });
+      }
+    }
+
     await this.cacheService.invalidatePattern(
       `restaurants:public:${restaurant.id}`,
     );

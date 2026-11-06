@@ -24,6 +24,20 @@ export const MerchantAnalytics = () => {
     maxVal,
   } = useMerchantAnalytics();
 
+  const last28DaysText = React.useMemo(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 28);
+    const startDay = start.getDate();
+    const startMonth = start.getMonth() + 1;
+    const endDay = end.getDate();
+    const endMonth = end.getMonth() + 1;
+    return LABELS.ANALYTICS.LAST_28_DAYS_RANGE(
+      `${startDay} Tháng ${startMonth}`,
+      `${endDay} Tháng ${endMonth}`,
+    );
+  }, []);
+
   if (loading) {
     return <AnalyticsSkeleton />;
   }
@@ -64,7 +78,7 @@ export const MerchantAnalytics = () => {
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 px-3 py-1.5 rounded-xl text-[10px] font-bold text-gray-500 dark:text-slate-400 flex items-center gap-1.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-900 transition-colors">
-                  <span>{LABELS.ANALYTICS.LAST_28_DAYS}</span>
+                  <span>{last28DaysText}</span>
                   <ChevronDown size={12} />
                 </div>
                 <button className="text-[10px] font-bold text-primary hover:underline cursor-pointer">{LABELS.COMMON.SEE_ALL}</button>

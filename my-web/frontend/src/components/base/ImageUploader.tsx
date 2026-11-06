@@ -16,7 +16,7 @@ import { ImageCropModal } from '@/components/base/ImageCropModal';
 import { extractPublicId } from '@/utils/helpers';
 import { LABELS } from '@/constants/labels';
 
-export type UploadType = 'avatar' | 'cover' | 'post-image';
+export type UploadType = 'avatar' | 'cover' | 'post-image' | 'food';
 
 interface ImageUploaderProps {
   /** URL ảnh hiện tại (có thể là URL Cloudinary cũ hoặc URL bên ngoài) */
@@ -28,7 +28,11 @@ interface ImageUploaderProps {
   /** Callback khi URL ảnh mới được upload thành công */
   onUploaded: (url: string) => void;
   /** Aspect ratio của preview */
-  aspectRatio?: 'square' | 'cover';
+  aspectRatio?: 'square' | 'cover' | 'food';
+  /** Cho phép nhập thủ công URL ảnh nếu cần */
+  allowManualUrl?: boolean;
+  /** Placeholder cho ô nhập URL thủ công */
+  placeholderUrl?: string;
 }
 
 /** Tỉ lệ khung hình crop theo loại ảnh */
@@ -36,13 +40,15 @@ const ASPECT_MAP: Record<UploadType, number | undefined> = {
   avatar: 1,          // Vuông 1:1
   cover: 3,           // Ngang 3:1 (hợp với chiều cao h-96 của container Profile)
   'post-image': undefined, // Tự do
+  food: 4 / 3,        // Chuẩn ảnh món ăn ngang 4:3
 };
 
 /** Tên hiển thị theo loại ảnh */
 const LABEL_MAP: Record<UploadType, string> = {
-  avatar: 'Ảnh đại diện',
-  cover: 'Ảnh bìa',
-  'post-image': 'Ảnh bài đăng',
+  avatar: LABELS.UPLOADER.AVATAR,
+  cover: LABELS.UPLOADER.COVER,
+  'post-image': LABELS.UPLOADER.POST_IMAGE,
+  food: LABELS.UPLOADER.FOOD_IMAGE,
 };
 
 
@@ -53,6 +59,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   uploadType = 'avatar',
   onUploaded,
   aspectRatio = 'square',
+  allowManualUrl = false,
+  placeholderUrl,
 }) => {
   const labels = LABELS;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +112,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         url = await mediaService.uploadAvatar(croppedFile);
       } else if (uploadType === 'cover') {
         url = await mediaService.uploadCover(croppedFile);
+      } else if (uploadType === 'food') {
+        url = await mediaService.uploadFoodImage(croppedFile);
       } else {
         url = await mediaService.uploadPostImage(croppedFile);
       }
@@ -182,7 +192,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               ? 'border-primary bg-orange-50 dark:bg-orange-950/20'
               : 'border-gray-200 dark:border-slate-700 hover:border-primary hover:bg-gray-50 dark:hover:bg-slate-800/50'
             }
-            ${aspectRatio === 'square' ? 'w-full aspect-square max-w-[120px]' : 'w-full h-[120px]'}
+            ${aspectRatio === 'square' ? 'w-full aspect-square max-w-[120px]' : aspectRatio === 'food' ? 'w-full aspect-[4/3] max-w-[200px]' : 'w-full h-[120px]'}
           `}
           onClick={() => {
             if (!busy) inputRef.current?.click();
@@ -268,6 +278,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               )}
               {isDeleting ? labels.UPLOADER.DELETING : labels.UPLOADER.DELETE_IMAGE}
             </Button>
+          </div>
+        )}
+
+        {allowManualUrl && (
+          <div className="pt-2">
+            <Input
+              type="text"
+              placeholder={placeholderUrl || labels.FORM.IMAGE_URL}
+              value={currentUrl || ''}
+              onChange={(e) => onUploaded(e.target.value)}
+              className="text-xs py-2 px-3"
+            />
           </div>
         )}
 

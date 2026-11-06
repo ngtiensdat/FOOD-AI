@@ -7,9 +7,10 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, XCircle } from 'lucide-react';
+import { Plus, Edit, XCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { ImageUploader } from '@/components/base/ImageUploader';
 import { LABELS } from '@/constants/labels';
 import { usePublicCategories } from '@/hooks/usePublicCategories';
 import { Food } from '@/types/food';
@@ -133,6 +134,12 @@ export const FoodFormModal = ({
                   </option>
                 ))}
               </select>
+              {Boolean(formData.address) && (
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-950/60 px-3.5 py-2.5 rounded-xl border border-gray-100 dark:border-slate-800">
+                  <MapPin size={14} className="text-primary shrink-0" />
+                  <span className="truncate font-medium">{String(formData.address)}</span>
+                </div>
+              )}
             </div>
 
             {/* Chọn Danh mục */}
@@ -189,46 +196,25 @@ export const FoodFormModal = ({
               value={formData.fat || ''} 
               onChange={e => handleFieldChange('fat', e.target.value)} 
             />
-            <Input 
-              label={LABELS.FORM.IMAGE_URL} 
-              value={formData.image} 
-              onChange={e => handleFieldChange('image', e.target.value)} 
-              className="md:col-span-2" 
-            />
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">
+                {LABELS.UPLOADER.FOOD_IMAGE}
+              </label>
+              <ImageUploader
+                currentUrl={formData.image}
+                onUploaded={(url) => handleFieldChange('image', url)}
+                uploadType="food"
+                aspectRatio="food"
+                allowManualUrl
+                placeholderUrl={LABELS.FORM.IMAGE_URL}
+              />
+            </div>
             <Input 
               label={LABELS.FORM.DESCRIPTION} 
               isTextArea 
               value={formData.description} 
               onChange={e => handleFieldChange('description', e.target.value)} 
               className="md:col-span-2" 
-            />
-            <Input 
-              label={`${LABELS.FORM.ADDRESS} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_BRANCH}`} 
-              value={formData.address} 
-              disabled
-              className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
-            />
-            <Input 
-              label={`${LABELS.FORM.MAP_URL} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_BRANCH}`} 
-              value={formData.mapUrl} 
-              disabled
-              className="md:col-span-2 bg-gray-100 text-gray-500 cursor-not-allowed" 
-            />
-            <Input 
-              label={`${LABELS.FORM.LAT} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
-              type="number"
-              step={"an" + "y"}
-              value={formData.lat} 
-              disabled
-              className="bg-gray-100 text-gray-500 cursor-not-allowed"
-            />
-            <Input 
-              label={`${LABELS.FORM.LNG} ${LABELS.RESTAURANT.MODAL.AUTO_FILL_LAT_LNG}`} 
-              type="number"
-              step={"an" + "y"}
-              value={formData.lng} 
-              disabled
-              className="bg-gray-100 text-gray-500 cursor-not-allowed"
             />
           </div>
           <div className="flex gap-4 pt-4">

@@ -521,22 +521,17 @@ export class PostService {
 
       // Gỡ implicit feedback nếu do like bài viết này tạo ra
       if (post && post.foodId) {
-        const feedback = await this.prisma.aiFeedback.findUnique({
+        const feedback = await this.prisma.aiFeedback.findFirst({
           where: {
-            userId_foodId: {
-              userId,
-              foodId: post.foodId,
-            },
+            userId,
+            foodId: post.foodId,
           },
         });
         if (feedback && feedback.query?.includes('Tương tác Like bài viết')) {
           await this.prisma.aiFeedback
             .delete({
               where: {
-                userId_foodId: {
-                  userId,
-                  foodId: post.foodId,
-                },
+                id: feedback.id,
               },
             })
             .catch((err) =>
@@ -587,30 +582,44 @@ export class PostService {
       if (post && post.foodId) {
         const conversationId =
           await this.getOrCreateActiveConversationId(userId);
-        await this.prisma.aiFeedback
-          .upsert({
-            where: {
-              userId_foodId: {
-                userId,
-                foodId: post.foodId,
+        const existingFeedback = await this.prisma.aiFeedback.findFirst({
+          where: {
+            userId,
+            foodId: post.foodId,
+          },
+        });
+        if (existingFeedback) {
+          await this.prisma.aiFeedback
+            .update({
+              where: { id: existingFeedback.id },
+              data: {
+                feedbackType: 'LIKE',
+                query: `Tương tác Like bài viết: "${post.title || ''}"`,
+                createdAt: new Date(),
               },
-            },
-            create: {
-              userId,
-              conversationId,
-              foodId: post.foodId,
-              feedbackType: 'LIKE',
-              query: `Tương tác Like bài viết: "${post.title || ''}"`,
-            },
-            update: {
-              feedbackType: 'LIKE',
-              query: `Tương tác Like bài viết: "${post.title || ''}"`,
-              createdAt: new Date(),
-            },
-          })
-          .catch((err) => {
-            this.logger.warn(`Lỗi tạo implicit feedback khi like post: ${err}`);
-          });
+            })
+            .catch((err) => {
+              this.logger.warn(
+                `Lỗi cập nhật implicit feedback khi like post: ${err}`,
+              );
+            });
+        } else {
+          await this.prisma.aiFeedback
+            .create({
+              data: {
+                userId,
+                conversationId,
+                foodId: post.foodId,
+                feedbackType: 'LIKE',
+                query: `Tương tác Like bài viết: "${post.title || ''}"`,
+              },
+            })
+            .catch((err) => {
+              this.logger.warn(
+                `Lỗi tạo implicit feedback khi like post: ${err}`,
+              );
+            });
+        }
 
         // Cập nhật User Embedding
         this.vectorSyncService.updateUserEmbedding(userId).catch((err) => {
@@ -670,32 +679,44 @@ export class PostService {
     // Ghi nhận implicit feedback nếu bài viết có foodId
     if (post && post.foodId) {
       const conversationId = await this.getOrCreateActiveConversationId(userId);
-      await this.prisma.aiFeedback
-        .upsert({
-          where: {
-            userId_foodId: {
-              userId,
-              foodId: post.foodId,
+      const existingFeedback = await this.prisma.aiFeedback.findFirst({
+        where: {
+          userId,
+          foodId: post.foodId,
+        },
+      });
+      if (existingFeedback) {
+        await this.prisma.aiFeedback
+          .update({
+            where: { id: existingFeedback.id },
+            data: {
+              feedbackType: 'LIKE',
+              query: `Tương tác bình luận bài viết: "${post.title || ''}"`,
+              createdAt: new Date(),
             },
-          },
-          create: {
-            userId,
-            conversationId,
-            foodId: post.foodId,
-            feedbackType: 'LIKE',
-            query: `Tương tác bình luận bài viết: "${post.title || ''}"`,
-          },
-          update: {
-            feedbackType: 'LIKE',
-            query: `Tương tác bình luận bài viết: "${post.title || ''}"`,
-            createdAt: new Date(),
-          },
-        })
-        .catch((err) => {
-          this.logger.warn(
-            `Lỗi tạo implicit feedback khi comment post: ${err}`,
-          );
-        });
+          })
+          .catch((err) => {
+            this.logger.warn(
+              `Lỗi cập nhật implicit feedback khi comment post: ${err}`,
+            );
+          });
+      } else {
+        await this.prisma.aiFeedback
+          .create({
+            data: {
+              userId,
+              conversationId,
+              foodId: post.foodId,
+              feedbackType: 'LIKE',
+              query: `Tương tác bình luận bài viết: "${post.title || ''}"`,
+            },
+          })
+          .catch((err) => {
+            this.logger.warn(
+              `Lỗi tạo implicit feedback khi comment post: ${err}`,
+            );
+          });
+      }
 
       // Cập nhật User Embedding
       this.vectorSyncService.updateUserEmbedding(userId).catch((err) => {

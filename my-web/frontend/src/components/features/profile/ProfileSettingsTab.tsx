@@ -123,13 +123,13 @@ export const ProfileSettingsTab = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <span className="text-xs text-gray-400 block font-semibold mb-1">{LABELS.SETTINGS.PROFILE.FULL_NAME}</span>
-            <p className="font-bold text-gray-700 bg-white p-3 rounded-xl border border-gray-100">
+            <p className="font-bold text-gray-700 dark:text-gray-900 mixed:text-gray-900 bg-white dark:bg-gray-100 mixed:bg-gray-100 p-3 rounded-xl border border-gray-100 dark:border-gray-200 mixed:border-gray-200">
               {user?.name || LABELS.SETTINGS.PROFILE.NOT_UPDATED}
             </p>
           </div>
           <div>
             <span className="text-xs text-gray-400 block font-semibold mb-1">{LABELS.FORM.EMAIL}</span>
-            <p className="font-bold text-gray-700 bg-white p-3 rounded-xl border border-gray-100">
+            <p className="font-bold text-gray-700 dark:text-gray-900 mixed:text-gray-900 bg-white dark:bg-gray-100 mixed:bg-gray-100 p-3 rounded-xl border border-gray-100 dark:border-gray-200 mixed:border-gray-200">
               {user?.email || LABELS.SETTINGS.PROFILE.NOT_UPDATED}
             </p>
           </div>
@@ -146,7 +146,7 @@ export const ProfileSettingsTab = ({
         </p>
         <div className="space-y-3">
           {fields.map((field) => (
-            <div key={field.key} className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100">
+            <div key={field.key} className="flex items-center justify-between bg-white dark:bg-gray-100 mixed:bg-gray-100 p-4 rounded-xl border border-gray-100 dark:border-gray-200 mixed:border-gray-200">
               <div className="pr-4">
                 <span className="font-bold text-gray-700 block mb-0.5">{field.label}</span>
                 <span className="text-xs text-gray-400 font-medium">{field.desc}</span>

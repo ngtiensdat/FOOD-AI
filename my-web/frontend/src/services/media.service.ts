@@ -27,6 +27,16 @@ export const mediaService = {
   },
 
   /**
+   * Upload ảnh món ăn. Trả về URL Cloudinary.
+   */
+  async uploadFoodImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.postForm<{ url: string }>('/media/food-image', formData);
+    return res.url;
+  },
+
+  /**
    * Upload ảnh bài đăng. Trả về URL Cloudinary.
    */
   async uploadPostImage(file: File): Promise<string> {

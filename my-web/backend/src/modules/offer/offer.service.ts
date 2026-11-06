@@ -9,7 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { UserRole, Prisma } from '@prisma/client';
+import { UserRole, Prisma, OfferStatus } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 
@@ -29,7 +29,7 @@ export class OfferService {
     if (restaurantId !== undefined) {
       where.restaurantId = restaurantId;
     }
-    where.status = status || 'APPROVED';
+    where.status = (status as OfferStatus) || OfferStatus.APPROVED;
     return this.prisma.offer.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -85,10 +85,10 @@ export class OfferService {
         usedCount: 0,
         status:
           role === UserRole.ADMIN
-            ? dto.status || 'APPROVED'
+            ? (dto.status as OfferStatus) || OfferStatus.APPROVED
             : dto.status === 'PENDING'
-              ? 'PENDING'
-              : 'APPROVED',
+              ? OfferStatus.PENDING
+              : OfferStatus.APPROVED,
       },
     });
 
@@ -217,7 +217,7 @@ export class OfferService {
     }
     return this.prisma.offer.update({
       where: { id: offerId },
-      data: { status: 'APPROVED' },
+      data: { status: OfferStatus.APPROVED },
     });
   }
 

@@ -6,6 +6,7 @@ import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../../database/prisma.service';
 import { AiLearningService } from '../ai/services/ai-learning.service';
 import { CacheService } from '../../common/services/cache.service';
+import { MediaService } from '../media/media.service';
 import { User, UserRole } from '@prisma/client';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
@@ -43,6 +44,10 @@ describe('FoodService', () => {
         { provide: PrismaService, useValue: {} },
         { provide: AiLearningService, useValue: {} },
         { provide: CacheService, useValue: mockCacheService },
+        {
+          provide: MediaService,
+          useValue: { deleteImage: jest.fn().mockResolvedValue({}) },
+        },
       ],
     }).compile();
 

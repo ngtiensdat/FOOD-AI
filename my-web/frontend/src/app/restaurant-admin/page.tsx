@@ -7,8 +7,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
-  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Check, X, FileUp, Tag, Users, Package, Grid, Monitor, History
+  Store, BarChart3, ArrowLeft, Pizza, Sparkles, Plus, Check, X, FileUp, Tag, Users, Package, Grid, Monitor, History, ExternalLink
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -418,6 +419,13 @@ export default function RestaurantDashboard() {
             active={activeTab === 'history'}
             subItems={historySubItems}
           />
+          {restaurant?.id && (
+            <SidebarItem
+              icon={ExternalLink}
+              label={LABELS.NAV.VIEW_PUBLIC_PAGE}
+              href={`/restaurant/${restaurant.id}`}
+            />
+          )}
           <SidebarItem icon={ArrowLeft} label={LABELS.COMMON.BACK_HOME} href="/" />
         </Sidebar>
 
@@ -558,7 +566,17 @@ export default function RestaurantDashboard() {
                           </div>
                         )}
 
-                        <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4">
+                        <div className="border-t border-gray-50 dark:border-slate-800/50 pt-4 space-y-2">
+                          {restaurant?.id && (
+                            <Link
+                              href={`/restaurant/${restaurant.id}`}
+                              target="_blank"
+                              className="w-full rounded-xl flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/40 text-xs py-2.5 font-bold transition-all shadow-sm"
+                            >
+                              <ExternalLink size={14} />
+                              <span>{LABELS.NAV.VIEW_PUBLIC_PAGE}</span>
+                            </Link>
+                          )}
                           <Button
                             variant="outline"
                             fullWidth

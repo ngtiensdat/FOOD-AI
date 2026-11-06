@@ -28,7 +28,7 @@ export const LanguageSettingsTab = () => {
         <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
           <Globe className="text-primary" size={20} /> {LABELS.SETTINGS.TABS.LANGUAGE}
         </h3>
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-100 mixed:bg-gray-100 p-4 rounded-xl border border-gray-100 dark:border-gray-200 mixed:border-gray-200">
           <div className="pr-4">
             <span className="font-bold text-gray-700 block mb-0.5">{LABELS.SETTINGS.TABS.LANGUAGE}</span>
             <span className="text-xs text-gray-400 font-medium">{LABELS.SETTINGS.LANG_DESC}</span>

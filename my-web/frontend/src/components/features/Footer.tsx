@@ -7,7 +7,7 @@ import { LABELS } from '@/constants/labels';
 
 export const Footer = () => {
   return (
-    <footer className="bg-white py-12 px-6 border-t border-gray-100">
+    <footer className="bg-white dark:bg-gray-100 mixed:bg-gray-100 py-12 px-6 border-t border-gray-100 dark:border-gray-200 mixed:border-gray-200 transition-colors duration-300">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-8">
         <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity justify-center md:justify-start">
           <div className="relative w-8 h-8">

@@ -69,12 +69,10 @@ export class AiLearningService {
       });
 
       // Check if feedback already exists with the same type (Toggle Off)
-      const existing = await this.prisma.aiFeedback.findUnique({
+      const existing = await this.prisma.aiFeedback.findFirst({
         where: {
-          userId_foodId: {
-            userId,
-            foodId: dto.foodId,
-          },
+          userId,
+          foodId: dto.foodId,
         },
       });
 
@@ -84,10 +82,7 @@ export class AiLearningService {
         );
         await this.prisma.aiFeedback.delete({
           where: {
-            userId_foodId: {
-              userId,
-              foodId: dto.foodId,
-            },
+            id: existing.id,
           },
         });
 
@@ -113,29 +108,31 @@ export class AiLearningService {
           }
         }
       } else {
-        // Anti-spam: Upsert feedback (unique per userId and foodId)
-        await this.prisma.aiFeedback.upsert({
-          where: {
-            userId_foodId: {
-              userId,
-              foodId: dto.foodId,
+        // Anti-spam: Update if existing, create if new
+        if (existing) {
+          await this.prisma.aiFeedback.update({
+            where: {
+              id: existing.id,
             },
-          },
-          create: {
-            userId,
-            conversationId: convId,
-            foodId: dto.foodId,
-            feedbackType: dto.feedbackType,
-            query: lastMessage?.content || null,
-            aiReply: lastAiReply?.content || null,
-          },
-          update: {
-            feedbackType: dto.feedbackType,
-            query: lastMessage?.content || null,
-            aiReply: lastAiReply?.content || null,
-            createdAt: new Date(),
-          },
-        });
+            data: {
+              feedbackType: dto.feedbackType,
+              query: lastMessage?.content || null,
+              aiReply: lastAiReply?.content || null,
+              createdAt: new Date(),
+            },
+          });
+        } else {
+          await this.prisma.aiFeedback.create({
+            data: {
+              userId,
+              conversationId: convId,
+              foodId: dto.foodId,
+              feedbackType: dto.feedbackType,
+              query: lastMessage?.content || null,
+              aiReply: lastAiReply?.content || null,
+            },
+          });
+        }
 
         // Data Consistency: If creating/updating a DISLIKE feedback, also remove from Favorite table
         if (dto.feedbackType === FeedbackType.DISLIKE) {

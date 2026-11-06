@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { ImageUploader } from '@/components/base/ImageUploader';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { LABELS } from '@/constants/labels';
 
@@ -81,12 +82,19 @@ export const AdminFoodModal = ({
               value={editFormData.tags} 
               onChange={e => setEditFormData({ ...editFormData, tags: e.target.value })} 
             />
-            <Input 
-              label={LABELS.ADMIN.MODAL.IMAGE_URL} 
-              value={editFormData.image} 
-              onChange={e => setEditFormData({ ...editFormData, image: e.target.value })} 
-              className="md:col-span-2" 
-            />
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-small font-semibold text-gray-700 dark:text-slate-300 ml-1">
+                {LABELS.UPLOADER.FOOD_IMAGE}
+              </label>
+              <ImageUploader
+                currentUrl={editFormData.image}
+                onUploaded={(url) => setEditFormData({ ...editFormData, image: url })}
+                uploadType="food"
+                aspectRatio="food"
+                allowManualUrl
+                placeholderUrl={LABELS.ADMIN.MODAL.IMAGE_URL}
+              />
+            </div>
             <Input 
               label={LABELS.ADMIN.MODAL.DESCRIPTION} 
               isTextArea 
