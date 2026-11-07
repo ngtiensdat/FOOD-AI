@@ -133,7 +133,7 @@ export function PostImageViewer({ images }: PostImageViewerProps) {
             <div className="flex gap-2 px-3 py-2.5 bg-black/90 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20">
               {images.map((url, i) => (
                 <Button
-                  key={url}
+                  key={`${url}-${i}`}
                   type="button"
                   variant="none"
                   size="none"
@@ -217,7 +217,7 @@ function ImageGrid({
       <div className="grid grid-cols-2 gap-1.5 rounded-2xl overflow-hidden">
         {images.map((url, i) => (
           <div
-            key={url}
+            key={`${url}-${i}`}
             className="relative h-52 cursor-pointer overflow-hidden"
             onClick={() => onClickImage(i)}
           >
@@ -241,7 +241,7 @@ function ImageGrid({
         </div>
         {images.slice(1).map((url, i) => (
           <div
-            key={url}
+            key={`${url}-${i + 1}`}
             className="relative cursor-pointer overflow-hidden"
             style={{ height: '124px' }}
             onClick={() => onClickImage(i + 1)}
@@ -264,7 +264,7 @@ function ImageGrid({
         const isLast = i === 3 && extra > 0;
         return (
           <div
-            key={url}
+            key={`${url}-${i}`}
             className="relative h-40 cursor-pointer overflow-hidden"
             onClick={() => onClickImage(i)}
           >

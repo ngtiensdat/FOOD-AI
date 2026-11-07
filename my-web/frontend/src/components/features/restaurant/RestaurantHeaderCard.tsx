@@ -179,14 +179,16 @@ export const RestaurantHeaderCard = ({
                 )}
                 {Array.isArray(restaurantData.cuisines) && restaurantData.cuisines.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
-                    {restaurantData.cuisines.map((cuisine: string) => (
-                      <span
-                        key={cuisine}
-                        className="bg-orange-50/80 dark:bg-orange-950/15 text-primary border border-orange-100/50 dark:border-orange-900/30 px-2.5 py-0.5 rounded-md text-xs font-bold capitalize"
-                      >
-                        {cuisine}
-                      </span>
-                    ))}
+                    {restaurantData.cuisines
+                      .filter((c): c is string => Boolean(c && c.trim()))
+                      .map((cuisine: string, idx: number) => (
+                        <span
+                          key={`${cuisine}-${idx}`}
+                          className="bg-orange-50/80 dark:bg-orange-950/15 text-primary border border-orange-100/50 dark:border-orange-900/30 px-2.5 py-0.5 rounded-md text-xs font-bold capitalize"
+                        >
+                          {cuisine}
+                        </span>
+                      ))}
                   </div>
                 )}
               </div>
