@@ -25,6 +25,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 interface RequestOptions extends Omit<RequestInit, 'method' | 'body'> {
   params?: Record<string, string | number | boolean | null | undefined>;
   body?: unknown;
+  retries?: number;
 }
 
 class ApiClient {
@@ -35,7 +36,9 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request(method: HttpMethod, endpoint: string, options: RequestOptions = {}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async request<T = any>(method: HttpMethod, endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const maxRetries = options.retries !== undefined ? options.retries : (method === 'GET' ? 1 : 0);
     const fullPath = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const url = fullPath.startsWith('http') ? new URL(fullPath) : new URL(fullPath, baseOrigin);
@@ -69,7 +72,7 @@ class ApiClient {
       headers['Content-Type'] = 'application/json';
     }
 
-    const { body, params, ...restOptions } = options;
+    const { body, params: _params, ...restOptions } = options;
     const config: RequestInit = {
       method,
       headers,
@@ -92,8 +95,18 @@ class ApiClient {
       // Xử lý Refresh Token tự động nếu nhận lỗi 401
       if (response.status === 401 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login') && !endpoint.includes('/pos-terminals/login')) {
         if (!this.refreshPromise) {
+          const refreshHeaders: Record<string, string> = {};
+          if (typeof window !== 'undefined') {
+            const parts = `; ${document.cookie}`.split(`; XSRF-TOKEN=`);
+            const csrfToken = parts.length === 2 ? parts.pop()?.split(';').shift() : undefined;
+            if (csrfToken) {
+              refreshHeaders['X-XSRF-TOKEN'] = csrfToken;
+            }
+          }
+
           this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
+            headers: refreshHeaders,
             credentials: 'include'
           })
             .then((res) => res.ok)
@@ -122,6 +135,13 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        // Tự động retry 1 lần nếu gặp lỗi server tạm thời (500, 502, 503 do backend dev đang reload)
+        if (response.status >= 500 && maxRetries > 0) {
+          logDev(`[ApiClient] Server transient status ${response.status} on ${method} ${endpoint}, retrying in 800ms... (remaining retries: ${maxRetries - 1})`);
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          return this.request(method, endpoint, { ...options, retries: maxRetries - 1 });
+        }
+
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
         const isClientError = response.status < 500;
         
@@ -162,6 +182,13 @@ class ApiClient {
 
       return result;
     } catch (error: unknown) {
+      // Tự động retry nếu gặp lỗi mạng (network_error / ECONNREFUSED)
+      if (maxRetries > 0) {
+        logDev(`[ApiClient] Network exception on ${method} ${endpoint}, retrying in 800ms... (remaining retries: ${maxRetries - 1})`);
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return this.request(method, endpoint, { ...options, retries: maxRetries - 1 });
+      }
+
       const err = error as { message?: string; stack?: string; response?: { data?: unknown }; status?: string | number };
       errorDev("Request failed", {
         endpoint,
@@ -175,24 +202,29 @@ class ApiClient {
     }
   }
 
-  async get(endpoint: string, options?: RequestOptions) {
-    return this.request('GET', endpoint, options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async get<T = any>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>('GET', endpoint, options);
   }
 
-  async post(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('POST', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async post<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('POST', endpoint, { ...options, body });
   }
 
-  async put(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('PUT', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async put<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('PUT', endpoint, { ...options, body });
   }
 
-  async patch(endpoint: string, body?: unknown, options?: RequestOptions) {
-    return this.request('PATCH', endpoint, { ...options, body });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async patch<T = any>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>('PATCH', endpoint, { ...options, body });
   }
 
-  async delete(endpoint: string, options?: RequestOptions) {
-    return this.request('DELETE', endpoint, options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async delete<T = any>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>('DELETE', endpoint, options);
   }
 
   /**

@@ -66,13 +66,13 @@ export const MenuTable = ({ myFoods, loading, actions }: MenuTableProps) => {
             <tr key={food.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-900/50 transition-all text-body text-gray-800 dark:text-slate-200">
               <td className="px-8 py-6">
                 <div className="flex items-center gap-6">
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm flex-shrink-0 bg-gray-50 dark:bg-slate-900">
                     <SafeImage 
                       src={getValidImageUrl(food.image)} 
                       alt={food.name} 
-                      width={64}
-                      height={64}
-                      className="object-cover"
+                      fill
+                      sizes="64px"
+                      className="object-cover w-full h-full"
                     />
                   </div>
                   <div>

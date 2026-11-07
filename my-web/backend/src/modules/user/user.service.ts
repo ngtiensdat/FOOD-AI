@@ -17,23 +17,7 @@ import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { MediaService } from '../media/media.service';
 import { VectorSyncService } from '../ai/services/vector-sync.service';
-
-function extractPublicId(url: string): string | null {
-  if (!url || !url.includes('res.cloudinary.com')) return null;
-  try {
-    const parts = url.split('/image/upload/');
-    if (parts.length < 2) return null;
-    const pathParts = parts[1].split('/');
-    if (pathParts[0].match(/^v\d+$/)) pathParts.shift();
-    const remainingPath = pathParts.join('/');
-    const dotIndex = remainingPath.lastIndexOf('.');
-    return dotIndex !== -1
-      ? remainingPath.substring(0, dotIndex)
-      : remainingPath;
-  } catch {
-    return null;
-  }
-}
+import { extractPublicId } from '../../common/utils/cloudinary.helper';
 
 @Injectable()
 export class UserService {

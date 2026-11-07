@@ -32,6 +32,7 @@ import { DeleteAccountDto } from './dto/delete-account.dto';
 import { CustomThrottlerGuard } from '../../common/guards/custom-throttler.guard';
 import { MESSAGES } from '../../common/constants/messages.constant';
 import { Throttle } from '@nestjs/throttler';
+import { appConfig } from '../../config/app.config';
 
 @Controller('auth')
 export class AuthController {
@@ -187,12 +188,13 @@ export class AuthController {
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
     const isProd = process.env.NODE_ENV === 'production';
+    const config = appConfig();
     res.cookie('accessToken', accessToken, {
       path: '/',
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      maxAge: 30 * 60 * 1000, // 30 phút
+      maxAge: config.cookieAccessMaxAge,
     });
 
     res.cookie('refreshToken', refreshToken, {
@@ -200,7 +202,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+      maxAge: config.cookieRefreshMaxAge,
     });
   }
 }

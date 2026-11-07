@@ -8,7 +8,7 @@ import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
-  async getAllFoods(params?: { tag?: string; city?: string; district?: string }) {
+  async getAllFoods(params?: { tag?: string; search?: string; city?: string; district?: string; limit?: number }) {
     return apiClient.get('/foods', { params }).catch(() => []);
   },
 
@@ -39,8 +39,12 @@ export const foodService = {
     });
   },
 
-  async getMyAnalytics() {
-    return apiClient.get('/restaurants/my-analytics').catch((err) => {
+  async getMyAnalytics(startDate?: string, endDate?: string) {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return apiClient.get(`/restaurants/my-analytics${queryString}`).catch((err) => {
       console.error('Error fetching my analytics:', err);
       return [];
     });

@@ -153,6 +153,36 @@ export class MediaController {
   }
 
   /**
+   * POST /media/food-image
+   * Upload ảnh món ăn lên Cloudinary (thư mục 'foods'). Kích thước tối đa 8MB.
+   */
+  @Post('food-image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+      fileFilter: (_req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(
+            new BadRequestException('Chỉ chấp nhận file ảnh (image/*)'),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadFoodImage(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ url: string }> {
+    if (!file) {
+      throw new BadRequestException('Vui lòng chọn file ảnh để upload.');
+    }
+    const url = await this.mediaService.uploadPostBuffer(file.buffer, 'foods');
+    return { url };
+  }
+
+  /**
    * DELETE /media
    * Xóa ảnh khỏi Cloudinary theo public_id.
    */

@@ -109,9 +109,8 @@ export class BusinessRuleEngineService {
   ): number {
     if (distanceKm === null) return 1.0;
 
-    let score = 1.0;
     // Exponential distance decay
-    score = Math.max(0.5, Math.exp(-0.07 * distanceKm));
+    let score = Math.max(0.5, Math.exp(-0.07 * distanceKm));
 
     if (mobility === 'LAZY') {
       if (distanceKm < 1.5) {

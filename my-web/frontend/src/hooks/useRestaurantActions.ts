@@ -16,6 +16,7 @@ import { User } from '@/types/user';
 import { Food } from '@/types/food';
 import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { foodSchema } from '@/schemas/food.schema';
+import { FoodFormData } from '@/components/features/food/FoodFormModal';
 
 export const useRestaurantActions = (user: User | Partial<User> | null | undefined) => {
   const [myFoods, setMyFoods] = useState<Food[]>([]);
@@ -190,28 +191,45 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, overrides?: Partial<FoodFormData>) => {
     e.preventDefault();
-    if (!formData.restaurantId) {
+    const currentData = {
+      ...formData,
+      ...(overrides
+        ? {
+            ...overrides,
+            price: overrides.price !== undefined ? String(overrides.price) : formData.price,
+            restaurantId: overrides.restaurantId !== undefined ? String(overrides.restaurantId) : formData.restaurantId,
+            categoryId: overrides.categoryId !== undefined ? String(overrides.categoryId ?? '') : formData.categoryId,
+            calories: overrides.calories !== undefined ? String(overrides.calories) : formData.calories,
+            carbs: overrides.carbs !== undefined ? String(overrides.carbs) : formData.carbs,
+            protein: overrides.protein !== undefined ? String(overrides.protein) : formData.protein,
+            fat: overrides.fat !== undefined ? String(overrides.fat) : formData.fat,
+            image: overrides.image !== undefined ? String(overrides.image) : formData.image,
+            tags: overrides.tags !== undefined ? String(overrides.tags) : formData.tags,
+          }
+        : {})
+    };
+    if (!currentData.restaurantId) {
       toast.error(LABELS.UI_MESSAGES.RESTAURANT.SELECT_REQUIRED);
       return;
     }
 
-    const priceParsed = parseFloat(formData.price);
-    const restaurantIdParsed = parseInt(formData.restaurantId);
-    const categoryIdParsed = formData.categoryId ? parseInt(formData.categoryId) : null;
-    const tagsParsed = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
+    const priceParsed = parseFloat(currentData.price);
+    const restaurantIdParsed = parseInt(currentData.restaurantId);
+    const categoryIdParsed = currentData.categoryId ? parseInt(currentData.categoryId) : null;
+    const tagsParsed = currentData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
     
-    const caloriesParsed = formData.calories ? parseFloat(formData.calories) : null;
-    const carbsParsed = formData.carbs ? parseFloat(formData.carbs) : null;
-    const proteinParsed = formData.protein ? parseFloat(formData.protein) : null;
-    const fatParsed = formData.fat ? parseFloat(formData.fat) : null;
+    const caloriesParsed = currentData.calories ? parseFloat(currentData.calories) : null;
+    const carbsParsed = currentData.carbs ? parseFloat(currentData.carbs) : null;
+    const proteinParsed = currentData.protein ? parseFloat(currentData.protein) : null;
+    const fatParsed = currentData.fat ? parseFloat(currentData.fat) : null;
 
     const validation = foodSchema.safeParse({
-      name: formData.name,
+      name: currentData.name,
       price: priceParsed,
-      description: formData.description,
-      image: formData.image,
+      description: currentData.description,
+      image: currentData.image,
       tags: tagsParsed,
       restaurantId: restaurantIdParsed,
       categoryId: categoryIdParsed,
@@ -227,10 +245,10 @@ export const useRestaurantActions = (user: User | Partial<User> | null | undefin
     }
 
     const data = {
-      ...formData,
+      ...currentData,
       price: priceParsed,
-      lat: formData.lat ? parseFloat(formData.lat) : null,
-      lng: formData.lng ? parseFloat(formData.lng) : null,
+      lat: currentData.lat ? parseFloat(String(currentData.lat)) : null,
+      lng: currentData.lng ? parseFloat(String(currentData.lng)) : null,
       tags: tagsParsed,
       restaurantId: restaurantIdParsed,
       categoryId: categoryIdParsed || undefined,

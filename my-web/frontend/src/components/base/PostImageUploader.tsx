@@ -102,8 +102,9 @@ export const PostImageUploader: React.FC<PostImageUploaderProps> = ({
           const urls = await mediaService.uploadPostImages(files);
           onChange([...images, ...urls]);
           toast.success(labels.UPLOADER.UPLOAD_SUCCESS);
-        } catch {
-          toast.error(labels.UPLOADER.UPLOAD_FAIL);
+        } catch (err: unknown) {
+          const errMsg = (err as Error)?.message || labels.UPLOADER.UPLOAD_FAIL;
+          toast.error(errMsg);
         } finally {
           pendingBlobsRef.current = [];
           setUploading(false);
@@ -141,8 +142,9 @@ export const PostImageUploader: React.FC<PostImageUploaderProps> = ({
         next[recropIndex] = urls[0];
         onChange(next);
         toast.success(labels.UPLOADER.UPLOAD_SUCCESS);
-      } catch {
-        toast.error(labels.UPLOADER.UPLOAD_FAIL);
+      } catch (err: unknown) {
+        const errMsg = (err as Error)?.message || labels.UPLOADER.UPLOAD_FAIL;
+        toast.error(errMsg);
       } finally {
         setUploading(false);
       }

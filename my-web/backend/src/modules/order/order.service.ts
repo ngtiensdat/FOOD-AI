@@ -216,6 +216,7 @@ export class OrderService {
           restaurantId: dto.restaurantId,
           tableId: dto.tableId || null,
           posTerminalId: dto.posTerminalId || null,
+          staffId: user.id,
           voucherCode: dto.voucherCode || null,
           subtotal: dto.subtotal,
           discount: dto.discount,

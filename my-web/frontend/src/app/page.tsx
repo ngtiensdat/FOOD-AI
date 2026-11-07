@@ -183,6 +183,7 @@ export default function Home() {
 
           <CategorySection
             handleCategoryClick={(cat: string) => router.push(`/explore?tag=${encodeURIComponent(cat)}`)}
+            handleSearch={(search: string) => router.push(`/explore?search=${encodeURIComponent(search)}`)}
             selectedCategory={null}
           />
 

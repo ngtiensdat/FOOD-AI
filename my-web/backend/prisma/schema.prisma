@@ -59,6 +59,8 @@ model User {
   profile                                                UserProfile?
   userVouchers                                           UserVoucher[]
   posTerminalLogs                                        PosTerminalLog[]
+  pointCodesUsed                                         PointCode[]           @relation("PointCodeUsedBy")
+  orders                                                 Order[]
   restaurant                                             Restaurant?           @relation("users_restaurant_idTorestaurants", fields: [restaurantId], references: [id])
 
   @@index([role, status])
@@ -393,8 +395,9 @@ model AiFeedback {
   food           Food         @relation(fields: [foodId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, foodId])
+  // Removed @@unique([userId, foodId]) — user can give multiple feedbacks for same food in different conversations
   @@index([userId, foodId, feedbackType])
+  @@index([userId, createdAt])
   @@map("ai_feedbacks")
 }
 
@@ -431,6 +434,7 @@ model UserVoucher {
   usedAt     DateTime? @map("used_at")
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   voucher    Voucher   @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  orders     Order[]   @relation("OrderVoucher")
 
   @@map("user_vouchers")
 }
@@ -446,25 +450,31 @@ model PointCode {
   usedByName   String?    @map("used_by_name")
   usedAt       DateTime?  @map("used_at")
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  usedBy       User?      @relation("PointCodeUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
 
   @@map("point_codes")
 }
 
 model Order {
-  id           Int         @id @default(autoincrement())
-  restaurantId Int         @map("restaurant_id")
-  tableId      Int?        @map("table_id")
-  posTerminalId Int?       @map("pos_terminal_id")
-  voucherCode  String?     @map("voucher_code")
-  subtotal     Float
-  discount     Float
-  total        Float
-  createdAt    DateTime    @default(now()) @map("created_at")
-  items        OrderItem[]
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  table        DiningTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
-  posTerminal  PosTerminal? @relation(fields: [posTerminalId], references: [id], onDelete: SetNull)
+  id            Int          @id @default(autoincrement())
+  restaurantId  Int          @map("restaurant_id")
+  tableId       Int?         @map("table_id")
+  posTerminalId Int?         @map("pos_terminal_id")
+  staffId       Int?         @map("staff_id")
+  voucherCode   String?      @map("voucher_code")
+  subtotal      Float
+  discount      Float
+  total         Float
+  createdAt     DateTime     @default(now()) @map("created_at")
+  items         OrderItem[]
+  restaurant    Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table         DiningTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  posTerminal   PosTerminal? @relation(fields: [posTerminalId], references: [id], onDelete: SetNull)
+  staff         User?        @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  userVoucher   UserVoucher? @relation("OrderVoucher", fields: [voucherCode], references: [code], onDelete: SetNull)
 
+  @@index([restaurantId, createdAt])
+  @@index([staffId])
   @@map("orders")
 }
 
@@ -481,22 +491,23 @@ model OrderItem {
 }
 
 model Offer {
-  id             Int      @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   title          String
   description    String
-  promoType      String   @map("promo_type")
-  discountValue  String   @map("discount_value")
-  restaurantName String   @map("restaurant_name")
-  restaurantId   Int?     @map("restaurant_id")
+  promoType      String      @map("promo_type")
+  discountValue  String      @map("discount_value")
+  restaurantName String      @map("restaurant_name")
+  restaurantId   Int?        @map("restaurant_id")
   image          String
-  validUntil     String   @map("valid_until")
-  promoCode      String?  @map("promo_code")
-  terms          String?  @map("terms")
-  quantity       Int?     @default(100)
-  usedCount      Int      @default(0) @map("used_count")
-  status         String   @default("APPROVED")
-  createdAt      DateTime @default(now()) @map("created_at")
+  validUntil     String      @map("valid_until")
+  promoCode      String?     @map("promo_code")
+  terms          String?     @map("terms")
+  quantity       Int?        @default(100)
+  usedCount      Int         @default(0) @map("used_count")
+  status         OfferStatus @default(APPROVED)
+  createdAt      DateTime    @default(now()) @map("created_at")
 
+  @@index([restaurantId, status])
   @@map("offers")
 }
 
@@ -716,6 +727,12 @@ enum MessageRole {
 enum FeedbackType {
   LIKE
   DISLIKE
+}
+
+enum OfferStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum NotificationType {

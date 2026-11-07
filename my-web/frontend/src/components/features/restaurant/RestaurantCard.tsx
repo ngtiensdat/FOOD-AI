@@ -24,11 +24,12 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
 
   // Thu thập các tag món ăn độc bản phục vụ kết xuất danh mục tiêu biểu
-  const typicalTags = restaurant.cuisines && restaurant.cuisines.length > 0
-    ? restaurant.cuisines.slice(0, 3)
+  const typicalTags = (restaurant.cuisines && restaurant.cuisines.length > 0
+    ? restaurant.cuisines
     : Array.from(
       new Set(foods.flatMap((f) => f.tags || []))
-    ).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
+    )
+  ).filter((t): t is string => Boolean(t && t.trim())).slice(0, 3); // Lấy tối đa 3 tag đặc trưng
 
   return (
     <Link href={`/restaurant/${id}`}>
@@ -153,9 +154,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
               {/* Tags tiêu biểu */}
               <div className="flex gap-1 overflow-hidden">
                 {typicalTags.length > 0 ? (
-                  typicalTags.map((tag) => (
+                  typicalTags.map((tag, idx) => (
                     <span
-                      key={tag}
+                      key={`${tag}-${idx}`}
                       className="bg-orange-50/80 dark:bg-orange-950/15 text-primary border border-orange-100/50 dark:border-orange-900/30 px-1 py-px rounded text-[9px] font-bold capitalize whitespace-nowrap"
                     >
                       {tag}

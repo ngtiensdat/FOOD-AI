@@ -31,6 +31,8 @@ interface RestaurantHeaderCardProps {
     ratingCount?: number | null;
     profile?: {
       coverImage?: string | null;
+      logo?: string | null;
+      avatar?: string | null;
     } | null;
     [key: string]: unknown;
   };
@@ -62,6 +64,12 @@ export const RestaurantHeaderCard = ({
   const coverBg = restaurantData.profile?.coverImage 
     ? `url(${restaurantData.profile.coverImage})`
     : DEFAULT_COVER_GRADIENT;
+
+  const avatarUrl =
+    restaurantData.profile?.logo ||
+    restaurantData.profile?.avatar ||
+    (restaurantData as { avatar?: string | null })?.avatar ||
+    null;
 
   const owner = restaurantData.owner as { badgeTitle?: string | null } | undefined;
   const merchantBadge = restaurantData.merchantBadge as string | undefined;
@@ -95,7 +103,7 @@ export const RestaurantHeaderCard = ({
         className={`w-full h-80 md:h-96 bg-cover bg-center relative ${isOwner ? 'mt-0' : 'mt-20'}`}
         style={{ backgroundImage: coverBg }}
       >
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
         {/* Back Button */}
         <div className="absolute top-6 left-6 z-10 max-w-7xl mx-auto w-full px-6">
@@ -115,21 +123,27 @@ export const RestaurantHeaderCard = ({
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-card p-6 md:p-8 border border-white/20 dark:border-slate-800/30 shadow-xl transition-all duration-300">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-5">
-              <div className="hidden md:block">
-                <Avatar 
-                  name={restaurantData.name} 
-                  size={96} 
-                  className="rounded-3xl bg-primary/10 border-2 border-primary/20 shadow-inner"
-                  fallbackClassName="text-primary text-h1 font-extrabold !bg-transparent"
-                />
+              <div className="hidden md:block shrink-0">
+                <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl ring-1 ring-black/10 bg-white transition-all duration-300 hover:scale-105">
+                  <Avatar 
+                    src={avatarUrl}
+                    name={restaurantData.name} 
+                    size={112} 
+                    className="w-full h-full rounded-2xl"
+                    fallbackClassName="text-primary text-h1 font-extrabold !bg-primary/10"
+                  />
+                </div>
               </div>
-              <div className="md:hidden">
-                <Avatar 
-                  name={restaurantData.name} 
-                  size={80} 
-                  className="rounded-3xl bg-primary/10 border-2 border-primary/20 shadow-inner"
-                  fallbackClassName="text-primary text-h1 font-extrabold !bg-transparent"
-                />
+              <div className="md:hidden shrink-0">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg ring-1 ring-black/10 bg-white">
+                  <Avatar 
+                    src={avatarUrl}
+                    name={restaurantData.name} 
+                    size={80} 
+                    className="w-full h-full rounded-2xl"
+                    fallbackClassName="text-primary text-h2 font-extrabold !bg-primary/10"
+                  />
+                </div>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -165,14 +179,16 @@ export const RestaurantHeaderCard = ({
                 )}
                 {Array.isArray(restaurantData.cuisines) && restaurantData.cuisines.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
-                    {restaurantData.cuisines.map((cuisine: string) => (
-                      <span
-                        key={cuisine}
-                        className="bg-orange-50/80 dark:bg-orange-950/15 text-primary border border-orange-100/50 dark:border-orange-900/30 px-2.5 py-0.5 rounded-md text-xs font-bold capitalize"
-                      >
-                        {cuisine}
-                      </span>
-                    ))}
+                    {restaurantData.cuisines
+                      .filter((c): c is string => Boolean(c && c.trim()))
+                      .map((cuisine: string, idx: number) => (
+                        <span
+                          key={`${cuisine}-${idx}`}
+                          className="bg-orange-50/80 dark:bg-orange-950/15 text-primary border border-orange-100/50 dark:border-orange-900/30 px-2.5 py-0.5 rounded-md text-xs font-bold capitalize"
+                        >
+                          {cuisine}
+                        </span>
+                      ))}
                   </div>
                 )}
               </div>

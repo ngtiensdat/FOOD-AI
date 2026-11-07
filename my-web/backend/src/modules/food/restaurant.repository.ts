@@ -6,6 +6,10 @@ import { PrismaService } from '../../database/prisma.service';
 import { Prisma, FoodStatus } from '@prisma/client';
 import { LIMITS } from '../../common/constants/limits.constant';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant-profile.dto';
+import {
+  expandSearchKeywords,
+  CATEGORY_PRICE_THRESHOLDS,
+} from './food-category.constant';
 
 export interface NearbyResult {
   id: number;
@@ -308,6 +312,97 @@ export class RestaurantRepository {
     });
   }
 
+  private buildRestaurantSearchConditions(
+    term: string,
+    isTag: boolean,
+  ): Prisma.RestaurantWhereInput[] {
+    const termLower = term.trim().toLowerCase();
+    const keywords = expandSearchKeywords(termLower);
+    const conditions: Prisma.RestaurantWhereInput[] = [
+      { name: { contains: term, mode: 'insensitive' } },
+      { cuisines: { has: term } },
+    ];
+
+    if (termLower !== term) {
+      conditions.push({ cuisines: { has: termLower } });
+    }
+
+    if (!isTag) {
+      conditions.push(
+        { address: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+      );
+    }
+
+    conditions.push({
+      foods: {
+        some: {
+          isActive: true,
+          status: FoodStatus.APPROVED,
+          OR: [
+            { tags: { has: term } },
+            { tags: { has: termLower } },
+            ...(!isTag
+              ? [
+                  { name: { contains: term, mode: 'insensitive' as const } },
+                  {
+                    description: {
+                      contains: term,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
+      },
+    });
+
+    if (termLower === 'bình dân') {
+      conditions.push({
+        foods: {
+          some: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+            price: { lte: CATEGORY_PRICE_THRESHOLDS.BUDGET_MAX },
+          },
+        },
+      });
+    } else if (termLower === 'cao cấp') {
+      conditions.push({
+        foods: {
+          some: {
+            isActive: true,
+            status: FoodStatus.APPROVED,
+            price: { gte: CATEGORY_PRICE_THRESHOLDS.LUXURY_MIN },
+          },
+        },
+      });
+    }
+
+    for (const k of keywords) {
+      conditions.push(
+        { name: { contains: k, mode: 'insensitive' } },
+        { cuisines: { has: k } },
+        {
+          foods: {
+            some: {
+              isActive: true,
+              status: FoodStatus.APPROVED,
+              OR: [
+                { name: { contains: k, mode: 'insensitive' } },
+                { tags: { has: k } },
+                { description: { contains: k, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      );
+    }
+
+    return conditions;
+  }
+
   async findManyPublicRestaurants(filters: {
     search?: string;
     city?: string;
@@ -343,30 +438,11 @@ export class RestaurantRepository {
       }
 
       if (search) {
-        orFilters.push({
-          name: { contains: search, mode: 'insensitive' },
-        });
+        orFilters.push(...this.buildRestaurantSearchConditions(search, false));
       }
 
       if (tag) {
-        orFilters.push({
-          foods: {
-            some: {
-              isActive: true,
-              status: FoodStatus.APPROVED,
-              tags: {
-                has: tag,
-              },
-            },
-          },
-        });
-
-        orFilters.push({
-          name: { contains: tag, mode: 'insensitive' },
-        });
-        orFilters.push({
-          cuisines: { has: tag },
-        });
+        orFilters.push(...this.buildRestaurantSearchConditions(tag, true));
       }
 
       if (orFilters.length > 0) {

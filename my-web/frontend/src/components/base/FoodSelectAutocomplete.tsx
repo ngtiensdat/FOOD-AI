@@ -92,9 +92,9 @@ export const FoodSelectAutocomplete: React.FC<FoodSelectAutocompleteProps> = ({
             -- Không liên kết --
           </Button>
           
-          {filteredFoods.map((f) => (
+          {filteredFoods.map((f, index) => (
             <Button
-              key={f.id}
+              key={f.id || `food-${index}`}
               type="button"
               variant="none"
               size="none"
