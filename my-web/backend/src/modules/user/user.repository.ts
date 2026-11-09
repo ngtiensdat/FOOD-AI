@@ -120,6 +120,15 @@ export class UserRepository {
             fullName: true,
           },
         },
+        restaurants: {
+          select: {
+            profile: {
+              select: {
+                logo: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -148,6 +157,15 @@ export class UserRepository {
           select: {
             avatar: true,
             fullName: true,
+          },
+        },
+        restaurants: {
+          select: {
+            profile: {
+              select: {
+                logo: true,
+              },
+            },
           },
         },
       },

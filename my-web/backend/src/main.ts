@@ -93,6 +93,7 @@ async function bootstrap() {
   await app.listen(config.port, '0.0.0.0');
   logger.log(`--- BACKEND ĐÃ SẴN SÀNG TRÊN CỔNG: ${config.port} ---`);
 }
+// Backend bootstrap completed successfully.
 bootstrap().catch((err) => {
   new StructuredLogger('Bootstrap').error('Error during bootstrap:', err);
 });

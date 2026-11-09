@@ -26,7 +26,7 @@ export class AdminService {
     return users.map((u) => ({
       ...u,
       name: u.profile?.fullName || u.name,
-      avatar: u.profile?.avatar || null,
+      avatar: u.profile?.avatar || u.restaurants?.[0]?.profile?.logo || null,
     }));
   }
 
@@ -131,7 +131,7 @@ export class AdminService {
     return users.map((u) => ({
       ...u,
       name: u.profile?.fullName || u.name,
-      avatar: u.profile?.avatar || null,
+      avatar: u.profile?.avatar || u.restaurants?.[0]?.profile?.logo || null,
     }));
   }
 
