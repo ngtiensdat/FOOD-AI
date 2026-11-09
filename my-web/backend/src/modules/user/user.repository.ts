@@ -114,6 +114,12 @@ export class UserRepository {
         email: true,
         legalDocuments: true,
         createdAt: true,
+        profile: {
+          select: {
+            avatar: true,
+            fullName: true,
+          },
+        },
       },
     });
   }
@@ -138,6 +144,12 @@ export class UserRepository {
         role: true,
         status: true,
         createdAt: true,
+        profile: {
+          select: {
+            avatar: true,
+            fullName: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
