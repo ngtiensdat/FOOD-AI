@@ -92,15 +92,33 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
           <X size={24} />
         </Button>
 
-        <div className="w-full md:w-1/2 h-64 md:h-auto bg-gray-100 relative">
-          <SafeImage
-            src={getValidImageUrl(food.image)}
-            alt={food.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+        <div className="w-full md:w-1/2 h-72 sm:h-80 md:h-auto min-h-[300px] md:min-h-[460px] bg-gray-950/20 dark:bg-black/50 relative overflow-hidden flex items-center justify-center p-4 sm:p-6 md:p-8">
+          {/* Lớp nền mờ (hiệu ứng ambient blur nếu thừa khoảng trống khi tỷ lệ ảnh khác nhau) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+            <SafeImage
+              src={getValidImageUrl(food.image)}
+              alt=""
+              fill
+              aria-hidden="true"
+              className="object-cover blur-2xl scale-125 opacity-55 dark:opacity-40"
+            />
+            {/* Lớp phủ làm dịu ánh sáng nền để nổi bật món ăn */}
+            <div className="absolute inset-0 bg-black/10 dark:bg-black/40 backdrop-blur-[2px]" />
+          </div>
+
+          {/* Lớp ảnh món ăn chính: Thu nhỏ vừa vặn, hiển thị trọn vẹn 100% không bị cắt xén */}
+          <div className="relative w-full h-full min-h-[240px] md:min-h-[360px] z-10 flex items-center justify-center">
+            <SafeImage
+              src={getValidImageUrl(food.image)}
+              alt={food.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-contain drop-shadow-2xl rounded-2xl transition-transform duration-300 hover:scale-[1.02]"
+            />
+          </div>
+
+          {/* Gradient tinh tế trên mobile */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:hidden z-10 pointer-events-none" />
         </div>
 
         <div className="w-full md:w-1/2 p-8 md:p-12 overflow-y-auto">
