@@ -87,7 +87,7 @@ export const AdminMerchantApprovalTable = ({
                 id={item.id}
                 title={item.name}
                 subtitle={subtitleNode}
-                image={item.avatar}
+                image={item.avatar || item.profile?.avatar}
                 fallbackIcon={<UserCheck size={36} />}
                 onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[

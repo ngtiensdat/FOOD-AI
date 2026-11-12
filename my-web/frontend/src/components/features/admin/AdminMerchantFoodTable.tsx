@@ -19,6 +19,8 @@ import { MiniCardForAdmin } from './MiniCardForAdmin';
 import { useMerchantFoodTable } from '@/hooks/useMerchantFoodTable';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { LIMITS } from '@/constants/limits.constant';
+import SafeImage from '@/components/base/SafeImage';
+import { getValidImageUrl } from '@/utils/helpers';
 
 interface AdminMerchantFoodTableProps {
   filteredData: AdminFoodItem[];
@@ -93,7 +95,7 @@ export const AdminMerchantFoodTable = ({
           {LABELS.ADMIN.TABLE.EMPTY}
         </div>
       ) : (
-        paginatedRestaurants.map((group: { restaurantId: number; restaurantName: string; foods: AdminFoodItem[] }) => {
+        paginatedRestaurants.map((group: { restaurantId: number; restaurantName: string; restaurantLogo?: string | null; foods: AdminFoodItem[] }) => {
           const rId = group.restaurantId;
           const isExpanded = expandedMerchants.includes(rId);
           const foods = group.foods;
@@ -126,17 +128,52 @@ export const AdminMerchantFoodTable = ({
                 className="flex justify-between items-center cursor-pointer hover:opacity-85 select-none"
                 onClick={() => toggleMerchant(rId)}
               >
-                <div className="flex items-center gap-2">
-                  {isExpanded ? <ChevronDown size={18} className="text-gray-500" /> : <ChevronRight size={18} className="text-gray-500" />}
-                  <span className="font-extrabold text-gray-800 dark:text-slate-200 text-base">{group.restaurantName}</span>
-                  {hasPending && (
-                    <span className="flex items-center gap-1 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
-                      <span className="w-1 h-1 rounded-full bg-red-600 animate-pulse"></span>
-                      {LABELS.ADMIN.PENDING_APPROVAL}
-                    </span>
+                <div className="flex items-center gap-3 min-w-0">
+                  {isExpanded ? (
+                    <ChevronDown size={18} className="text-gray-500 shrink-0 transition-transform" />
+                  ) : (
+                    <ChevronRight size={18} className="text-gray-500 shrink-0 transition-transform" />
                   )}
+
+                  {/* Ô Avatar Nhà hàng (Phía quán ăn) */}
+                  <div 
+                    className="relative w-11 h-11 rounded-xl overflow-hidden bg-gray-50 dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 shrink-0 flex items-center justify-center shadow-xs group/avatar hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer"
+                    onClick={(e) => {
+                      if (rId && rId > 0) {
+                        e.stopPropagation();
+                        window.open(`/restaurant/${rId}`, '_blank');
+                      }
+                    }}
+                    title={rId > 0 ? `${group.restaurantName} - Nhấn để mở trang nhà hàng` : group.restaurantName}
+                  >
+                    {group.restaurantLogo ? (
+                      <SafeImage
+                        src={getValidImageUrl(group.restaurantLogo)}
+                        alt={group.restaurantName}
+                        fill
+                        sizes="44px"
+                        className="object-cover group-hover/avatar:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-amber-50 dark:from-slate-800 dark:to-slate-700 text-primary dark:text-orange-400 font-extrabold text-sm">
+                        {group.restaurantName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-extrabold text-gray-800 dark:text-slate-200 text-base hover:text-primary transition-colors truncate">
+                      {group.restaurantName}
+                    </span>
+                    {hasPending && (
+                      <span className="flex items-center gap-1 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold shrink-0">
+                        <span className="w-1 h-1 rounded-full bg-red-600 animate-pulse"></span>
+                        {LABELS.ADMIN.PENDING_APPROVAL}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className="text-xs text-gray-400 font-bold">
+                <span className="text-xs text-gray-400 font-bold shrink-0">
                   {foods.length} {LABELS.RESTAURANT.CARD_LABELS.FOODS_SUFFIX}
                 </span>
               </div>

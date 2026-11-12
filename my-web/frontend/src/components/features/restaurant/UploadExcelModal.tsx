@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { XCircle, FileSpreadsheet, CheckCircle2, Download } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Input } from '@/components/base/Input';
+import { SafeImage } from '@/components/base/SafeImage';
 import * as XLSX from 'xlsx';
 import { foodService } from '@/services/food.service';
 import { toast } from '@/store/useToastStore';
@@ -99,13 +100,16 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
         const data = XLSX.utils.sheet_to_json(ws) as Record<string, string | number | undefined>[];
         const { COLS } = LABELS.RESTAURANT.UPLOAD_EXCEL;
 
-        const mappedData = data.map(row => ({
-          name: String(row[COLS.NAME] || row['Name'] || ''),
-          price: Number(row[COLS.PRICE] || row['Price'] || 0),
-          description: String(row[COLS.DESC] || row['Description'] || ''),
-          image: String(row[COLS.IMAGE] || row['Image'] || ''),
-          tags: row[COLS.TAGS] ? String(row[COLS.TAGS]) : '',
-        })).filter(f => f.name && f.price > 0);
+        const mappedData = data.map(row => {
+          const rawImage = row[COLS.IMAGE] || row['Image'] || row['image'] || row['Link ảnh'] || row['Link Ảnh'] || row['link ảnh'] || row['Hình ảnh'] || row['hình ảnh'] || row['URL'] || row['url'] || row['Url'] || '';
+          return {
+            name: String(row[COLS.NAME] || row['Name'] || ''),
+            price: Number(row[COLS.PRICE] || row['Price'] || 0),
+            description: String(row[COLS.DESC] || row['Description'] || ''),
+            image: String(rawImage).trim(),
+            tags: row[COLS.TAGS] ? String(row[COLS.TAGS]) : '',
+          };
+        }).filter(f => f.name && f.price > 0);
 
         if (mappedData.length === 0) {
           return toast.error(LABELS.RESTAURANT.UPLOAD_EXCEL.INVALID_DATA);
@@ -272,6 +276,7 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                       <th className="p-3">{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.PRICE}</th>
                       <th className="p-3">{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.DESC}</th>
                       <th className="p-3">{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.TAGS}</th>
+                      <th className="p-3">{LABELS.RESTAURANT.UPLOAD_EXCEL.COLS.IMAGE}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -281,6 +286,20 @@ export const UploadExcelModal = ({ isOpen, onClose, myBranches, onSuccess }: Upl
                         <td className="p-3 text-primary font-bold">{row.price.toLocaleString()}đ</td>
                         <td className="p-3 text-gray-500 truncate max-w-[150px]">{row.description}</td>
                         <td className="p-3 text-gray-500">{row.tags}</td>
+                        <td className="p-3">
+                          {row.image ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg overflow-hidden relative border border-gray-200 dark:border-slate-700 shrink-0">
+                                <SafeImage src={row.image} alt={row.name} fill className="object-cover" />
+                              </div>
+                              <span className="text-[11px] text-gray-400 truncate max-w-[120px]" title={row.image}>
+                                {row.image}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-xs italic">-</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

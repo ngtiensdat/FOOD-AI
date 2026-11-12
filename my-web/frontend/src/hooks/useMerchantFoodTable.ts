@@ -33,6 +33,7 @@ export const useMerchantFoodTable = ({
     const grouped: {
       restaurantId: number;
       restaurantName: string;
+      restaurantLogo?: string | null;
       foods: AdminFoodItem[];
     }[] = [];
 
@@ -43,9 +44,12 @@ export const useMerchantFoodTable = ({
         group = {
           restaurantId: rId,
           restaurantName: item.restaurant?.name || LABELS.COMMON.UNKNOWN,
+          restaurantLogo: item.restaurant?.logo || item.restaurant?.profile?.logo || null,
           foods: [],
         };
         grouped.push(group);
+      } else if (!group.restaurantLogo && (item.restaurant?.logo || item.restaurant?.profile?.logo)) {
+        group.restaurantLogo = item.restaurant?.logo || item.restaurant?.profile?.logo || null;
       }
       group.foods.push(item);
     });

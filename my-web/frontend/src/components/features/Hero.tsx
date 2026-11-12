@@ -197,7 +197,7 @@ export const Hero = ({
               onChange={(e) => onDistrictChange(e.target.value)}
               className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
             >
-              <option value="" className="text-slate-900 bg-white">
+              <option key="all-districts" value="" className="text-slate-900 bg-white">
                 {LABELS.EXPLORE.ALL_DISTRICTS}
               </option>
               {LOCATION_DATA.find((c) => c.value === selectedCity)

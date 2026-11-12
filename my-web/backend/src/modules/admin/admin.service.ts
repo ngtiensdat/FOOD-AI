@@ -22,7 +22,12 @@ export class AdminService {
   ) {}
 
   async getPendingUsers() {
-    return this.userRepository.findPendingUsers();
+    const users = await this.userRepository.findPendingUsers();
+    return users.map((u) => ({
+      ...u,
+      name: u.profile?.fullName || u.name,
+      avatar: u.profile?.avatar || u.restaurants?.[0]?.profile?.logo || null,
+    }));
   }
 
   async updateUserStatus(id: number, status: string) {
@@ -51,7 +56,17 @@ export class AdminService {
         pageSize,
       );
       return {
-        data: result.data,
+        data: result.data.map((f) => ({
+          ...f,
+          restaurant: f.restaurant
+            ? {
+                id: f.restaurant.id,
+                name: f.restaurant.name,
+                logo: f.restaurant.profile?.logo || null,
+                profile: f.restaurant.profile,
+              }
+            : null,
+        })),
         meta: {
           total: result.total,
           page,
@@ -64,7 +79,17 @@ export class AdminService {
       undefined,
       undefined,
     );
-    return result.data;
+    return result.data.map((f) => ({
+      ...f,
+      restaurant: f.restaurant
+        ? {
+            id: f.restaurant.id,
+            name: f.restaurant.name,
+            logo: f.restaurant.profile?.logo || null,
+            profile: f.restaurant.profile,
+          }
+        : null,
+    }));
   }
 
   async updateFood(
@@ -100,9 +125,14 @@ export class AdminService {
   }
 
   async getAllUsers(role?: string) {
-    return this.userRepository.findAllUsers(
+    const users = await this.userRepository.findAllUsers(
       role ? (role.toUpperCase() as UserRole) : undefined,
     );
+    return users.map((u) => ({
+      ...u,
+      name: u.profile?.fullName || u.name,
+      avatar: u.profile?.avatar || u.restaurants?.[0]?.profile?.logo || null,
+    }));
   }
 
   async deleteUser(id: number) {

@@ -16,6 +16,10 @@ export interface Food {
     id: number;
     name: string;
     address?: string;
+    logo?: string | null;
+    profile?: {
+      logo?: string | null;
+    } | null;
   } | null;
   tags?: string[];
   address?: string;
@@ -37,6 +41,11 @@ export interface AdminFoodItem extends Food {
   restaurant?: {
     id: number;
     name: string;
+    address?: string;
+    logo?: string | null;
+    profile?: {
+      logo?: string | null;
+    } | null;
   } | null;
 }
 

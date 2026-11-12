@@ -11,6 +11,7 @@ import { LIMITS } from '@/constants/limits.constant';
 import { PostData } from '@/components/features/profile/PostCard';
 import { User } from '@/types/user';
 import { apiClient } from '@/lib/api-client';
+import { getPrivacyValue, resolvePrivacyValue } from '@/utils/privacy';
 
 export interface UseSocialActionsParams {
   posts: PostData[];
@@ -119,17 +120,25 @@ export const useSocialActions = ({
           badgeTitle: updatedMe.badgeTitle,
         });
 
-        // 4. Show point and XP change notifications
-        if (diffPoints > 0) {
-          toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diffPoints, reason));
-        } else if (diffPoints < 0) {
-          toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diffPoints), reason));
-        }
+        // 4. Show point and XP change notifications (nếu người dùng bật trong Cài đặt riêng tư)
+        const showPointNotifs = resolvePrivacyValue(
+          'showPointNotifications',
+          (updatedMe.profile?.preferences || me.profile?.preferences) as Record<string, unknown>,
+          false
+        ) && getPrivacyValue('showPointNotifications');
 
-        if (diffXp > 0) {
-          toast.success(LABELS.LOYALTY.AWARD_XP_SUCCESS(diffXp, reason));
-        } else if (diffXp < 0) {
-          toast.info(LABELS.LOYALTY.DEDUCT_XP_SUCCESS(Math.abs(diffXp), reason));
+        if (showPointNotifs) {
+          if (diffPoints > 0) {
+            toast.success(LABELS.LOYALTY.AWARD_POINTS_SUCCESS(diffPoints, reason));
+          } else if (diffPoints < 0) {
+            toast.info(LABELS.LOYALTY.DEDUCT_POINTS_SUCCESS(Math.abs(diffPoints), reason));
+          }
+
+          if (diffXp > 0) {
+            toast.success(LABELS.LOYALTY.AWARD_XP_SUCCESS(diffXp, reason));
+          } else if (diffXp < 0) {
+            toast.info(LABELS.LOYALTY.DEDUCT_XP_SUCCESS(Math.abs(diffXp), reason));
+          }
         }
       }
     } catch (err) {

@@ -36,7 +36,7 @@ export const Button = ({
     primary: 'gradient-bg text-white shadow-lg hover:brightness-110 active:scale-95',
     secondary: 'bg-orange-50 text-primary hover:bg-orange-100 active:scale-95',
     ghost: 'hover:bg-gray-100 text-gray-500 active:scale-95',
-    outline: 'border border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary active:scale-95',
+    outline: 'border border-gray-200 dark:border-gray-300 mixed:border-gray-300 bg-white dark:bg-gray-100 mixed:bg-gray-100 text-gray-700 dark:text-gray-900 mixed:text-gray-900 hover:border-primary hover:text-primary active:scale-95',
     red: 'bg-red-500 text-white shadow-lg hover:bg-red-600 active:scale-95',
     none: '',
   };

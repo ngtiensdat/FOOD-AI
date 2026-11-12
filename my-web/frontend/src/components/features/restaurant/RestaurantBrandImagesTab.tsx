@@ -1,6 +1,6 @@
 import React from 'react';
-import { Image } from 'lucide-react';
 import { Input } from '@/components/base/Input';
+import { ImageUploader } from '@/components/base/ImageUploader';
 import { LABELS } from '@/constants/labels';
 
 interface RestaurantBrandImagesTabProps {
@@ -31,11 +31,11 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.LOGO_LABEL}
           </label>
-          <Input
-            icon={Image}
-            placeholder={LABELS.RESTAURANT.EDIT_MODAL.LOGO_PLACEHOLDER}
-            value={logo}
-            onChange={(e) => setLogo(e.target.value)}
+          <ImageUploader
+            currentUrl={logo}
+            onUploaded={setLogo}
+            uploadType="avatar"
+            aspectRatio="square"
           />
         </div>
 
@@ -58,11 +58,11 @@ export const RestaurantBrandImagesTab: React.FC<RestaurantBrandImagesTabProps> =
           <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">
             {LABELS.RESTAURANT.EDIT_MODAL.COVER_LABEL}
           </label>
-          <Input
-            icon={Image}
-            placeholder={LABELS.RESTAURANT.EDIT_MODAL.COVER_PLACEHOLDER}
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
+          <ImageUploader
+            currentUrl={coverImage}
+            onUploaded={setCoverImage}
+            uploadType="cover"
+            aspectRatio="cover"
           />
         </div>
 

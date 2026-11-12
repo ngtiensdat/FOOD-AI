@@ -30,6 +30,7 @@ import { RetryQueueService } from '../../common/services/retry-queue.service';
 import { BudgetTrackerService } from './services/budget-tracker.service';
 import { LangchainService } from './services/langchain.service';
 import { VectorSyncService } from './services/vector-sync.service';
+import { FoodModerationService } from './services/food-moderation.service';
 
 @Module({
   imports: [PrismaModule, ConfigModule.forFeature(aiConfig)],
@@ -56,6 +57,7 @@ import { VectorSyncService } from './services/vector-sync.service';
     BudgetTrackerService,
     LangchainService,
     VectorSyncService,
+    FoodModerationService,
   ],
   exports: [
     AiService,
@@ -79,6 +81,7 @@ import { VectorSyncService } from './services/vector-sync.service';
     BudgetTrackerService,
     LangchainService,
     VectorSyncService,
+    FoodModerationService,
   ],
 })
 export class AiModule {}

@@ -57,7 +57,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           alt={name || 'Avatar'}
           fill
           sizes={displaySize}
-          className={`object-cover rounded-full ${imageClassName}`}
+          className={`object-cover ${hasRoundedClass ? '' : 'rounded-full'} ${imageClassName}`}
           onError={() => setHasError(true)}
         />
       ) : (

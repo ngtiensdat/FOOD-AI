@@ -40,7 +40,7 @@ export class FoodRepository {
               ownerId: true,
               isActive: true,
               profile: {
-                select: { openingHours: true },
+                select: { openingHours: true, logo: true },
               },
               owner: {
                 select: { badgeTitle: true },
@@ -272,7 +272,13 @@ export class FoodRepository {
         where: { deletedAt: null },
         include: {
           restaurant: {
-            select: { name: true },
+            select: {
+              id: true,
+              name: true,
+              profile: {
+                select: { logo: true },
+              },
+            },
           },
         },
         orderBy: { createdAt: 'desc' },

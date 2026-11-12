@@ -10,5 +10,11 @@ Danh sách và tài liệu các điểm cuối API.
 - `GET /foods`
 - `GET /foods/:id`
 
-## 3. AI Module
-- `POST /ai/chat`
+## 4. Media Module
+- `POST /media/avatar`
+- `POST /media/cover`
+- `POST /media/post-image`
+- `POST /media/post-images`
+- `POST /media/food-image`
+- `DELETE /media`
+

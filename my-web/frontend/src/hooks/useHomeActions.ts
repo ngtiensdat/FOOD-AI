@@ -26,7 +26,21 @@ export const useHomeActions = () => {
   const [selectedCity, setSelectedCity] = useState('Hà Nội');
   const [selectedDistrict, setSelectedDistrict] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'home' | 'explore' | 'offers' | 'settings'>('home');
+  const [activeTab, setActiveTabState] = useState<'home' | 'explore' | 'offers' | 'settings'>('home');
+
+  const setActiveTab = useCallback((newTab: 'home' | 'explore' | 'offers' | 'settings') => {
+    setActiveTabState(newTab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (newTab === 'home') {
+        url.searchParams.delete('tab');
+      } else {
+        url.searchParams.set('tab', newTab);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+
   const [selectedFood, setSelectedFood] = useState<FoodDetailData | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEmailVerifiedInProfile, setIsEmailVerifiedInProfile] = useState<boolean | null>(null);
@@ -58,13 +72,13 @@ export const useHomeActions = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!tabParam || tabParam === 'home') {
-        setActiveTab('home');
+        setActiveTabState('home');
       } else if (
         tabParam === 'explore' ||
         tabParam === 'offers' ||
         tabParam === 'settings'
       ) {
-        setActiveTab(tabParam);
+        setActiveTabState(tabParam);
       }
     }, 0);
     return () => clearTimeout(timer);

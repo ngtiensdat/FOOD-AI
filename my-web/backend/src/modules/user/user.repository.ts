@@ -114,6 +114,21 @@ export class UserRepository {
         email: true,
         legalDocuments: true,
         createdAt: true,
+        profile: {
+          select: {
+            avatar: true,
+            fullName: true,
+          },
+        },
+        restaurants: {
+          select: {
+            profile: {
+              select: {
+                logo: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -138,6 +153,21 @@ export class UserRepository {
         role: true,
         status: true,
         createdAt: true,
+        profile: {
+          select: {
+            avatar: true,
+            fullName: true,
+          },
+        },
+        restaurants: {
+          select: {
+            profile: {
+              select: {
+                logo: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

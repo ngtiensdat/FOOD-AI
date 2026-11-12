@@ -35,6 +35,14 @@ export class CsrfGuard implements CanActivate {
       return true;
     }
 
+    // Ngoại lệ cho route refresh token (được bảo vệ bởi HttpOnly JWT Refresh Token)
+    if (
+      request.path === '/auth/refresh' ||
+      request.url.includes('/auth/refresh')
+    ) {
+      return true;
+    }
+
     // 3. Với các request POST, PUT, PATCH, DELETE -> So khớp token giữa header và cookie
     const clientHeaderToken =
       request.headers['x-xsrf-token'] || request.headers['x-csrf-token'];

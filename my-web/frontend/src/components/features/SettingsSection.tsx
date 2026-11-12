@@ -97,8 +97,8 @@ export const SettingsSection = ({
               ⚙️
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white leading-tight">{LABELS.SETTINGS.TITLE}</h2>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{LABELS.SETTINGS.SUBTITLE}</p>
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mixed:text-gray-900 leading-tight">{LABELS.SETTINGS.TITLE}</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mixed:text-gray-500 mt-0.5">{LABELS.SETTINGS.SUBTITLE}</p>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ export const SettingsSection = ({
 
         {/* Content Area */}
         <main className="flex-1 min-w-0">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-2 md:p-4 min-h-[400px]">
+          <div className="bg-white dark:bg-slate-900 mixed:bg-gray-100 rounded-2xl p-2 md:p-4 min-h-[400px]">
             {settingsTab === 'profile' ? (
               <div className="space-y-6">
                 <ProfileSettingsTab

@@ -14,6 +14,15 @@ export class FoodQueryDto {
   tag?: string;
 
   @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  limit?: number;
+
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
   lat?: number;

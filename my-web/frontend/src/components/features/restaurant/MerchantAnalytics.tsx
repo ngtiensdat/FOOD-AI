@@ -1,16 +1,16 @@
-import React from 'react';
-import { BarChart3, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { BarChart3, ChevronDown, Calendar, Check } from 'lucide-react';
 import { LABELS } from '@/constants/labels';
 import { Button } from '@/components/base/Button';
+import { Input } from '@/components/base/Input';
 
 // Hooks
-import { useMerchantAnalytics } from '@/hooks/useMerchantAnalytics';
+import { useMerchantAnalytics, DateRangePreset } from '@/hooks/useMerchantAnalytics';
 
 // Subcomponents
 import { AnalyticsSkeleton } from './analytics/AnalyticsSkeleton';
 import { KpiSection } from './analytics/KpiSection';
 import { DoubleBarChart } from './analytics/DoubleBarChart';
-import { AiInsightsSection } from './analytics/AiInsightsSection';
 
 export const MerchantAnalytics = () => {
   const {
@@ -22,13 +22,45 @@ export const MerchantAnalytics = () => {
     handleToggleFood,
     chartData,
     maxVal,
+    preset,
+    customStartDate,
+    customEndDate,
+    dateRangeLabel,
+    handleSelectPreset,
+    handleApplyCustomDates,
   } = useMerchantAnalytics();
 
-  if (loading) {
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [tempStart, setTempStart] = useState(customStartDate);
+  const [tempEnd, setTempEnd] = useState(customEndDate);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync temp dates when custom dates change
+  useEffect(() => {
+    setTempStart(customStartDate);
+    setTempEnd(customEndDate);
+  }, [customStartDate, customEndDate]);
+
+  // Click outside listener
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDatePickerOpen(false);
+      }
+    };
+    if (isDatePickerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDatePickerOpen]);
+
+  if (loading && data.length === 0) {
     return <AnalyticsSkeleton />;
   }
 
-  if (error) {
+  if (error && data.length === 0) {
     return (
       <div 
         className="card-premium p-12 text-center border border-rose-200 dark:border-rose-950/50 bg-rose-50/50 dark:bg-rose-950/10 rounded-2xl flex flex-col items-center justify-center animate-fade-in"
@@ -41,9 +73,17 @@ export const MerchantAnalytics = () => {
     );
   }
 
+  const presetsList: { id: DateRangePreset; label: string }[] = [
+    { id: '7d', label: LABELS.ANALYTICS.PRESET_7_DAYS },
+    { id: '14d', label: LABELS.ANALYTICS.PRESET_14_DAYS },
+    { id: '28d', label: LABELS.ANALYTICS.PRESET_28_DAYS },
+    { id: '90d', label: LABELS.ANALYTICS.PRESET_90_DAYS },
+    { id: 'this_month', label: LABELS.ANALYTICS.PRESET_THIS_MONTH },
+  ];
+
   return (
     <div className="space-y-8 fade-in">
-      {data.length === 0 ? (
+      {data.length === 0 && !loading ? (
         <div className="card-premium p-12 text-center border-2 border-dashed border-gray-100 dark:border-slate-800/50 flex flex-col items-center justify-center">
           <BarChart3 size={48} className="text-gray-300 dark:text-slate-700 mb-4 stroke-[1.5]" aria-hidden="true" />
           <h3 className="text-lg font-bold text-gray-400 mb-2">{LABELS.ANALYTICS.EMPTY_TITLE}</h3>
@@ -62,12 +102,95 @@ export const MerchantAnalytics = () => {
                 </h3>
                 <p className="text-[10px] text-gray-400 dark:text-slate-400">{LABELS.ANALYTICS.DETAILS_SUBTITLE}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 px-3 py-1.5 rounded-xl text-[10px] font-bold text-gray-500 dark:text-slate-400 flex items-center gap-1.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-900 transition-colors">
-                  <span>{LABELS.ANALYTICS.LAST_28_DAYS}</span>
-                  <ChevronDown size={12} />
-                </div>
-                <button className="text-[10px] font-bold text-primary hover:underline cursor-pointer">{LABELS.COMMON.SEE_ALL}</button>
+
+              {/* Date Filter & Actions */}
+              <div className="relative flex items-center gap-3" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  className="bg-gray-50 dark:bg-slate-950 border border-gray-200/80 dark:border-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-bold text-gray-600 dark:text-slate-300 flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-900 hover:border-primary/40 transition-all shadow-xs"
+                >
+                  <Calendar size={13} className="text-primary shrink-0" />
+                  <span>{dateRangeLabel}</span>
+                  <ChevronDown size={13} className={`text-gray-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu Picker */}
+                {isDatePickerOpen && (
+                  <div className="absolute right-0 top-10 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl p-4 z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        {LABELS.ANALYTICS.CHOOSE_DATE_RANGE}
+                      </p>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {presetsList.map((item) => {
+                          const isSelected = preset === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                handleSelectPreset(item.id);
+                                setIsDatePickerOpen(false);
+                              }}
+                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                                isSelected
+                                  ? 'bg-primary text-white font-bold shadow-xs'
+                                  : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
+                              }`}
+                            >
+                              <span>{item.label}</span>
+                              {isSelected && <Check size={13} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Custom Range Picker */}
+                    <div className="border-t border-gray-100 dark:border-slate-800 pt-3 space-y-2.5">
+                      <p className="text-xs font-bold text-gray-500 dark:text-slate-400">
+                        {LABELS.ANALYTICS.PRESET_CUSTOM}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+                            {LABELS.ANALYTICS.START_DATE}
+                          </label>
+                          <Input
+                            type="date"
+                            variant="none"
+                            className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary"
+                            value={tempStart}
+                            onChange={(e) => setTempStart(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+                            {LABELS.ANALYTICS.END_DATE}
+                          </label>
+                          <Input
+                            type="date"
+                            variant="none"
+                            className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary"
+                            value={tempEnd}
+                            onChange={(e) => setTempEnd(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          handleApplyCustomDates(tempStart, tempEnd);
+                          setIsDatePickerOpen(false);
+                        }}
+                        className="w-full text-xs font-bold py-2 mt-1 rounded-xl shadow-xs"
+                      >
+                        {LABELS.ANALYTICS.APPLY_FILTER}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
