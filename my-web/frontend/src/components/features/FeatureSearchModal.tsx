@@ -344,7 +344,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 md:pt-24 px-4">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-6 sm:pt-16 md:pt-24 px-3 sm:px-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -361,10 +361,10 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ type: 'spring', duration: 0.25 }}
             onKeyDown={handleKeyDown}
-            className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[82vh] z-10"
+            className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[82vh] z-10"
           >
             {/* Header / Search Input */}
-            <div className="relative flex items-center px-6 py-4 border-b border-gray-100 dark:border-slate-800">
+            <div className="relative flex items-center px-4 sm:px-6 py-3.5 sm:py-4 border-b border-gray-100 dark:border-slate-800">
               <Search className="text-primary mr-3 flex-shrink-0" size={22} />
               <input
                 ref={inputRef}
@@ -375,7 +375,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                   setSelectedIndex(0);
                 }}
                 placeholder="Tìm kiếm tính năng, món ăn, chức năng... (gõ 'phở', 'ai', 'pos')..."
-                className="w-full bg-transparent text-base md:text-lg font-medium text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none"
+                className="w-full bg-transparent text-sm sm:text-base md:text-lg font-medium text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none"
               />
               {query && (
                 <button
@@ -394,7 +394,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 px-6 py-2.5 border-b border-gray-50 dark:border-slate-800/80 overflow-x-auto no-scrollbar bg-gray-50/50 dark:bg-slate-900/50">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 border-b border-gray-50 dark:border-slate-800/80 overflow-x-auto no-scrollbar bg-gray-50/50 dark:bg-slate-900/50">
               {categories.map((cat) => (
                 <button
                   key={cat.id}

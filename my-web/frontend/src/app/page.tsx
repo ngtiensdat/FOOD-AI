@@ -234,7 +234,7 @@ export default function Home() {
 
             {/* Danh sách món ăn */}
             {isLoadingFoods ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="bg-white dark:bg-slate-900 rounded-card overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm animate-pulse flex flex-col h-[195px]">
                     <div className="h-28 bg-gray-200 dark:bg-slate-800" />
@@ -252,7 +252,7 @@ export default function Home() {
                 {LABELS.HOME.EMPTY_TAB}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                 {displayedFoods.map((food, i) => (
                   <FoodCard
                     key={food.id || i}
@@ -361,7 +361,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0, x: '-50%', scale: 1 }}
               exit={{ opacity: 0, y: 50, x: '-50%', scale: 0.9 }}
               transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-              className="flex md:hidden fixed bottom-4 left-[50%] z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-xl border border-gray-100 dark:border-slate-800/80 p-1.5 flex-row gap-1 items-center w-[90%] max-w-[360px]"
+              className="flex md:hidden fixed bottom-20 left-[50%] z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-xl border border-gray-100 dark:border-slate-800/80 p-1.5 flex-row gap-1 items-center w-[90%] max-w-[360px]"
             >
               {CATEGORIES.map((cat) => {
                 const isActive = activeFoodTab === cat.id;

@@ -4,7 +4,7 @@
 // Kiến thức, Design Pattern, nguyên tắc: Layout Pattern trong Next.js App Router, Hydration Mismatch Avoidance.
 // Các biến, hàm đặc biệt: RootLayout, metadata.
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "../index.css";
 import { ToastContainer } from "@/components/base/ToastContainer";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -14,6 +14,16 @@ import { cookies } from "next/headers";
 import { LanguageProvider } from "@/providers/language-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { AssistiveTouchMenu } from "@/components/features/assistive-touch/AssistiveTouchMenu";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAFAFA" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090B" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: LABELS.COMMON.APP_TITLE,
@@ -43,7 +53,7 @@ export default async function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col pb-16 md:pb-0">
         <LanguageProvider lang={lang}>
           <ThemeProvider>
             <SocketProvider>
