@@ -19,7 +19,8 @@ import {
   ArrowRight,
   LogIn,
   ExternalLink,
-  Utensils
+  Utensils,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { foodService } from '@/services/food.service';
@@ -62,18 +63,41 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Focus input when opened
+  // Focus input and reset state when opened
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setQuery('');
-      setSelectedIndex(0);
-      setFoodResults([]);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        setQuery('');
+        setSelectedIndex(0);
+        setFoodResults([]);
         inputRef.current?.focus();
-      }, 50);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  // Global escape key listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isOpen, onClose]);
+
+  // Auto scroll active item into view
+  useEffect(() => {
+    if (listRef.current) {
+      const activeEl = listRef.current.querySelector(`[data-index="${selectedIndex}"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
 
   // Master list of all features in Food AI
   const allFeatures: FeatureItem[] = useMemo(() => [
@@ -221,7 +245,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       title: user ? 'Trang cá nhân của bạn' : 'Đăng nhập / Đăng ký',
       description: user ? `Đang đăng nhập với email ${user.email}` : 'Đăng nhập để nhận ưu đãi và trải nghiệm đầy đủ tính năng',
       category: 'personal',
-      icon: user ? Settings : LogIn,
+      icon: user ? User : LogIn,
       badge: user ? 'Tài khoản' : 'Xác thực',
       href: user ? '/dashboard' : '/login',
       keywords: ['dang nhap', 'dang ky', 'login', 'register', 'auth', 'tai khoan']
@@ -286,6 +310,15 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
   const handleNavigate = useCallback((item: FeatureItem) => {
     onClose();
 
+    // Special handling for AI consultant on homepage
+    if (item.id === 'ai-consultant' && pathname === '/') {
+      const el = document.getElementById('ai-chat');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+
     // Check if on homepage and it's a tab switch
     if (pathname === '/' && item.tabId && onSelectTab) {
       if (item.tabId === 'home' || item.tabId === 'offers' || item.tabId === 'settings') {
@@ -346,13 +379,15 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-6 sm:pt-16 md:pt-24 px-3 sm:px-4">
+        <div
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-6 sm:pt-16 md:pt-24 px-3 sm:px-4"
+          onClick={onClose}
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
             className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-colors"
           />
 
@@ -362,6 +397,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ type: 'spring', duration: 0.25 }}
+            onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
             className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[82vh] z-10"
           >
@@ -376,16 +412,18 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                   setQuery(e.target.value);
                   setSelectedIndex(0);
                 }}
+                onKeyDown={handleKeyDown}
                 placeholder="Tìm kiếm tính năng, món ăn, chức năng... (gõ 'phở', 'ai', 'pos')..."
                 className="w-full bg-transparent text-sm sm:text-base md:text-lg font-medium text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none"
               />
               {query && (
                 <button
+                  type="button"
                   onClick={() => {
                     setQuery('');
                     inputRef.current?.focus();
                   }}
-                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2"
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -400,11 +438,12 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
               {categories.map((cat) => (
                 <button
                   key={cat.id}
+                  type="button"
                   onClick={() => {
                     setActiveCategory(cat.id);
                     setSelectedIndex(0);
                   }}
-                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all whitespace-nowrap ${activeCategory === cat.id
+                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all whitespace-nowrap cursor-pointer ${activeCategory === cat.id
                     ? 'bg-primary text-white shadow-sm'
                     : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200/60 dark:border-slate-700'
                     }`}
@@ -429,6 +468,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                       return (
                         <div
                           key={item.id}
+                          data-index={idx}
                           onClick={() => handleNavigate(item)}
                           onMouseEnter={() => setSelectedIndex(idx)}
                           className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all border ${isSelected
@@ -522,11 +562,12 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
 
                   {/* Direct search jump */}
                   <button
+                    type="button"
                     onClick={() => {
                       onClose();
                       router.push(`/explore?q=${encodeURIComponent(query.trim())}`);
                     }}
-                    className="w-full mt-3 p-3 rounded-2xl bg-orange-50/70 hover:bg-orange-100 dark:bg-orange-950/20 dark:hover:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/50 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                    className="w-full mt-3 p-3 rounded-2xl bg-orange-50/70 hover:bg-orange-100 dark:bg-orange-950/20 dark:hover:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/50 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
                     <span>Xem tất cả kết quả cho &quot;{query}&quot; tại Khám phá ẩm thực</span>
                     <ExternalLink size={14} />
@@ -547,11 +588,12 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     Thử tìm với từ khóa như: &quot;trang chủ&quot;, &quot;ai&quot;, &quot;pos&quot;, &quot;khám phá&quot;, &quot;voucher&quot;...
                   </p>
                   <button
+                    type="button"
                     onClick={() => {
                       onClose();
                       router.push(`/explore?q=${encodeURIComponent(query.trim())}`);
                     }}
-                    className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition-colors inline-flex items-center gap-2 shadow-md shadow-primary/20"
+                    className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition-colors inline-flex items-center gap-2 shadow-md shadow-primary/20 cursor-pointer"
                   >
                     <span>Tìm kiếm trên trang Khám phá</span>
                     <ArrowRight size={14} />
