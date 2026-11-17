@@ -404,11 +404,10 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     setActiveCategory(cat.id);
                     setSelectedIndex(0);
                   }}
-                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all whitespace-nowrap ${
-                    activeCategory === cat.id
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200/60 dark:border-slate-700'
-                  }`}
+                  className={`px-3 py-1 text-xs font-bold rounded-full transition-all whitespace-nowrap ${activeCategory === cat.id
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200/60 dark:border-slate-700'
+                    }`}
                 >
                   {cat.label}
                 </button>
@@ -432,27 +431,24 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                           key={item.id}
                           onClick={() => handleNavigate(item)}
                           onMouseEnter={() => setSelectedIndex(idx)}
-                          className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all border ${
-                            isSelected
-                              ? 'bg-primary/5 dark:bg-primary/10 border-primary/30 shadow-sm'
-                              : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border-transparent'
-                          }`}
+                          className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all border ${isSelected
+                            ? 'bg-primary/5 dark:bg-primary/10 border-primary/30 shadow-sm'
+                            : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border-transparent'
+                            }`}
                         >
                           <div className="flex items-center gap-3.5 min-w-0">
                             <div
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                                isSelected
-                                  ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                  : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 group-hover:text-primary'
-                              }`}
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${isSelected
+                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 group-hover:text-primary'
+                                }`}
                             >
                               <Icon size={20} />
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm font-bold truncate ${
-                                  isSelected ? 'text-primary' : 'text-slate-800 dark:text-slate-100'
-                                }`}>
+                                <span className={`text-sm font-bold truncate ${isSelected ? 'text-primary' : 'text-slate-800 dark:text-slate-100'
+                                  }`}>
                                   {item.title}
                                 </span>
                                 {item.badge && (
