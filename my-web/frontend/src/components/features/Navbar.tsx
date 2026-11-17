@@ -21,6 +21,7 @@ import { chatService } from '@/services/chat.service';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
+import { FeatureSearchModal } from './FeatureSearchModal';
 
 interface NavbarProps {
   activeTab?: string;
@@ -39,6 +40,19 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
   const [showChatCenter, setShowChatCenter] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [showFeatureSearch, setShowFeatureSearch] = useState(false);
+
+  // Lắng nghe phím tắt Ctrl+K hoặc Cmd+K để mở hộp thoại tìm kiếm tính năng
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowFeatureSearch((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const fetchUnreadMessagesCount = async () => {
     if (!user) return;
@@ -282,9 +296,10 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 text-gray-500"
-          onClick={() => toast.info(LABELS.NAV.SEARCH_PLACEHOLDER)}
+          className="flex items-center gap-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary transition-colors cursor-pointer"
+          onClick={() => setShowFeatureSearch(true)}
           aria-label={LABELS.NAV.FEATURES}
+          title="Tìm kiếm tính năng (Ctrl + K)"
         >
           <Search size={20} />
           <span className="hidden lg:inline text-xs font-bold uppercase tracking-tighter">{LABELS.NAV.FEATURES}</span>
@@ -549,6 +564,13 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         onOpen={() => setShowChatCenter(true)}
       />
     )}
+
+    {/* Modal Hộp thoại Tìm kiếm Tính năng & Điều hướng nhanh */}
+    <FeatureSearchModal
+      isOpen={showFeatureSearch}
+      onClose={() => setShowFeatureSearch(false)}
+      onSelectTab={setActiveTab}
+    />
   </>
 );
 };
