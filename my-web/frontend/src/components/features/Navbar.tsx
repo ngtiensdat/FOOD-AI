@@ -309,18 +309,33 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
       </div>
 
       <div className="flex items-center justify-end gap-2 sm:gap-3 md:gap-4 relative justify-self-end">
-        <ThemeToggle />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex items-center gap-1.5 md:gap-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary transition-colors cursor-pointer p-1.5 md:p-2"
+        {/* Quick Search Bar / Command Palette Trigger */}
+        <button
+          type="button"
           onClick={() => setShowFeatureSearch(true)}
-          aria-label={LABELS.NAV.FEATURES}
-          title="Tìm kiếm tính năng (Ctrl + K)"
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100/80 hover:bg-gray-200/70 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-gray-200/60 dark:border-slate-800 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-all text-xs font-medium cursor-pointer shadow-2xs group w-36 md:w-44 lg:w-56"
+          aria-label={LABELS.NAV.SEARCH}
+          title={LABELS.NAV.SEARCH_TOOLTIP}
         >
-          <Search size={18} className="md:w-5 md:h-5" />
-          <span className="hidden lg:inline text-xs font-bold uppercase tracking-tighter">{LABELS.NAV.FEATURES}</span>
-        </Button>
+          <Search size={15} className="text-gray-400 dark:text-slate-500 group-hover:text-primary transition-colors shrink-0" />
+          <span className="truncate flex-1 text-left select-none text-[12px]">{LABELS.NAV.SEARCH_PLACEHOLDER}</span>
+          <kbd className="hidden lg:inline-flex items-center text-[10px] font-semibold text-gray-400 dark:text-slate-500 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded px-1.5 py-0.5 leading-none shadow-2xs">
+            {LABELS.NAV.SEARCH_SHORTCUT}
+          </kbd>
+        </button>
+
+        {/* Mobile Search Icon Button */}
+        <button
+          type="button"
+          onClick={() => setShowFeatureSearch(true)}
+          className="sm:hidden p-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary rounded-xl hover:bg-gray-100/60 dark:hover:bg-slate-900/60 transition-colors cursor-pointer"
+          aria-label={LABELS.NAV.SEARCH}
+          title={LABELS.NAV.SEARCH_TOOLTIP}
+        >
+          <Search size={19} />
+        </button>
+
+        <ThemeToggle />
 
         {user ? (
           <div className="flex items-center gap-3 relative">
