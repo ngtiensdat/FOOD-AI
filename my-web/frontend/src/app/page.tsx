@@ -17,6 +17,7 @@ import { useHomeActions } from '@/hooks/useHomeActions';
 // Base Components
 import { Slider } from '@/components/base/Slider';
 import { Placeholder } from '@/components/base/Placeholder';
+import { SafeImage } from '@/components/base/SafeImage';
 
 // Feature Components
 import { Navbar } from '@/components/features/Navbar';
@@ -275,10 +276,12 @@ export default function Home() {
                       transition={{ duration: 0.5 }}
                       className="w-16 h-16 relative mb-2 flex items-center justify-center shrink-0"
                     >
-                      <img
+                      <SafeImage
                         src="/chibi%20linh%20v%E1%BA%ADt/nh%C3%A1y%20m%E1%BA%AFt.png"
                         alt={LABELS.HOME.MASCOT_ALT}
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="64px"
+                        className="object-contain"
                       />
                     </motion.div>
                     <span className="text-xs font-bold text-gray-700 dark:text-slate-300 group-hover:text-primary transition-colors text-center">

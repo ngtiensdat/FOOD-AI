@@ -6,10 +6,10 @@
  */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle, LogIn } from 'lucide-react';
+import { Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
 import { useNotifications, NotificationItem } from '@/hooks/useNotifications';
@@ -20,19 +20,18 @@ import { ChatCenter } from './chat/ChatCenter';
 import { chatService } from '@/services/chat.service';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
-import { toast } from '@/store/useToastStore';
 import { FeatureSearchModal } from './FeatureSearchModal';
 
 interface NavbarProps {
   activeTab?: string;
-  setActiveTab?: (tab: string) => void;
+  setActiveTab?: (_tab: string) => void;
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const { user, logout, isAdmin, isRestaurant, isCustomer } = useAuth();
   const { socket } = useSocket();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab');
+  const _tabParam = searchParams.get('tab');
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -54,23 +53,38 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const fetchUnreadMessagesCount = async () => {
+  const fetchUnreadMessagesCount = React.useCallback(async () => {
     if (!user) return;
     try {
       const convs = await chatService.getConversations('inbox');
       const requests = await chatService.getConversations('requests');
       
-      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as any).isRead && c.lastMessage.sender.id !== user.id).length;
+      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as { isRead?: boolean; sender?: { id: string | number } }).isRead && c.lastMessage.sender?.id !== user.id).length;
       const unreadRequests = requests.length;
       
       setUnreadMessagesCount(unreadInbox + unreadRequests);
     } catch (e) {
       console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    fetchUnreadMessagesCount();
+    let isMounted = true;
+    if (!user) return;
+
+    chatService.getConversations('inbox').then(convs => {
+      return chatService.getConversations('requests').then(requests => {
+        if (!isMounted) return;
+        const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as { isRead?: boolean; sender?: { id: string | number } }).isRead && c.lastMessage.sender?.id !== user.id).length;
+        setUnreadMessagesCount(unreadInbox + requests.length);
+      });
+    }).catch(e => {
+      console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, showChatCenter]); // use user?.id (stable primitive) not user object to prevent infinite re-render
 

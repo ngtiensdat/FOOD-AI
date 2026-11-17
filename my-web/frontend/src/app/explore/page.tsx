@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Services & Components
 import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
-import { FoodCard, type FoodCardData } from '@/components/features/food/FoodCard';
+import { FoodCard } from '@/components/features/food/FoodCard';
 import { FoodDetailModal, type FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { Pagination } from '@/components/base/Pagination';
 import { Navbar } from '@/components/features/Navbar';

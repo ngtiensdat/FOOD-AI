@@ -30,7 +30,7 @@ import { Food } from '@/types/food';
 interface FeatureSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectTab?: (tab: string) => void;
+  onSelectTab?: (_tab: string) => void;
 }
 
 interface FeatureItem {
@@ -253,13 +253,15 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
-      setFoodResults([]);
-      setIsLoadingFoods(false);
-      return;
+      const timer = setTimeout(() => {
+        setFoodResults([]);
+        setIsLoadingFoods(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
-    setIsLoadingFoods(true);
     const timer = setTimeout(async () => {
+      setIsLoadingFoods(true);
       try {
         const res: unknown = await foodService.searchFoods(trimmed);
         const list = Array.isArray(res)
