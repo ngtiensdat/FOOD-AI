@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Services & Components
 import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
-import { FoodCard, type FoodCardData } from '@/components/features/food/FoodCard';
+import { FoodCard } from '@/components/features/food/FoodCard';
 import { FoodDetailModal, type FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { Pagination } from '@/components/base/Pagination';
 import { Navbar } from '@/components/features/Navbar';
@@ -70,7 +70,7 @@ function ExploreContent() {
       }} />
 
       {/* Header Area */}
-      <div className="bg-white dark:bg-gray-100 mixed:bg-gray-100 border-b border-gray-100 dark:border-gray-200 mixed:border-gray-200 pt-32 pb-8 px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-100 mixed:bg-gray-100 border-b border-gray-100 dark:border-gray-200 mixed:border-gray-200 pt-20 md:pt-32 pb-4 md:pb-8 px-4 md:px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <div className="flex items-center gap-6">

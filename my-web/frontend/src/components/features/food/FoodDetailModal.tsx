@@ -121,7 +121,7 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:hidden z-10 pointer-events-none" />
         </div>
 
-        <div className="w-full md:w-1/2 p-8 md:p-12 overflow-y-auto">
+        <div className="w-full md:w-1/2 p-5 sm:p-8 md:p-12 overflow-y-auto">
           {/* Closed Warning Banner */}
           {!isOpen && (
             <div className="alert-box-rose mb-6">

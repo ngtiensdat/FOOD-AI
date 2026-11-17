@@ -6,10 +6,10 @@
  */
 'use client';
 import { ThemeToggle } from '@/components/base/ThemeToggle';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Menu, Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle } from 'lucide-react';
+import { Search, User, ChevronDown, Bell, Heart, MessageSquare, Forward, Trophy, Home, Compass, Tag, Store, Shield, Ticket, MessageCircle, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/providers/socket-provider';
 import { useNotifications, NotificationItem } from '@/hooks/useNotifications';
@@ -20,18 +20,18 @@ import { ChatCenter } from './chat/ChatCenter';
 import { chatService } from '@/services/chat.service';
 import { SafeImage } from '@/components/base/SafeImage';
 import { LABELS } from '@/constants/labels';
-import { toast } from '@/store/useToastStore';
+import { FeatureSearchModal } from './FeatureSearchModal';
 
 interface NavbarProps {
   activeTab?: string;
-  setActiveTab?: (tab: string) => void;
+  setActiveTab?: (_tab: string) => void;
 }
 
 export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
   const { user, logout, isAdmin, isRestaurant, isCustomer } = useAuth();
   const { socket } = useSocket();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab');
+  const _tabParam = searchParams.get('tab');
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -39,24 +39,52 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
 
   const [showChatCenter, setShowChatCenter] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [showFeatureSearch, setShowFeatureSearch] = useState(false);
 
-  const fetchUnreadMessagesCount = async () => {
+  // Lắng nghe phím tắt Ctrl+K hoặc Cmd+K để mở hộp thoại tìm kiếm tính năng
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowFeatureSearch((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const fetchUnreadMessagesCount = React.useCallback(async () => {
     if (!user) return;
     try {
       const convs = await chatService.getConversations('inbox');
       const requests = await chatService.getConversations('requests');
       
-      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as any).isRead && c.lastMessage.sender.id !== user.id).length;
+      const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as { isRead?: boolean; sender?: { id: string | number } }).isRead && c.lastMessage.sender?.id !== user.id).length;
       const unreadRequests = requests.length;
       
       setUnreadMessagesCount(unreadInbox + unreadRequests);
     } catch (e) {
       console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    fetchUnreadMessagesCount();
+    let isMounted = true;
+    if (!user) return;
+
+    chatService.getConversations('inbox').then(convs => {
+      return chatService.getConversations('requests').then(requests => {
+        if (!isMounted) return;
+        const unreadInbox = convs.filter(c => c.lastMessage && !(c.lastMessage as { isRead?: boolean; sender?: { id: string | number } }).isRead && c.lastMessage.sender?.id !== user.id).length;
+        setUnreadMessagesCount(unreadInbox + requests.length);
+      });
+    }).catch(e => {
+      console.warn('Lỗi lấy số tin nhắn chưa đọc:', e);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, showChatCenter]); // use user?.id (stable primitive) not user object to prevent infinite re-render
 
@@ -234,16 +262,19 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
     }
   }
 
+  const hasSidebar = pathname.startsWith('/admin') || pathname.startsWith('/restaurant-admin');
+  const isManagementPage = hasSidebar || pathname.startsWith('/pos');
+
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-6 md:px-12 grid grid-cols-3 items-center border-b border-gray-50 dark:border-slate-900 transition-transform duration-300 ease-in-out ${
+      <nav className={`fixed top-0 left-0 right-0 h-16 md:h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50 px-4 md:px-12 flex items-center justify-between md:grid md:grid-cols-3 border-b border-gray-50 dark:border-slate-900 transition-transform duration-300 ease-in-out ${
         visible ? 'translate-y-0' : '-translate-y-full'
       }`}>
-      <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity justify-self-start pl-10 md:pl-0">
-        <div className="relative w-10 h-10">
+      <Link href="/" className={`flex items-center gap-2 hover:opacity-90 transition-opacity justify-self-start ${hasSidebar ? 'pl-10 md:pl-0' : 'pl-0'}`}>
+        <div className="relative w-8 h-8 md:w-10 md:h-10">
           <SafeImage src="/logo.png" alt={LABELS.COMMON.BRAND_LOGO_ALT} fill sizes="40px" className="object-contain" />
         </div>
-        <span className="text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
+        <span className="text-xl md:text-2xl font-bold gradient-text tracking-tight">{LABELS.COMMON.BRAND_NAME}</span>
       </Link>
 
       <div className="hidden md:flex items-center justify-center gap-1 h-full justify-self-center">
@@ -277,16 +308,17 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         })}
       </div>
 
-      <div className="flex items-center justify-end gap-4 relative justify-self-end">
+      <div className="flex items-center justify-end gap-2 sm:gap-3 md:gap-4 relative justify-self-end">
         <ThemeToggle />
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 text-gray-500"
-          onClick={() => toast.info(LABELS.NAV.SEARCH_PLACEHOLDER)}
+          className="flex items-center gap-1.5 md:gap-2 text-gray-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary transition-colors cursor-pointer p-1.5 md:p-2"
+          onClick={() => setShowFeatureSearch(true)}
           aria-label={LABELS.NAV.FEATURES}
+          title="Tìm kiếm tính năng (Ctrl + K)"
         >
-          <Search size={20} />
+          <Search size={18} className="md:w-5 md:h-5" />
           <span className="hidden lg:inline text-xs font-bold uppercase tracking-tighter">{LABELS.NAV.FEATURES}</span>
         </Button>
 
@@ -429,14 +461,109 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
           </div>
         ) : (
           <Link href="/login">
-            <Button variant="primary" className="rounded-full">
-              <User size={18} className="mr-2" />
-              <span>{LABELS.AUTH.LOGIN}</span>
+            <Button variant="primary" className="rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm">
+              <LogIn size={16} className="md:mr-2" />
+              <span className="hidden md:inline">{LABELS.AUTH.LOGIN}</span>
             </Button>
           </Link>
         )}
       </div>
     </nav>
+
+    {/* Thanh điều hướng chân trang trên thiết bị di động (Mobile Bottom Navigation) */}
+    {!isManagementPage && (
+      <nav
+        aria-label="Thanh điều hướng di động"
+        className="block md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg border-t border-gray-100 dark:border-slate-900 py-1.5 px-2 safe-area-bottom shadow-lg"
+      >
+        <div className="flex items-center justify-around">
+          <Link
+            href="/"
+            onClick={(e) => {
+              if (pathname === '/' && setActiveTab) {
+                e.preventDefault();
+                setActiveTab('home');
+                router.push('/');
+              }
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 min-w-[56px] rounded-xl transition-all ${
+              currentActive === 'home'
+                ? 'text-primary font-bold'
+                : 'text-gray-400 dark:text-slate-400 hover:text-gray-600'
+            }`}
+          >
+            <Home size={20} className={currentActive === 'home' ? 'scale-110' : ''} />
+            <span className="text-[10px] mt-1 tracking-tight">{LABELS.NAV.HOME}</span>
+          </Link>
+
+          <Link
+            href="/explore"
+            className={`flex flex-col items-center justify-center py-1 px-3 min-w-[56px] rounded-xl transition-all ${
+              currentActive === 'explore'
+                ? 'text-primary font-bold'
+                : 'text-gray-400 dark:text-slate-400 hover:text-gray-600'
+            }`}
+          >
+            <Compass size={20} className={currentActive === 'explore' ? 'scale-110' : ''} />
+            <span className="text-[10px] mt-1 tracking-tight">{LABELS.NAV.EXPLORE}</span>
+          </Link>
+
+          <Link
+            href="/?tab=offers"
+            onClick={(e) => {
+              if (pathname === '/' && setActiveTab) {
+                e.preventDefault();
+                setActiveTab('offers');
+                router.push('/?tab=offers');
+              }
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 min-w-[56px] rounded-xl transition-all ${
+              currentActive === 'offers'
+                ? 'text-primary font-bold'
+                : 'text-gray-400 dark:text-slate-400 hover:text-gray-600'
+            }`}
+          >
+            <Tag size={20} className={currentActive === 'offers' ? 'scale-110' : ''} />
+            <span className="text-[10px] mt-1 tracking-tight">{LABELS.NAV.OFFERS}</span>
+          </Link>
+
+          <Link
+            href="/forum"
+            className={`flex flex-col items-center justify-center py-1 px-3 min-w-[56px] rounded-xl transition-all ${
+              currentActive === 'forum'
+                ? 'text-primary font-bold'
+                : 'text-gray-400 dark:text-slate-400 hover:text-gray-600'
+            }`}
+          >
+            <MessageSquare size={20} className={currentActive === 'forum' ? 'scale-110' : ''} />
+            <span className="text-[10px] mt-1 tracking-tight">{LABELS.NAV.FORUM}</span>
+          </Link>
+
+          <Link
+            href={user ? (isRestaurant ? '/restaurant-admin' : isAdmin ? '/admin' : '/dashboard') : '/login'}
+            className={`flex flex-col items-center justify-center py-1 px-3 min-w-[56px] rounded-xl transition-all ${
+              ['dashboard', 'profile', 'restaurant-admin', 'admin'].includes(currentActive)
+                ? 'text-primary font-bold'
+                : 'text-gray-400 dark:text-slate-400 hover:text-gray-600'
+            }`}
+          >
+            {user ? (
+              <Avatar
+                src={user.avatar}
+                name={user.name}
+                size={20}
+                className="ring-1 ring-primary/20"
+              />
+            ) : (
+              <User size={20} />
+            )}
+            <span className="text-[10px] mt-1 tracking-tight">
+              {user ? (LABELS.AUTH?.PROFILE || 'Cá nhân') : LABELS.AUTH.LOGIN}
+            </span>
+          </Link>
+        </div>
+      </nav>
+    )}
 
     {showDetailModal && activeNotification && (
       <>
@@ -549,6 +676,13 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         onOpen={() => setShowChatCenter(true)}
       />
     )}
+
+    {/* Modal Hộp thoại Tìm kiếm Tính năng & Điều hướng nhanh */}
+    <FeatureSearchModal
+      isOpen={showFeatureSearch}
+      onClose={() => setShowFeatureSearch(false)}
+      onSelectTab={setActiveTab}
+    />
   </>
 );
 };

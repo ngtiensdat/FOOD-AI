@@ -110,18 +110,16 @@ html.mixed,
 }
 
 @utility text-h1 {
-  font-size: 4.5rem;
-  /* text-7xl */
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.15;
   font-family: var(--font-heading);
 }
 
 @utility text-h2 {
-  font-size: 2.25rem;
-  /* text-4xl */
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   font-family: var(--font-heading);
 }
 

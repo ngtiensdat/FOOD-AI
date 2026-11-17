@@ -1017,7 +1017,7 @@ const LABELS_VI = {
     POS: 'Màn hình POS',
     SETTINGS: 'Cài đặt',
     FEATURES: 'Tính năng',
-    SEARCH_PLACEHOLDER: 'Tính năng tìm kiếm chức năng đang phát triển!',
+    SEARCH_PLACEHOLDER: 'Tìm kiếm tính năng, món ăn, chức năng hệ thống...',
     USER_MENU: 'Menu người dùng',
     AI_CHAT: 'Trợ lý AI',
     NOTIFICATIONS: {
