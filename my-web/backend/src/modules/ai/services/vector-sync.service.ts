@@ -47,7 +47,10 @@ export class VectorSyncService {
       const categoryName =
         food.category?.name || AI_CONSTANTS.EMBEDDING_LABELS.CATEGORY_OTHER;
       const priceVal = Number(food.price);
-      const textToEmbed = `Danh mục: ${categoryName}. Món ăn: ${food.name}. Giá: ${priceVal.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
+      const restaurantName = food.restaurant?.name
+        ? `Quán: ${food.restaurant.name}. `
+        : '';
+      const textToEmbed = `Danh mục: ${categoryName}. ${restaurantName}Món ăn: ${food.name}. Giá: ${priceVal.toLocaleString('vi-VN')}đ. Mô tả: ${food.description || AI_CONSTANTS.EMBEDDING_LABELS.NO_DESCRIPTION}. Nhãn: ${tagsStr}.`;
 
       await retry(
         async () => {
