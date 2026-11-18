@@ -430,45 +430,121 @@ export class RerankingService {
       }
 
       // 8.6. Common-sense Dining Sanity Check:
-      // If user says "đang đói" (hungry) or budget <= 70k or companion === SINGLE:
       // Penalize:
+      // - Pure toppings / bare ingredients (e.g. Pate nóng bare plate, rau sống, topping thịt thêm, quẩy)
       // - Raw BBQ items or hotpot toppings at grill/hotpot restaurants (cannot dine on 1 raw meat plate alone)
-      // - Pure drinks/beverages when hungry (cannot satisfy hunger with soy milk or soda)
+      // - Drinks or desserts when user is hungry or asking for savory meals ("món mặn")
+      // - Rejected restaurants / BBQ venues when user complains or objects
       let diningSanityAdjust = 0.0;
       const msgText = (message || '').toLowerCase();
       const isHungry =
         msgText.includes('đói') ||
         msgText.includes('ăn nhanh') ||
-        msgText.includes('lót dạ');
+        msgText.includes('lót dạ') ||
+        msgText.includes('chưa ăn gì');
       const isSingleOrLowBudget =
         (state.slots.budget && state.slots.budget <= 70000) ||
         state.slots.companion === 'SINGLE';
 
       const foodNameLower = food.name.toLowerCase();
       const restaurantNameLower = (food.restaurantName || '').toLowerCase();
-      const isBbqRestaurant =
-        restaurantNameLower.includes('nướng') ||
-        restaurantNameLower.includes('bbq') ||
-        restaurantNameLower.includes('gogi') ||
-        restaurantNameLower.includes('lẩu');
-      const isGrillPlate =
-        foodNameLower.includes('sườn') ||
-        foodNameLower.includes('ba chỉ') ||
-        foodNameLower.includes('thịt nướng') ||
-        foodNameLower.includes('khay');
+
+      // Pure toppings, bare side dishes, condiments
+      const isPureToppingOrIngredient =
+        foodNameLower.startsWith('pate') ||
+        foodNameLower.includes('topping') ||
+        foodNameLower.includes('rau sống') ||
+        foodNameLower.includes('bổ sung') ||
+        foodNameLower.includes('thêm') ||
+        foodNameLower === 'quẩy';
+
+      if (
+        isPureToppingOrIngredient &&
+        !msgText.includes('pate') &&
+        !msgText.includes('topping')
+      ) {
+        diningSanityAdjust -= 0.55; // Extreme penalty: never recommend a standalone topping/pate
+      }
+
+      // Savory meal vs Sweet desserts or drinks
+      const isSavoryRequest =
+        msgText.includes('món mặn') || msgText.includes('đồ mặn') || isHungry;
+
       const isDrink =
         (food.categoryName || '').toLowerCase().includes('đồ uống') ||
         foodNameLower.includes('sữa') ||
         foodNameLower.includes('trà') ||
         foodNameLower.includes('nước ngọt') ||
-        foodNameLower.includes('nước ép');
+        foodNameLower.includes('nước ép') ||
+        foodNameLower.includes('cà phê') ||
+        foodNameLower.includes('sinh tố');
 
-      if (isHungry || isSingleOrLowBudget) {
-        if (isBbqRestaurant && isGrillPlate) {
-          diningSanityAdjust -= 0.35; // Heavy penalty: don't suggest 1 single grill plate at BBQ joint
+      const isSweetOrDessert =
+        foodNameLower.includes('chè') ||
+        foodNameLower.includes('caramen') ||
+        foodNameLower.includes('thạch') ||
+        foodNameLower.includes('kem') ||
+        foodNameLower.includes('trà sữa') ||
+        foodNameLower.includes('ngọt');
+
+      if (isSavoryRequest) {
+        if (isDrink) {
+          diningSanityAdjust -= 0.5; // Never recommend drinks when starving or asking for savory food
         }
-        if (isDrink && isHungry) {
-          diningSanityAdjust -= 0.3; // Heavy penalty: don't suggest a drink to someone starving
+        if (isSweetOrDessert) {
+          diningSanityAdjust -= 0.45;
+        }
+
+        const isCompleteMeal =
+          foodNameLower.includes('bánh mì chảo') ||
+          foodNameLower.includes('bánh mì') ||
+          foodNameLower.includes('cơm') ||
+          foodNameLower.includes('phở') ||
+          foodNameLower.includes('bún') ||
+          foodNameLower.includes('miến') ||
+          foodNameLower.includes('hủ tiếu') ||
+          foodNameLower.includes('mì') ||
+          foodNameLower.includes('xôi') ||
+          foodNameLower.includes('pizza') ||
+          foodNameLower.includes('burger');
+
+        if (isCompleteMeal && !isPureToppingOrIngredient) {
+          diningSanityAdjust += 0.25; // Prioritize complete standalone meal
+        }
+      }
+
+      // User objection / complaint against BBQ / grill or specific venue
+      const userObjectsToBbq =
+        msgText.includes('quán nướng') ||
+        msgText.includes('1 khay') ||
+        msgText.includes('khay sườn') ||
+        msgText.includes('gọi món mà') ||
+        msgText.includes('chẳng lẽ') ||
+        msgText.includes('ai lại ăn');
+
+      const isBbqRestaurant =
+        restaurantNameLower.includes('nướng') ||
+        restaurantNameLower.includes('bbq') ||
+        restaurantNameLower.includes('gogi') ||
+        restaurantNameLower.includes('lẩu') ||
+        restaurantNameLower.includes('k-pub') ||
+        restaurantNameLower.includes('sumo') ||
+        restaurantNameLower.includes('haidilao') ||
+        restaurantNameLower.includes('manwah');
+
+      const isGrillOrRawPlate =
+        foodNameLower.includes('sườn') ||
+        foodNameLower.includes('ba chỉ') ||
+        foodNameLower.includes('thịt nướng') ||
+        foodNameLower.includes('khay') ||
+        foodNameLower.includes('bò ướp') ||
+        foodNameLower.includes('nhúng lẩu');
+
+      if (userObjectsToBbq && isBbqRestaurant) {
+        diningSanityAdjust -= 0.8; // Exclude BBQ completely when user specifically complains about BBQ!
+      } else if (isHungry || isSingleOrLowBudget) {
+        if (isBbqRestaurant && isGrillOrRawPlate) {
+          diningSanityAdjust -= 0.45; // Don't suggest single raw grill plate to hungry/single diner
         }
       }
 

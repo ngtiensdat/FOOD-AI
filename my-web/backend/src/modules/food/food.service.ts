@@ -113,8 +113,13 @@ export class FoodService {
               { name: { contains: 'Topping', mode: 'insensitive' } },
               { name: { contains: 'Rau sống', mode: 'insensitive' } },
               { name: { contains: 'Thêm', mode: 'insensitive' } },
+              { name: { contains: 'Bổ sung', mode: 'insensitive' } },
               { name: { contains: 'Gia vị', mode: 'insensitive' } },
               { name: { contains: 'Nước chấm', mode: 'insensitive' } },
+              { name: { contains: 'Nước lẩu', mode: 'insensitive' } },
+              { name: { contains: 'Nước sốt', mode: 'insensitive' } },
+              { name: { startsWith: 'Pate nóng', mode: 'insensitive' } },
+              { name: { equals: 'Quẩy', mode: 'insensitive' } },
             ],
           });
         }

@@ -110,6 +110,11 @@ export class RecommendationService {
       state.slots.cuisineType && state.slots.cuisineType.trim() !== '',
     );
 
+    const msg = message || '';
+    const hasSpecificDish = this.hasSpecificDishMention(msg);
+    const isVagueGeneralQuery =
+      this.isGeneralRecommendationIntent(msg) && !hasSpecificDish;
+
     let shouldRecommend = false;
     let foods: SearchResult[] = [];
 
@@ -119,8 +124,14 @@ export class RecommendationService {
       shouldRecommend = reRanked.length > 0;
       foods = reRanked.slice(0, 3);
     }
-    // 2. Specific cuisine or dish specified by user -> recommend matches
-    else if (hasCuisine) {
+    // 2. Vague or general request without specific dish mentioned ("tôi đang đói", "hôm nay ăn gì")
+    // Trigger clarifying slot-filling to ask for user needs and provide quick replies!
+    else if (isVagueGeneralQuery && state.current_stage === 'COLLECTING') {
+      shouldRecommend = false;
+      foods = reRanked.slice(0, 3);
+    }
+    // 3. Specific cuisine or dish specified by user -> recommend matches
+    else if (hasCuisine || hasSpecificDish) {
       if (hasDirectIntentMatch || matchedFoods.length > 0) {
         shouldRecommend = true;
         foods =
@@ -132,7 +143,7 @@ export class RecommendationService {
         foods = reRanked.slice(0, 3);
       }
     }
-    // 3. User is already in multi-turn conversation (past initial collecting stage)
+    // 4. Multi-turn conversation progression (follow-up turns, answering slot questions, or feedback)
     else if (state.current_stage !== 'COLLECTING') {
       shouldRecommend = true;
       foods =
@@ -140,9 +151,7 @@ export class RecommendationService {
           ? matchedFoods.slice(0, 5)
           : reRanked.slice(0, 3);
     }
-    // 4. Initial turn with vague / general recommendation query ("tôi đang đói", "hôm nay ăn gì", "gợi ý món")
-    // When cuisine or dining format is unknown, DO NOT rush into premature recommendations.
-    // Trigger clarifying slot-filling to ask for user needs and provide quick replies!
+    // 5. Default fallback
     else {
       shouldRecommend = false;
       foods = reRanked.slice(0, 3);
@@ -152,6 +161,45 @@ export class RecommendationService {
       foods,
       shouldRecommend,
     };
+  }
+
+  private hasSpecificDishMention(message: string): boolean {
+    const msg = message.toLowerCase();
+    const specificDishes = [
+      'cơm',
+      'phở',
+      'bún',
+      'bánh mì',
+      'mì',
+      'miến',
+      'hủ tiếu',
+      'cháo',
+      'xôi',
+      'lẩu',
+      'nướng',
+      'pizza',
+      'burger',
+      'sushi',
+      'trà sữa',
+      'cà phê',
+      'chè',
+      'sườn',
+      'gà',
+      'vịt',
+      'ngan',
+      'hải sản',
+      'tôm',
+      'cua',
+      'cá',
+      'ốc',
+      'chay',
+      'cay',
+      'món mặn',
+      'món ngọt',
+      'món nước',
+      'món khô',
+    ];
+    return specificDishes.some((dish) => msg.includes(dish));
   }
 
   private isGeneralRecommendationIntent(message: string): boolean {
