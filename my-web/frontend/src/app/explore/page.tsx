@@ -70,36 +70,36 @@ function ExploreContent() {
       }} />
 
       {/* Header Area */}
-      <div className="bg-white dark:bg-gray-100 mixed:bg-gray-100 border-b border-gray-100 dark:border-gray-200 mixed:border-gray-200 pt-20 md:pt-32 pb-4 md:pb-8 px-4 md:px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
+      <div className="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 pt-20 md:pt-24 pb-3 md:pb-5 px-4 md:px-6 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-            <div className="flex items-center gap-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="flex items-center gap-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.back()}
-                className="w-12 h-12 rounded-button"
+                className="w-10 h-10 md:w-11 md:h-11 rounded-button shrink-0"
                 aria-label="Quay lại"
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={20} />
               </Button>
               <div>
-                <h1 className="text-h2 text-gray-900">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                   {tag ? LABELS.EXPLORE.TITLE_TAG(tag) : searchQuery ? `Tìm kiếm "${searchQuery}"` : LABELS.EXPLORE.TITLE_TAG('')}
                 </h1>
-                <p className="text-gray-500 font-medium text-small">
+                <p className="text-gray-500 dark:text-slate-400 font-medium text-xs md:text-small">
                   {LABELS.EXPLORE.FOUND_COUNT_BOTH(foods.length, restaurants.length)}
                 </p>
               </div>
             </div>
 
-            <div className="w-full xl:w-auto flex flex-col md:flex-row gap-3">
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-input px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full md:w-44">
-                <MapPin size={18} className="text-primary shrink-0" />
+            <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-2.5">
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-input px-3.5 py-2 text-slate-700 dark:text-slate-200 shadow-2xs w-full sm:w-40">
+                <MapPin size={16} className="text-primary shrink-0" />
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+                  className="bg-transparent border-none outline-none text-xs md:text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
                 >
                   {LOCATION_DATA.map((city) => (
                     <option key={city.value} value={city.value} className="text-slate-900 bg-white">
@@ -109,12 +109,12 @@ function ExploreContent() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-input px-4 py-3 text-slate-700 dark:text-slate-200 shadow-sm w-full md:w-52">
-                <MapPin size={18} className="text-primary shrink-0" />
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200/50 dark:border-slate-700/50 rounded-input px-3.5 py-2 text-slate-700 dark:text-slate-200 shadow-2xs w-full sm:w-48">
+                <MapPin size={16} className="text-primary shrink-0" />
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  className="bg-transparent border-none outline-none text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
+                  className="bg-transparent border-none outline-none text-xs md:text-small font-semibold w-full cursor-pointer text-slate-800 dark:text-slate-100"
                 >
                   <option key="all-districts" value="" className="text-slate-900 bg-white">
                     {LABELS.EXPLORE.ALL_DISTRICTS}
@@ -128,20 +128,20 @@ function ExploreContent() {
                 </select>
               </div>
 
-              <div className="w-full md:w-80">
+              <div className="w-full sm:w-64 md:w-72">
                 <Input
                   icon={Search}
                   placeholder={tag ? LABELS.EXPLORE.SEARCH_IN_TAG(tag) : LABELS.EXPLORE.SEARCH_PLACEHOLDER}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-gray-50 focus:bg-white"
+                  className="bg-gray-50 dark:bg-slate-800 focus:bg-white text-xs md:text-small"
                 />
               </div>
             </div>
           </div>
 
           {/* View Filter Tabs: Tất cả, Món ăn, Quán ăn */}
-          <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-gray-200 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2.5 mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 overflow-x-auto no-scrollbar">
             {viewTabs.map(({ id, label, icon: Icon, count }) => {
               const isSelected = selectedView === id;
               return (
@@ -149,19 +149,19 @@ function ExploreContent() {
                   key={id}
                   type="button"
                   onClick={() => setSelectedView(id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs md:text-sm font-semibold transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-gray-100 dark:bg-gray-200 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                   <span>{label}</span>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                    className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
                       isSelected
                         ? 'bg-white/20 text-white'
-                        : 'bg-gray-200 dark:bg-gray-300 text-gray-800'
+                        : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200'
                     }`}
                   >
                     {count}
