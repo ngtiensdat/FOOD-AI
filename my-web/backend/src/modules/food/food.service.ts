@@ -151,13 +151,134 @@ export class FoodService {
         }
 
         if (query.cuisine) {
-          const cuisineKeywords = query.cuisine
+          const CUISINE_EXPANSION_MAP: Record<string, string[]> = {
+            western: [
+              'pizza',
+              'burger',
+              'steak',
+              'mì ý',
+              'spaghetti',
+              'pasta',
+              'âu mỹ',
+              'beefsteak',
+            ],
+            'âu mỹ': [
+              'pizza',
+              'burger',
+              'steak',
+              'mì ý',
+              'spaghetti',
+              'pasta',
+              'âu mỹ',
+              'beefsteak',
+            ],
+            korean: [
+              'kimbap',
+              'tokbokki',
+              'mì cay',
+              'kim chi',
+              'hàn quốc',
+              'korea',
+              'nướng hàn',
+            ],
+            'hàn quốc': [
+              'kimbap',
+              'tokbokki',
+              'mì cay',
+              'kim chi',
+              'hàn quốc',
+              'korea',
+              'nướng hàn',
+            ],
+            japanese: [
+              'sushi',
+              'sashimi',
+              'ramen',
+              'udon',
+              'nhật bản',
+              'japan',
+              'tempura',
+              'bento',
+            ],
+            'nhật bản': [
+              'sushi',
+              'sashimi',
+              'ramen',
+              'udon',
+              'nhật bản',
+              'japan',
+              'tempura',
+              'bento',
+            ],
+            vietnamese: [
+              'phở',
+              'bún',
+              'cơm tấm',
+              'bánh mì',
+              'nem',
+              'xôi',
+              'việt nam',
+              'món việt',
+            ],
+            'món việt': [
+              'phở',
+              'bún',
+              'cơm tấm',
+              'bánh mì',
+              'nem',
+              'xôi',
+              'việt nam',
+              'món việt',
+            ],
+            'đồ cay': ['cay', 'sa tế', 'chili', 'lẩu thái', 'mì cay'],
+            'ăn chay': ['chay', 'nấm', 'đậu phụ', 'salad', 'thanh đạm'],
+            'cơm văn phòng': [
+              'cơm',
+              'cơm tấm',
+              'cơm sườn',
+              'cơm gà',
+              'cơm thố',
+            ],
+            'đồ nướng': [
+              'nướng',
+              'bbq',
+              'sườn',
+              'ba chỉ',
+              'thịt nướng',
+              'bò nướng',
+            ],
+            bbq: ['nướng', 'bbq', 'sườn', 'ba chỉ', 'thịt nướng', 'bò nướng'],
+            'trà sữa': ['trà sữa', 'trà đào', 'trà tắc', 'trân châu'],
+            'đồ ăn vặt': [
+              'ăn vặt',
+              'bánh tráng',
+              'nem chua',
+              'khoai lắc',
+              'gà rán',
+              'tokbokki',
+            ],
+          };
+
+          const rawKeywords = query.cuisine
             .split(',')
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
-          if (cuisineKeywords.length > 0) {
+
+          const expandedKeywords = new Set<string>();
+          for (const rawKw of rawKeywords) {
+            expandedKeywords.add(rawKw);
+            for (const [mapKey, expansions] of Object.entries(
+              CUISINE_EXPANSION_MAP,
+            )) {
+              if (rawKw.includes(mapKey) || mapKey.includes(rawKw)) {
+                expansions.forEach((e) => expandedKeywords.add(e));
+              }
+            }
+          }
+
+          if (expandedKeywords.size > 0) {
             const orConditions: Prisma.FoodWhereInput[] = [];
-            for (const kw of cuisineKeywords) {
+            for (const kw of Array.from(expandedKeywords)) {
               orConditions.push(
                 { name: { contains: kw, mode: 'insensitive' } },
                 { description: { contains: kw, mode: 'insensitive' } },

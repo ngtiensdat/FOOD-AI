@@ -124,6 +124,54 @@ export class RerankingService {
       'lotteria',
       'domino',
     ],
+    nướng: [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    'đồ nướng': [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    bbq: [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    lẩu: [
+      'lẩu',
+      'hotpot',
+      'haidilao',
+      'manwah',
+      'kichi',
+      'nhúng lẩu',
+      'lẩu thái',
+    ],
   };
 
   constructor(
@@ -513,14 +561,17 @@ export class RerankingService {
         }
       }
 
-      // User objection / complaint against BBQ / grill or specific venue
-      const userObjectsToBbq =
-        msgText.includes('quán nướng') ||
-        msgText.includes('1 khay') ||
-        msgText.includes('khay sườn') ||
-        msgText.includes('gọi món mà') ||
-        msgText.includes('chẳng lẽ') ||
-        msgText.includes('ai lại ăn');
+      // Check explicit BBQ craving vs objection
+      const isExplicitBbqRequest =
+        msgText.includes('đồ nướng') ||
+        msgText.includes('thịt nướng') ||
+        msgText.includes('thèm nướng') ||
+        msgText.includes('thèm đồ nướng') ||
+        (msgText.includes('quán nướng') &&
+          !msgText.includes('chẳng lẽ') &&
+          !msgText.includes('gọi món mà')) ||
+        (state.slots.cuisineType || '').toLowerCase().includes('nướng') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('bbq');
 
       const isBbqRestaurant =
         restaurantNameLower.includes('nướng') ||
@@ -532,19 +583,46 @@ export class RerankingService {
         restaurantNameLower.includes('haidilao') ||
         restaurantNameLower.includes('manwah');
 
-      const isGrillOrRawPlate =
+      const isBbqFood =
+        foodNameLower.includes('nướng') ||
+        foodNameLower.includes('bbq') ||
         foodNameLower.includes('sườn') ||
         foodNameLower.includes('ba chỉ') ||
-        foodNameLower.includes('thịt nướng') ||
-        foodNameLower.includes('khay') ||
         foodNameLower.includes('bò ướp') ||
-        foodNameLower.includes('nhúng lẩu');
+        foodNameLower.includes('dẻ sườn') ||
+        (isBbqRestaurant && !isDrink && !isPureToppingOrIngredient);
 
-      if (userObjectsToBbq && isBbqRestaurant) {
-        diningSanityAdjust -= 0.8; // Exclude BBQ completely when user specifically complains about BBQ!
-      } else if (isHungry || isSingleOrLowBudget) {
-        if (isBbqRestaurant && isGrillOrRawPlate) {
-          diningSanityAdjust -= 0.45; // Don't suggest single raw grill plate to hungry/single diner
+      if (isExplicitBbqRequest) {
+        if (isDrink) {
+          diningSanityAdjust -= 0.85; // Extreme penalty: NEVER recommend a drink when user asks for BBQ!
+        }
+        if (isBbqFood) {
+          diningSanityAdjust += 0.45; // Massive boost for actual BBQ meat dishes!
+        }
+      } else {
+        // User objection / complaint against BBQ / grill or specific venue
+        const userObjectsToBbq =
+          msgText.includes('quán nướng') ||
+          msgText.includes('1 khay') ||
+          msgText.includes('khay sườn') ||
+          msgText.includes('gọi món mà') ||
+          msgText.includes('chẳng lẽ') ||
+          msgText.includes('ai lại ăn');
+
+        const isGrillOrRawPlate =
+          foodNameLower.includes('sườn') ||
+          foodNameLower.includes('ba chỉ') ||
+          foodNameLower.includes('thịt nướng') ||
+          foodNameLower.includes('khay') ||
+          foodNameLower.includes('bò ướp') ||
+          foodNameLower.includes('nhúng lẩu');
+
+        if (userObjectsToBbq && isBbqRestaurant) {
+          diningSanityAdjust -= 0.8; // Exclude BBQ completely when user specifically complains about BBQ!
+        } else if (isHungry || isSingleOrLowBudget) {
+          if (isBbqRestaurant && isGrillOrRawPlate) {
+            diningSanityAdjust -= 0.45; // Don't suggest single raw grill plate to hungry/single diner
+          }
         }
       }
 
