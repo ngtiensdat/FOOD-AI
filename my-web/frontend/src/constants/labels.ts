@@ -1020,7 +1020,7 @@ const LABELS_VI = {
     SEARCH: 'Tìm kiếm',
     SEARCH_PLACEHOLDER: 'Tìm món ăn, tính năng...',
     SEARCH_SHORTCUT: 'Ctrl K',
-    SEARCH_TOOLTIP: 'Tìm kiếm nhanh (Ctrl + K)',
+    SEARCH_TOOLTIP: 'Tìm kiếm tính năng & món ăn',
     QUICK_SEARCH: {
       INPUT_PLACEHOLDER: 'Tìm món ăn, tính năng, quán ăn...',
       CATEGORIES: {
@@ -1044,7 +1044,7 @@ const LABELS_VI = {
         NAVIGATE: 'Di chuyển',
         SELECT: 'Chọn',
         CLOSE: 'Đóng',
-        TIP: 'Mẹo: Nhấn Ctrl + K để mở nhanh',
+        TIP: 'Tìm kiếm nhanh tính năng và món ăn',
       },
       BADGES: {
         MAIN: 'Chính',
@@ -2057,6 +2057,8 @@ const LABELS_VI = {
       LEADERBOARD_EMPTY: 'Chưa có bảng xếp hạng.',
       NEW: 'Mới',
       FEED_MENU: 'Bảng tin',
+      TOGGLE_COLLAPSE: 'Thu gọn',
+      TOGGLE_EXPAND: 'Mở rộng',
     },
     POST_TYPE_NORMAL: 'Thông thường',
     POST_TYPE_REVIEW: 'Đánh giá quán',

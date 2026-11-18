@@ -1015,7 +1015,7 @@ export const LABELS_EN = {
     SEARCH: 'Search',
     SEARCH_PLACEHOLDER: 'Search dishes, features...',
     SEARCH_SHORTCUT: 'Ctrl K',
-    SEARCH_TOOLTIP: 'Quick Search (Ctrl + K)',
+    SEARCH_TOOLTIP: 'Search features & dishes',
     QUICK_SEARCH: {
       INPUT_PLACEHOLDER: 'Search dishes, features, restaurants...',
       CATEGORIES: {
@@ -1039,7 +1039,7 @@ export const LABELS_EN = {
         NAVIGATE: 'Navigate',
         SELECT: 'Select',
         CLOSE: 'Close',
-        TIP: 'Tip: Press Ctrl + K to open quickly',
+        TIP: 'Quickly find any feature or dish',
       },
       BADGES: {
         MAIN: 'Main',
@@ -2053,6 +2053,8 @@ export const LABELS_EN = {
       LEADERBOARD_EMPTY: 'No leaderboard available.',
       NEW: 'New',
       FEED_MENU: 'News Feed',
+      TOGGLE_COLLAPSE: 'Collapse',
+      TOGGLE_EXPAND: 'Expand',
     },
     POST_TYPE_NORMAL: 'Normal',
     POST_TYPE_REVIEW: 'Restaurant Review',

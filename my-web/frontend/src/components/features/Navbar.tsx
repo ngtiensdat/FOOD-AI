@@ -319,9 +319,6 @@ export const Navbar = ({ activeTab, setActiveTab }: NavbarProps) => {
         >
           <Search size={15} className="text-gray-400 dark:text-slate-500 group-hover:text-primary transition-colors shrink-0" />
           <span className="truncate flex-1 text-left select-none text-[12px]">{LABELS.NAV.SEARCH_PLACEHOLDER}</span>
-          <kbd className="hidden lg:inline-flex items-center text-[10px] font-semibold text-gray-400 dark:text-slate-500 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded px-1.5 py-0.5 leading-none shadow-2xs">
-            {LABELS.NAV.SEARCH_SHORTCUT}
-          </kbd>
         </button>
 
         {/* Mobile Search Icon Button */}

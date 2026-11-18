@@ -429,9 +429,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                   <X size={18} />
                 </button>
               )}
-              <kbd className="hidden sm:inline-flex text-[11px] font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-slate-700 ml-1">
-                ESC
-              </kbd>
+
             </div>
 
             {/* Category Filter Pills */}
@@ -603,22 +601,18 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
               )}
             </div>
 
-            {/* Footer / Shortcuts */}
-            <div className="px-6 py-3 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/60 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500">
-              <div className="hidden sm:flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">↑↓</kbd> {LABELS.NAV.QUICK_SEARCH.FOOTER.NAVIGATE}
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">↵</kbd> {LABELS.NAV.QUICK_SEARCH.FOOTER.SELECT}
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">ESC</kbd> {LABELS.NAV.QUICK_SEARCH.FOOTER.CLOSE}
-                </span>
-              </div>
-              <div className="text-right w-full sm:w-auto font-medium">
+            {/* Footer */}
+            <div className="px-6 py-2.5 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/60 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500">
+              <span className="font-medium text-gray-500 dark:text-slate-400">
                 {LABELS.NAV.QUICK_SEARCH.FOOTER.TIP}
-              </div>
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 font-medium transition-colors cursor-pointer"
+              >
+                {LABELS.COMMON.CLOSE}
+              </button>
             </div>
           </motion.div>
         </div>
