@@ -240,6 +240,15 @@ export class RerankingService {
       ) {
         hour = 12;
       } else if (
+        msgLower.includes('chiều nay') ||
+        msgLower.includes('bữa chiều') ||
+        msgLower.includes('ăn chiều') ||
+        msgLower.includes('xế chiều') ||
+        msgLower.includes('bữa xế') ||
+        msgLower.includes('buổi chiều')
+      ) {
+        hour = 16;
+      } else if (
         msgLower.includes('tối nay') ||
         msgLower.includes('tối mai') ||
         msgLower.includes('bữa tối') ||
@@ -315,8 +324,8 @@ export class RerankingService {
         return { ...food, similarity: 0.0 };
       }
 
-      // 2. Intent Score (mismatched cuisine penalized, neutral if undefined)
-      let intentScore = 1.0;
+      // 2. Intent Score (mismatched cuisine penalized, neutral 0.55 if undefined to prevent false 100% matches)
+      let intentScore = 0.55;
       const cuisine = state.slots.cuisineType;
       if (cuisine) {
         intentScore = this.calculateIntentScore(food, cuisine);
@@ -420,6 +429,49 @@ export class RerankingService {
         }
       }
 
+      // 8.6. Common-sense Dining Sanity Check:
+      // If user says "đang đói" (hungry) or budget <= 70k or companion === SINGLE:
+      // Penalize:
+      // - Raw BBQ items or hotpot toppings at grill/hotpot restaurants (cannot dine on 1 raw meat plate alone)
+      // - Pure drinks/beverages when hungry (cannot satisfy hunger with soy milk or soda)
+      let diningSanityAdjust = 0.0;
+      const msgText = (message || '').toLowerCase();
+      const isHungry =
+        msgText.includes('đói') ||
+        msgText.includes('ăn nhanh') ||
+        msgText.includes('lót dạ');
+      const isSingleOrLowBudget =
+        (state.slots.budget && state.slots.budget <= 70000) ||
+        state.slots.companion === 'SINGLE';
+
+      const foodNameLower = food.name.toLowerCase();
+      const restaurantNameLower = (food.restaurantName || '').toLowerCase();
+      const isBbqRestaurant =
+        restaurantNameLower.includes('nướng') ||
+        restaurantNameLower.includes('bbq') ||
+        restaurantNameLower.includes('gogi') ||
+        restaurantNameLower.includes('lẩu');
+      const isGrillPlate =
+        foodNameLower.includes('sườn') ||
+        foodNameLower.includes('ba chỉ') ||
+        foodNameLower.includes('thịt nướng') ||
+        foodNameLower.includes('khay');
+      const isDrink =
+        (food.categoryName || '').toLowerCase().includes('đồ uống') ||
+        foodNameLower.includes('sữa') ||
+        foodNameLower.includes('trà') ||
+        foodNameLower.includes('nước ngọt') ||
+        foodNameLower.includes('nước ép');
+
+      if (isHungry || isSingleOrLowBudget) {
+        if (isBbqRestaurant && isGrillPlate) {
+          diningSanityAdjust -= 0.35; // Heavy penalty: don't suggest 1 single grill plate at BBQ joint
+        }
+        if (isDrink && isHungry) {
+          diningSanityAdjust -= 0.3; // Heavy penalty: don't suggest a drink to someone starving
+        }
+      }
+
       // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +
@@ -429,7 +481,8 @@ export class RerankingService {
         ratingScore * weights.rating +
         contextScore * weights.context +
         feedbackBoost +
-        emotionPriceAdjust;
+        emotionPriceAdjust +
+        diningSanityAdjust;
 
       return {
         ...food,

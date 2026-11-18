@@ -18,7 +18,6 @@ import { LIMITS } from '@/constants/limits.constant';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export type ExploreViewType = 'all' | 'foods' | 'restaurants';
-export type CuratedFilterType = 'all' | 'for_you' | 'vegetarian' | 'spicy' | 'featured';
 
 function parseRestaurantsPayload(raw: unknown): { restaurants: Restaurant[]; total: number } {
   if (!raw) return { restaurants: [], total: 0 };
@@ -36,6 +35,13 @@ function parseFoodsPayload(raw: unknown): FoodCardData[] {
   if (Array.isArray(raw)) return raw;
   const obj = raw as { data?: FoodCardData[] };
   return Array.isArray(obj.data) ? obj.data : [];
+}
+
+export interface PersonalizationInfo {
+  title: string;
+  badge: string;
+  description: string;
+  isPersonalized: boolean;
 }
 
 export const useExploreActions = () => {
@@ -65,11 +71,44 @@ export const useExploreActions = () => {
     return cuisine.includes('cay') || cuisine.includes('spicy') || cuisine.includes('sa tế');
   }, [userPrefs]);
 
+  // Tự động sinh thông tin cá nhân hóa dựa trên hồ sơ thực tế của người dùng
+  const personalizationInfo = useMemo<PersonalizationInfo>(() => {
+    if (isVegetarianUser) {
+      return {
+        title: 'Món Chay & Thanh Đạm Dành Riêng Cho Bạn',
+        badge: '🥗 Cá nhân hóa: Gu Ăn Chay',
+        description: 'Tự động hiển thị các món chay, salad và thực đơn thanh tịnh từ cơ sở dữ liệu dựa trên hồ sơ của bạn.',
+        isPersonalized: true,
+      };
+    }
+    if (isSpicyUser) {
+      return {
+        title: 'Món Cay Nồng Đậm Vị Dành Riêng Cho Bạn',
+        badge: '🌶️ Cá nhân hóa: Gu Đồ Cay',
+        description: 'Tự động hiển thị các món cay nóng, đậm đà chuẩn vị từ cơ sở dữ liệu dựa trên sở thích của bạn.',
+        isPersonalized: true,
+      };
+    }
+    if (userPrefs.cuisine) {
+      return {
+        title: `Món Ngon Dành Riêng Cho Bạn (${userPrefs.cuisine})`,
+        badge: `✨ Cá nhân hóa: Gu ${userPrefs.cuisine}`,
+        description: `Tự động hiển thị các món ăn khớp với gu ẩm thực "${userPrefs.cuisine}" của bạn.`,
+        isPersonalized: true,
+      };
+    }
+    return {
+      title: 'Món Ngon Tinh Chọn',
+      badge: '⭐ Tuyển chọn chất lượng cao',
+      description: 'Chỉ hiển thị các món có hình ảnh thực tế, chuẩn chất lượng & hương vị được cộng đồng yêu thích.',
+      isPersonalized: false,
+    };
+  }, [isVegetarianUser, isSpicyUser, userPrefs]);
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [foods, setFoods] = useState<FoodCardData[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodDetailData | null>(null);
   const [selectedView, setSelectedView] = useState<ExploreViewType>('all');
-  const [curatedFilter, setCuratedFilter] = useState<CuratedFilterType>('all');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParam);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -101,7 +140,7 @@ export const useExploreActions = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
-  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, curatedFilter]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -109,16 +148,22 @@ export const useExploreActions = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Tự động truyền các tham số cá nhân hóa theo đúng hồ sơ người dùng
         let dietParam: string | undefined = undefined;
         let spiceParam: string | undefined = undefined;
+        let cuisineParam: string | undefined = undefined;
+        let allergiesParam: string | undefined = undefined;
 
-        if (curatedFilter === 'vegetarian') {
+        if (isVegetarianUser) {
           dietParam = 'chay';
-        } else if (curatedFilter === 'spicy') {
+        } else if (isSpicyUser) {
           spiceParam = 'cay';
-        } else if (curatedFilter === 'for_you') {
-          if (isVegetarianUser) dietParam = 'chay';
-          else if (isSpicyUser) spiceParam = 'cay';
+        } else if (userPrefs.cuisine) {
+          cuisineParam = userPrefs.cuisine;
+        }
+
+        if (userPrefs.allergies) {
+          allergiesParam = userPrefs.allergies;
         }
 
         const [restaurantsRes, foodsRes] = await Promise.allSettled([
@@ -140,6 +185,8 @@ export const useExploreActions = () => {
             curated: true,  // LỌC BỎ TOPPING, RAU SỐNG, PHỤ GIA & SẮP XẾP MÓN NGON
             diet: dietParam,
             spice: spiceParam,
+            cuisine: cuisineParam,
+            allergies: allergiesParam,
           }),
         ]);
 
@@ -158,7 +205,7 @@ export const useExploreActions = () => {
         if (foodsRes.status === 'fulfilled') {
           const rawFoods = parseFoodsPayload(foodsRes.value);
           // Bộ lọc chất lượng nghiêm ngặt: Phải có ảnh hợp lệ và loại bỏ các món phụ/topping
-          let qualityFoods = rawFoods.filter((f) => {
+          const qualityFoods = rawFoods.filter((f) => {
             const hasValidImage = Boolean(f.image && f.image.trim() !== '' && !f.image.includes('placeholder'));
             if (!hasValidImage) return false;
             const nameLower = (f.name || '').toLowerCase();
@@ -170,15 +217,6 @@ export const useExploreActions = () => {
               nameLower.includes('nước chấm');
             return !isTopping;
           });
-
-          // Sắp xếp ưu tiên nếu là tab 'featured'
-          if (curatedFilter === 'featured') {
-            qualityFoods = qualityFoods.sort((a, b) => {
-              const aScore = (a.isAdminRecommended ? 50 : 0) + (a.isFeaturedToday ? 30 : 0) + (Number(a.totalLike) || 0);
-              const bScore = (b.isAdminRecommended ? 50 : 0) + (b.isFeaturedToday ? 30 : 0) + (Number(b.totalLike) || 0);
-              return bScore - aScore;
-            });
-          }
 
           setFoods(qualityFoods);
         } else {
@@ -199,7 +237,7 @@ export const useExploreActions = () => {
     return () => {
       isCancelled = true;
     };
-  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage, curatedFilter, isVegetarianUser, isSpicyUser]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage, isVegetarianUser, isSpicyUser, userPrefs]);
 
   const handleToggleFavorite = async (foodId: number) => {
     try {
@@ -232,10 +270,7 @@ export const useExploreActions = () => {
     setCurrentPage,
     totalPages,
     handleToggleFavorite,
-    curatedFilter,
-    setCuratedFilter,
-    isVegetarianUser,
-    isSpicyUser,
+    personalizationInfo,
     userPrefs,
   };
 };

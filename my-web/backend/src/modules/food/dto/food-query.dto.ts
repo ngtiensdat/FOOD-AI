@@ -68,4 +68,12 @@ export class FoodQueryDto {
   @IsOptional()
   @IsString()
   spice?: string;
+
+  @IsOptional()
+  @IsString()
+  cuisine?: string;
+
+  @IsOptional()
+  @IsString()
+  allergies?: string;
 }

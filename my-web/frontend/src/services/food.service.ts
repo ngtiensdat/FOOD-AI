@@ -18,6 +18,8 @@ export const foodService = {
     curated?: boolean;
     diet?: string;
     spice?: string;
+    cuisine?: string;
+    allergies?: string;
   }) {
     return apiClient.get('/foods', { params }).catch(() => []);
   },

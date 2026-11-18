@@ -105,29 +105,46 @@ export class RecommendationService {
       return intentScore >= 0.8;
     });
 
-    // Check if the user query is a general recommendation request
-    const hasCuisine = !!state.slots.cuisineType;
-    const isGeneralRec =
-      !hasCuisine && message && this.isGeneralRecommendationIntent(message);
+    // Check if user has specified a concrete cuisine or dish type
+    const hasCuisine = Boolean(
+      state.slots.cuisineType && state.slots.cuisineType.trim() !== '',
+    );
 
     let shouldRecommend = false;
     let foods: SearchResult[] = [];
 
-    // Decision Logic
+    // Decision Logic:
+    // 1. Explicit nearby request with location -> recommend closest options directly
     if (intent === FoodIntent.FIND_NEARBY) {
       shouldRecommend = reRanked.length > 0;
       foods = reRanked.slice(0, 3);
-    } else if (matchedFoods.length > 0) {
+    }
+    // 2. Specific cuisine or dish specified by user -> recommend matches
+    else if (hasCuisine) {
+      if (hasDirectIntentMatch || matchedFoods.length > 0) {
+        shouldRecommend = true;
+        foods =
+          matchedFoods.length > 0
+            ? matchedFoods.slice(0, 5)
+            : reRanked.slice(0, 3);
+      } else {
+        shouldRecommend = true;
+        foods = reRanked.slice(0, 3);
+      }
+    }
+    // 3. User is already in multi-turn conversation (past initial collecting stage)
+    else if (state.current_stage !== 'COLLECTING') {
       shouldRecommend = true;
-      foods = matchedFoods.slice(0, 5);
-    } else if (hasCuisine && hasDirectIntentMatch) {
-      shouldRecommend = true;
-      foods = reRanked.slice(0, 3);
-    } else if (isGeneralRec) {
-      shouldRecommend = true;
-      foods = reRanked.slice(0, 3);
-    } else {
-      // Fallback candidates if we have no matches but recommendation is triggered anyway by dialogue manager
+      foods =
+        matchedFoods.length > 0
+          ? matchedFoods.slice(0, 5)
+          : reRanked.slice(0, 3);
+    }
+    // 4. Initial turn with vague / general recommendation query ("tôi đang đói", "hôm nay ăn gì", "gợi ý món")
+    // When cuisine or dining format is unknown, DO NOT rush into premature recommendations.
+    // Trigger clarifying slot-filling to ask for user needs and provide quick replies!
+    else {
+      shouldRecommend = false;
       foods = reRanked.slice(0, 3);
     }
 

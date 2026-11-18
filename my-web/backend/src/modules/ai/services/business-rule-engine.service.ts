@@ -34,6 +34,13 @@ export class BusinessRuleEngineService {
       );
       if (isLunchFood) return AI_RULES.TIME_BOOSTS.LUNCH.boost;
     }
+    // Check afternoon boost (14h - 17h)
+    if (currentHour >= 14 && currentHour <= 17) {
+      const isAfternoonFood = AI_RULES.TIME_BOOSTS.AFTERNOON.keywords.some(
+        (kw) => nameAndTags.includes(kw),
+      );
+      if (isAfternoonFood) return AI_RULES.TIME_BOOSTS.AFTERNOON.boost;
+    }
     // Check dinner boost
     if (currentHour >= 18 && currentHour <= 21) {
       const isDinnerFood = AI_RULES.TIME_BOOSTS.DINNER.keywords.some((kw) =>

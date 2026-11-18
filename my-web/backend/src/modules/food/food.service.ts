@@ -145,6 +145,66 @@ export class FoodService {
           });
         }
 
+        if (query.cuisine) {
+          const cuisineKeywords = query.cuisine
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+          if (cuisineKeywords.length > 0) {
+            const orConditions: Prisma.FoodWhereInput[] = [];
+            for (const kw of cuisineKeywords) {
+              orConditions.push(
+                { name: { contains: kw, mode: 'insensitive' } },
+                { description: { contains: kw, mode: 'insensitive' } },
+                { tags: { has: kw } },
+              );
+            }
+            if (orConditions.length > 0) {
+              andFilters.push({ OR: orConditions });
+            }
+          }
+        }
+
+        if (query.allergies) {
+          const allergyList = query.allergies
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+          for (const allergy of allergyList) {
+            if (allergy.includes('seafood') || allergy.includes('hải sản')) {
+              andFilters.push({
+                NOT: [
+                  { name: { contains: 'tôm', mode: 'insensitive' } },
+                  { name: { contains: 'cua', mode: 'insensitive' } },
+                  { name: { contains: 'ghẹ', mode: 'insensitive' } },
+                  { name: { contains: 'hải sản', mode: 'insensitive' } },
+                  { name: { contains: 'mực', mode: 'insensitive' } },
+                  { name: { contains: 'ốc', mode: 'insensitive' } },
+                  { tags: { has: 'hải sản' } },
+                ],
+              });
+            }
+            if (
+              allergy.includes('peanut') ||
+              allergy.includes('lạc') ||
+              allergy.includes('đậu phộng')
+            ) {
+              andFilters.push({
+                NOT: [
+                  { name: { contains: 'lạc', mode: 'insensitive' } },
+                  { name: { contains: 'đậu phộng', mode: 'insensitive' } },
+                  {
+                    description: {
+                      contains: 'đậu phộng',
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              });
+            }
+          }
+        }
+
         if (andFilters.length > 0) {
           where.AND = andFilters;
         }

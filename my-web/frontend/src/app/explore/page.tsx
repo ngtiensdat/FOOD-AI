@@ -53,10 +53,7 @@ function ExploreContent() {
     setCurrentPage,
     totalPages,
     handleToggleFavorite,
-    curatedFilter,
-    setCuratedFilter,
-    isVegetarianUser,
-    isSpicyUser,
+    personalizationInfo,
     userPrefs,
   } = useExploreActions();
 
@@ -215,112 +212,40 @@ function ExploreContent() {
             {/* Mục MÓN ĂN: hiển thị khi chọn tab 'all' hoặc 'foods' */}
             {(selectedView === 'all' || selectedView === 'foods') && (
               <section className="space-y-5">
-                {/* Header Mục Món Ăn kèm Bộ Lọc Cá Nhân Hóa (Ăn chay, Đồ cay, Gu của bạn) */}
-                <div className="space-y-3 border-b border-gray-100 dark:border-slate-800/80 pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-primary">
-                        <Utensils size={16} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
-                            Món ngon tinh chọn
-                          </h2>
-                          <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-orange-500/10 text-primary">
-                            {foods.length} món chất lượng
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">
-                          Chỉ hiển thị các món có hình ảnh thực tế, chuẩn chất lượng & khẩu vị
-                        </p>
-                      </div>
+                {/* Header Mục Món Ăn Tự Động Cá Nhân Hóa Theo Hồ Sơ Người Dùng */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800/80 pb-4">
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div className="w-9 h-9 rounded-2xl bg-orange-500/10 flex items-center justify-center text-primary shrink-0 mt-0.5 sm:mt-0">
+                      <Utensils size={18} />
                     </div>
-
-                    {selectedView === 'all' && foods.length > 8 && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedView('foods')}
-                        className="text-xs font-bold text-primary hover:text-orange-600 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-                      >
-                        <span>Xem tất cả {foods.length} món</span>
-                        <span>→</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Thanh Pills Lọc Sở Thích Cá Nhân Hóa (Ăn chay, Ăn cay, Gu ẩm thực) */}
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setCuratedFilter('all')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                        curatedFilter === 'all'
-                          ? 'bg-primary text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      <span>🍽️</span>
-                      <span>Tất cả</span>
-                    </button>
-
-                    {(isVegetarianUser || isSpicyUser || userPrefs?.cuisine) && (
-                      <button
-                        type="button"
-                        onClick={() => setCuratedFilter('for_you')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                          curatedFilter === 'for_you'
-                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs'
-                            : 'bg-orange-50 dark:bg-orange-950/30 text-primary border border-orange-200/60 dark:border-orange-800/40 hover:bg-orange-100'
-                        }`}
-                      >
-                        <span>✨</span>
-                        <span>Khớp gu của bạn</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-white/20 text-white font-extrabold">
-                          {isVegetarianUser ? 'Ăn chay 🥗' : isSpicyUser ? 'Đồ cay 🌶️' : 'Theo sở thích'}
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-base md:text-lg font-black text-gray-900 dark:text-white tracking-tight">
+                          {personalizationInfo.title}
+                        </h2>
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange-500/10 text-primary border border-orange-500/20">
+                          {personalizationInfo.badge}
                         </span>
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setCuratedFilter('vegetarian')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                        curatedFilter === 'vegetarian'
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      <span>🥗</span>
-                      <span>Món chay thanh tịnh</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setCuratedFilter('spicy')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                        curatedFilter === 'spicy'
-                          ? 'bg-rose-600 text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      <span>🌶️</span>
-                      <span>Đậm đà vị cay</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setCuratedFilter('featured')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                        curatedFilter === 'featured'
-                          ? 'bg-amber-500 text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      <span>⭐</span>
-                      <span>Nổi bật & Đề xuất</span>
-                    </button>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400">
+                          {foods.length} món
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 font-medium mt-0.5">
+                        {personalizationInfo.description}
+                      </p>
+                    </div>
                   </div>
+
+                  {selectedView === 'all' && foods.length > 8 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedView('foods')}
+                      className="text-xs font-bold text-primary hover:text-orange-600 transition-colors flex items-center gap-1 cursor-pointer shrink-0 self-start sm:self-center"
+                    >
+                      <span>Xem tất cả {foods.length} món</span>
+                      <span>→</span>
+                    </button>
+                  )}
                 </div>
 
                 {foods.length === 0 ? (
