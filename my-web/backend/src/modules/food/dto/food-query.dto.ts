@@ -4,8 +4,8 @@
 // Kiến thức/Design Pattern: DTO Pattern, Query Validation, Separation of Concerns.
 // Các biến, hàm đặc biệt: tag, lat, lng, radius, city, district.
 
-import { IsOptional, IsString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { LIMITS } from '../../../common/constants/limits.constant';
 
 export class FoodQueryDto {
@@ -44,4 +44,28 @@ export class FoodQueryDto {
   @IsOptional()
   @IsString()
   district?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(
+    ({ value }) =>
+      value === 'true' || value === true || value === '1' || value === 1,
+  )
+  hasImage?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(
+    ({ value }) =>
+      value === 'true' || value === true || value === '1' || value === 1,
+  )
+  curated?: boolean;
+
+  @IsOptional()
+  @IsString()
+  diet?: string;
+
+  @IsOptional()
+  @IsString()
+  spice?: string;
 }

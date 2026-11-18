@@ -5,7 +5,7 @@
 // Biến, hàm đặc biệt: useExploreActions, handleCityChange, handleDistrictChange, debouncedSearchQuery, selectedView.
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
@@ -15,8 +15,10 @@ import { FoodCardData } from '@/components/features/food/FoodCard';
 import { FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { LIMITS } from '@/constants/limits.constant';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export type ExploreViewType = 'all' | 'foods' | 'restaurants';
+export type CuratedFilterType = 'all' | 'for_you' | 'vegetarian' | 'spicy' | 'featured';
 
 function parseRestaurantsPayload(raw: unknown): { restaurants: Restaurant[]; total: number } {
   if (!raw) return { restaurants: [], total: 0 };
@@ -41,10 +43,33 @@ export const useExploreActions = () => {
   const tag = searchParams.get('tag') || '';
   const searchParam = searchParams.get('search') || '';
 
+  const user = useAuthStore((state) => state.user);
+  const userPrefs = useMemo(() => {
+    return (user?.profile?.preferences as Record<string, string>) || {};
+  }, [user]);
+
+  const isVegetarianUser = useMemo(() => {
+    const goal = userPrefs.goal || '';
+    const cuisine = (userPrefs.cuisine || '').toLowerCase();
+    return (
+      goal === 'weight_loss' ||
+      goal === 'eat_clean' ||
+      cuisine.includes('chay') ||
+      cuisine.includes('thanh đạm') ||
+      cuisine.includes('salad')
+    );
+  }, [userPrefs]);
+
+  const isSpicyUser = useMemo(() => {
+    const cuisine = (userPrefs.cuisine || '').toLowerCase();
+    return cuisine.includes('cay') || cuisine.includes('spicy') || cuisine.includes('sa tế');
+  }, [userPrefs]);
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [foods, setFoods] = useState<FoodCardData[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodDetailData | null>(null);
   const [selectedView, setSelectedView] = useState<ExploreViewType>('all');
+  const [curatedFilter, setCuratedFilter] = useState<CuratedFilterType>('all');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParam);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -76,7 +101,7 @@ export const useExploreActions = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
-  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, curatedFilter]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -84,6 +109,18 @@ export const useExploreActions = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        let dietParam: string | undefined = undefined;
+        let spiceParam: string | undefined = undefined;
+
+        if (curatedFilter === 'vegetarian') {
+          dietParam = 'chay';
+        } else if (curatedFilter === 'spicy') {
+          spiceParam = 'cay';
+        } else if (curatedFilter === 'for_you') {
+          if (isVegetarianUser) dietParam = 'chay';
+          else if (isSpicyUser) spiceParam = 'cay';
+        }
+
         const [restaurantsRes, foodsRes] = await Promise.allSettled([
           restaurantService.getPublicRestaurants({
             tag: tag || undefined,
@@ -98,7 +135,11 @@ export const useExploreActions = () => {
             city: selectedCity,
             district: selectedDistrict || undefined,
             search: debouncedSearchQuery || undefined,
-            limit: 50,
+            limit: 24, // 24 món tinh chọn chất lượng cao
+            hasImage: true, // BẮT BUỘC CHỈ LẤY MÓN CÓ HÌNH ẢNH THẬT
+            curated: true,  // LỌC BỎ TOPPING, RAU SỐNG, PHỤ GIA & SẮP XẾP MÓN NGON
+            diet: dietParam,
+            spice: spiceParam,
           }),
         ]);
 
@@ -115,7 +156,31 @@ export const useExploreActions = () => {
         }
 
         if (foodsRes.status === 'fulfilled') {
-          setFoods(parseFoodsPayload(foodsRes.value));
+          const rawFoods = parseFoodsPayload(foodsRes.value);
+          // Bộ lọc chất lượng nghiêm ngặt: Phải có ảnh hợp lệ và loại bỏ các món phụ/topping
+          let qualityFoods = rawFoods.filter((f) => {
+            const hasValidImage = Boolean(f.image && f.image.trim() !== '' && !f.image.includes('placeholder'));
+            if (!hasValidImage) return false;
+            const nameLower = (f.name || '').toLowerCase();
+            const isTopping =
+              nameLower.includes('topping') ||
+              nameLower.includes('rau sống') ||
+              nameLower.includes('thêm') ||
+              nameLower.includes('gia vị') ||
+              nameLower.includes('nước chấm');
+            return !isTopping;
+          });
+
+          // Sắp xếp ưu tiên nếu là tab 'featured'
+          if (curatedFilter === 'featured') {
+            qualityFoods = qualityFoods.sort((a, b) => {
+              const aScore = (a.isAdminRecommended ? 50 : 0) + (a.isFeaturedToday ? 30 : 0) + (Number(a.totalLike) || 0);
+              const bScore = (b.isAdminRecommended ? 50 : 0) + (b.isFeaturedToday ? 30 : 0) + (Number(b.totalLike) || 0);
+              return bScore - aScore;
+            });
+          }
+
+          setFoods(qualityFoods);
         } else {
           console.error('Lỗi lấy dữ liệu món ăn:', foodsRes.reason);
           setFoods([]);
@@ -134,7 +199,7 @@ export const useExploreActions = () => {
     return () => {
       isCancelled = true;
     };
-  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage, curatedFilter, isVegetarianUser, isSpicyUser]);
 
   const handleToggleFavorite = async (foodId: number) => {
     try {
@@ -167,5 +232,10 @@ export const useExploreActions = () => {
     setCurrentPage,
     totalPages,
     handleToggleFavorite,
+    curatedFilter,
+    setCuratedFilter,
+    isVegetarianUser,
+    isSpicyUser,
+    userPrefs,
   };
 };

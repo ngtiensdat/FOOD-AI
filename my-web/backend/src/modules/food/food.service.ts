@@ -100,6 +100,51 @@ export class FoodService {
           andFilters.push({ OR: buildFoodFilterConditions(search, false) });
         }
 
+        if (query.hasImage || query.curated) {
+          andFilters.push({
+            image: { not: null },
+            NOT: [{ image: '' }, { image: { contains: 'placeholder' } }],
+          });
+        }
+
+        if (query.curated) {
+          andFilters.push({
+            NOT: [
+              { name: { contains: 'Topping', mode: 'insensitive' } },
+              { name: { contains: 'Rau sống', mode: 'insensitive' } },
+              { name: { contains: 'Thêm', mode: 'insensitive' } },
+              { name: { contains: 'Gia vị', mode: 'insensitive' } },
+              { name: { contains: 'Nước chấm', mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        if (query.diet === 'chay' || query.diet === 'vegetarian') {
+          andFilters.push({
+            OR: [
+              { tags: { has: 'chay' } },
+              { name: { contains: 'Chay', mode: 'insensitive' } },
+              { name: { contains: 'Nấm', mode: 'insensitive' } },
+              { name: { contains: 'Salad', mode: 'insensitive' } },
+              { name: { contains: 'Đậu phụ', mode: 'insensitive' } },
+              { description: { contains: 'chay', mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        if (query.spice === 'cay' || query.spice === 'spicy') {
+          andFilters.push({
+            OR: [
+              { tags: { has: 'cay' } },
+              { name: { contains: 'Cay', mode: 'insensitive' } },
+              { name: { contains: 'Sa tế', mode: 'insensitive' } },
+              { name: { contains: 'Lẩu thái', mode: 'insensitive' } },
+              { name: { contains: 'Chili', mode: 'insensitive' } },
+              { description: { contains: 'cay', mode: 'insensitive' } },
+            ],
+          });
+        }
+
         if (andFilters.length > 0) {
           where.AND = andFilters;
         }
@@ -107,7 +152,22 @@ export class FoodService {
         const displayLimit = limit
           ? Math.min(Math.max(limit, 1), 100)
           : FOOD_DISPLAY_LIMIT;
-        const result = await this.repository.findAll(where, 1, displayLimit);
+
+        const orderBy: Prisma.FoodOrderByWithRelationInput[] = query.curated
+          ? [
+              { isAdminRecommended: 'desc' },
+              { isFeaturedToday: 'desc' },
+              { totalLike: 'desc' },
+              { createdAt: 'desc' },
+            ]
+          : [{ createdAt: 'desc' }];
+
+        const result = await this.repository.findAll(
+          where,
+          1,
+          displayLimit,
+          orderBy,
+        );
         const foods = result.data;
 
         if (search || tag) {

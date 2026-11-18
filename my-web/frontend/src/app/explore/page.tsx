@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Services & Components
 import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
 import { FoodCard } from '@/components/features/food/FoodCard';
+import { ExploreFoodCard } from '@/components/features/food/ExploreFoodCard';
 import { FoodDetailModal, type FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { Pagination } from '@/components/base/Pagination';
 import { Navbar } from '@/components/features/Navbar';
@@ -52,6 +53,11 @@ function ExploreContent() {
     setCurrentPage,
     totalPages,
     handleToggleFavorite,
+    curatedFilter,
+    setCuratedFilter,
+    isVegetarianUser,
+    isSpicyUser,
+    userPrefs,
   } = useExploreActions();
 
   const totalResults = foods.length + restaurants.length;
@@ -181,22 +187,22 @@ function ExploreContent() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 shadow-sm animate-pulse flex flex-col h-[280px]">
-                <div className="h-40 bg-gray-200 dark:bg-slate-800" />
-                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 [column-fill:_balance]">
+            {[...Array(8)].map((_, i) => {
+              const heights = ['h-64', 'h-52', 'h-72', 'h-56'];
+              return (
+                <div
+                  key={i}
+                  className={`bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-slate-800 shadow-2xs animate-pulse flex flex-col break-inside-avoid mb-6 ${heights[i % 4]}`}
+                >
+                  <div className="w-full flex-1 bg-gray-200/80 dark:bg-slate-800/80" />
+                  <div className="p-4 space-y-2.5">
                     <div className="h-4 bg-gray-300 dark:bg-slate-700 rounded-md w-3/4" />
                     <div className="h-3 bg-gray-200 dark:bg-slate-800 rounded-md w-1/2" />
                   </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-slate-800">
-                    <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded-md w-1/3" />
-                    <div className="h-7 bg-gray-200 dark:bg-slate-800 rounded-lg w-1/4" />
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : totalResults === 0 ? (
           <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
@@ -208,38 +214,120 @@ function ExploreContent() {
           <div className="space-y-10">
             {/* Mục MÓN ĂN: hiển thị khi chọn tab 'all' hoặc 'foods' */}
             {(selectedView === 'all' || selectedView === 'foods') && (
-              <section className="space-y-4">
-                {selectedView === 'all' && (
-                  <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800/80 pb-3">
+              <section className="space-y-5">
+                {/* Header Mục Món Ăn kèm Bộ Lọc Cá Nhân Hóa (Ăn chay, Đồ cay, Gu của bạn) */}
+                <div className="space-y-3 border-b border-gray-100 dark:border-slate-800/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary">
-                        <Utensils size={15} />
+                      <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-primary">
+                        <Utensils size={16} />
                       </div>
-                      <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
-                        Món ăn phù hợp
-                      </h2>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-orange-500/10 text-primary">
-                        {foods.length} món
-                      </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
+                            Món ngon tinh chọn
+                          </h2>
+                          <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-orange-500/10 text-primary">
+                            {foods.length} món chất lượng
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">
+                          Chỉ hiển thị các món có hình ảnh thực tế, chuẩn chất lượng & khẩu vị
+                        </p>
+                      </div>
                     </div>
 
-                    {foods.length > 8 && (
+                    {selectedView === 'all' && foods.length > 8 && (
                       <button
                         type="button"
                         onClick={() => setSelectedView('foods')}
-                        className="text-xs font-bold text-primary hover:text-orange-600 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-bold text-primary hover:text-orange-600 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         <span>Xem tất cả {foods.length} món</span>
                         <span>→</span>
                       </button>
                     )}
                   </div>
-                )}
+
+                  {/* Thanh Pills Lọc Sở Thích Cá Nhân Hóa (Ăn chay, Ăn cay, Gu ẩm thực) */}
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setCuratedFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        curatedFilter === 'all'
+                          ? 'bg-primary text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span>🍽️</span>
+                      <span>Tất cả</span>
+                    </button>
+
+                    {(isVegetarianUser || isSpicyUser || userPrefs?.cuisine) && (
+                      <button
+                        type="button"
+                        onClick={() => setCuratedFilter('for_you')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                          curatedFilter === 'for_you'
+                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xs'
+                            : 'bg-orange-50 dark:bg-orange-950/30 text-primary border border-orange-200/60 dark:border-orange-800/40 hover:bg-orange-100'
+                        }`}
+                      >
+                        <span>✨</span>
+                        <span>Khớp gu của bạn</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-white/20 text-white font-extrabold">
+                          {isVegetarianUser ? 'Ăn chay 🥗' : isSpicyUser ? 'Đồ cay 🌶️' : 'Theo sở thích'}
+                        </span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setCuratedFilter('vegetarian')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        curatedFilter === 'vegetarian'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span>🥗</span>
+                      <span>Món chay thanh tịnh</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCuratedFilter('spicy')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        curatedFilter === 'spicy'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span>🌶️</span>
+                      <span>Đậm đà vị cay</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCuratedFilter('featured')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        curatedFilter === 'featured'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span>⭐</span>
+                      <span>Nổi bật & Đề xuất</span>
+                    </button>
+                  </div>
+                </div>
 
                 {foods.length === 0 ? (
-                  <EmptySectionMessage message="Không tìm thấy món ăn nào phù hợp với bộ lọc hiện tại." />
+                  <EmptySectionMessage message="Không tìm thấy món ăn nào có hình ảnh và phù hợp với tiêu chí lọc hiện tại." />
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                  /* Bố cục Masonry không đối xứng: Ảnh Chữ nhật đứng, Vuông, Chữ nhật ngang xen kẽ */
+                  <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 [column-fill:_balance]">
                     <AnimatePresence>
                       {foods.map((food, index) => (
                         <motion.div
@@ -247,9 +335,11 @@ function ExploreContent() {
                           initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(index * 0.02, 0.25) }}
+                          className="break-inside-avoid mb-6"
                         >
-                          <FoodCard
+                          <ExploreFoodCard
                             food={food}
+                            index={index}
                             onViewDetail={(item) => setSelectedFood(item as unknown as FoodDetailData)}
                             onToggleFavorite={handleToggleFavorite}
                           />

@@ -8,7 +8,17 @@ import { Restaurant, UpdateRestaurantInput } from '@/types/restaurant';
 import { CreateFoodInput, UpdateFoodInput, CreateBulkFoodsInput } from '@/types/food';
 
 export const foodService = {
-  async getAllFoods(params?: { tag?: string; search?: string; city?: string; district?: string; limit?: number }) {
+  async getAllFoods(params?: {
+    tag?: string;
+    search?: string;
+    city?: string;
+    district?: string;
+    limit?: number;
+    hasImage?: boolean;
+    curated?: boolean;
+    diet?: string;
+    spice?: string;
+  }) {
     return apiClient.get('/foods', { params }).catch(() => []);
   },
 
