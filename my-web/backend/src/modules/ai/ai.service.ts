@@ -372,11 +372,31 @@ export class AiService implements OnModuleInit {
           userLng,
         );
       }
+
+      // Tôn trọng giác quan thực tế của người dùng: Nếu người dùng nói trời không mưa thì ghi đè dữ liệu API
+      const cleanLower = cleanMessage.toLowerCase();
+      const userDeniesRain =
+        cleanLower.includes('không mưa') ||
+        cleanLower.includes('có mưa đâu') ||
+        cleanLower.includes('hết mưa') ||
+        cleanLower.includes('tạnh mưa') ||
+        cleanLower.includes('trời tạnh') ||
+        cleanLower.includes('làm gì có mưa') ||
+        cleanLower.includes('mưa đâu');
+
+      if (userDeniesRain && weatherData) {
+        weatherData.isRaining = false;
+        weatherData.description =
+          'Trời tạnh ráo / Không mưa (người dùng xác nhận)';
+      }
+
       // Allow client override (for testing), otherwise use auto-detected data
       const finalWeather = {
         temperature:
           temperature ?? weatherData?.temperature ?? DEFAULT_WEATHER_TEMP,
-        isRaining: isRaining ?? weatherData?.isRaining ?? false,
+        isRaining: userDeniesRain
+          ? false
+          : (isRaining ?? weatherData?.isRaining ?? false),
       };
 
       // 8.7. Explicit History or Favorites retrieval
@@ -491,9 +511,7 @@ export class AiService implements OnModuleInit {
       }
 
       const isTriggerRecommend =
-        shouldRecommend ||
-        currentState.current_stage !== 'COLLECTING' ||
-        messageCount >= SLOT_FILL_MAX_MESSAGES;
+        shouldRecommend || messageCount >= SLOT_FILL_MAX_MESSAGES;
 
       let selectedRecommendationFoods: SearchResult[] = [];
       if (isTriggerRecommend) {

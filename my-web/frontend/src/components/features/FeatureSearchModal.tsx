@@ -27,6 +27,7 @@ import { foodService } from '@/services/food.service';
 import { formatCurrency } from '@/utils/formatters';
 import { SafeImage } from '@/components/base/SafeImage';
 import { Food } from '@/types/food';
+import { LABELS } from '@/constants/labels';
 
 interface FeatureSearchModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ interface FeatureItem {
 export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSearchModalProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAdmin, isRestaurant } = useAuth();
+  const { user } = useAuth();
 
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -101,14 +102,14 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
 
   // Master list of all features in Food AI
   const allFeatures: FeatureItem[] = useMemo(() => [
-    // 🌟 Tính năng cốt lõi (Core)
+    // Tính năng cốt lõi (Core)
     {
       id: 'home',
       title: 'Trang chủ Food AI',
       description: 'Gợi ý món ăn hôm nay, món trong tuần và các quán ăn nổi bật',
       category: 'core',
       icon: Home,
-      badge: 'Chính',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.MAIN,
       href: '/',
       tabId: 'home',
       keywords: ['trang chu', 'home', 'mon ngon', 'hom nay', 'trong tuan', 'goi y']
@@ -119,7 +120,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Tìm kiếm món ăn, lọc quán theo khu vực, thành phố và thể loại ẩm thực',
       category: 'core',
       icon: Compass,
-      badge: 'Hot',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.POPULAR,
       href: '/explore',
       tabId: 'explore',
       keywords: ['kham pha', 'explore', 'tim kiem', 'quan an', 'dia diem', 'mon an']
@@ -130,7 +131,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Tổng hợp các chương trình ưu đãi, mã giảm giá và combo hấp dẫn',
       category: 'core',
       icon: Tag,
-      badge: 'Ưu đãi',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.PROMOTION,
       href: '/?tab=offers',
       tabId: 'offers',
       keywords: ['khuyen mai', 'deal', 'giam gia', 'offers', 'combo', 'voucher']
@@ -141,20 +142,20 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Mạng xã hội review món ngon, chia sẻ trải nghiệm và tương tác cộng đồng',
       category: 'core',
       icon: MessageSquare,
-      badge: 'Cộng đồng',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.COMMUNITY,
       href: '/forum',
       tabId: 'forum',
       keywords: ['dien dan', 'forum', 'bai viet', 'review', 'danh gia', 'cong dong']
     },
 
-    // 🤖 Trí tuệ nhân tạo (AI)
+    // Trí tuệ nhân tạo (AI)
     {
       id: 'ai-consultant',
       title: 'Trợ lý AI tư vấn món ăn',
       description: 'Chatbot thông minh gợi ý món ăn theo tâm trạng, ngân sách và sở thích cá nhân',
       category: 'ai',
       icon: Sparkles,
-      badge: 'AI Powered',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.AI,
       href: '/#ai-chat',
       tabId: 'home',
       keywords: ['ai', 'tro ly', 'chat', 'tu van', 'tam trang', 'ngan sach', 'thong minh', 'rag']
@@ -165,20 +166,20 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Tìm món ăn bằng ngôn ngữ tự nhiên, cảm xúc hoặc nhu cầu dinh dưỡng',
       category: 'ai',
       icon: Search,
-      badge: 'Vector AI',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.AI,
       href: '/explore',
       tabId: 'explore',
       keywords: ['ngu nghia', 'semantic', 'vector', 'dinh duong', 'suc khoe']
     },
 
-    // 💼 Bán hàng & Quản trị (Business)
+    // Bán hàng & Quản trị (Business)
     {
       id: 'pos',
       title: 'Hệ thống Bán hàng POS',
       description: 'Giao diện bán hàng tại quầy, quản lý đơn đặt và bàn ăn cho quán',
       category: 'business',
       icon: Store,
-      badge: 'POS Terminal',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.MERCHANT,
       href: '/pos',
       keywords: ['pos', 'ban hang', 'thu ngan', 'don hang', 'thanh toan', 'ban an']
     },
@@ -188,7 +189,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Quản lý thực đơn món ăn, danh mục, giờ mở cửa, chi nhánh và doanh thu',
       category: 'business',
       icon: Store,
-      badge: isRestaurant || isAdmin ? 'Được truy cập' : 'Dành cho Quán',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.MERCHANT,
       href: '/restaurant-admin',
       tabId: 'restaurant-admin',
       roles: ['restaurant', 'admin'],
@@ -200,21 +201,21 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Phê duyệt món ăn, kiểm duyệt nhà hàng, phân quyền tài khoản và danh hiệu',
       category: 'business',
       icon: Shield,
-      badge: isAdmin ? 'Toàn quyền' : 'Admin Only',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.ADMIN,
       href: '/admin',
       tabId: 'admin',
       roles: ['admin'],
       keywords: ['admin', 'quan tri', 'phe duyet', 'nguoi dung', 'kiem duyet', 'he thong']
     },
 
-    // 👤 Tiện ích cá nhân (Personal)
+    // Tiện ích cá nhân (Personal)
     {
       id: 'vouchers',
       title: 'Ví Voucher & Đổi điểm',
       description: 'Quản lý các mã khuyến mãi đã lưu và đổi điểm thưởng lấy ưu đãi',
       category: 'personal',
       icon: Ticket,
-      badge: 'Ví quà',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.VOUCHER,
       href: '/vouchers',
       tabId: 'vouchers',
       keywords: ['voucher', 'vi', 'diem thuong', 'doi qua', 'ma giam gia']
@@ -225,7 +226,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Theo dõi điểm tích lũy, cấp bậc thành viên và huy hiệu ẩm thực',
       category: 'personal',
       icon: Trophy,
-      badge: 'Danh hiệu',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.RANK,
       href: '/badges',
       keywords: ['cap do', 'danh hieu', 'badges', 'huy hieu', 'thu hang', 'level']
     },
@@ -235,7 +236,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: 'Cập nhật thông tin tài khoản, đổi mật khẩu, thiết lập ngôn ngữ và giao diện',
       category: 'personal',
       icon: Settings,
-      badge: 'Cá nhân',
+      badge: LABELS.NAV.QUICK_SEARCH.BADGES.PROFILE,
       href: '/?tab=settings',
       tabId: 'settings',
       keywords: ['cai dat', 'settings', 'ho so', 'mat khau', 'tai khoan', 'profile']
@@ -246,11 +247,11 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
       description: user ? `Đang đăng nhập với email ${user.email}` : 'Đăng nhập để nhận ưu đãi và trải nghiệm đầy đủ tính năng',
       category: 'personal',
       icon: user ? User : LogIn,
-      badge: user ? 'Tài khoản' : 'Xác thực',
+      badge: user ? LABELS.NAV.QUICK_SEARCH.BADGES.PROFILE : LABELS.AUTH.LOGIN,
       href: user ? '/dashboard' : '/login',
       keywords: ['dang nhap', 'dang ky', 'login', 'register', 'auth', 'tai khoan']
     }
-  ], [user, isAdmin, isRestaurant]);
+  ], [user]);
 
   // Filter features based on search query and category
   const filteredFeatures = useMemo(() => {
@@ -368,13 +369,13 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
     }
   }, [filteredFeatures, selectedIndex, totalItemsCount, handleNavigate, query, onClose, router]);
 
-  const categories = [
-    { id: 'all', label: 'Tất cả' },
-    { id: 'core', label: '🌟 Cốt lõi' },
-    { id: 'ai', label: '🤖 Trợ lý AI' },
-    { id: 'business', label: '💼 Kinh doanh & POS' },
-    { id: 'personal', label: '👤 Cá nhân' },
-  ];
+  const categories = useMemo(() => [
+    { id: 'all', label: LABELS.NAV.QUICK_SEARCH.CATEGORIES.ALL },
+    { id: 'core', label: LABELS.NAV.QUICK_SEARCH.CATEGORIES.CORE },
+    { id: 'ai', label: LABELS.NAV.QUICK_SEARCH.CATEGORIES.AI },
+    { id: 'business', label: LABELS.NAV.QUICK_SEARCH.CATEGORIES.BUSINESS },
+    { id: 'personal', label: LABELS.NAV.QUICK_SEARCH.CATEGORIES.PERSONAL },
+  ], []);
 
   return (
     <AnimatePresence>
@@ -413,7 +414,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                placeholder="Tìm kiếm tính năng, món ăn, chức năng... (gõ 'phở', 'ai', 'pos')..."
+                placeholder={LABELS.NAV.QUICK_SEARCH.INPUT_PLACEHOLDER}
                 className="w-full bg-transparent text-sm sm:text-base md:text-lg font-medium text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none"
               />
               {query && (
@@ -428,9 +429,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                   <X size={18} />
                 </button>
               )}
-              <kbd className="hidden sm:inline-flex text-[11px] font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-slate-700 ml-1">
-                ESC
-              </kbd>
+
             </div>
 
             {/* Category Filter Pills */}
@@ -459,7 +458,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
               {filteredFeatures.length > 0 && (
                 <div>
                   <div className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-slate-500 px-3 mb-2">
-                    Tính năng hệ thống ({filteredFeatures.length})
+                    {LABELS.NAV.QUICK_SEARCH.SECTIONS.FEATURES} ({filteredFeatures.length})
                   </div>
                   <div className="space-y-1.5">
                     {filteredFeatures.map((item, idx) => {
@@ -517,8 +516,8 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
               {query.trim().length >= 2 && (
                 <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
                   <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-slate-500 px-3 mb-2">
-                    <span>Món ăn liên quan ({foodResults.length})</span>
-                    {isLoadingFoods && <span className="animate-pulse text-primary font-bold">Đang tìm...</span>}
+                    <span>{LABELS.NAV.QUICK_SEARCH.SECTIONS.FOODS} ({foodResults.length})</span>
+                    {isLoadingFoods && <span className="animate-pulse text-primary font-bold">{LABELS.NAV.QUICK_SEARCH.SEARCHING_FOODS}</span>}
                   </div>
 
                   {foodResults.length > 0 ? (
@@ -556,7 +555,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     </div>
                   ) : !isLoadingFoods ? (
                     <p className="text-xs text-gray-400 px-3 py-1 italic">
-                      Chưa tìm thấy món ăn nào có tên khớp. Bạn có thể tìm sâu hơn tại trang Khám phá.
+                      {LABELS.NAV.QUICK_SEARCH.NO_FOODS_FOUND}
                     </p>
                   ) : null}
 
@@ -569,7 +568,7 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     }}
                     className="w-full mt-3 p-3 rounded-2xl bg-orange-50/70 hover:bg-orange-100 dark:bg-orange-950/20 dark:hover:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/50 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
-                    <span>Xem tất cả kết quả cho &quot;{query}&quot; tại Khám phá ẩm thực</span>
+                    <span>{LABELS.NAV.QUICK_SEARCH.EXPLORE_ALL_FOODS(query.trim())}</span>
                     <ExternalLink size={14} />
                   </button>
                 </div>
@@ -582,10 +581,10 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     <Search size={24} />
                   </div>
                   <h4 className="text-sm font-bold text-gray-700 dark:text-slate-200">
-                    Không tìm thấy tính năng khớp với &quot;{query}&quot;
+                    {LABELS.NAV.QUICK_SEARCH.EMPTY_TITLE(query.trim())}
                   </h4>
                   <p className="text-xs text-gray-400 max-w-sm mx-auto mt-1 mb-4">
-                    Thử tìm với từ khóa như: &quot;trang chủ&quot;, &quot;ai&quot;, &quot;pos&quot;, &quot;khám phá&quot;, &quot;voucher&quot;...
+                    {LABELS.NAV.QUICK_SEARCH.EMPTY_DESC}
                   </p>
                   <button
                     type="button"
@@ -595,29 +594,25 @@ export function FeatureSearchModal({ isOpen, onClose, onSelectTab }: FeatureSear
                     }}
                     className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition-colors inline-flex items-center gap-2 shadow-md shadow-primary/20 cursor-pointer"
                   >
-                    <span>Tìm kiếm trên trang Khám phá</span>
+                    <span>{LABELS.NAV.QUICK_SEARCH.EXPLORE_BUTTON}</span>
                     <ArrowRight size={14} />
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Footer / Shortcuts */}
-            <div className="px-6 py-3 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/60 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500">
-              <div className="hidden sm:flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">↑↓</kbd> Di chuyển
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">↵</kbd> Chọn
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">ESC</kbd> Đóng
-                </span>
-              </div>
-              <div className="text-right w-full sm:w-auto font-medium">
-                Mẹo: Nhấn <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold">Ctrl + K</kbd> để mở nhanh
-              </div>
+            {/* Footer */}
+            <div className="px-6 py-2.5 border-t border-gray-100 dark:border-slate-800/80 bg-gray-50/60 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-gray-400 dark:text-slate-500">
+              <span className="font-medium text-gray-500 dark:text-slate-400">
+                {LABELS.NAV.QUICK_SEARCH.FOOTER.TIP}
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 font-medium transition-colors cursor-pointer"
+              >
+                {LABELS.COMMON.CLOSE}
+              </button>
             </div>
           </motion.div>
         </div>

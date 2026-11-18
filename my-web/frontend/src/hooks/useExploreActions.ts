@@ -5,7 +5,7 @@
 // Biến, hàm đặc biệt: useExploreActions, handleCityChange, handleDistrictChange, debouncedSearchQuery, selectedView.
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { restaurantService } from '@/services/restaurant.service';
 import { foodService } from '@/services/food.service';
@@ -15,6 +15,7 @@ import { FoodCardData } from '@/components/features/food/FoodCard';
 import { FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { LIMITS } from '@/constants/limits.constant';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export type ExploreViewType = 'all' | 'foods' | 'restaurants';
 
@@ -36,10 +37,102 @@ function parseFoodsPayload(raw: unknown): FoodCardData[] {
   return Array.isArray(obj.data) ? obj.data : [];
 }
 
+export interface PersonalizationInfo {
+  title: string;
+  badge: string;
+  description: string;
+  isPersonalized: boolean;
+}
+
 export const useExploreActions = () => {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag') || '';
   const searchParam = searchParams.get('search') || '';
+
+  const user = useAuthStore((state) => state.user);
+  const userPrefs = useMemo(() => {
+    return (user?.profile?.preferences as Record<string, string>) || {};
+  }, [user]);
+
+  const isVegetarianUser = useMemo(() => {
+    const goal = userPrefs.goal || '';
+    const cuisine = (userPrefs.cuisine || '').toLowerCase();
+    return (
+      goal === 'weight_loss' ||
+      goal === 'eat_clean' ||
+      cuisine.includes('chay') ||
+      cuisine.includes('thanh đạm') ||
+      cuisine.includes('salad')
+    );
+  }, [userPrefs]);
+
+  const isSpicyUser = useMemo(() => {
+    const cuisine = (userPrefs.cuisine || '').toLowerCase();
+    return cuisine.includes('cay') || cuisine.includes('spicy') || cuisine.includes('sa tế');
+  }, [userPrefs]);
+
+  const isDietOrWeightLoss = useMemo(() => {
+    const goal = userPrefs.goal || '';
+    return goal === 'weight_loss' || goal === 'eat_clean';
+  }, [userPrefs]);
+
+  const isMuscleGain = useMemo(() => {
+    return userPrefs.goal === 'muscle_gain';
+  }, [userPrefs]);
+
+  // Tự động sinh thông tin cá nhân hóa dựa trên hồ sơ thực tế của người dùng
+  const personalizationInfo = useMemo<PersonalizationInfo>(() => {
+    if (isVegetarianUser) {
+      return {
+        title: 'Món Chay & Thanh Đạm Dành Riêng Cho Bạn',
+        badge: '🥗 Cá nhân hóa: Gu Ăn Chay',
+        description: 'Tự động hiển thị các món chay, salad và thực đơn thanh tịnh từ cơ sở dữ liệu dựa trên hồ sơ của bạn.',
+        isPersonalized: true,
+      };
+    }
+    if (isSpicyUser) {
+      return {
+        title: 'Món Cay Nồng Đậm Vị Dành Riêng Cho Bạn',
+        badge: '🌶️ Cá nhân hóa: Gu Đồ Cay',
+        description: 'Tự động hiển thị các món cay nóng, đậm đà chuẩn vị từ cơ sở dữ liệu dựa trên sở thích của bạn.',
+        isPersonalized: true,
+      };
+    }
+    if (isMuscleGain) {
+      return {
+        title: 'Món Giàu Protein & Tăng Cơ Dành Riêng Cho Bạn',
+        badge: '💪 Cá nhân hóa: Mục tiêu Tăng cơ',
+        description: 'Tự động lọc các món giàu đạm (bò, gà, trứng, hải sản) hỗ trợ tối ưu mục tiêu dinh dưỡng của bạn.',
+        isPersonalized: true,
+      };
+    }
+    if (userPrefs.cuisine) {
+      const cLower = userPrefs.cuisine.toLowerCase();
+      const displayCuisine =
+        cLower === 'western'
+          ? 'Âu - Mỹ (Western)'
+          : cLower === 'korean'
+            ? 'Hàn Quốc'
+            : cLower === 'japanese'
+              ? 'Nhật Bản'
+              : cLower === 'vietnamese'
+                ? 'Món Việt'
+                : userPrefs.cuisine;
+
+      return {
+        title: `Món Ngon Dành Riêng Cho Bạn (${displayCuisine})`,
+        badge: `✨ Cá nhân hóa: Gu ${displayCuisine}`,
+        description: `Tự động hiển thị các món ăn khớp với gu ẩm thực "${displayCuisine}" của bạn.`,
+        isPersonalized: true,
+      };
+    }
+    return {
+      title: 'Món Ngon Tinh Chọn',
+      badge: '⭐ Tuyển chọn chất lượng cao',
+      description: 'Chỉ hiển thị các món có hình ảnh thực tế, chuẩn chất lượng & hương vị được cộng đồng yêu thích.',
+      isPersonalized: false,
+    };
+  }, [isVegetarianUser, isSpicyUser, isMuscleGain, userPrefs]);
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [foods, setFoods] = useState<FoodCardData[]>([]);
@@ -84,6 +177,26 @@ export const useExploreActions = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Tự động truyền các tham số cá nhân hóa theo đúng hồ sơ người dùng
+        let dietParam: string | undefined = undefined;
+        let spiceParam: string | undefined = undefined;
+        let cuisineParam: string | undefined = undefined;
+        let allergiesParam: string | undefined = undefined;
+
+        if (isVegetarianUser) {
+          dietParam = 'chay';
+        } else if (isSpicyUser) {
+          spiceParam = 'cay';
+        } else if (userPrefs.cuisine) {
+          cuisineParam = userPrefs.cuisine;
+        } else if (isMuscleGain) {
+          cuisineParam = 'bò, gà, trứng';
+        }
+
+        if (userPrefs.allergies) {
+          allergiesParam = userPrefs.allergies;
+        }
+
         const [restaurantsRes, foodsRes] = await Promise.allSettled([
           restaurantService.getPublicRestaurants({
             tag: tag || undefined,
@@ -98,7 +211,13 @@ export const useExploreActions = () => {
             city: selectedCity,
             district: selectedDistrict || undefined,
             search: debouncedSearchQuery || undefined,
-            limit: 50,
+            limit: 24, // 24 món tinh chọn chất lượng cao
+            hasImage: true, // BẮT BUỘC CHỈ LẤY MÓN CÓ HÌNH ẢNH THẬT
+            curated: true,  // LỌC BỎ TOPPING, RAU SỐNG, PHỤ GIA & SẮP XẾP MÓN NGON
+            diet: dietParam,
+            spice: spiceParam,
+            cuisine: cuisineParam,
+            allergies: allergiesParam,
           }),
         ]);
 
@@ -115,7 +234,22 @@ export const useExploreActions = () => {
         }
 
         if (foodsRes.status === 'fulfilled') {
-          setFoods(parseFoodsPayload(foodsRes.value));
+          const rawFoods = parseFoodsPayload(foodsRes.value);
+          // Bộ lọc chất lượng nghiêm ngặt: Phải có ảnh hợp lệ và loại bỏ các món phụ/topping
+          const qualityFoods = rawFoods.filter((f) => {
+            const hasValidImage = Boolean(f.image && f.image.trim() !== '' && !f.image.includes('placeholder'));
+            if (!hasValidImage) return false;
+            const nameLower = (f.name || '').toLowerCase();
+            const isTopping =
+              nameLower.includes('topping') ||
+              nameLower.includes('rau sống') ||
+              nameLower.includes('thêm') ||
+              nameLower.includes('gia vị') ||
+              nameLower.includes('nước chấm');
+            return !isTopping;
+          });
+
+          setFoods(qualityFoods);
         } else {
           console.error('Lỗi lấy dữ liệu món ăn:', foodsRes.reason);
           setFoods([]);
@@ -134,7 +268,7 @@ export const useExploreActions = () => {
     return () => {
       isCancelled = true;
     };
-  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage]);
+  }, [tag, selectedCity, selectedDistrict, debouncedSearchQuery, currentPage, isVegetarianUser, isSpicyUser, userPrefs]);
 
   const handleToggleFavorite = async (foodId: number) => {
     try {
@@ -167,5 +301,7 @@ export const useExploreActions = () => {
     setCurrentPage,
     totalPages,
     handleToggleFavorite,
+    personalizationInfo,
+    userPrefs,
   };
 };

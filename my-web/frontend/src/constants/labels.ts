@@ -1017,7 +1017,48 @@ const LABELS_VI = {
     POS: 'Màn hình POS',
     SETTINGS: 'Cài đặt',
     FEATURES: 'Tính năng',
-    SEARCH_PLACEHOLDER: 'Tìm kiếm tính năng, món ăn, chức năng hệ thống...',
+    SEARCH: 'Tìm kiếm',
+    SEARCH_PLACEHOLDER: 'Tìm món ăn, tính năng...',
+    SEARCH_SHORTCUT: 'Ctrl K',
+    SEARCH_TOOLTIP: 'Tìm kiếm tính năng & món ăn',
+    QUICK_SEARCH: {
+      INPUT_PLACEHOLDER: 'Tìm món ăn, tính năng, quán ăn...',
+      CATEGORIES: {
+        ALL: 'Tất cả',
+        CORE: 'Khám phá',
+        AI: 'Trợ lý AI',
+        BUSINESS: 'Nhà hàng & POS',
+        PERSONAL: 'Cá nhân',
+      },
+      SECTIONS: {
+        FEATURES: 'Tính năng & Điều hướng',
+        FOODS: 'Món ăn liên quan',
+      },
+      SEARCHING_FOODS: 'Đang tìm món...',
+      NO_FOODS_FOUND: 'Chưa tìm thấy món ăn nào phù hợp với từ khóa.',
+      EXPLORE_ALL_FOODS: (query: string) => `Xem tất cả kết quả cho "${query}" trên Khám phá`,
+      EMPTY_TITLE: (query: string) => `Không tìm thấy kết quả cho "${query}"`,
+      EMPTY_DESC: 'Thử tìm với tên món ăn (phở, bún, cơm...), danh mục hoặc tính năng hệ thống.',
+      EXPLORE_BUTTON: 'Tìm kiếm trên trang Khám phá',
+      FOOTER: {
+        NAVIGATE: 'Di chuyển',
+        SELECT: 'Chọn',
+        CLOSE: 'Đóng',
+        TIP: 'Tìm kiếm nhanh tính năng và món ăn',
+      },
+      BADGES: {
+        MAIN: 'Chính',
+        POPULAR: 'Phổ biến',
+        PROMOTION: 'Ưu đãi',
+        COMMUNITY: 'Cộng đồng',
+        AI: 'AI',
+        MERCHANT: 'Dành cho quán',
+        ADMIN: 'Quản trị',
+        VOUCHER: 'Ví voucher',
+        RANK: 'Cấp độ',
+        PROFILE: 'Tài khoản',
+      },
+    },
     USER_MENU: 'Menu người dùng',
     AI_CHAT: 'Trợ lý AI',
     NOTIFICATIONS: {
@@ -1176,7 +1217,7 @@ const LABELS_VI = {
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',
-    AI_THINKING: 'Đang suyyyyyy...',
+    AI_THINKING: 'Đang suy nghĩ...',
     SUGGESTED_TITLE: 'Các món ăn gợi ý cho bạn:',
     FEATURES: {
       MOOD: 'Gợi ý theo tâm trạng',
@@ -2016,6 +2057,8 @@ const LABELS_VI = {
       LEADERBOARD_EMPTY: 'Chưa có bảng xếp hạng.',
       NEW: 'Mới',
       FEED_MENU: 'Bảng tin',
+      TOGGLE_COLLAPSE: 'Thu gọn',
+      TOGGLE_EXPAND: 'Mở rộng',
     },
     POST_TYPE_NORMAL: 'Thông thường',
     POST_TYPE_REVIEW: 'Đánh giá quán',
@@ -2401,12 +2444,12 @@ const LABELS_VI = {
 let clientLanguage = 'vi';
 
 // Only use AsyncLocalStorage on the server
-let serverStorage: { enterWith: (val: string) => void; getStore: () => string | undefined } | null = null;
+let serverStorage: { enterWith: (_val: string) => void; getStore: () => string | undefined } | null = null;
 if (typeof window === 'undefined') {
   try {
     const { AsyncLocalStorage } = eval('require')('async_hooks');
     serverStorage = new AsyncLocalStorage();
-  } catch (e) { }
+  } catch { }
 }
 
 export const setLanguageForRequest = (lang: string) => {

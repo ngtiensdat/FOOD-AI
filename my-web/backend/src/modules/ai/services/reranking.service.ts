@@ -124,6 +124,54 @@ export class RerankingService {
       'lotteria',
       'domino',
     ],
+    nướng: [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    'đồ nướng': [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    bbq: [
+      'nướng',
+      'bbq',
+      'sườn',
+      'ba chỉ',
+      'thịt nướng',
+      'bò nướng',
+      'dẻ sườn',
+      'king nướng',
+      'gogi',
+      'yakiniku',
+      'nem nướng',
+    ],
+    lẩu: [
+      'lẩu',
+      'hotpot',
+      'haidilao',
+      'manwah',
+      'kichi',
+      'nhúng lẩu',
+      'lẩu thái',
+    ],
   };
 
   constructor(
@@ -240,6 +288,15 @@ export class RerankingService {
       ) {
         hour = 12;
       } else if (
+        msgLower.includes('chiều nay') ||
+        msgLower.includes('bữa chiều') ||
+        msgLower.includes('ăn chiều') ||
+        msgLower.includes('xế chiều') ||
+        msgLower.includes('bữa xế') ||
+        msgLower.includes('buổi chiều')
+      ) {
+        hour = 16;
+      } else if (
         msgLower.includes('tối nay') ||
         msgLower.includes('tối mai') ||
         msgLower.includes('bữa tối') ||
@@ -315,8 +372,8 @@ export class RerankingService {
         return { ...food, similarity: 0.0 };
       }
 
-      // 2. Intent Score (mismatched cuisine penalized, neutral if undefined)
-      let intentScore = 1.0;
+      // 2. Intent Score (mismatched cuisine penalized, neutral 0.55 if undefined to prevent false 100% matches)
+      let intentScore = 0.55;
       const cuisine = state.slots.cuisineType;
       if (cuisine) {
         intentScore = this.calculateIntentScore(food, cuisine);
@@ -420,6 +477,155 @@ export class RerankingService {
         }
       }
 
+      // 8.6. Common-sense Dining Sanity Check:
+      // Penalize:
+      // - Pure toppings / bare ingredients (e.g. Pate nóng bare plate, rau sống, topping thịt thêm, quẩy)
+      // - Raw BBQ items or hotpot toppings at grill/hotpot restaurants (cannot dine on 1 raw meat plate alone)
+      // - Drinks or desserts when user is hungry or asking for savory meals ("món mặn")
+      // - Rejected restaurants / BBQ venues when user complains or objects
+      let diningSanityAdjust = 0.0;
+      const msgText = (message || '').toLowerCase();
+      const isHungry =
+        msgText.includes('đói') ||
+        msgText.includes('ăn nhanh') ||
+        msgText.includes('lót dạ') ||
+        msgText.includes('chưa ăn gì');
+      const isSingleOrLowBudget =
+        (state.slots.budget && state.slots.budget <= 70000) ||
+        state.slots.companion === 'SINGLE';
+
+      const foodNameLower = food.name.toLowerCase();
+      const restaurantNameLower = (food.restaurantName || '').toLowerCase();
+
+      // Pure toppings, bare side dishes, condiments
+      const isPureToppingOrIngredient =
+        foodNameLower.startsWith('pate') ||
+        foodNameLower.includes('topping') ||
+        foodNameLower.includes('rau sống') ||
+        foodNameLower.includes('bổ sung') ||
+        foodNameLower.includes('thêm') ||
+        foodNameLower === 'quẩy';
+
+      if (
+        isPureToppingOrIngredient &&
+        !msgText.includes('pate') &&
+        !msgText.includes('topping')
+      ) {
+        diningSanityAdjust -= 0.55; // Extreme penalty: never recommend a standalone topping/pate
+      }
+
+      // Savory meal vs Sweet desserts or drinks
+      const isSavoryRequest =
+        msgText.includes('món mặn') || msgText.includes('đồ mặn') || isHungry;
+
+      const isDrink =
+        (food.categoryName || '').toLowerCase().includes('đồ uống') ||
+        foodNameLower.includes('sữa') ||
+        foodNameLower.includes('trà') ||
+        foodNameLower.includes('nước ngọt') ||
+        foodNameLower.includes('nước ép') ||
+        foodNameLower.includes('cà phê') ||
+        foodNameLower.includes('sinh tố');
+
+      const isSweetOrDessert =
+        foodNameLower.includes('chè') ||
+        foodNameLower.includes('caramen') ||
+        foodNameLower.includes('thạch') ||
+        foodNameLower.includes('kem') ||
+        foodNameLower.includes('trà sữa') ||
+        foodNameLower.includes('ngọt');
+
+      if (isSavoryRequest) {
+        if (isDrink) {
+          diningSanityAdjust -= 0.5; // Never recommend drinks when starving or asking for savory food
+        }
+        if (isSweetOrDessert) {
+          diningSanityAdjust -= 0.45;
+        }
+
+        const isCompleteMeal =
+          foodNameLower.includes('bánh mì chảo') ||
+          foodNameLower.includes('bánh mì') ||
+          foodNameLower.includes('cơm') ||
+          foodNameLower.includes('phở') ||
+          foodNameLower.includes('bún') ||
+          foodNameLower.includes('miến') ||
+          foodNameLower.includes('hủ tiếu') ||
+          foodNameLower.includes('mì') ||
+          foodNameLower.includes('xôi') ||
+          foodNameLower.includes('pizza') ||
+          foodNameLower.includes('burger');
+
+        if (isCompleteMeal && !isPureToppingOrIngredient) {
+          diningSanityAdjust += 0.25; // Prioritize complete standalone meal
+        }
+      }
+
+      // Check explicit BBQ craving vs objection
+      const isExplicitBbqRequest =
+        msgText.includes('đồ nướng') ||
+        msgText.includes('thịt nướng') ||
+        msgText.includes('thèm nướng') ||
+        msgText.includes('thèm đồ nướng') ||
+        (msgText.includes('quán nướng') &&
+          !msgText.includes('chẳng lẽ') &&
+          !msgText.includes('gọi món mà')) ||
+        (state.slots.cuisineType || '').toLowerCase().includes('nướng') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('bbq');
+
+      const isBbqRestaurant =
+        restaurantNameLower.includes('nướng') ||
+        restaurantNameLower.includes('bbq') ||
+        restaurantNameLower.includes('gogi') ||
+        restaurantNameLower.includes('lẩu') ||
+        restaurantNameLower.includes('k-pub') ||
+        restaurantNameLower.includes('sumo') ||
+        restaurantNameLower.includes('haidilao') ||
+        restaurantNameLower.includes('manwah');
+
+      const isBbqFood =
+        foodNameLower.includes('nướng') ||
+        foodNameLower.includes('bbq') ||
+        foodNameLower.includes('sườn') ||
+        foodNameLower.includes('ba chỉ') ||
+        foodNameLower.includes('bò ướp') ||
+        foodNameLower.includes('dẻ sườn') ||
+        (isBbqRestaurant && !isDrink && !isPureToppingOrIngredient);
+
+      if (isExplicitBbqRequest) {
+        if (isDrink) {
+          diningSanityAdjust -= 0.85; // Extreme penalty: NEVER recommend a drink when user asks for BBQ!
+        }
+        if (isBbqFood) {
+          diningSanityAdjust += 0.45; // Massive boost for actual BBQ meat dishes!
+        }
+      } else {
+        // User objection / complaint against BBQ / grill or specific venue
+        const userObjectsToBbq =
+          msgText.includes('quán nướng') ||
+          msgText.includes('1 khay') ||
+          msgText.includes('khay sườn') ||
+          msgText.includes('gọi món mà') ||
+          msgText.includes('chẳng lẽ') ||
+          msgText.includes('ai lại ăn');
+
+        const isGrillOrRawPlate =
+          foodNameLower.includes('sườn') ||
+          foodNameLower.includes('ba chỉ') ||
+          foodNameLower.includes('thịt nướng') ||
+          foodNameLower.includes('khay') ||
+          foodNameLower.includes('bò ướp') ||
+          foodNameLower.includes('nhúng lẩu');
+
+        if (userObjectsToBbq && isBbqRestaurant) {
+          diningSanityAdjust -= 0.8; // Exclude BBQ completely when user specifically complains about BBQ!
+        } else if (isHungry || isSingleOrLowBudget) {
+          if (isBbqRestaurant && isGrillOrRawPlate) {
+            diningSanityAdjust -= 0.45; // Don't suggest single raw grill plate to hungry/single diner
+          }
+        }
+      }
+
       // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +
@@ -429,7 +635,8 @@ export class RerankingService {
         ratingScore * weights.rating +
         contextScore * weights.context +
         feedbackBoost +
-        emotionPriceAdjust;
+        emotionPriceAdjust +
+        diningSanityAdjust;
 
       return {
         ...food,

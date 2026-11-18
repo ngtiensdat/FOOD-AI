@@ -105,29 +105,55 @@ export class RecommendationService {
       return intentScore >= 0.8;
     });
 
-    // Check if the user query is a general recommendation request
-    const hasCuisine = !!state.slots.cuisineType;
-    const isGeneralRec =
-      !hasCuisine && message && this.isGeneralRecommendationIntent(message);
+    // Check if user has specified a concrete cuisine or dish type
+    const hasCuisine = Boolean(
+      state.slots.cuisineType && state.slots.cuisineType.trim() !== '',
+    );
+
+    const msg = message || '';
+    const hasSpecificDish = this.hasSpecificDishMention(msg);
+    const isVagueGeneralQuery =
+      this.isGeneralRecommendationIntent(msg) && !hasSpecificDish;
 
     let shouldRecommend = false;
     let foods: SearchResult[] = [];
 
-    // Decision Logic
+    // Decision Logic:
+    // 1. Explicit nearby request with location -> recommend closest options directly
     if (intent === FoodIntent.FIND_NEARBY) {
       shouldRecommend = reRanked.length > 0;
       foods = reRanked.slice(0, 3);
-    } else if (matchedFoods.length > 0) {
-      shouldRecommend = true;
-      foods = matchedFoods.slice(0, 5);
-    } else if (hasCuisine && hasDirectIntentMatch) {
-      shouldRecommend = true;
+    }
+    // 2. Vague or general request without specific dish mentioned ("tôi đang đói", "hôm nay ăn gì")
+    // Trigger clarifying slot-filling to ask for user needs and provide quick replies!
+    else if (isVagueGeneralQuery && state.current_stage === 'COLLECTING') {
+      shouldRecommend = false;
       foods = reRanked.slice(0, 3);
-    } else if (isGeneralRec) {
+    }
+    // 3. Specific cuisine or dish specified by user -> recommend matches
+    else if (hasCuisine || hasSpecificDish) {
+      if (hasDirectIntentMatch || matchedFoods.length > 0) {
+        shouldRecommend = true;
+        foods =
+          matchedFoods.length > 0
+            ? matchedFoods.slice(0, 5)
+            : reRanked.slice(0, 3);
+      } else {
+        shouldRecommend = true;
+        foods = reRanked.slice(0, 3);
+      }
+    }
+    // 4. Multi-turn conversation progression (follow-up turns, answering slot questions, or feedback)
+    else if (state.current_stage !== 'COLLECTING') {
       shouldRecommend = true;
-      foods = reRanked.slice(0, 3);
-    } else {
-      // Fallback candidates if we have no matches but recommendation is triggered anyway by dialogue manager
+      foods =
+        matchedFoods.length > 0
+          ? matchedFoods.slice(0, 5)
+          : reRanked.slice(0, 3);
+    }
+    // 5. Default fallback
+    else {
+      shouldRecommend = false;
       foods = reRanked.slice(0, 3);
     }
 
@@ -135,6 +161,45 @@ export class RecommendationService {
       foods,
       shouldRecommend,
     };
+  }
+
+  private hasSpecificDishMention(message: string): boolean {
+    const msg = message.toLowerCase();
+    const specificDishes = [
+      'cơm',
+      'phở',
+      'bún',
+      'bánh mì',
+      'mì',
+      'miến',
+      'hủ tiếu',
+      'cháo',
+      'xôi',
+      'lẩu',
+      'nướng',
+      'pizza',
+      'burger',
+      'sushi',
+      'trà sữa',
+      'cà phê',
+      'chè',
+      'sườn',
+      'gà',
+      'vịt',
+      'ngan',
+      'hải sản',
+      'tôm',
+      'cua',
+      'cá',
+      'ốc',
+      'chay',
+      'cay',
+      'món mặn',
+      'món ngọt',
+      'món nước',
+      'món khô',
+    ];
+    return specificDishes.some((dish) => msg.includes(dish));
   }
 
   private isGeneralRecommendationIntent(message: string): boolean {

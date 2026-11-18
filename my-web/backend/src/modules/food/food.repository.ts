@@ -19,6 +19,9 @@ export class FoodRepository {
     where: Prisma.FoodWhereInput,
     page?: number,
     pageSize?: number,
+    orderBy?:
+      | Prisma.FoodOrderByWithRelationInput
+      | Prisma.FoodOrderByWithRelationInput[],
   ) {
     const skip = page && pageSize ? (page - 1) * pageSize : undefined;
     const take = pageSize
@@ -48,7 +51,7 @@ export class FoodRepository {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderBy || { createdAt: 'desc' },
         skip,
         take,
       }),

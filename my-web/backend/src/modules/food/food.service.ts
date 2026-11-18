@@ -100,6 +100,237 @@ export class FoodService {
           andFilters.push({ OR: buildFoodFilterConditions(search, false) });
         }
 
+        if (query.hasImage || query.curated) {
+          andFilters.push({
+            image: { not: null },
+            NOT: [{ image: '' }, { image: { contains: 'placeholder' } }],
+          });
+        }
+
+        if (query.curated) {
+          andFilters.push({
+            NOT: [
+              { name: { contains: 'Topping', mode: 'insensitive' } },
+              { name: { contains: 'Rau sống', mode: 'insensitive' } },
+              { name: { contains: 'Thêm', mode: 'insensitive' } },
+              { name: { contains: 'Bổ sung', mode: 'insensitive' } },
+              { name: { contains: 'Gia vị', mode: 'insensitive' } },
+              { name: { contains: 'Nước chấm', mode: 'insensitive' } },
+              { name: { contains: 'Nước lẩu', mode: 'insensitive' } },
+              { name: { contains: 'Nước sốt', mode: 'insensitive' } },
+              { name: { startsWith: 'Pate nóng', mode: 'insensitive' } },
+              { name: { equals: 'Quẩy', mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        if (query.diet === 'chay' || query.diet === 'vegetarian') {
+          andFilters.push({
+            OR: [
+              { tags: { has: 'chay' } },
+              { name: { contains: 'Chay', mode: 'insensitive' } },
+              { name: { contains: 'Nấm', mode: 'insensitive' } },
+              { name: { contains: 'Salad', mode: 'insensitive' } },
+              { name: { contains: 'Đậu phụ', mode: 'insensitive' } },
+              { description: { contains: 'chay', mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        if (query.spice === 'cay' || query.spice === 'spicy') {
+          andFilters.push({
+            OR: [
+              { tags: { has: 'cay' } },
+              { name: { contains: 'Cay', mode: 'insensitive' } },
+              { name: { contains: 'Sa tế', mode: 'insensitive' } },
+              { name: { contains: 'Lẩu thái', mode: 'insensitive' } },
+              { name: { contains: 'Chili', mode: 'insensitive' } },
+              { description: { contains: 'cay', mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        if (query.cuisine) {
+          const CUISINE_EXPANSION_MAP: Record<string, string[]> = {
+            western: [
+              'pizza',
+              'burger',
+              'steak',
+              'mì ý',
+              'spaghetti',
+              'pasta',
+              'âu mỹ',
+              'beefsteak',
+            ],
+            'âu mỹ': [
+              'pizza',
+              'burger',
+              'steak',
+              'mì ý',
+              'spaghetti',
+              'pasta',
+              'âu mỹ',
+              'beefsteak',
+            ],
+            korean: [
+              'kimbap',
+              'tokbokki',
+              'mì cay',
+              'kim chi',
+              'hàn quốc',
+              'korea',
+              'nướng hàn',
+            ],
+            'hàn quốc': [
+              'kimbap',
+              'tokbokki',
+              'mì cay',
+              'kim chi',
+              'hàn quốc',
+              'korea',
+              'nướng hàn',
+            ],
+            japanese: [
+              'sushi',
+              'sashimi',
+              'ramen',
+              'udon',
+              'nhật bản',
+              'japan',
+              'tempura',
+              'bento',
+            ],
+            'nhật bản': [
+              'sushi',
+              'sashimi',
+              'ramen',
+              'udon',
+              'nhật bản',
+              'japan',
+              'tempura',
+              'bento',
+            ],
+            vietnamese: [
+              'phở',
+              'bún',
+              'cơm tấm',
+              'bánh mì',
+              'nem',
+              'xôi',
+              'việt nam',
+              'món việt',
+            ],
+            'món việt': [
+              'phở',
+              'bún',
+              'cơm tấm',
+              'bánh mì',
+              'nem',
+              'xôi',
+              'việt nam',
+              'món việt',
+            ],
+            'đồ cay': ['cay', 'sa tế', 'chili', 'lẩu thái', 'mì cay'],
+            'ăn chay': ['chay', 'nấm', 'đậu phụ', 'salad', 'thanh đạm'],
+            'cơm văn phòng': [
+              'cơm',
+              'cơm tấm',
+              'cơm sườn',
+              'cơm gà',
+              'cơm thố',
+            ],
+            'đồ nướng': [
+              'nướng',
+              'bbq',
+              'sườn',
+              'ba chỉ',
+              'thịt nướng',
+              'bò nướng',
+            ],
+            bbq: ['nướng', 'bbq', 'sườn', 'ba chỉ', 'thịt nướng', 'bò nướng'],
+            'trà sữa': ['trà sữa', 'trà đào', 'trà tắc', 'trân châu'],
+            'đồ ăn vặt': [
+              'ăn vặt',
+              'bánh tráng',
+              'nem chua',
+              'khoai lắc',
+              'gà rán',
+              'tokbokki',
+            ],
+          };
+
+          const rawKeywords = query.cuisine
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+
+          const expandedKeywords = new Set<string>();
+          for (const rawKw of rawKeywords) {
+            expandedKeywords.add(rawKw);
+            for (const [mapKey, expansions] of Object.entries(
+              CUISINE_EXPANSION_MAP,
+            )) {
+              if (rawKw.includes(mapKey) || mapKey.includes(rawKw)) {
+                expansions.forEach((e) => expandedKeywords.add(e));
+              }
+            }
+          }
+
+          if (expandedKeywords.size > 0) {
+            const orConditions: Prisma.FoodWhereInput[] = [];
+            for (const kw of Array.from(expandedKeywords)) {
+              orConditions.push(
+                { name: { contains: kw, mode: 'insensitive' } },
+                { description: { contains: kw, mode: 'insensitive' } },
+                { tags: { has: kw } },
+              );
+            }
+            if (orConditions.length > 0) {
+              andFilters.push({ OR: orConditions });
+            }
+          }
+        }
+
+        if (query.allergies) {
+          const allergyList = query.allergies
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+          for (const allergy of allergyList) {
+            if (allergy.includes('seafood') || allergy.includes('hải sản')) {
+              andFilters.push({
+                NOT: [
+                  { name: { contains: 'tôm', mode: 'insensitive' } },
+                  { name: { contains: 'cua', mode: 'insensitive' } },
+                  { name: { contains: 'ghẹ', mode: 'insensitive' } },
+                  { name: { contains: 'hải sản', mode: 'insensitive' } },
+                  { name: { contains: 'mực', mode: 'insensitive' } },
+                  { name: { contains: 'ốc', mode: 'insensitive' } },
+                  { tags: { has: 'hải sản' } },
+                ],
+              });
+            }
+            if (
+              allergy.includes('peanut') ||
+              allergy.includes('lạc') ||
+              allergy.includes('đậu phộng')
+            ) {
+              andFilters.push({
+                NOT: [
+                  { name: { contains: 'lạc', mode: 'insensitive' } },
+                  { name: { contains: 'đậu phộng', mode: 'insensitive' } },
+                  {
+                    description: {
+                      contains: 'đậu phộng',
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              });
+            }
+          }
+        }
+
         if (andFilters.length > 0) {
           where.AND = andFilters;
         }
@@ -107,7 +338,22 @@ export class FoodService {
         const displayLimit = limit
           ? Math.min(Math.max(limit, 1), 100)
           : FOOD_DISPLAY_LIMIT;
-        const result = await this.repository.findAll(where, 1, displayLimit);
+
+        const orderBy: Prisma.FoodOrderByWithRelationInput[] = query.curated
+          ? [
+              { isAdminRecommended: 'desc' },
+              { isFeaturedToday: 'desc' },
+              { totalLike: 'desc' },
+              { createdAt: 'desc' },
+            ]
+          : [{ createdAt: 'desc' }];
+
+        const result = await this.repository.findAll(
+          where,
+          1,
+          displayLimit,
+          orderBy,
+        );
         const foods = result.data;
 
         if (search || tag) {

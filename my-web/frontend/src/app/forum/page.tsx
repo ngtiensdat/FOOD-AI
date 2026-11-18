@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Info, Plus, Award, Star, Flame, Trophy, Shield, Clock, Globe, UserCheck } from 'lucide-react';
+import { Info, Plus, Award, Star, Flame, Trophy, Shield, Clock, Globe, UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Services & Components
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +49,7 @@ export default function ForumPage() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(true);
   const [followingIds, setFollowingIds] = useState<number[]>([]);
   const [feedTab, setFeedTab] = useState<'all' | 'following'>(FORUM_CONFIG.TABS.ALL);
   
@@ -375,71 +376,128 @@ export default function ForumPage() {
           {/* Right Column: Leaderboard / Top Rank (col-span-3) */}
           <div className="lg:col-span-3 space-y-6 lg:h-full lg:overflow-y-auto scrollbar-hide pb-8">
             {/* Leaderboard Card */}
-            <div className="card-premium p-6 space-y-5">
-              <h3 className="text-body font-black text-gray-800 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
-                <Trophy className="text-yellow-500 animate-bounce" size={20} />
-                {LABELS.SOCIAL.SIDEBAR.LEADERBOARD_TITLE}
-              </h3>
+            <div className="card-premium p-5 space-y-3">
+              {/* Header with Title and Toggle Button */}
+              <div
+                onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
+                className="flex items-center justify-between cursor-pointer select-none group"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsLeaderboardOpen(!isLeaderboardOpen);
+                  }
+                }}
+                aria-expanded={isLeaderboardOpen}
+                aria-label={isLeaderboardOpen ? LABELS.SOCIAL.SIDEBAR.TOGGLE_COLLAPSE : LABELS.SOCIAL.SIDEBAR.TOGGLE_EXPAND}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <Trophy className="text-amber-500" size={17} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-black text-gray-800 dark:text-white truncate">
+                      {LABELS.SOCIAL.SIDEBAR.LEADERBOARD_TITLE}
+                    </h3>
+                    <span className="text-[10px] text-gray-400 font-medium">Top 10 thành viên</span>
+                  </div>
+                </div>
 
-              {loadingLeaderboard ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 animate-pulse">
-                      <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-800" />
-                      <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-3 bg-gray-200 dark:bg-slate-800 rounded w-3/4" />
-                        <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded w-1/2" />
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[11px] font-semibold text-gray-400 group-hover:text-primary transition-colors hidden sm:inline">
+                    {isLeaderboardOpen ? LABELS.SOCIAL.SIDEBAR.TOGGLE_COLLAPSE : LABELS.SOCIAL.SIDEBAR.TOGGLE_EXPAND}
+                  </span>
+                  <div className="w-6 h-6 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center justify-center text-gray-400 group-hover:text-primary transition-all">
+                    {isLeaderboardOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
                 </div>
-              ) : leaderboard.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4 text-center">{LABELS.SOCIAL.SIDEBAR.LEADERBOARD_EMPTY}</p>
-              ) : (
-                <div className="space-y-4">
-                  {leaderboard.slice(0, 10).map((item, idx) => {
-                    const isTop1 = idx === 0;
-                    const isTop2 = idx === 1;
-                    const isTop3 = idx === 2;
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => router.push(`/profile?id=${item.id}`)}
-                        className="flex items-center justify-between gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-900/50 rounded-xl transition-all cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-slate-800"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Rank number or medal */}
-                          <span className="w-6 h-6 shrink-0 font-black text-center text-xs flex items-center justify-center">
-                            {isTop1 ? (
-                              <img src="/images/badges/medal_gold.png" alt="Gold" className="w-6 h-6 object-contain shrink-0" />
-                            ) : isTop2 ? (
-                              <img src="/images/badges/medal_silver.png" alt="Silver" className="w-6 h-6 object-contain shrink-0" />
-                            ) : isTop3 ? (
-                              <img src="/images/badges/medal_bronze.png" alt="Bronze" className="w-6 h-6 object-contain shrink-0" />
-                            ) : (
-                              <span className="text-gray-400 dark:text-gray-500 font-bold">{idx + 1}</span>
-                            )}
-                          </span>
-                          <Avatar src={item.profile?.avatar} name={item.name} size={36} />
-                          <div className="min-w-0">
-                            <h4 className="font-extrabold text-gray-800 dark:text-white truncate text-xs">{item.name}</h4>
-                            <span className="text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
-                              <span>Lv. {item.level || 1}</span>
-                              <span>•</span>
-                              <img src="/images/badges/badge_star.png" alt="Star" className="w-3 h-3 object-contain shrink-0" />
-                              <span className="truncate">{item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}</span>
-                            </span>
+              </div>
+
+              {/* Collapsible Content */}
+              <AnimatePresence initial={false}>
+                {isLeaderboardOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden pt-2 border-t border-gray-100 dark:border-slate-800/80"
+                  >
+                    {loadingLeaderboard ? (
+                      <div className="space-y-3 py-1">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="flex items-center gap-3 animate-pulse">
+                            <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-slate-800 shrink-0" />
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 shrink-0" />
+                            <div className="flex-1 space-y-1.5">
+                              <div className="h-3 bg-gray-200 dark:bg-slate-800 rounded w-2/3" />
+                              <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded w-1/3" />
+                            </div>
                           </div>
-                        </div>
-                        <span className="text-mini font-black text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/10 shrink-0">
-                          ⭐ {item.points || 0}
-                        </span>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    ) : leaderboard.length === 0 ? (
+                      <p className="text-xs text-gray-400 py-4 text-center">{LABELS.SOCIAL.SIDEBAR.LEADERBOARD_EMPTY}</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {leaderboard.slice(0, 10).map((item, idx) => {
+                          const isTop1 = idx === 0;
+                          const isTop2 = idx === 1;
+                          const isTop3 = idx === 2;
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => router.push(`/profile?id=${item.id}`)}
+                              className={`flex items-center justify-between gap-2.5 p-2 rounded-xl transition-all cursor-pointer border ${
+                                isTop1
+                                  ? 'bg-amber-500/5 hover:bg-amber-500/10 border-amber-500/20'
+                                  : isTop2
+                                  ? 'bg-slate-500/5 hover:bg-slate-500/10 border-slate-300/30 dark:border-slate-700/40'
+                                  : isTop3
+                                  ? 'bg-orange-500/5 hover:bg-orange-500/10 border-orange-500/20'
+                                  : 'hover:bg-gray-50 dark:hover:bg-slate-900/60 border-transparent hover:border-gray-100 dark:hover:border-slate-800'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                {/* Rank indicator */}
+                                <div className="w-5 h-5 shrink-0 flex items-center justify-center">
+                                  {isTop1 ? (
+                                    <img src="/images/badges/medal_gold.png" alt="Top 1" className="w-5 h-5 object-contain" />
+                                  ) : isTop2 ? (
+                                    <img src="/images/badges/medal_silver.png" alt="Top 2" className="w-5 h-5 object-contain" />
+                                  ) : isTop3 ? (
+                                    <img src="/images/badges/medal_bronze.png" alt="Top 3" className="w-5 h-5 object-contain" />
+                                  ) : (
+                                    <span className="text-[11px] font-bold text-gray-400 dark:text-slate-500">{idx + 1}</span>
+                                  )}
+                                </div>
+
+                                <Avatar src={item.profile?.avatar} name={item.name} size={32} />
+
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-bold text-gray-800 dark:text-gray-100 truncate text-xs leading-snug">
+                                    {item.name}
+                                  </h4>
+                                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
+                                    <span className="text-primary font-semibold">Lv.{item.level || 1}</span>
+                                    <span>•</span>
+                                    <span className="truncate max-w-[80px]">{item.badgeTitle || LABELS.SOCIAL.SIDEBAR.NEW}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md shrink-0">
+                                {item.points || 0} pts
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
