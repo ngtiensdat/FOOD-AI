@@ -154,7 +154,9 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
 
     let active = true;
     async function initChats() {
-      setIsLoading(true);
+      if (!initialMessage) {
+        setIsLoading(true);
+      }
       
       if (initialMessage) {
         // Nếu người dùng bắt đầu từ thanh Hero, tạo một cuộc hội thoại mới tinh để tách biệt hoàn toàn bối cảnh
@@ -162,6 +164,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
         if (newConv && active) {
           setActiveConversationId(newConv.id);
           await loadConversations(newConv.id);
+        } else if (active) {
+          setIsLoading(false);
         }
       } else {
         const list = await loadConversations();
@@ -178,9 +182,9 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
             }
           }
         }
-      }
-      if (active) {
-        setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+        }
       }
     }
     initChats();
@@ -288,42 +292,56 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
     // Resolve current hour
     const resolvedHour = new Date().getHours();
 
-    // Gọi API chat và truyền thêm activeConversationId (nếu có)
-    const response = await aiService.chat(
-      text,
-      currentLat,
-      currentLng,
-      city,
-      district,
-      weather?.temperature,
-      weather?.isRaining,
-      activeConversationId || undefined,
-      resolvedHour
-    );
+    try {
+      // Gọi API chat và truyền thêm activeConversationId (nếu có)
+      const response = await aiService.chat(
+        text,
+        currentLat,
+        currentLng,
+        city,
+        district,
+        weather?.temperature,
+        weather?.isRaining,
+        activeConversationId || undefined,
+        resolvedHour
+      );
 
-    // Thêm phản hồi của AI
-    const aiMsgId = `ai-${Date.now()}`;
-    setMessages(prev => [
-      ...prev,
-      { 
-        id: aiMsgId, 
-        role: 'ai', 
-        content: response.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
-        suggestions: response.suggestions || []
+      // Thêm phản hồi của AI
+      const aiMsgId = `ai-${Date.now()}`;
+      setMessages(prev => [
+        ...prev,
+        { 
+          id: aiMsgId, 
+          role: 'ai', 
+          content: response?.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
+          suggestions: response?.suggestions || []
+        }
+      ]);
+
+      // Lưu thông tin thời tiết trả về từ response
+      if (response && response.weather) {
+        setWeather(response.weather);
       }
-    ]);
 
-    // Lưu thông tin thời tiết trả về từ response
-    if (response && response.weather) {
-      setWeather(response.weather);
+      // Lưu quick replies sinh ra động bởi AI từ Backend
+      setQuickReplies(response?.quickReplies || []);
+
+      // Tải lại danh sách hội thoại để cập nhật tiêu đề cuộc trò chuyện mới sinh
+      await loadConversations();
+    } catch (err) {
+      console.error(LABELS.AI_CHAT.TOAST.SEND_FIRST_ERROR, err);
+      const aiErrId = `ai-err-${Date.now()}`;
+      setMessages(prev => [
+        ...prev,
+        {
+          id: aiErrId,
+          role: 'ai',
+          content: LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Lưu quick replies sinh ra động bởi AI từ Backend
-    setQuickReplies(response.quickReplies || []);
-    setIsLoading(false);
-
-    // Tải lại danh sách hội thoại để cập nhật tiêu đề cuộc trò chuyện mới sinh
-    await loadConversations();
   };
 
   // Tự động gửi initialMessage lên API khi lịch sử đã load xong
@@ -390,6 +408,17 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
           }
         } catch (err) {
           console.error(LABELS.AI_CHAT.TOAST.SEND_FIRST_ERROR, err);
+          if (active) {
+            const aiErrId = `ai-err-${Date.now()}`;
+            setMessages(prev => [
+              ...prev,
+              {
+                id: aiErrId,
+                role: 'ai',
+                content: LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
+              }
+            ]);
+          }
         } finally {
           if (active) {
             setIsLoading(false);

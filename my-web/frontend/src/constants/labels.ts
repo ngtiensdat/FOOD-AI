@@ -1217,7 +1217,7 @@ const LABELS_VI = {
     PLACEHOLDER_AUTH: 'Hãy kể cho AI nghe bạn muốn ăn gì...',
     PLACEHOLDER_GUEST: 'Đăng nhập để chat với AI tư vấn...',
     SEARCH_BUTTON: 'Tìm',
-    AI_THINKING: 'Đang suyyyyyy...',
+    AI_THINKING: 'Đang suy nghĩ...',
     SUGGESTED_TITLE: 'Các món ăn gợi ý cho bạn:',
     FEATURES: {
       MOOD: 'Gợi ý theo tâm trạng',
