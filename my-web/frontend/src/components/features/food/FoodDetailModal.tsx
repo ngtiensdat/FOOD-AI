@@ -80,51 +80,46 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="modal-card !p-0 max-w-4xl relative z-10 flex flex-col md:flex-row overflow-hidden"
+        className="modal-card !p-0 max-w-2xl w-full max-h-[90vh] flex flex-col relative z-10 overflow-hidden shadow-2xl rounded-3xl"
       >
-        <Button
-          onClick={onClose}
-          variant="none"
-          size="none"
-          className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition-all z-20 md:text-gray-500 md:bg-gray-100 md:hover:bg-gray-200"
-          aria-label={LABELS.COMMON.CANCEL}
-        >
-          <X size={24} />
-        </Button>
+        {/* Banner ảnh phía trên tràn viền theo chuẩn GrabFood / ShopeeFood */}
+        <div className="relative w-full h-64 sm:h-72 md:h-80 shrink-0 bg-gray-950/10 dark:bg-black/40 overflow-hidden">
+          <SafeImage
+            src={getValidImageUrl(food.image)}
+            alt={food.name}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 672px"
+            className="object-cover transition-transform duration-500 hover:scale-105"
+          />
+          {/* Lớp gradient bóng mờ mềm mại giúp làm nổi bật nút đóng và thông tin quán */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/40 pointer-events-none" />
 
-        <div className="w-full md:w-1/2 h-72 sm:h-80 md:h-auto min-h-[300px] md:min-h-[460px] bg-gray-950/20 dark:bg-black/50 relative overflow-hidden flex items-center justify-center p-4 sm:p-6 md:p-8">
-          {/* Lớp nền mờ (hiệu ứng ambient blur nếu thừa khoảng trống khi tỷ lệ ảnh khác nhau) */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-            <SafeImage
-              src={getValidImageUrl(food.image)}
-              alt=""
-              fill
-              aria-hidden="true"
-              className="object-cover blur-2xl scale-125 opacity-55 dark:opacity-40"
-            />
-            {/* Lớp phủ làm dịu ánh sáng nền để nổi bật món ăn */}
-            <div className="absolute inset-0 bg-black/10 dark:bg-black/40 backdrop-blur-[2px]" />
+          {/* Nút đóng nổi bật ở góc trên bên phải */}
+          <Button
+            onClick={onClose}
+            variant="none"
+            size="none"
+            className="absolute top-4 right-4 w-10 h-10 sm:w-11 sm:h-11 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all z-20 shadow-lg cursor-pointer"
+            aria-label={LABELS.COMMON.CANCEL}
+          >
+            <X size={20} />
+          </Button>
+
+          {/* Huy hiệu nhà hàng nằm trang nhã ở góc dưới ảnh */}
+          <div className="absolute bottom-4 left-5 sm:left-7 z-10 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-primary dark:text-orange-400 rounded-full text-xs sm:text-sm font-bold shadow-lg">
+              <Store size={14} className="shrink-0" />
+              <span>{food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}</span>
+            </span>
           </div>
-
-          {/* Lớp ảnh món ăn chính: Thu nhỏ vừa vặn, hiển thị trọn vẹn 100% không bị cắt xén */}
-          <div className="relative w-full h-full min-h-[240px] md:min-h-[360px] z-10 flex items-center justify-center">
-            <SafeImage
-              src={getValidImageUrl(food.image)}
-              alt={food.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-contain drop-shadow-2xl rounded-2xl transition-transform duration-300 hover:scale-[1.02]"
-            />
-          </div>
-
-          {/* Gradient tinh tế trên mobile */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:hidden z-10 pointer-events-none" />
         </div>
 
-        <div className="w-full md:w-1/2 p-5 sm:p-8 md:p-12 overflow-y-auto">
+        {/* Nội dung thông tin món ăn phía dưới (cuộn độc lập nếu nội dung dài) */}
+        <div className="p-5 sm:p-7 md:p-8 overflow-y-auto space-y-6 flex-1">
           {/* Closed Warning Banner */}
           {!isOpen && (
-            <div className="alert-box-rose mb-6">
+            <div className="alert-box-rose">
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-sm">{LABELS.RESTAURANT.CLOSED_WARNING_TITLE}</p>
@@ -137,19 +132,16 @@ export const FoodDetailModal = ({ food, onClose }: FoodDetailModalProps) => {
             </div>
           )}
 
-          <div className="mb-8">
-            <span className="inline-block px-4 py-1.5 bg-orange-50 dark:bg-orange-950/30 text-primary dark:text-orange-400 rounded-full text-sm font-bold">
-              {food.restaurant?.name || food.restaurantName || LABELS.FOOD.SYSTEM}
-            </span>
+          <div>
             {food.restaurant?.profile?.openingHours && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 mt-2">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 mb-2">
                 <Clock size={14} />
                 <span>{LABELS.RESTAURANT.OPERATING_HOURS_LABEL}: {food.restaurant.profile.openingHours}</span>
               </div>
             )}
-            <h2 className="text-h2 text-gray-800 dark:text-slate-100 mb-2 mt-4">{food.name}</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-slate-100 mb-3">{food.name}</h2>
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <p className="text-2xl font-bold text-primary dark:text-orange-400">{formatCurrency(food.price)}</p>
+              <p className="text-2xl sm:text-3xl font-black text-primary dark:text-orange-400">{formatCurrency(food.price)}</p>
               {(food.totalOrder !== undefined || food.totalLike !== undefined) && (
                 <div className="flex gap-4 text-xs font-extrabold text-gray-500 dark:text-slate-400">
                   {food.totalOrder !== undefined && (
