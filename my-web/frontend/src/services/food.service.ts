@@ -21,7 +21,24 @@ export const foodService = {
     cuisine?: string;
     allergies?: string;
   }) {
-    return apiClient.get('/foods', { params }).catch(() => []);
+    try {
+      return await apiClient.get('/foods', { params });
+    } catch (err) {
+      console.warn('[foodService.getAllFoods] Primary query failed, retrying with base params...', err);
+      try {
+        const baseParams = {
+          city: params?.city,
+          district: params?.district,
+          search: params?.search,
+          tag: params?.tag,
+          limit: params?.limit || 24,
+        };
+        return await apiClient.get('/foods', { params: baseParams });
+      } catch (fallbackErr) {
+        console.error('[foodService.getAllFoods] Fallback query failed:', fallbackErr);
+        return [];
+      }
+    }
   },
 
   async getFeaturedToday() {
