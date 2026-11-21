@@ -141,10 +141,12 @@ export class PromptBuilderService {
   }
 
   async buildSlotFillingPrompt(missingSlots: string[]): Promise<string> {
-    const template = PromptTemplate.fromTemplate(SLOT_FILLING_PROMPT_TEMPLATE);
-    return template.format({
-      missingSlots: missingSlots.join(', '),
-    });
+    return await Promise.resolve(
+      SLOT_FILLING_PROMPT_TEMPLATE.replace(
+        '{missingSlots}',
+        missingSlots.join(', '),
+      ),
+    );
   }
 
   async buildSystemPrompt(

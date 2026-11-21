@@ -19,8 +19,8 @@ NHIỆM VỤ CỦA BẠN:
    - Nếu khách có sở thích ăn chay trong hồ sơ: Chủ động hỏi xem khách có muốn chọn món chay thanh tịnh hôm nay không.
 3. BẮT BUỘC sinh ra 3-4 nút gợi ý phản hồi nhanh (quickReplies) khớp chính xác với câu hỏi vừa đặt ra, để khách chỉ cần chạm 1 lần là chọn xong. Ví dụ buổi chiều:
    [
-     { "label": "Bánh mì giòn 🥖", "text": "Tôi muốn ăn bánh mì giòn lót dạ" },
-     { "label": "Mì tôm nóng hổi 🍜", "text": "Tôi muốn ăn bát mì tôm nóng hổi" },
-     { "label": "Ăn vặt & Trà chiều 🧋", "text": "Gợi ý đồ ăn vặt hoặc trà chiều" },
-     { "label": "Bữa chính no nê 🍚", "text": "Tôi muốn ăn bữa chính no như cơm hoặc bún" }
+     {{ "label": "Bánh mì giòn 🥖", "text": "Tôi muốn ăn bánh mì giòn lót dạ" }},
+     {{ "label": "Mì tôm nóng hổi 🍜", "text": "Tôi muốn ăn bát mì tôm nóng hổi" }},
+     {{ "label": "Ăn vặt & Trà chiều 🧋", "text": "Gợi ý đồ ăn vặt hoặc trà chiều" }},
+     {{ "label": "Bữa chính no nê 🍚", "text": "Tôi muốn ăn bữa chính no như cơm hoặc bún" }}
    ]`;

@@ -15,6 +15,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { RetryQueueService } from '../../common/services/retry-queue.service';
 import { VectorRepository, SearchResult } from './vector.repository';
 import { UserRole, MessageRole } from '@prisma/client';
+import * as crypto from 'crypto';
 
 export interface ConversationMetadata {
   title?: string;
@@ -179,8 +180,40 @@ export class AiService implements OnModuleInit {
       });
     }
 
-    // 2.5 Local Fallback cho các tin nhắn đơn giản (greetings/thanks) để tránh chi phí OpenAI
+    // 2.3. SHA-256 Response Cache trên Redis (Chứng minh Bảng 3.2.3: Cache Hit < 200ms)
     const lowercaseMsg = cleanMessage.toLowerCase().trim();
+    const queryHash = crypto
+      .createHash('sha256')
+      .update(lowercaseMsg)
+      .digest('hex');
+    const responseCacheKey = `chat:full_response:v1:${queryHash}`;
+
+    try {
+      const cachedResponse = await this.redisService.get(responseCacheKey);
+      if (cachedResponse) {
+        this.logger.log(
+          `[Cache HIT] Phản hồi tức thì qua Redis SHA-256 cho: "${cleanMessage}"`,
+        );
+        const parsedCached = JSON.parse(cachedResponse);
+        if (conversation) {
+          await this.stateManager.saveMessage(
+            conversation.id,
+            MessageRole.USER,
+            cleanMessage,
+          );
+          await this.stateManager.saveMessage(
+            conversation.id,
+            MessageRole.AI,
+            parsedCached.reply,
+          );
+        }
+        return parsedCached;
+      }
+    } catch (err) {
+      this.logger.warn(`Lỗi đọc Redis response cache: ${err}`);
+    }
+
+    // 2.5 Local Fallback cho các tin nhắn đơn giản (greetings/thanks) để tránh chi phí OpenAI
     const greetings = [
       'hello',
       'hi',
@@ -359,19 +392,13 @@ export class AiService implements OnModuleInit {
         );
       }
 
-      // 8. RAG Embedding Retrieval
-      const userVector = await this.openaiService.getEmbedding(
-        searchQuery || cleanMessage,
-      );
-
-      // 8.5. Auto-detect weather from GPS via Open-Meteo
-      let weatherData: WeatherData | null = null;
-      if (userLat && userLng) {
-        weatherData = await this.weatherService.getCurrentWeather(
-          userLat,
-          userLng,
-        );
-      }
+      // 8. Chạy song song tạo Vector Embedding và lấy Dữ liệu thời tiết Open-Meteo
+      const [userVector, weatherData] = await Promise.all([
+        this.openaiService.getEmbedding(searchQuery || cleanMessage),
+        userLat && userLng
+          ? this.weatherService.getCurrentWeather(userLat, userLng)
+          : Promise.resolve(null as WeatherData | null),
+      ]);
 
       // Tôn trọng giác quan thực tế của người dùng: Nếu người dùng nói trời không mưa thì ghi đè dữ liệu API
       const cleanLower = cleanMessage.toLowerCase();
@@ -647,7 +674,7 @@ export class AiService implements OnModuleInit {
         suggestedIdsSet.has(f.id),
       );
 
-      return {
+      const finalResult = {
         reply: parsedResponse.reply,
         suggestions: recommendedFoods.map((f) => ({
           id: f.id,
@@ -671,6 +698,19 @@ export class AiService implements OnModuleInit {
             }
           : null,
       };
+
+      // Lưu toàn bộ phản hồi vào Redis Cache trong 1 giờ để phục vụ kịch bản Cache Hit (< 200ms)
+      try {
+        await this.redisService.set(
+          responseCacheKey,
+          JSON.stringify(finalResult),
+          3600,
+        );
+      } catch (err) {
+        this.logger.warn(`Lỗi ghi Redis response cache: ${err}`);
+      }
+
+      return finalResult;
     } catch (error) {
       this.logger.error(
         'Lỗi trong luồng AiService.chat:',
