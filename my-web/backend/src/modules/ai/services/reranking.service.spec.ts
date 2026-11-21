@@ -73,9 +73,9 @@ describe('RerankingService', () => {
       expect(service.calculatePriceScore(food, 80000)).toBe(1.0);
     });
 
-    it('nên suy hao điểm tuyến tính nếu món ăn vượt ngân sách', () => {
-      // price 60k, budget 50k -> score = 1 - (60 - 50) / 50 = 0.8
-      expect(service.calculatePriceScore(food, 50000)).toBeCloseTo(0.8);
+    it('nên suy hao điểm linh hoạt theo dung sai sai lệch 20k nếu món ăn vượt nhẹ ngân sách', () => {
+      // price 60k, budget 50k -> tolerance 20k, diff 10k -> score = 1 - (10 / 20) * 0.2 = 0.9
+      expect(service.calculatePriceScore(food, 50000)).toBeCloseTo(0.9);
     });
 
     it('nên giới hạn cận dưới là 0.0 nếu món ăn vượt quá xa ngân sách', () => {

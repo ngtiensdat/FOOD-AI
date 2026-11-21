@@ -515,8 +515,25 @@ export class RerankingService {
       }
 
       // Savory meal vs Sweet desserts or drinks
-      const isSavoryRequest =
-        msgText.includes('món mặn') || msgText.includes('đồ mặn') || isHungry;
+      const isExplicitSweetOrDessertRequest =
+        msgText.includes('tráng miệng') ||
+        msgText.includes('thèm ngọt') ||
+        msgText.includes('món ngọt') ||
+        msgText.includes('đồ ngọt') ||
+        msgText.includes('chè') ||
+        msgText.includes('kem') ||
+        msgText.includes('caramen') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('ngọt');
+
+      const isExplicitDrinkRequest =
+        msgText.includes('uống gì') ||
+        msgText.includes('đồ uống') ||
+        msgText.includes('nước uống') ||
+        msgText.includes('cà phê') ||
+        msgText.includes('cafe') ||
+        msgText.includes('trà sữa') ||
+        msgText.includes('giải khát') ||
+        state.slots.category === 'DRINK';
 
       const isDrink =
         (food.categoryName || '').toLowerCase().includes('đồ uống') ||
@@ -528,36 +545,60 @@ export class RerankingService {
         foodNameLower.includes('sinh tố');
 
       const isSweetOrDessert =
+        (food.categoryName || '').toLowerCase().includes('tráng miệng') ||
         foodNameLower.includes('chè') ||
         foodNameLower.includes('caramen') ||
         foodNameLower.includes('thạch') ||
         foodNameLower.includes('kem') ||
         foodNameLower.includes('trà sữa') ||
-        foodNameLower.includes('ngọt');
+        foodNameLower.includes('bánh ngọt');
 
-      if (isSavoryRequest) {
-        if (isDrink) {
-          diningSanityAdjust -= 0.5; // Never recommend drinks when starving or asking for savory food
-        }
+      const isCompleteMeal =
+        foodNameLower.includes('bánh mì chảo') ||
+        foodNameLower.includes('bánh mì') ||
+        foodNameLower.includes('cơm') ||
+        foodNameLower.includes('phở') ||
+        foodNameLower.includes('bún') ||
+        foodNameLower.includes('miến') ||
+        foodNameLower.includes('hủ tiếu') ||
+        foodNameLower.includes('mì') ||
+        foodNameLower.includes('xôi') ||
+        foodNameLower.includes('pizza') ||
+        foodNameLower.includes('burger') ||
+        foodNameLower.includes('cháo') ||
+        foodNameLower.includes('lẩu') ||
+        foodNameLower.includes('nướng') ||
+        foodNameLower.includes('sườn') ||
+        foodNameLower.includes('gà') ||
+        foodNameLower.includes('bò') ||
+        foodNameLower.includes('vịt') ||
+        foodNameLower.includes('ngan') ||
+        foodNameLower.includes('hải sản') ||
+        foodNameLower.includes('nem');
+
+      if (isExplicitSweetOrDessertRequest) {
         if (isSweetOrDessert) {
-          diningSanityAdjust -= 0.45;
+          diningSanityAdjust += 0.4;
+        } else if (isCompleteMeal) {
+          diningSanityAdjust -= 0.3;
         }
-
-        const isCompleteMeal =
-          foodNameLower.includes('bánh mì chảo') ||
-          foodNameLower.includes('bánh mì') ||
-          foodNameLower.includes('cơm') ||
-          foodNameLower.includes('phở') ||
-          foodNameLower.includes('bún') ||
-          foodNameLower.includes('miến') ||
-          foodNameLower.includes('hủ tiếu') ||
-          foodNameLower.includes('mì') ||
-          foodNameLower.includes('xôi') ||
-          foodNameLower.includes('pizza') ||
-          foodNameLower.includes('burger');
-
+      } else if (isExplicitDrinkRequest) {
+        if (isDrink) {
+          diningSanityAdjust += 0.4;
+        } else if (isCompleteMeal) {
+          diningSanityAdjust -= 0.3;
+        }
+      } else {
+        // MẶC ĐỊNH CHO TẤT CẢ CÁC YÊU CẦU ĂN UỐNG / TÌM MÓN BÌNH THƯỜNG / KHI ĐÓI:
+        // Ưu tiên món ăn chính no bụng hoàn chỉnh, TUYỆT ĐỐI KHÔNG để tráng miệng và đồ uống tràn ngập!
+        if (isSweetOrDessert) {
+          diningSanityAdjust -= 0.45; // Phạt nặng món tráng miệng khi khách tìm món ăn thông thường
+        }
+        if (isDrink) {
+          diningSanityAdjust -= 0.5; // Phạt nặng đồ uống khi khách tìm món ăn thông thường
+        }
         if (isCompleteMeal && !isPureToppingOrIngredient) {
-          diningSanityAdjust += 0.25; // Prioritize complete standalone meal
+          diningSanityAdjust += 0.25; // Ưu tiên hàng đầu cho bữa ăn chính no bụng hoàn chỉnh
         }
       }
 

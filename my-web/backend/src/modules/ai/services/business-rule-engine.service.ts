@@ -106,7 +106,24 @@ export class BusinessRuleEngineService {
   getPriceScore(price: number, budget?: number): number {
     if (!budget) return 1.0;
     if (price <= budget) return 1.0;
-    return Math.max(0, 1 - (price - budget) / budget);
+
+    // Sai lệch ngân sách linh hoạt (tolerance):
+    // - Với người dùng ít tiền / ngân sách bình dân (<= 100k): dung sai cho phép chênh 20.000đ
+    //   (Ví dụ: khách hỏi 40k thì món 45k - 60k vẫn đạt điểm rất tốt 0.8 - 0.95, không bị triệt tiêu)
+    // - Với người dùng có xu hướng nhiều tiền (> 100k): dung sai mở rộng theo tỷ lệ 25% (tối thiểu 25.000đ)
+    const tolerance = budget <= 100000 ? 20000 : Math.max(25000, budget * 0.25);
+
+    const diff = price - budget;
+
+    // Trong phạm vi dung sai (price <= budget + tolerance):
+    // Điểm chỉ giảm nhẹ từ 1.0 xuống 0.8 để món ăn no chất lượng vẫn cạnh tranh tốt
+    if (diff <= tolerance) {
+      return 1.0 - (diff / tolerance) * 0.2;
+    }
+
+    // Vượt ngoài phạm vi dung sai: suy hao dần từ 0.8
+    const excess = diff - tolerance;
+    return Math.max(0.0, 0.8 - excess / budget);
   }
 
   // Distance range match score based on mobility
