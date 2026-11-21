@@ -233,10 +233,11 @@ export const useExploreActions = () => {
           setTotalPages(1);
         }
 
+        let currentFoods: FoodCardData[] = [];
         if (foodsRes.status === 'fulfilled') {
           const rawFoods = parseFoodsPayload(foodsRes.value);
           // Bộ lọc chất lượng nghiêm ngặt: Phải có ảnh hợp lệ và loại bỏ các món phụ/topping
-          const qualityFoods = rawFoods.filter((f) => {
+          currentFoods = rawFoods.filter((f) => {
             const hasValidImage = Boolean(f.image && f.image.trim() !== '' && !f.image.includes('placeholder'));
             if (!hasValidImage) return false;
             const nameLower = (f.name || '').toLowerCase();
@@ -248,12 +249,36 @@ export const useExploreActions = () => {
               nameLower.includes('nước chấm');
             return !isTopping;
           });
-
-          setFoods(qualityFoods);
         } else {
           console.error('Lỗi lấy dữ liệu món ăn:', foodsRes.reason);
-          setFoods([]);
         }
+
+        // Cơ chế Fallback thông minh: Nếu bộ lọc vị trí/cá nhân hóa trả về 0 món (hoặc môi trường deploy chưa đồng bộ)
+        // tự động nới lỏng để lấy các món ngon có hình ảnh chất lượng cao, đảm bảo trang không bao giờ bị trắng
+        if (currentFoods.length === 0 && !debouncedSearchQuery) {
+          try {
+            const fallbackRes = await foodService.getAllFoods({ limit: 24, hasImage: true });
+            const rawFallback = parseFoodsPayload(fallbackRes);
+            const validFallback = rawFallback.filter((f) => {
+              const hasValidImage = Boolean(f.image && f.image.trim() !== '' && !f.image.includes('placeholder'));
+              if (!hasValidImage) return false;
+              const nameLower = (f.name || '').toLowerCase();
+              return !(
+                nameLower.includes('topping') ||
+                nameLower.includes('rau sống') ||
+                nameLower.includes('thêm') ||
+                nameLower.includes('gia vị')
+              );
+            });
+            if (validFallback.length > 0) {
+              currentFoods = validFallback;
+            }
+          } catch (fbErr) {
+            console.warn('Fallback foods query error:', fbErr);
+          }
+        }
+
+        setFoods(currentFoods);
       } catch (error) {
         console.error('Lỗi lấy dữ liệu khám phá:', error);
       } finally {
