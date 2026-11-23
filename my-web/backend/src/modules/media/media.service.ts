@@ -14,6 +14,15 @@ export class MediaService {
 
   constructor() {
     const config = appConfig();
+    if (
+      !config.cloudinaryCloudName ||
+      !config.cloudinaryApiKey ||
+      !config.cloudinaryApiSecret
+    ) {
+      this.logger.error(
+        'CẢNH BÁO: Thiếu biến môi trường Cloudinary (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)! Tính năng upload ảnh sẽ không hoạt động.',
+      );
+    }
     cloudinary.config({
       cloud_name: config.cloudinaryCloudName,
       api_key: config.cloudinaryApiKey,
@@ -51,9 +60,11 @@ export class MediaService {
         },
         (error, result: UploadApiResponse | undefined) => {
           if (error || !result) {
-            this.logger.error('Cloudinary upload failed', error);
+            const errorMsg =
+              error?.message || 'Lỗi không xác định từ Cloudinary';
+            this.logger.error(`Cloudinary upload failed: ${errorMsg}`, error);
             return reject(
-              new BadRequestException('Upload ảnh thất bại. Vui lòng thử lại.'),
+              new BadRequestException(`Upload ảnh thất bại: ${errorMsg}`),
             );
           }
           resolve(result.secure_url);
@@ -85,11 +96,14 @@ export class MediaService {
         },
         (error, result: UploadApiResponse | undefined) => {
           if (error || !result) {
-            this.logger.error('Cloudinary post image upload failed', error);
+            const errorMsg =
+              error?.message || 'Lỗi không xác định từ Cloudinary';
+            this.logger.error(
+              `Cloudinary post image upload failed: ${errorMsg}`,
+              error,
+            );
             return reject(
-              new BadRequestException(
-                'Upload ảnh bài đăng thất bại. Vui lòng thử lại.',
-              ),
+              new BadRequestException(`Upload ảnh thất bại: ${errorMsg}`),
             );
           }
           resolve(result.secure_url);

@@ -129,6 +129,7 @@ export class PromptBuilderService {
     const optimized = topCandidates.map((c) => ({
       id: c.id,
       name: c.name,
+      category: (c as any).categoryName || 'Món chính',
       price: c.price,
       similarity: c.similarity,
       restaurantName: c.restaurantName,

@@ -75,8 +75,8 @@ export class VectorRepository {
           -- Lọc danh mục động từ AI
           AND (
             CAST(${categoryFilter} AS text) = 'ALL' OR
-            (CAST(${categoryFilter} AS text) = 'DRINK' AND c.name ILIKE '%uống%') OR
-            (CAST(${categoryFilter} AS text) = 'FOOD' AND (c.name IS NULL OR c.name NOT ILIKE '%uống%'))
+            (CAST(${categoryFilter} AS text) = 'DRINK' AND (c.name ILIKE '%uống%' OR c.name ILIKE '%giải khát%' OR c.name ILIKE '%trà%' OR c.name ILIKE '%nước%')) OR
+            (CAST(${categoryFilter} AS text) = 'FOOD' AND (c.name IS NULL OR (c.name NOT ILIKE '%uống%' AND c.name NOT ILIKE '%tráng miệng%' AND c.name NOT ILIKE '%giải khát%' AND c.name NOT ILIKE '%nước%' AND c.name NOT ILIKE '%trà%' AND c.name NOT ILIKE '%ăn kèm%')))
           )
       )
       SELECT id, name, price, description, image, tags, "restaurantId", "restaurantName", address, lat, lng, "categoryName", "merchantBadge", "embeddingSimilarity", "distance_km",

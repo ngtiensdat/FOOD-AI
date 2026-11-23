@@ -18,14 +18,15 @@ export class CsrfGuard implements CanActivate {
     const response = httpContext.getResponse<Response>();
 
     // 1. Lấy hoặc sinh mới CSRF Token lưu trong Cookie XSRF-TOKEN (httpOnly: false để JS đọc được)
+    const isProd = process.env.NODE_ENV === 'production';
     let csrfToken = request.cookies['XSRF-TOKEN'];
     if (!csrfToken) {
       csrfToken = crypto.randomBytes(32).toString('hex');
       response.cookie('XSRF-TOKEN', csrfToken, {
         path: '/',
         httpOnly: false, // Để client đọc được và Axios/Fetch tự động lấy
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: isProd ? 'none' : 'lax',
+        secure: isProd,
       });
     }
 

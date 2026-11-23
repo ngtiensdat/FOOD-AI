@@ -63,14 +63,22 @@ export const useLoginActions = () => {
       setUser(data.user);
 
       // Nếu email chưa được xác thực, hiển thị thông báo nhắc nhở (vẫn cho đăng nhập)
-      toast.success(LABELS.COMMON.SUCCESS);
-      window.location.href = '/';
+      const isUnverified = data?.user && data.user.isEmailVerified === false;
+      const successMsg = isUnverified
+        ? LABELS.AUTH.LOGIN_SUCCESS_UNVERIFIED
+        : LABELS.AUTH.LOGIN_SUCCESS;
+
+      toast.success(successMsg);
+
+      // Chờ 1.2 giây để người dùng kịp nhìn thấy thông báo thành công trước khi chuyển trang
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1200);
     } catch (error) {
       const err = error as ApiError;
       const msg = err.message || LABELS.COMMON.ERROR;
       toast.error(msg);
       setErrors({ form: msg });
-    } finally {
       setIsLoading(false);
     }
   };

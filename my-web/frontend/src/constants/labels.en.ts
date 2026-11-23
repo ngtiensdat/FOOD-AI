@@ -130,6 +130,7 @@ export const LABELS_EN = {
     CONFIRM_NEW_PASSWORD_LABEL: 'Confirm New Password',
     YOUR_EMAIL: 'your email',
     PROCEED_VERIFY: 'Proceed to verification',
+    LOGIN_SUCCESS: 'Login successful! Welcome back.',
     LOGIN_SUCCESS_UNVERIFIED: 'Login successful! Your email is not verified — please verify to unlock all features (Forgot Password, account security...)',
     LOGIN_PANEL_HEADING: 'Discover Cuisine',
     LOGIN_PANEL_HEADING_SUB: 'smartly with AI',

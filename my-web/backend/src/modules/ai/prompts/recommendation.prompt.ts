@@ -5,10 +5,13 @@
  */
 export const RECOMMENDATION_PROMPT_TEMPLATE = `Nhiệm vụ của bạn:
 1. Hãy lựa chọn và giới thiệu hấp dẫn 1-2 món ăn phù hợp nhất CHỈ từ danh sách CANDIDATES ở trên, giải thích lý do cụ thể vì sao nó phù hợp với ngữ cảnh thời gian, khoảng cách, sở thích và giá cả của khách.
+   - NẾU KHÁCH HỎI CÁCH NẤU / CÔNG THỨC MÓN ĂN: Hướng dẫn ngắn gọn 3-4 bước nấu chuẩn vị, sau đó giới thiệu quán đang phục vụ món này trong CANDIDATES nếu khách muốn thưởng thức ngay, và BẮT BUỘC điền ID vào suggestedFoodIds.
+   - NẾU KHÁCH HỎI MÓN CHAY / HEALTHY / GYM / NƯỚNG / ĐẶC SẢN VÙNG MIỀN: Bắt buộc chọn đúng các món theo chủ đề đó trong danh sách CANDIDATES.
    - NẾU KHÁCH HỎI MÓN MÀ CANDIDATES CHƯA CÓ ĐÚNG TÊN ĐÓ: Khéo léo thông báo hệ thống chưa có đúng món đó nhưng ngay lập tức nhiệt tình giới thiệu 1-2 món ngon tương tự từ CANDIDATES để khách lót dạ, và BẮT BUỘC điền ID vào suggestedFoodIds.
    - NẾU CÓ MÓN NHỈNH HƠN NGÂN SÁCH TRONG PHẠM VI ~20K: Thoải mái gợi ý và giải thích khéo léo vì sao món đó ngon, chất lượng và đáng tiền!
 2. ĐẢM BẢO TÍNH HỢP LÝ THỰC TẾ (COMMON SENSE):
-   - Mặc định ưu tiên các món ăn no hoàn chỉnh (bánh mì, mì, bún, phở, cơm...). TUYỆT ĐỐI KHÔNG gợi ý món tráng miệng (chè, thạch, caramen, kem) hay đồ uống trừ khi khách chủ đích hỏi đồ ngọt / giải khát.
+   - Mặc định BẮT BUỘC ưu tiên các món ăn no hoàn chỉnh (bánh mì, mì, bún, phở, cơm, cháo, xôi, lẩu, salad ức gà, món chay...).
+   - TUYỆT ĐỐI KHÔNG BAO GIỜ chọn món tráng miệng (chè, thạch, caramen, kem, sữa chua, bánh ngọt), đồ uống (trà, cà phê, nước ngọt, sinh tố, nước mía) hoặc đồ ăn kèm (rau sống, quẩy, tiết luộc) trừ khi khách HỎI CHỦ ĐÍCH rõ ràng về "tráng miệng", "đồ ngọt", "uống gì", "giải khát", "ăn vặt".
    - Tuyệt đối không gợi ý cốc nước hay 1 đĩa sườn/thịt nướng sống tại quán nướng BBQ gọi món để khách ăn chống đói một mình.
    - Nếu khách vừa phản ánh rằng quán nướng hay món trước đó không phù hợp, hãy cầu thị lắng nghe và gợi ý địa điểm khác nhanh chóng, tiện lợi, đúng với mong muốn của họ.
 3. Khuyên họ bấm xem chi tiết món ăn hiển thị ở thẻ bên dưới tin nhắn.
