@@ -670,13 +670,35 @@ export class AiService implements OnModuleInit {
       }
 
       const suggestedIdsSet = new Set(rawSuggestedFoodIds);
-      const recommendedFoods = selectedRecommendationFoods.filter((f) =>
+      let recommendedFoods = selectedRecommendationFoods.filter((f) =>
         suggestedIdsSet.has(f.id),
+      );
+
+      // Nếu LLM không khớp được ID nào nhưng hệ thống có candidates thì lấy món top 1
+      if (
+        recommendedFoods.length === 0 &&
+        selectedRecommendationFoods.length > 0
+      ) {
+        recommendedFoods = selectedRecommendationFoods.slice(0, 1);
+      }
+
+      const recommendedIdsSet = new Set(recommendedFoods.map((f) => f.id));
+      const otherTopFoods = selectedRecommendationFoods.filter(
+        (f) => !recommendedIdsSet.has(f.id),
       );
 
       const finalResult = {
         reply: parsedResponse.reply,
         suggestions: recommendedFoods.map((f) => ({
+          id: f.id,
+          name: f.name,
+          price: f.price,
+          image: f.image,
+          restaurantName: f.restaurantName,
+          address: f.address,
+          similarity: f.similarity,
+        })),
+        otherSuggestions: otherTopFoods.map((f) => ({
           id: f.id,
           name: f.name,
           price: f.price,

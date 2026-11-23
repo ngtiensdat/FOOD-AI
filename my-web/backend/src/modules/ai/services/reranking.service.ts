@@ -172,6 +172,143 @@ export class RerankingService {
       'nhúng lẩu',
       'lẩu thái',
     ],
+    chay: [
+      'chay',
+      'thanh tịnh',
+      'thanh đạm',
+      'nấm',
+      'đậu hũ',
+      'rau củ',
+      'thực dưỡng',
+      'ưu đàm',
+      'tâm đức',
+      'hủ tiếu chay',
+    ],
+    'ăn chay': [
+      'chay',
+      'thanh tịnh',
+      'thanh đạm',
+      'nấm',
+      'đậu hũ',
+      'rau củ',
+      'thực dưỡng',
+      'ưu đàm',
+      'tâm đức',
+      'hủ tiếu chay',
+    ],
+    gym: [
+      'salad',
+      'ức gà',
+      'poke',
+      'cá hồi',
+      'healthy',
+      'eat clean',
+      'protein',
+      'giảm cân',
+      'tăng cơ',
+      'bếp xanh',
+      'detox',
+    ],
+    'tập gym': [
+      'salad',
+      'ức gà',
+      'poke',
+      'cá hồi',
+      'healthy',
+      'eat clean',
+      'protein',
+      'giảm cân',
+      'tăng cơ',
+      'bếp xanh',
+      'detox',
+    ],
+    healthy: [
+      'salad',
+      'ức gà',
+      'poke',
+      'cá hồi',
+      'healthy',
+      'eat clean',
+      'protein',
+      'giảm cân',
+      'tăng cơ',
+      'bếp xanh',
+      'detox',
+    ],
+    'eat clean': [
+      'salad',
+      'ức gà',
+      'poke',
+      'cá hồi',
+      'healthy',
+      'eat clean',
+      'protein',
+      'giảm cân',
+      'tăng cơ',
+      'bếp xanh',
+      'detox',
+    ],
+    'giảm cân': [
+      'salad',
+      'ức gà',
+      'poke',
+      'cá hồi',
+      'healthy',
+      'eat clean',
+      'protein',
+      'giảm cân',
+      'bếp xanh',
+      'detox',
+    ],
+    'tăng cơ': [
+      'ức gà',
+      'bò',
+      'thịt bò',
+      'trứng',
+      'protein',
+      'poke',
+      'cá hồi',
+      'bếp xanh',
+    ],
+    'dân tộc': [
+      'thịt trâu',
+      'lợn mán',
+      'gác bếp',
+      'măng',
+      'cơm lam',
+      'thắng cố',
+      'vùng cao',
+      'tây bắc',
+      'bún đậu',
+      'bún mắm',
+      'chả cá',
+      'đặc sản',
+    ],
+    'đặc sản': [
+      'phở lò đúc',
+      'bún chả',
+      'bún đậu mắm tôm',
+      'bún bò huế',
+      'bánh xèo',
+      'bánh xèo miền tây',
+      'chả cá lã vọng',
+      'mì quảng',
+      'bún cá cay',
+      'bún mắm',
+      'cơm niêu',
+    ],
+    'vùng miền': [
+      'miền bắc',
+      'miền trung',
+      'miền nam',
+      'miền tây',
+      'hà nội',
+      'huế',
+      'sài gòn',
+      'bún bò huế',
+      'bánh xèo',
+      'chả cá lã vọng',
+    ],
   };
 
   constructor(
@@ -497,67 +634,148 @@ export class RerankingService {
       const foodNameLower = food.name.toLowerCase();
       const restaurantNameLower = (food.restaurantName || '').toLowerCase();
 
+      const catNameLower = (food.categoryName || '').toLowerCase();
+
       // Pure toppings, bare side dishes, condiments
       const isPureToppingOrIngredient =
+        catNameLower.includes('ăn kèm') ||
         foodNameLower.startsWith('pate') ||
         foodNameLower.includes('topping') ||
         foodNameLower.includes('rau sống') ||
         foodNameLower.includes('bổ sung') ||
         foodNameLower.includes('thêm') ||
-        foodNameLower === 'quẩy';
+        foodNameLower.includes('quẩy') ||
+        foodNameLower.includes('tiết luộc') ||
+        foodNameLower.includes('trứng non');
 
       if (
         isPureToppingOrIngredient &&
         !msgText.includes('pate') &&
-        !msgText.includes('topping')
+        !msgText.includes('topping') &&
+        !msgText.includes('ăn kèm') &&
+        !msgText.includes('quẩy')
       ) {
-        diningSanityAdjust -= 0.55; // Extreme penalty: never recommend a standalone topping/pate
+        diningSanityAdjust -= 1.0; // Triệt tiêu đồ ăn kèm / topping khi khách không chủ đích gọi
       }
 
       // Savory meal vs Sweet desserts or drinks
-      const isSavoryRequest =
-        msgText.includes('món mặn') || msgText.includes('đồ mặn') || isHungry;
+      const isExplicitSweetOrDessertRequest =
+        msgText.includes('tráng miệng') ||
+        msgText.includes('thèm ngọt') ||
+        msgText.includes('món ngọt') ||
+        msgText.includes('đồ ngọt') ||
+        msgText.includes('chè') ||
+        msgText.includes('kem') ||
+        msgText.includes('caramen') ||
+        msgText.includes('bánh ngọt') ||
+        msgText.includes('sữa chua') ||
+        msgText.includes('ăn vặt') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('ngọt');
+
+      const isExplicitDrinkRequest =
+        msgText.includes('uống gì') ||
+        msgText.includes('đồ uống') ||
+        msgText.includes('nước uống') ||
+        msgText.includes('cà phê') ||
+        msgText.includes('cafe') ||
+        msgText.includes('trà sữa') ||
+        msgText.includes('giải khát') ||
+        msgText.includes('nước ngọt') ||
+        msgText.includes('nước mát') ||
+        state.slots.category === 'DRINK';
 
       const isDrink =
-        (food.categoryName || '').toLowerCase().includes('đồ uống') ||
+        catNameLower.includes('đồ uống') ||
+        catNameLower.includes('giải khát') ||
+        catNameLower.includes('nước mát') ||
+        catNameLower.includes('trà') ||
+        catNameLower.includes('sữa đậu') ||
+        catNameLower.includes('trà thảo mộc') ||
+        catNameLower.includes('bia') ||
+        catNameLower.includes('nước chua') ||
         foodNameLower.includes('sữa') ||
         foodNameLower.includes('trà') ||
         foodNameLower.includes('nước ngọt') ||
         foodNameLower.includes('nước ép') ||
+        foodNameLower.includes('nước mía') ||
         foodNameLower.includes('cà phê') ||
-        foodNameLower.includes('sinh tố');
+        foodNameLower.includes('cafe') ||
+        foodNameLower.includes('sinh tố') ||
+        foodNameLower.includes('rau má') ||
+        foodNameLower.includes('đá bào') ||
+        foodNameLower.includes('nước dừa') ||
+        foodNameLower.includes('cốt tắc') ||
+        foodNameLower.includes('đá lạnh');
 
       const isSweetOrDessert =
+        catNameLower.includes('tráng miệng') ||
         foodNameLower.includes('chè') ||
         foodNameLower.includes('caramen') ||
         foodNameLower.includes('thạch') ||
         foodNameLower.includes('kem') ||
         foodNameLower.includes('trà sữa') ||
-        foodNameLower.includes('ngọt');
+        foodNameLower.includes('bánh ngọt') ||
+        foodNameLower.includes('bingsu') ||
+        foodNameLower.includes('pudding') ||
+        foodNameLower.includes('flan') ||
+        foodNameLower.includes('sữa chua') ||
+        foodNameLower.includes('tào phớ') ||
+        foodNameLower.includes('hoa quả dầm') ||
+        foodNameLower.includes('bánh mousse') ||
+        foodNameLower.includes('bánh tart') ||
+        foodNameLower.includes('bánh su') ||
+        foodNameLower.includes('bánh crepe') ||
+        foodNameLower.includes('trái cây');
 
-      if (isSavoryRequest) {
-        if (isDrink) {
-          diningSanityAdjust -= 0.5; // Never recommend drinks when starving or asking for savory food
-        }
+      const isCompleteMeal =
+        foodNameLower.includes('bánh mì chảo') ||
+        foodNameLower.includes('bánh mì') ||
+        foodNameLower.includes('cơm') ||
+        foodNameLower.includes('phở') ||
+        foodNameLower.includes('bún') ||
+        foodNameLower.includes('miến') ||
+        foodNameLower.includes('hủ tiếu') ||
+        foodNameLower.includes('mì') ||
+        foodNameLower.includes('xôi') ||
+        foodNameLower.includes('pizza') ||
+        foodNameLower.includes('burger') ||
+        foodNameLower.includes('cháo') ||
+        foodNameLower.includes('lẩu') ||
+        foodNameLower.includes('nướng') ||
+        foodNameLower.includes('sườn') ||
+        foodNameLower.includes('gà') ||
+        foodNameLower.includes('bò') ||
+        foodNameLower.includes('vịt') ||
+        foodNameLower.includes('ngan') ||
+        foodNameLower.includes('hải sản') ||
+        foodNameLower.includes('salad') ||
+        foodNameLower.includes('poke') ||
+        foodNameLower.includes('chay') ||
+        foodNameLower.includes('nem');
+
+      if (isExplicitSweetOrDessertRequest) {
         if (isSweetOrDessert) {
-          diningSanityAdjust -= 0.45;
+          diningSanityAdjust += 0.4;
+        } else if (isCompleteMeal) {
+          diningSanityAdjust -= 0.3;
         }
-
-        const isCompleteMeal =
-          foodNameLower.includes('bánh mì chảo') ||
-          foodNameLower.includes('bánh mì') ||
-          foodNameLower.includes('cơm') ||
-          foodNameLower.includes('phở') ||
-          foodNameLower.includes('bún') ||
-          foodNameLower.includes('miến') ||
-          foodNameLower.includes('hủ tiếu') ||
-          foodNameLower.includes('mì') ||
-          foodNameLower.includes('xôi') ||
-          foodNameLower.includes('pizza') ||
-          foodNameLower.includes('burger');
-
+      } else if (isExplicitDrinkRequest) {
+        if (isDrink) {
+          diningSanityAdjust += 0.4;
+        } else if (isCompleteMeal) {
+          diningSanityAdjust -= 0.3;
+        }
+      } else {
+        // MẶC ĐỊNH CHO TẤT CẢ CÁC YÊU CẦU ĂN UỐNG / TÌM MÓN BÌNH THƯỜNG / KHI ĐÓI:
+        // Ưu tiên món ăn chính no bụng hoàn chỉnh, TRIỆT TIÊU tráng miệng và đồ uống!
+        if (isSweetOrDessert) {
+          diningSanityAdjust -= 1.0; // Triệt tiêu món tráng miệng khi khách tìm món ăn thông thường
+        }
+        if (isDrink) {
+          diningSanityAdjust -= 1.0; // Triệt tiêu đồ uống khi khách tìm món ăn thông thường
+        }
         if (isCompleteMeal && !isPureToppingOrIngredient) {
-          diningSanityAdjust += 0.25; // Prioritize complete standalone meal
+          diningSanityAdjust += 0.25; // Ưu tiên hàng đầu cho bữa ăn chính no bụng hoàn chỉnh
         }
       }
 
@@ -626,6 +844,53 @@ export class RerankingService {
         }
       }
 
+      // Check explicit Chay (Vegetarian) request
+      const isExplicitChayRequest =
+        msgText.includes('chay') ||
+        msgText.includes('thanh tịnh') ||
+        msgText.includes('thanh đạm') ||
+        msgText.includes('không ăn thịt') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('chay');
+
+      const isChayFood =
+        foodNameLower.includes('chay') ||
+        catNameLower.includes('chay') ||
+        restaurantNameLower.includes('chay');
+
+      if (isExplicitChayRequest) {
+        if (isChayFood) {
+          diningSanityAdjust += 0.55; // Boost vegetarian food
+        } else {
+          diningSanityAdjust -= 0.6; // Penalize meat dishes when asking for vegetarian
+        }
+      }
+
+      // Check explicit Gym / Healthy request
+      const isExplicitGymRequest =
+        msgText.includes('gym') ||
+        msgText.includes('tập gym') ||
+        msgText.includes('healthy') ||
+        msgText.includes('eat clean') ||
+        msgText.includes('giảm cân') ||
+        msgText.includes('tăng cơ') ||
+        msgText.includes('protein') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('gym') ||
+        (state.slots.cuisineType || '').toLowerCase().includes('healthy');
+
+      const isGymFood =
+        foodNameLower.includes('salad') ||
+        foodNameLower.includes('ức gà') ||
+        foodNameLower.includes('poke') ||
+        foodNameLower.includes('cá hồi') ||
+        restaurantNameLower.includes('healthy') ||
+        restaurantNameLower.includes('bếp xanh');
+
+      if (isExplicitGymRequest) {
+        if (isGymFood) {
+          diningSanityAdjust += 0.55; // Boost healthy/gym food
+        }
+      }
+
       // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +
@@ -644,8 +909,15 @@ export class RerankingService {
       };
     });
 
-    // If intent is FIND_NEARBY, sort strictly by distance ascending
+    // If intent is FIND_NEARBY, sort strictly by distance ascending among valid candidates (similarity > 0)
+    // to prevent disqualified desserts/drinks or rejected foods from floating to the top
     if (intent === FoodIntent.FIND_NEARBY) {
+      const validNearby = reRanked.filter((f) => f.similarity > 0.0);
+      if (validNearby.length > 0) {
+        return validNearby.sort(
+          (a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity),
+        );
+      }
       return reRanked.sort(
         (a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity),
       );

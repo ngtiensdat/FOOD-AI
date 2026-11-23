@@ -273,6 +273,117 @@ export class FoodRetrievalService {
       });
     }
 
+    // 4. Sparse Keyword Matching (BM25 / ILIKE hybrid boost) to ensure exact keyword matches in DB are NEVER dropped
+    const searchKeywords: string[] = [];
+    const cuisine = state?.slots?.cuisineType?.toLowerCase().trim();
+    if (cuisine && cuisine.length >= 2) {
+      searchKeywords.push(cuisine);
+    }
+    if (message) {
+      const msgLower = message.toLowerCase();
+      const candidateTerms = [
+        'chay',
+        'thanh tịnh',
+        'thanh đạm',
+        'gym',
+        'healthy',
+        'eat clean',
+        'salad',
+        'ức gà',
+        'poke',
+        'cá hồi',
+        'nướng',
+        'bbq',
+        'sườn',
+        'lẩu',
+        'bún bò',
+        'bánh xèo',
+        'chả cá',
+        'bún mắm',
+        'bún chả',
+        'phở',
+        'cơm tấm',
+        'cơm niêu',
+        'bánh mì',
+        'hủ tiếu',
+        'thịt trâu',
+        'thắng cố',
+        'dân tộc',
+        'đặc sản',
+      ];
+      for (const term of candidateTerms) {
+        if (msgLower.includes(term) && !searchKeywords.includes(term)) {
+          searchKeywords.push(term);
+        }
+      }
+    }
+
+    if (searchKeywords.length > 0) {
+      try {
+        const keywordFoods = await this.prisma.food.findMany({
+          where: {
+            status: FoodStatus.APPROVED,
+            isActive: true,
+            OR: searchKeywords.flatMap((kw) => [
+              { name: { contains: kw, mode: 'insensitive' } },
+              { tags: { has: kw } },
+              { category: { name: { contains: kw, mode: 'insensitive' } } },
+              { restaurant: { name: { contains: kw, mode: 'insensitive' } } },
+            ]),
+          },
+          take: 20,
+          include: {
+            restaurant: true,
+            category: true,
+          },
+        });
+
+        if (keywordFoods.length > 0) {
+          const existingIds = new Set(candidates.map((c) => Number(c.id)));
+          for (const kf of keywordFoods) {
+            if (!existingIds.has(kf.id)) {
+              let distance_km: number | null = null;
+              if (
+                userLat !== undefined &&
+                userLng !== undefined &&
+                kf.lat !== null &&
+                kf.lng !== null
+              ) {
+                distance_km =
+                  111.02 *
+                  Math.sqrt(
+                    Math.pow(kf.lat - userLat, 2) +
+                      Math.pow(kf.lng - userLng, 2),
+                  );
+              }
+
+              candidates.push({
+                id: kf.id,
+                name: kf.name,
+                price: kf.price,
+                description: kf.description || '',
+                image: kf.image || '',
+                tags: kf.tags,
+                restaurantName: kf.restaurant?.name || '',
+                address: kf.address || kf.restaurant?.address || '',
+                lat: kf.lat || 0,
+                lng: kf.lng || 0,
+                categoryName: kf.category?.name || '',
+                embeddingSimilarity: 0.85, // High similarity for direct keyword matches
+                distance_km,
+                similarity: 0.85,
+              });
+              existingIds.add(kf.id);
+            }
+          }
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Sparse keyword matching encountered an error: ${err}`,
+        );
+      }
+    }
+
     return candidates;
   }
 }

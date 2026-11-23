@@ -19,6 +19,7 @@ export interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   suggestions?: FoodCardData[];
+  otherSuggestions?: FoodCardData[];
   isAuthPrompt?: boolean;
 }
 
@@ -314,7 +315,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
           id: aiMsgId, 
           role: 'ai', 
           content: response?.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
-          suggestions: response?.suggestions || []
+          suggestions: response?.suggestions || [],
+          otherSuggestions: response?.otherSuggestions || []
         }
       ]);
 
@@ -393,7 +395,8 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
                 id: aiMsgId, 
                 role: 'ai', 
                 content: response.reply || LABELS.AI_CHAT.CONFIRM.ERROR_FALLBACK,
-                suggestions: response.suggestions || []
+                suggestions: response.suggestions || [],
+                otherSuggestions: response.otherSuggestions || []
               }
             ]);
             

@@ -134,8 +134,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     try {
       await taskPromise;
-    } catch {
-      toast.error(labels.UPLOADER.UPLOAD_FAIL);
+    } catch (err: any) {
+      const errMsg = err?.message || labels.UPLOADER.UPLOAD_FAIL;
+      toast.error(errMsg);
       setPreviewUrl(null);
     } finally {
       setIsUploading(false);

@@ -134,6 +134,7 @@ const LABELS_VI = {
     CONFIRM_NEW_PASSWORD_LABEL: 'Xác nhận mật khẩu mới',
     YOUR_EMAIL: 'của bạn',
     PROCEED_VERIFY: 'Tiến hành xác minh',
+    LOGIN_SUCCESS: 'Đăng nhập thành công! Chào mừng bạn quay trở lại.',
     LOGIN_SUCCESS_UNVERIFIED: 'Đăng nhập thành công! Email của bạn chưa được xác thực — hãy xác thực để mở khóa đầy đủ tính năng (Quên mật khẩu, bảo mật tài khoản...)',
     LOGIN_PANEL_HEADING: 'Khám phá ẩm thực',
     LOGIN_PANEL_HEADING_SUB: 'thông minh cùng AI',
