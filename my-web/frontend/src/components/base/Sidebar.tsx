@@ -111,7 +111,7 @@ export const SidebarItem = ({
           <button
             key={idx}
             onClick={sub.onClick}
-            className={`w-full px-3 py-2 rounded-xl text-xs font-bold text-left block transition-colors ${
+            className={`w-full px-3 py-2 rounded-xl text-xs font-bold text-left block transition-colors cursor-pointer ${
               sub.active
                 ? 'bg-primary/10 text-primary dark:bg-primary/20'
                 : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200'

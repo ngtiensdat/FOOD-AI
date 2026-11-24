@@ -86,6 +86,139 @@ const PERSONA_LABELS: Record<string, { label: string; icon: string; desc: string
   },
 };
 
+const ALLERGY_DETAILS: Record<string, { label: string; crossReaction: string }> = {
+  peanuts: {
+    label: 'Đậu phộng (Lạc)',
+    crossReaction: 'Tránh: bơ đậu phộng, kẹo lạc, dầu phộng',
+  },
+  seafood: {
+    label: 'Hải sản (Đồ biển)',
+    crossReaction: 'Dị ứng chéo: tôm, cua, bề bề, mực, sò, cá biển',
+  },
+  dairy: {
+    label: 'Sữa & Bơ sữa',
+    crossReaction: 'Tránh: phô mai, bơ, sữa chua, kem tươi, sốt kem',
+  },
+  shellfish: {
+    label: 'Hải sản có vỏ (Giáp xác & Thân mềm)',
+    crossReaction: 'Tránh: tôm, bề bề, tôm tít, cua, ghẹ, sò, ốc, mực',
+  },
+  gluten: {
+    label: 'Gluten (Lúa mì & Bột mì)',
+    crossReaction: 'Tránh: bánh mì, mì sợi lúa mì, bánh nướng',
+  },
+  eggs: {
+    label: 'Trứng & Chế phẩm',
+    crossReaction: 'Tránh: trứng gà, vịt, cút, mayonnaise, trứng muối',
+  },
+  soy: {
+    label: 'Đậu nành & Chế phẩm',
+    crossReaction: 'Tránh: đậu hũ, nước tương, chao, sữa đậu nành',
+  },
+  wheat: {
+    label: 'Lúa mì',
+    crossReaction: 'Tránh: bánh mì, bột mì, bánh ngọt',
+  },
+};
+
+const normalizePreferenceList = (list: unknown): string[] => {
+  if (!list) return [];
+  if (Array.isArray(list)) {
+    if (
+      list.length > 1 &&
+      list.every((item) => typeof item === 'string' && item.length === 1)
+    ) {
+      return [list.join('')];
+    }
+    return list
+      .map((item) => String(item).trim())
+      .filter((item) => item && item.toLowerCase() !== 'none');
+  }
+  if (typeof list === 'string' && list.trim() && list.toLowerCase() !== 'none') {
+    return [list.trim()];
+  }
+  return [];
+};
+
+const parseAllergyDisplay = (allergy: string): { label: string; crossReaction?: string } => {
+  const lower = allergy.toLowerCase().trim();
+
+  if (ALLERGY_DETAILS[lower]) {
+    return ALLERGY_DETAILS[lower];
+  }
+
+  if (
+    lower.includes('tôm') ||
+    lower.includes('giáp xác') ||
+    lower.includes('shrimp') ||
+    lower.includes('prawn') ||
+    lower.includes('bề bề')
+  ) {
+    return {
+      label: 'Tôm & Động vật giáp xác',
+      crossReaction: 'Dị ứng chéo: Bề bề (tôm tít), tép, cua, ghẹ, mắm tôm',
+    };
+  }
+
+  if (
+    lower.includes('hải sản') ||
+    lower.includes('seafood') ||
+    lower.includes('đồ biển')
+  ) {
+    return {
+      label: 'Hải sản tổng hợp',
+      crossReaction: 'Dị ứng chéo: Tôm, cua, bề bề, mực, sò, cá biển, mắm tôm',
+    };
+  }
+
+  if (
+    lower.includes('lạc') ||
+    lower.includes('đậu phộng') ||
+    lower.includes('peanuts')
+  ) {
+    return {
+      label: 'Đậu phộng (Lạc)',
+      crossReaction: 'Tránh: Bơ đậu phộng, kẹo lạc, dầu phộng',
+    };
+  }
+
+  if (
+    lower.includes('sữa') ||
+    lower.includes('dairy') ||
+    lower.includes('milk')
+  ) {
+    return {
+      label: 'Sữa & Chế phẩm bơ sữa',
+      crossReaction: 'Tránh: Phô mai, bơ, sữa chua, kem béo',
+    };
+  }
+
+  if (lower.includes('trứng') || lower.includes('egg')) {
+    return {
+      label: 'Trứng & Chế phẩm',
+      crossReaction: 'Tránh: Trứng gà, vịt, cút, mayonnaise',
+    };
+  }
+
+  if (lower.includes('gluten') || lower.includes('bột mì') || lower.includes('lúa mì')) {
+    return {
+      label: 'Gluten (Lúa mì / Bột mì)',
+      crossReaction: 'Tránh: Bánh mì, mì sợi lúa mì',
+    };
+  }
+
+  if (lower.includes('đậu nành') || lower.includes('soy')) {
+    return {
+      label: 'Đậu nành & Chế phẩm',
+      crossReaction: 'Tránh: Đậu hũ, nước tương, chao',
+    };
+  }
+
+  return {
+    label: allergy,
+  };
+};
+
 export const AiMemorySettingsTab = () => {
   const [data, setData] = useState<AiMemoryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -221,12 +354,13 @@ export const AiMemorySettingsTab = () => {
     );
   }
 
-  const prefs = data?.preferences || {
-    allergies: [],
-    dislikes: [],
-    persona: null,
-    specialNotes: null,
-    cuisine: null,
+  const rawPrefs = data?.preferences;
+  const prefs = {
+    allergies: normalizePreferenceList(rawPrefs?.allergies),
+    dislikes: normalizePreferenceList(rawPrefs?.dislikes),
+    persona: rawPrefs?.persona || null,
+    specialNotes: rawPrefs?.specialNotes || null,
+    cuisine: rawPrefs?.cuisine || null,
   };
 
   const hasAnyData =
@@ -337,6 +471,7 @@ export const AiMemorySettingsTab = () => {
                 <AnimatePresence>
                   {prefs.allergies.map((allergy) => {
                     const isDeleting = deletingKey === `allergy-${allergy}`;
+                    const info = parseAllergyDisplay(allergy);
                     return (
                       <motion.div
                         key={allergy}
@@ -344,15 +479,22 @@ export const AiMemorySettingsTab = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-100/80 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-bold border border-red-200/80 dark:border-red-800/60 shadow-sm"
+                        className="inline-flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 px-3 py-1.5 rounded-xl bg-red-100/80 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs border border-red-200/80 dark:border-red-800/60 shadow-sm"
                       >
-                        <span>🚫 {allergy}</span>
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <span>🚫 {info.label}</span>
+                        </div>
+                        {info.crossReaction && (
+                          <span className="text-[10px] font-semibold text-red-600/90 dark:text-red-300/80 bg-red-200/60 dark:bg-red-950/60 px-2 py-0.5 rounded-md">
+                            {info.crossReaction}
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleDeleteItem('allergy', allergy)}
                           disabled={isDeleting}
-                          title={`Xóa "${allergy}" khỏi danh sách dị ứng`}
-                          className="hover:bg-red-200 dark:hover:bg-red-800 p-0.5 rounded-md transition-colors text-red-600 dark:text-red-400"
+                          title={`Xóa "${info.label}" khỏi danh sách dị ứng`}
+                          className="hover:bg-red-200 dark:hover:bg-red-800 p-0.5 rounded-md transition-colors text-red-600 dark:text-red-400 self-end sm:self-center ml-auto sm:ml-1"
                         >
                           {isDeleting ? (
                             <Loader2 size={12} className="animate-spin" />

@@ -61,7 +61,9 @@ describe('AiLearningService (AI Memory & Preferences)', () => {
       });
 
       const memory = await service.getUserAiMemory(1);
-      expect(memory.preferences.allergies).toEqual(['tôm', 'cua']);
+      expect(memory.preferences.allergies).toEqual([
+        'Tôm (và giáp xác: bề bề, cua, ghẹ)',
+      ]);
       expect(memory.preferences.dislikes).toEqual(['cay']);
       expect(memory.preferences.persona).toBe('GYM');
       expect(memory.preferences.specialNotes).toBe('Ăn thanh đạm');
@@ -164,7 +166,10 @@ describe('AiLearningService (AI Memory & Preferences)', () => {
         where: { userId: 1 },
         data: {
           preferences: {
-            allergies: ['tôm', 'đậu phộng'],
+            allergies: [
+              'Tôm (và giáp xác: bề bề, cua, ghẹ)',
+              'Đậu phộng (Lạc)',
+            ],
             dislikes: ['hành', 'cay'],
             persona: 'STUDENT',
           },

@@ -320,5 +320,127 @@ describe('RerankingService', () => {
       const rankedHealthy = reRanked.find((f) => f.id === 21);
       expect(rankedHealthy!.similarity).toBeGreaterThan(rankedRaw!.similarity);
     });
+
+    it('nên loại bỏ hoàn toàn các món dị ứng chéo (ví dụ: dị ứng tôm phải lọc cả bún bề bề, tôm tít, ghẹ, mắm tôm)', () => {
+      const beBeFood: SearchResult = {
+        id: 30,
+        name: 'Bún bề bề chua cay',
+        price: 55000,
+        description: 'Bún bề bề tươi ngon đậm đà hải sản vùng biển',
+        image: '',
+        tags: ['bún', 'bề bề', 'hải sản'],
+        restaurantName: 'Bún Bề Bề Hải Phòng',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Bún',
+        embeddingSimilarity: 0.9,
+        distance_km: 1.0,
+        similarity: 0.9,
+      };
+
+      const mamTomFood: SearchResult = {
+        id: 31,
+        name: 'Bún đậu mắm tôm thập cẩm',
+        price: 45000,
+        description: 'Bún đậu giòn ngon ăn kèm mắm tôm nguyên chất',
+        image: '',
+        tags: ['bún đậu', 'mắm tôm'],
+        restaurantName: 'Bún Đậu Cô Ba',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Bún đậu',
+        embeddingSimilarity: 0.85,
+        distance_km: 1.0,
+        similarity: 0.85,
+      };
+
+      const safeChickenFood: SearchResult = {
+        id: 32,
+        name: 'Phở gà ta đùi lá chanh',
+        price: 50000,
+        description: 'Phở gà thơm ngon thanh đạm',
+        image: '',
+        tags: ['phở gà', 'thanh đạm'],
+        restaurantName: 'Phở Gà Ta',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Phở',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      };
+
+      const state = {
+        slots: { allergies: ['tôm'] },
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      const reRanked = service.contextReranking(
+        [beBeFood, mamTomFood, safeChickenFood],
+        state as any,
+      );
+
+      // Cả Bún bề bề và Bún đậu mắm tôm đều phải bị loại bỏ tuyệt đối vì nguy cơ dị ứng chéo sinh học
+      expect(reRanked.some((f) => f.id === 30)).toBe(false);
+      expect(reRanked.some((f) => f.id === 31)).toBe(false);
+      // Món phở gà an toàn phải được giữ lại
+      expect(reRanked.some((f) => f.id === 32)).toBe(true);
+    });
+
+    it('nên xử lý dị ứng đồng nghĩa và tiếng Anh (peanuts -> lọc kẹo lạc, chè đậu phộng)', () => {
+      const keoLacFood: SearchResult = {
+        id: 40,
+        name: 'Kẹo lạc Sìu Châu Nam Định',
+        price: 30000,
+        description: 'Kẹo lạc giòn xốp rải vừng thơm nức',
+        image: '',
+        tags: ['kẹo lạc', 'đặc sản'],
+        restaurantName: 'Quà Quê',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Ăn vặt',
+        embeddingSimilarity: 0.9,
+        distance_km: 1.0,
+        similarity: 0.9,
+      };
+
+      const safeFood: SearchResult = {
+        id: 41,
+        name: 'Sữa chua dẻo trân châu',
+        price: 25000,
+        description: 'Sữa chua mát lạnh',
+        image: '',
+        tags: ['sữa chua'],
+        restaurantName: 'Quán Trà',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Tráng miệng',
+        embeddingSimilarity: 0.7,
+        distance_km: 1.0,
+        similarity: 0.7,
+      };
+
+      const state = {
+        slots: { allergies: ['peanuts'] },
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      const reRanked = service.contextReranking(
+        [keoLacFood, safeFood],
+        state as any,
+      );
+
+      expect(reRanked.some((f) => f.id === 40)).toBe(false);
+      expect(reRanked.some((f) => f.id === 41)).toBe(true);
+    });
   });
 });

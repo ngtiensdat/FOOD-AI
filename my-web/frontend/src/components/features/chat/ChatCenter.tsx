@@ -687,7 +687,7 @@ export const ChatCenter = ({ userId, isOpen, onClose, onOpen }: ChatCenterProps)
             {/* Avatar circle */}
             <div 
               onClick={onOpen}
-              className="w-14 h-14 rounded-full border-2 border-primary bg-white dark:bg-slate-900 p-0.5 flex items-center justify-center relative overflow-hidden"
+              className="w-14 h-14 rounded-full border-2 border-primary bg-white dark:bg-slate-900 p-0.5 flex items-center justify-center relative overflow-hidden cursor-pointer"
               title={getChatPartner(selectedConversation).name}
             >
               <Avatar

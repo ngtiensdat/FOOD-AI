@@ -253,8 +253,140 @@ export class SlotExtractorService {
   }
 
   extractPersona(text: string): DialogueState['slots']['persona'] | undefined {
-    const clean = this.stripDiacritics(text.toLowerCase());
+    // 1. Tách văn bản thành các mệnh đề độc lập theo dấu câu và các liên từ kết nối
+    // (ví dụ: "tôi có bầu và chồng tôi tập gym" -> ["tôi có bầu", "chồng tôi tập gym"])
+    const rawClauses = text.split(
+      /(?:[.,;!?\n]|\s+(?:và|còn|nhưng|mà|trong khi|song)\s+)/i,
+    );
 
+    // Regex bắt các cụm từ chỉ chủ thể là người khác (Third Party / Companion)
+    // bao gồm cả quan hệ sở hữu như "chồng tôi", "vợ em", "bạn tôi", "con mình"
+    const thirdPartyPatterns = [
+      /\b(chong|ong xa|anh xa|anh nha)(?:\s+(?:toi|em|minh|nha minh))?\b/gi,
+      /\b(vo|ba xa|chi nha)(?:\s+(?:toi|em|minh|anh|nha minh))?\b/gi,
+      /\b(nguoi yeu|ban gai|ban trai|crush|ny|anh ay|co ay)(?:\s+(?:toi|em|minh))?\b/gi,
+      /\b(ban than|ban cung phong|dong nghiep|sep|ban toi|ban em|ban minh)\b/gi,
+      /\b(con|be nha|cac chau|con gai|con trai)(?:\s+(?:toi|em|minh))?\b/gi,
+      /\b(bo|me|bo me|ba ngoai|ba noi|ong ba)(?:\s+(?:toi|em|minh))?\b/gi,
+    ];
+
+    const selfRegex = /\b(toi|minh|em|chi|to|ban than|ta)\b/i;
+
+    const userCandidatePersonas: Set<DialogueState['slots']['persona']> =
+      new Set();
+    const otherCandidatePersonas: Set<DialogueState['slots']['persona']> =
+      new Set();
+
+    for (const rawClause of rawClauses) {
+      const clause = rawClause.trim();
+      if (!clause) continue;
+      const cleanClause = this.stripDiacritics(clause.toLowerCase());
+
+      const clausePersona = this.matchPersonaFromCleanText(cleanClause);
+      if (!clausePersona) continue;
+
+      // Kiểm tra sự xuất hiện của đối tượng người khác
+      let hasThirdParty = false;
+      let strippedClause = cleanClause;
+      for (const pattern of thirdPartyPatterns) {
+        if (pattern.test(strippedClause)) {
+          hasThirdParty = true;
+          // Thay thế cụm từ người khác bằng placeholder để tránh "chồng tôi" bị nhận diện nhầm "tôi" là chủ ngữ
+          strippedClause = strippedClause.replace(pattern, ' __companion__ ');
+        }
+      }
+
+      // Kiểm tra xem sau khi loại bỏ các cụm sở hữu người khác, mệnh đề còn chủ ngữ người dùng không
+      const hasSelf = selfRegex.test(strippedClause);
+
+      if (hasThirdParty && !hasSelf) {
+        // Mệnh đề chỉ nói về người khác (ví dụ: "chồng tôi tập gym", "vợ tôi có bầu")
+        otherCandidatePersonas.add(clausePersona);
+      } else {
+        // Có chủ ngữ người dùng ("tôi có bầu", "mình tập gym") hoặc khuyết chủ ngữ nhưng không có người khác
+        userCandidatePersonas.add(clausePersona);
+      }
+    }
+
+    // Nếu người dùng có các persona được xác nhận trực tiếp cho bản thân họ:
+    if (userCandidatePersonas.size > 0) {
+      return this.resolvePersonaHierarchy(userCandidatePersonas);
+    }
+
+    // Nếu toàn bộ câu nói chỉ nói về phong cách của người khác (ví dụ: "chồng tôi tập gym"):
+    // TUYỆT ĐỐI KHÔNG gán persona của người khác cho tài khoản người dùng!
+    if (otherCandidatePersonas.size > 0) {
+      return undefined;
+    }
+
+    // Fallback toàn câu nếu không có phân tách mệnh đề
+    const fullClean = this.stripDiacritics(text.toLowerCase());
+    return this.matchPersonaFromCleanText(fullClean);
+  }
+
+  private matchPersonaFromCleanText(
+    clean: string,
+  ): DialogueState['slots']['persona'] | undefined {
+    // Thứ tự kiểm tra BẮT BUỘC theo cấp bậc An toàn sức khỏe (Safety Priority Hierarchy):
+    // 1. PREGNANT (An toàn thai kỳ - Cao nhất)
+    if (
+      clean.includes('mang thai') ||
+      clean.includes('co thai') ||
+      clean.includes('dang co thai') ||
+      clean.includes('me bau') ||
+      clean.includes('thai ky') ||
+      clean.includes('co em be') ||
+      clean.includes('co bau') ||
+      clean.includes('dang bau') ||
+      clean.includes('mang bau') ||
+      clean.includes('sau sinh') ||
+      clean.includes('o cu') ||
+      clean.includes('cho con bu') ||
+      clean.includes('me bim') ||
+      /\bbau\b/.test(clean)
+    ) {
+      return 'PREGNANT';
+    }
+
+    // 2. WELLNESS (Ốm đau, bồi bổ, phục hồi)
+    if (
+      clean.includes('om') ||
+      clean.includes('cam cum') ||
+      clean.includes('dau dau') ||
+      clean.includes('sot') ||
+      clean.includes('dau da day') ||
+      clean.includes('tieu hoa kem') ||
+      clean.includes('boi bo') ||
+      clean.includes('duong sinh') ||
+      clean.includes('nguoi gia')
+    ) {
+      return 'WELLNESS';
+    }
+
+    // 3. VEGAN (Ăn chay)
+    if (
+      clean.includes('an chay') ||
+      clean.includes('chay truong') ||
+      clean.includes('thuan chay') ||
+      clean.includes('vegan') ||
+      clean.includes('thanh tinh')
+    ) {
+      return 'VEGAN';
+    }
+
+    // 4. WEIGHT_LOSS (Giảm cân / Eat clean)
+    if (
+      clean.includes('giam can') ||
+      clean.includes('eat clean') ||
+      clean.includes('low carb') ||
+      clean.includes('keto') ||
+      clean.includes('giam mo') ||
+      clean.includes('it calo')
+    ) {
+      return 'WEIGHT_LOSS';
+    }
+
+    // 5. GYM (Thể thao / Thể hình)
     if (
       clean.includes('tap gym') ||
       clean.includes('gym') ||
@@ -270,30 +402,7 @@ export class SlotExtractorService {
       return 'GYM';
     }
 
-    if (
-      clean.includes('mang thai') ||
-      clean.includes('me bau') ||
-      clean.includes('thai ky') ||
-      clean.includes('co em be') ||
-      clean.includes('sau sinh') ||
-      clean.includes('o cu') ||
-      clean.includes('cho con bu') ||
-      clean.includes('me bim') ||
-      /\bbau\b/.test(clean)
-    ) {
-      return 'PREGNANT';
-    }
-
-    if (
-      clean.includes('an chay') ||
-      clean.includes('chay truong') ||
-      clean.includes('thuan chay') ||
-      clean.includes('vegan') ||
-      clean.includes('thanh tinh')
-    ) {
-      return 'VEGAN';
-    }
-
+    // 6. STUDENT (Sinh viên / Học sinh)
     if (
       clean.includes('sinh vien') ||
       clean.includes('hoc sinh') ||
@@ -305,31 +414,7 @@ export class SlotExtractorService {
       return 'STUDENT';
     }
 
-    if (
-      clean.includes('giam can') ||
-      clean.includes('eat clean') ||
-      clean.includes('low carb') ||
-      clean.includes('keto') ||
-      clean.includes('giam mo') ||
-      clean.includes('it calo')
-    ) {
-      return 'WEIGHT_LOSS';
-    }
-
-    if (
-      clean.includes('om') ||
-      clean.includes('cam cum') ||
-      clean.includes('dau dau') ||
-      clean.includes('sot') ||
-      clean.includes('dau da day') ||
-      clean.includes('tieu hoa kem') ||
-      clean.includes('boi bo') ||
-      clean.includes('duong sinh') ||
-      clean.includes('nguoi gia')
-    ) {
-      return 'WELLNESS';
-    }
-
+    // 7. OFFICE (Dân văn phòng)
     if (
       clean.includes('van phong') ||
       clean.includes('cong so') ||
@@ -339,6 +424,24 @@ export class SlotExtractorService {
       return 'OFFICE';
     }
 
+    return undefined;
+  }
+
+  private resolvePersonaHierarchy(
+    candidates: Set<DialogueState['slots']['persona']>,
+  ): DialogueState['slots']['persona'] | undefined {
+    const hierarchy: Array<DialogueState['slots']['persona']> = [
+      'PREGNANT',
+      'WELLNESS',
+      'VEGAN',
+      'WEIGHT_LOSS',
+      'GYM',
+      'STUDENT',
+      'OFFICE',
+    ];
+    for (const p of hierarchy) {
+      if (candidates.has(p)) return p;
+    }
     return undefined;
   }
 

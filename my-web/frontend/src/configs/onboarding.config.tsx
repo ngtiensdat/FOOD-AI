@@ -45,9 +45,9 @@ export const CUSTOMER_QUESTIONS = [
     description: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.DESC,
     icon: <AlertTriangle className="text-yellow-500" size={32} />,
     options: [
-      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.SEAFOOD, value: 'seafood', emoji: '🦐' },
-      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.PEANUTS, value: 'peanuts', emoji: '🥜' },
-      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.DAIRY, value: 'dairy', emoji: '🥛' },
+      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.SEAFOOD, value: 'Hải sản (Đồ biển)', emoji: '🦐' },
+      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.PEANUTS, value: 'Đậu phộng (Lạc)', emoji: '🥜' },
+      { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.DAIRY, value: 'Sữa & Bơ sữa', emoji: '🥛' },
       { label: LABELS.ONBOARDING.QUESTIONS.CUSTOMER.ALLERGIES.OPT.NONE, value: 'none', emoji: '✅' },
     ]
   }

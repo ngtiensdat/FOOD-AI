@@ -28,6 +28,26 @@ export class IntentDetectorService {
     private readonly langchainService: LangchainService,
   ) {}
 
+  private normalizeSlotArray(val: unknown): string[] | undefined {
+    if (!val) return undefined;
+    if (Array.isArray(val)) {
+      if (
+        val.length > 1 &&
+        val.every((item) => typeof item === 'string' && item.length === 1)
+      ) {
+        return [val.join('')];
+      }
+      const arr = val.filter(
+        (x) => typeof x === 'string' && x.trim() && x.toLowerCase() !== 'none',
+      );
+      return arr.length > 0 ? arr : undefined;
+    }
+    if (typeof val === 'string' && val.trim() && val.toLowerCase() !== 'none') {
+      return [val.trim()];
+    }
+    return undefined;
+  }
+
   async detectIntentAndSlots(message: string): Promise<{
     intent: FoodIntent;
     slots: SlotExtractionResult;
@@ -191,8 +211,8 @@ export class IntentDetectorService {
           : undefined,
         emotion: (slots as any).emotion || undefined,
         companion: (slots as any).companion || undefined,
-        allergies: (slots as any).allergies || undefined,
-        dislikes: (slots as any).dislikes || undefined,
+        allergies: this.normalizeSlotArray((slots as any).allergies),
+        dislikes: this.normalizeSlotArray((slots as any).dislikes),
         persona: (slots as any).persona || undefined,
         specialNotes: (slots as any).specialNotes || undefined,
       };
