@@ -142,39 +142,40 @@ export class SlotExtractorService {
     const triggersPattern = triggersWithoutMon.join('|');
     const cuisineRegex = new RegExp(
       `(?:${triggersPattern})\\s+([^,.\\s]+(?:\\s+[^,.\\s]+){0,2})`,
-      'i',
+      'gi',
     );
-    const cuisineMatch = msgLower.match(cuisineRegex);
-    if (!cuisineMatch) return undefined;
-
-    // Kiểm tra xem vị trí khớp có bị tiền tố phủ định chi phối không (ví dụ: "không thích", "đừng ăn", "ghét")
-    if (this.isNegated(msgLower, cuisineMatch.index ?? 0)) {
-      return undefined;
-    }
-
-    const extracted = cuisineMatch[1].trim();
-    let filtered = extracted;
 
     const noiseWords = this.getParam<string[]>(
       'noiseWords',
       AI_PARAMETERS.NOISE_WORDS,
     );
-
-    // Loại bỏ các từ khóa nhiễu ở cuối
-    for (const word of noiseWords) {
-      const idx = filtered.indexOf(' ' + word);
-      if (idx !== -1) {
-        filtered = filtered.substring(0, idx);
-      }
-    }
-
-    // Loại bỏ từ thừa ở đầu
     const replacePattern = AI_RULES.CUISINE_TRIGGERS.join('|');
     const replaceRegex = new RegExp(`^(?:${replacePattern})\\s+`, 'i');
-    filtered = filtered.replace(replaceRegex, '').trim();
 
-    if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
-      return filtered;
+    let cuisineMatch: RegExpExecArray | null;
+    while ((cuisineMatch = cuisineRegex.exec(msgLower)) !== null) {
+      // Bỏ qua nếu vị trí khớp này bị tiền tố phủ định chi phối (ví dụ: "không thích", "đừng ăn", "ghét")
+      if (this.isNegated(msgLower, cuisineMatch.index ?? 0)) {
+        continue;
+      }
+
+      const extracted = cuisineMatch[1].trim();
+      let filtered = extracted;
+
+      // Loại bỏ các từ khóa nhiễu ở cuối
+      for (const word of noiseWords) {
+        const idx = filtered.indexOf(' ' + word);
+        if (idx !== -1) {
+          filtered = filtered.substring(0, idx);
+        }
+      }
+
+      // Loại bỏ từ thừa ở đầu
+      filtered = filtered.replace(replaceRegex, '').trim();
+
+      if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
+        return filtered;
+      }
     }
 
     return undefined;
@@ -208,21 +209,53 @@ export class SlotExtractorService {
     });
   }
 
-  extractDislikes(text: string): string[] {
-    const dislikesSet = new Set<string>();
-    const patterns = [
-      /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/gi,
-    ];
+  private isQuestionOrInterrogative(text: string): boolean {
+    const clean = text.toLowerCase().trim();
+    const questionPattern =
+      /(?:dị ứng|kiêng|không ăn|không thích|ghét|sợ)\s+(?:ăn\s+|món\s+)?(?:gì|cái gì|những gì|thứ gì|món gì|chi|sao|thế nào)\b/i;
+    const questionSuffix =
+      /(?:dị ứng|kiêng|không ăn|không thích|ghét|sợ).*\b(?:gì|cái gì|những gì|chi|sao|thế nào|không|hả|nhỉ)(?:\s+(?:vậy|thế|nhỉ|hả|đó|ạ))?\s*[?]?$/i;
+    const queryPattern =
+      /^(?:tôi|mình|em)\s+(?:bị\s+)?(?:dị ứng|kiêng|không thích|ghét)\s+(?:gì|cái gì|những gì|chi)\b/i;
+    return (
+      questionPattern.test(clean) ||
+      questionSuffix.test(clean) ||
+      queryPattern.test(clean)
+    );
+  }
 
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
+  private isQuestionWord(term: string): boolean {
+    const clean = this.stripDiacritics(term.toLowerCase().trim());
+    return (
+      /^(?:gi|cai gi|nhung gi|thu gi|mon gi|sao|the nao|khong|chua|dau|ha|nhi|chi|mon nao|nao)(?:\s+(?:vay|the|ne|nao|ha|nhi|do|a))?$/.test(
+        clean,
+      ) ||
+      /^(?:co phai|co phai khong|dung khong|phai khong)$/.test(clean) ||
+      clean.length < 2
+    );
+  }
+
+  extractDislikes(text: string): string[] {
+    if (this.isQuestionOrInterrogative(text)) {
+      return [];
+    }
+
+    const dislikesSet = new Set<string>();
+    const clauseBreak =
+      /(?:[.;!?\n]|\s*,\s*(?=(?:tìm|muốn|thèm|cho tôi|quán|đừng|không|nhưng|hãy|gợi ý|né|tránh)\b))/i;
+    const clauses = text.split(clauseBreak);
+    const pattern =
+      /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/i;
+
+    for (const clause of clauses) {
+      const match = clause.match(pattern);
+      if (match) {
         const raw = match[1].trim();
         const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
         for (const item of items) {
           const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
           const cleaned = words.replace(/^(gì|món|quán|đồ)\s+/i, '').trim();
-          if (cleaned.length >= 2) {
+          if (cleaned.length >= 2 && !this.isQuestionWord(cleaned)) {
             dislikesSet.add(cleaned);
           }
         }
@@ -232,18 +265,25 @@ export class SlotExtractorService {
   }
 
   extractAllergies(text: string): string[] {
-    const allergiesSet = new Set<string>();
-    const patterns = [/(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/gi];
+    if (this.isQuestionOrInterrogative(text)) {
+      return [];
+    }
 
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
+    const allergiesSet = new Set<string>();
+    const clauseBreak =
+      /(?:[.;!?\n]|\s*,\s*(?=(?:tìm|muốn|thèm|cho tôi|quán|đừng|không|nhưng|hãy|gợi ý|né|tránh)\b))/i;
+    const clauses = text.split(clauseBreak);
+    const pattern = /(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/i;
+
+    for (const clause of clauses) {
+      const match = clause.match(pattern);
+      if (match) {
         const raw = match[1].trim();
         const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
         for (const item of items) {
           const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
           const cleaned = words.replace(/^(đồ|món)\s+/i, '').trim();
-          if (cleaned.length >= 2) {
+          if (cleaned.length >= 2 && !this.isQuestionWord(cleaned)) {
             allergiesSet.add(cleaned);
           }
         }
@@ -348,28 +388,29 @@ export class SlotExtractorService {
       return 'PREGNANT';
     }
 
-    // 2. WELLNESS (Ốm đau, bồi bổ, phục hồi)
+    // 2. WELLNESS (Ốm đau, bồi bổ, phục hồi - Dùng word boundary tránh bắt nhầm 'hôm nay', 'tôm')
     if (
-      clean.includes('om') ||
-      clean.includes('cam cum') ||
-      clean.includes('dau dau') ||
-      clean.includes('sot') ||
-      clean.includes('dau da day') ||
-      clean.includes('tieu hoa kem') ||
-      clean.includes('boi bo') ||
-      clean.includes('duong sinh') ||
-      clean.includes('nguoi gia')
+      /\b(?:om|bi om|om dau|cam cum|dau dau|sot|dau da day|tieu hoa kem|duong sinh|nguoi gia)\b/.test(
+        clean,
+      ) ||
+      clean.includes('boi bo co the') ||
+      clean.includes('phuc hoi suc khoe')
     ) {
       return 'WELLNESS';
     }
 
-    // 3. VEGAN (Ăn chay)
+    // 3. VEGAN (Ăn chay / Người tu hành)
     if (
       clean.includes('an chay') ||
       clean.includes('chay truong') ||
       clean.includes('thuan chay') ||
       clean.includes('vegan') ||
-      clean.includes('thanh tinh')
+      clean.includes('thanh tinh') ||
+      clean.includes('nha su') ||
+      clean.includes('thay chua') ||
+      clean.includes('tu si') ||
+      clean.includes('xuat gia') ||
+      clean.includes('su thay')
     ) {
       return 'VEGAN';
     }
@@ -459,12 +500,16 @@ export class SlotExtractorService {
     const msgLower = message.toLowerCase();
     const msgClean = this.stripDiacritics(msgLower);
 
-    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước (hỗ trợ cả gõ không dấu)
+    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước (hỗ trợ cả gõ không dấu, có kiểm tra biên từ)
     for (const key of Object.keys(mapping) as T[]) {
       const synonyms = mapping[key];
       for (const syn of synonyms) {
         const synClean = this.stripDiacritics(syn.toLowerCase());
-        if (msgClean.includes(synClean)) {
+        const regex = new RegExp(
+          `(?:^|[\\s,.!?;:])${synClean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s,.!?;:]|$)`,
+          'i',
+        );
+        if (regex.test(msgClean)) {
           return key;
         }
       }

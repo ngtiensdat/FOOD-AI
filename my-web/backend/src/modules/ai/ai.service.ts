@@ -347,13 +347,25 @@ export class AiService implements OnModuleInit {
       } = await this.intentDetector.detectIntentAndSlots(cleanMessage);
       const localSlots = this.slotExtractor.extractSlotsLocally(cleanMessage);
 
-      // Ưu tiên bảo vệ an toàn thai kỳ: PREGNANT luôn là persona có mức độ an toàn cao nhất
-      let resolvedPersona = localSlots.persona || llmSlots.persona;
-      if (
-        localSlots.persona === 'PREGNANT' ||
-        llmSlots.persona === 'PREGNANT'
-      ) {
-        resolvedPersona = 'PREGNANT';
+      // Persona là thuộc tính dài hạn (Persistent Profile Trait) đã lưu trong profile hoặc slots trước đó
+      const currentOrSavedPersona = currentState.slots?.persona;
+
+      let resolvedPersona = currentOrSavedPersona;
+
+      // Chỉ cập nhật persona khi có tín hiệu TƯỜNG MINH từ người dùng trong tin nhắn hiện tại (localSlots)
+      if (localSlots.persona) {
+        // Ưu tiên bảo vệ an toàn thai kỳ: nếu đang là PREGNANT, không chuyển sang persona khác
+        if (
+          currentOrSavedPersona === 'PREGNANT' &&
+          localSlots.persona !== 'PREGNANT'
+        ) {
+          resolvedPersona = 'PREGNANT';
+        } else {
+          resolvedPersona = localSlots.persona;
+        }
+      } else if (!currentOrSavedPersona && llmSlots.persona) {
+        // Chỉ nhận persona từ LLM khi tài khoản chưa từng có bất kỳ persona nào
+        resolvedPersona = llmSlots.persona;
       }
 
       currentState.slots = {

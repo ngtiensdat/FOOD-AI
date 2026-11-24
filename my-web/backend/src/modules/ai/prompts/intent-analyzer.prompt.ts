@@ -38,8 +38,16 @@ Ngoài ra hãy trích xuất các thuộc tính cụ thể (slots) theo ĐÚNG N
     - Đặc biệt, "PREGNANT" liên quan trực tiếp đến an toàn sức khỏe thai kỳ (cấm đồ sống, rượu bia, caffeine), luôn được ưu tiên bảo vệ cao nhất.
 - specialNotes (ghi chú sức khỏe hoặc hoàn cảnh đặc biệt nếu có, ví dụ: "đang niềng răng", "tiểu đường", "mang thai tháng thứ 3", "chồng tập gym")
 
+QUY TẮC NHẬN DIỆN CÂU HỎI TRUY VẤN THÔNG TIN BẢN THÂN / BỘ NHỚ:
+- Khi người dùng HỎI VỀ BẢN THÂN HỌ HOẶC BỘ NHỚ AI (ví dụ: "tôi dị ứng gì vậy", "tôi đang kiêng gì", "tôi không ăn được gì", "bạn nhớ gì về tôi", "tôi có dị ứng gì không"):
+  + Đây là câu hỏi truy vấn thông tin đã lưu (Inquiry/Recall), KHÔNG PHẢI khai báo dị ứng mới hay yêu cầu gợi ý món!
+  + searchQuery: "" (chuỗi rỗng, TUYỆT ĐỐI KHÔNG tìm kiếm các từ hỏi như "gì vậy").
+  + slots.allergies: null, slots.dislikes: null (TUYỆT ĐỐI KHÔNG trích xuất "gì vậy", "những gì" vào slots!).
+
 Dựa trên ngữ cảnh và ý định ngầm hiểu, hãy sinh ra một "searchQuery" bằng tiếng Việt gồm các từ khóa đặc trưng (ví dụ: món ăn, thể loại, từ khóa liên quan) để dùng tìm kiếm trong cơ sở dữ liệu vector.
 Ví dụ:
+- "tôi dị ứng gì vậy" -> searchQuery: "", slots: { allergies: null, dislikes: null, cuisineType: null } (Câu hỏi truy vấn thông tin cá nhân, không trích xuất "gì vậy")
+- "tôi đang kiêng món gì" -> searchQuery: "", slots: { allergies: null, dislikes: null, cuisineType: null }
 - "tôi không thích ăn cay, tìm quán cơm sườn" -> searchQuery: "cơm sườn", slots: { cuisineType: "cơm sườn", dislikes: ["cay"] } (TUYỆT ĐỐI KHÔNG đưa "cay" vào cuisineType hay searchQuery)
 - "tôi có bầu và chồng tôi tập gym" -> searchQuery: "canh hầm bổ dưỡng, cháo bồ câu, thịt bò, gà nạc, soup", slots: { persona: "PREGNANT", companion: "FAMILY", specialNotes: "chồng tập gym" } (TUYỆT ĐỐI KHÔNG gán GYM cho người dùng vì người có bầu là tôi)
 - "chồng tôi tập gym" -> searchQuery: "ức gà, thịt bò, đồ nạc, giàu protein", slots: { companion: "FAMILY", specialNotes: "chồng tập gym" } (persona: null vì người dùng không nói mình tập gym)

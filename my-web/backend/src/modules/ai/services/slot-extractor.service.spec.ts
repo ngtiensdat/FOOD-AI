@@ -113,6 +113,19 @@ describe('SlotExtractorService', () => {
       );
     });
 
+    it('TUYỆT ĐỐI KHÔNG trích xuất từ hỏi "gì vậy" làm dị ứng khi người dùng hỏi "tôi dị ứng gì vậy"', () => {
+      const slots = service.extractSlotsLocally('tôi dị ứng gì vậy');
+      expect(slots.allergies).toBeUndefined();
+
+      const allergiesDirect = service.extractAllergies('tôi dị ứng gì vậy');
+      expect(allergiesDirect).toEqual([]);
+
+      const dislikesDirect = service.extractDislikes(
+        'mình đang kiêng ăn món gì vậy hả',
+      );
+      expect(dislikesDirect).toEqual([]);
+    });
+
     it('nên trích xuất đúng Persona GYM khi nhắc đến tập luyện tăng cơ', () => {
       const slots = service.extractSlotsLocally(
         'mình đang tập gym muốn ăn đồ tăng cơ giàu đạm',
