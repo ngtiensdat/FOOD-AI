@@ -24,9 +24,18 @@ interface Report {
   createdAt: string;
 }
 
+interface PendingOffer {
+  id: number;
+  restaurantName?: string;
+  promoType?: string;
+  title: string;
+  discountValue?: string | number;
+  description?: string;
+}
+
 export const ModerationTab = () => {
   const [reports, setReports] = useState<Report[]>([]);
-  const [pendingOffers, setPendingOffers] = useState<Record<string, unknown>[]>([]);
+  const [pendingOffers, setPendingOffers] = useState<PendingOffer[]>([]);
   const [activeSubTab, setActiveSubTab] = useState<'REPORTS' | 'PROMOTIONS'>('REPORTS');
 
   useEffect(() => {
