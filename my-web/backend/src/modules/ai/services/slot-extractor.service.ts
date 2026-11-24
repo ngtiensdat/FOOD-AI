@@ -208,7 +208,37 @@ export class SlotExtractorService {
     });
   }
 
+  private isQuestionOrInterrogative(text: string): boolean {
+    const clean = text.toLowerCase().trim();
+    const questionPattern =
+      /(?:dị ứng|kiêng|không ăn|không thích|ghét|sợ)\s+(?:ăn\s+|món\s+)?(?:gì|cái gì|những gì|thứ gì|món gì|chi|sao|thế nào)\b/i;
+    const questionSuffix =
+      /(?:dị ứng|kiêng|không ăn|không thích|ghét|sợ).*\b(?:gì|cái gì|những gì|chi|sao|thế nào|không|hả|nhỉ)(?:\s+(?:vậy|thế|nhỉ|hả|đó|ạ))?\s*[?]?$/i;
+    const queryPattern =
+      /^(?:tôi|mình|em)\s+(?:bị\s+)?(?:dị ứng|kiêng|không thích|ghét)\s+(?:gì|cái gì|những gì|chi)\b/i;
+    return (
+      questionPattern.test(clean) ||
+      questionSuffix.test(clean) ||
+      queryPattern.test(clean)
+    );
+  }
+
+  private isQuestionWord(term: string): boolean {
+    const clean = this.stripDiacritics(term.toLowerCase().trim());
+    return (
+      /^(?:gi|cai gi|nhung gi|thu gi|mon gi|sao|the nao|khong|chua|dau|ha|nhi|chi|mon nao|nao)(?:\s+(?:vay|the|ne|nao|ha|nhi|do|a))?$/.test(
+        clean,
+      ) ||
+      /^(?:co phai|co phai khong|dung khong|phai khong)$/.test(clean) ||
+      clean.length < 2
+    );
+  }
+
   extractDislikes(text: string): string[] {
+    if (this.isQuestionOrInterrogative(text)) {
+      return [];
+    }
+
     const dislikesSet = new Set<string>();
     const patterns = [
       /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/gi,
@@ -222,7 +252,7 @@ export class SlotExtractorService {
         for (const item of items) {
           const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
           const cleaned = words.replace(/^(gì|món|quán|đồ)\s+/i, '').trim();
-          if (cleaned.length >= 2) {
+          if (cleaned.length >= 2 && !this.isQuestionWord(cleaned)) {
             dislikesSet.add(cleaned);
           }
         }
@@ -232,6 +262,10 @@ export class SlotExtractorService {
   }
 
   extractAllergies(text: string): string[] {
+    if (this.isQuestionOrInterrogative(text)) {
+      return [];
+    }
+
     const allergiesSet = new Set<string>();
     const patterns = [/(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/gi];
 
@@ -243,7 +277,7 @@ export class SlotExtractorService {
         for (const item of items) {
           const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
           const cleaned = words.replace(/^(đồ|món)\s+/i, '').trim();
-          if (cleaned.length >= 2) {
+          if (cleaned.length >= 2 && !this.isQuestionWord(cleaned)) {
             allergiesSet.add(cleaned);
           }
         }

@@ -436,8 +436,17 @@ export class AiLearningService {
 
       // 3. Persona (Phong cách sống đặc thù: GYM, PREGNANT, VEGAN, STUDENT, WEIGHT_LOSS, WELLNESS, OFFICE)
       if (newSlots.persona && newSlots.persona !== currentPrefs.persona) {
-        updatedPrefs.persona = newSlots.persona;
-        hasChanges = true;
+        if (
+          currentPrefs.persona === 'PREGNANT' &&
+          newSlots.persona !== 'PREGNANT'
+        ) {
+          this.logger.log(
+            `Preserving PREGNANT persona for User ${userId}, ignoring incoming ${newSlots.persona}`,
+          );
+        } else {
+          updatedPrefs.persona = newSlots.persona;
+          hasChanges = true;
+        }
       }
 
       // 4. Special Notes (Sức khỏe / hoàn cảnh đặc thù)

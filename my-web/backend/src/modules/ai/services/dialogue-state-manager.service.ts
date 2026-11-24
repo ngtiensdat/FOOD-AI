@@ -118,7 +118,11 @@ export class DialogueStateManagerService {
         ...newSlots,
         allergies: mergedAllergies.length > 0 ? mergedAllergies : undefined,
         dislikes: mergedDislikes.length > 0 ? mergedDislikes : undefined,
-        persona: newSlots?.persona || existingSlots.persona,
+        persona:
+          existingSlots.persona === 'PREGNANT' &&
+          newSlots?.persona !== 'PREGNANT'
+            ? 'PREGNANT'
+            : newSlots?.persona || existingSlots.persona,
         specialNotes: newSlots?.specialNotes || existingSlots.specialNotes,
       },
       rejected_food_ids: Array.from(
