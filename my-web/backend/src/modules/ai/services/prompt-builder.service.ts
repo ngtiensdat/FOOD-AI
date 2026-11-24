@@ -15,6 +15,7 @@ import {
 import { RECOMMENDATION_PROMPT_TEMPLATE } from '../prompts/recommendation.prompt';
 import { SLOT_FILLING_PROMPT_TEMPLATE } from '../prompts/slot-filling.prompt';
 import { AI_CONSTANTS } from '../../../common/constants/ai.constant';
+import { expandAllergens } from '../constants/allergen-ontology.constant';
 
 type FavoriteWithFood = Favorite & { food: { name: string } };
 type HistoryWithFood = History & { food: { name: string } | null };
@@ -56,9 +57,17 @@ export class PromptBuilderService {
         );
       }
       if (Array.isArray(prefs.allergies) && prefs.allergies.length > 0) {
-        prefList.push(
-          `⚠️ TUYỆT ĐỐI DỊ ỨNG VỚI: ${prefs.allergies.join(', ')} (CẤM GỢI Ý MÓN CÓ THÀNH PHẦN NÀY)`,
+        const { canonicalNames, crossReactionsInfo } = expandAllergens(
+          prefs.allergies,
         );
+        prefList.push(
+          `⚠️ TUYỆT ĐỐI DỊ ỨNG VỚI: ${canonicalNames.join(', ')} (CẤM GỢI Ý MÓN CÓ THÀNH PHẦN NÀY)`,
+        );
+        if (crossReactionsInfo.length > 0) {
+          prefList.push(
+            `🛡️ NGUY CƠ DỊ ỨNG CHÉO BẮT BUỘC PHẢI LOẠI BỎ & GIẢI THÍCH CHO KHÁCH AN TÂM:\n${crossReactionsInfo.map((info) => `  * ${info}`).join('\n')}`,
+          );
+        }
       }
       if (Array.isArray(prefs.dislikes) && prefs.dislikes.length > 0) {
         prefList.push(`Không thích / Kiêng khem: ${prefs.dislikes.join(', ')}`);

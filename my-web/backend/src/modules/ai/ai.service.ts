@@ -305,14 +305,22 @@ export class AiService implements OnModuleInit {
 
           const mergedAllergies = Array.from(
             new Set([
-              ...(savedPrefs.allergies || []),
-              ...(currentSlots.allergies || []),
+              ...this.aiLearningService.normalizePreferenceArray(
+                savedPrefs.allergies,
+              ),
+              ...this.aiLearningService.normalizePreferenceArray(
+                currentSlots.allergies,
+              ),
             ]),
           );
           const mergedDislikes = Array.from(
             new Set([
-              ...(savedPrefs.dislikes || []),
-              ...(currentSlots.dislikes || []),
+              ...this.aiLearningService.normalizePreferenceArray(
+                savedPrefs.dislikes,
+              ),
+              ...this.aiLearningService.normalizePreferenceArray(
+                currentSlots.dislikes,
+              ),
             ]),
           );
 
@@ -338,10 +346,21 @@ export class AiService implements OnModuleInit {
         searchQuery,
       } = await this.intentDetector.detectIntentAndSlots(cleanMessage);
       const localSlots = this.slotExtractor.extractSlotsLocally(cleanMessage);
+
+      // Ưu tiên bảo vệ an toàn thai kỳ: PREGNANT luôn là persona có mức độ an toàn cao nhất
+      let resolvedPersona = localSlots.persona || llmSlots.persona;
+      if (
+        localSlots.persona === 'PREGNANT' ||
+        llmSlots.persona === 'PREGNANT'
+      ) {
+        resolvedPersona = 'PREGNANT';
+      }
+
       currentState.slots = {
         ...(currentState.slots || {}),
         ...llmSlots,
         ...localSlots,
+        persona: resolvedPersona,
       };
 
       // Persist newly learned facts into Postgres profile and trigger embedding sync in background

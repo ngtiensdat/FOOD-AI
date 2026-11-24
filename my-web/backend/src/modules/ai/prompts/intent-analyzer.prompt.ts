@@ -29,21 +29,20 @@ Ngoài ra hãy trích xuất các thuộc tính cụ thể (slots) theo ĐÚNG N
 - companion (ví dụ: "SINGLE", "FAMILY", "DATE", "FRIENDS")
 - allergies (mảng các chất/nguyên liệu/món gây dị ứng của người dùng dưới dạng chuỗi, ví dụ: ["tôm", "lạc", "hải sản"])
 - dislikes (mảng các món, vị hoặc nguyên liệu người dùng KHÔNG THÍCH, KIÊNG hoặc TỪ CHỐI, ví dụ: "không thích ăn cay" -> ["cay"], "đừng cho hành" -> ["hành"], "ghét mướp đắng" -> ["mướp đắng"])
-- persona (nhận diện phong cách sống/đối tượng đặc thù nếu có: "GYM", "PREGNANT", "VEGAN", "STUDENT", "WEIGHT_LOSS", "WELLNESS", "OFFICE" hoặc null)
-- specialNotes (ghi chú sức khỏe hoặc hoàn cảnh đặc biệt nếu có, ví dụ: "đang niềng răng", "tiểu đường", "mang thai tháng thứ 3")
+- persona (nhận diện phong cách sống/đối tượng đặc thù của CHÍNH NGƯỜI DÙNG: "GYM", "PREGNANT", "VEGAN", "STUDENT", "WEIGHT_LOSS", "WELLNESS", "OFFICE" hoặc null).
+  * QUY TẮC PHÂN BIỆT CHỦ THỂ CỰC KỲ QUAN TRỌNG:
+    - Persona CHỈ ĐƯỢC GÁN cho chính bản thân người dùng ("tôi", "mình", "em", hoặc người phát ngôn).
+    - Nếu câu nói đề cập đến người khác ("chồng tôi tập gym", "vợ tôi có bầu", "bạn tôi ăn chay", "con tôi thích ăn ngọt"): TUYỆT ĐỐI KHÔNG gán persona của người đó cho người dùng!
+    - Khi câu có nhiều chủ thể (ví dụ: "tôi có bầu và chồng tôi tập gym"): Người dùng là người mang thai, do đó persona BẮT BUỘC là "PREGNANT" (chồng chỉ là người đi cùng - companion: "FAMILY").
+    - Nếu người dùng CHỈ nói về người khác (ví dụ: "chồng tôi tập gym muốn ăn nhiều đạm"): persona của người dùng là null (vì người tập là chồng), companion: "FAMILY", specialNotes: "chồng tập gym cần nạp đạm".
+    - Đặc biệt, "PREGNANT" liên quan trực tiếp đến an toàn sức khỏe thai kỳ (cấm đồ sống, rượu bia, caffeine), luôn được ưu tiên bảo vệ cao nhất.
+- specialNotes (ghi chú sức khỏe hoặc hoàn cảnh đặc biệt nếu có, ví dụ: "đang niềng răng", "tiểu đường", "mang thai tháng thứ 3", "chồng tập gym")
 
 Dựa trên ngữ cảnh và ý định ngầm hiểu, hãy sinh ra một "searchQuery" bằng tiếng Việt gồm các từ khóa đặc trưng (ví dụ: món ăn, thể loại, từ khóa liên quan) để dùng tìm kiếm trong cơ sở dữ liệu vector.
 Ví dụ:
 - "tôi không thích ăn cay, tìm quán cơm sườn" -> searchQuery: "cơm sườn", slots: { cuisineType: "cơm sườn", dislikes: ["cay"] } (TUYỆT ĐỐI KHÔNG đưa "cay" vào cuisineType hay searchQuery)
-- "muốn ăn cái gì sang chảnh" -> "pizza, steak, lẩu nướng, sushi, nhà hàng sang trọng"
-- "thèm ngọt ngọt" -> "trà sữa, kem, bánh ngọt, chè, trà đào"
-- "đói quá muốn ăn no" -> "cơm thố, cơm sườn, cơm văn phòng, mì, bún chả"
-- "bún ngan" -> "bún ngan"
-- "tôi buồn quá / tôi stress / tôi mệt" -> "trà sữa, bánh ngọt, kem, chè, đồ ngọt, comfort food, đồ uống dễ chịu"
-- "tôi vui quá / tôi thành công" -> "lẩu nướng, buffet, đồ ăn liên hoan, pizza, gà rán"
-- "muốn ăn gì đó nhẹ nhàng" -> "salad, cháo, soup, bánh mì, sandwitch, phở"
-- "ăn với bạn bè / đi chơi nhóm" -> "lẩu, nướng, buffet, đồ ăn vặt, pizza, gà"
-- "ăn một mình / buổi tối yên tĩnh" -> "cơm bình thường, bún, phở, mì, cháo"
+- "tôi có bầu và chồng tôi tập gym" -> searchQuery: "canh hầm bổ dưỡng, cháo bồ câu, thịt bò, gà nạc, soup", slots: { persona: "PREGNANT", companion: "FAMILY", specialNotes: "chồng tập gym" } (TUYỆT ĐỐI KHÔNG gán GYM cho người dùng vì người có bầu là tôi)
+- "chồng tôi tập gym" -> searchQuery: "ức gà, thịt bò, đồ nạc, giàu protein", slots: { companion: "FAMILY", specialNotes: "chồng tập gym" } (persona: null vì người dùng không nói mình tập gym)
 - "mình đang bầu tháng thứ 4, muốn ăn gì bổ dưỡng" -> searchQuery: "cháo bồ câu, canh gà, soup, món hầm", slots: { persona: "PREGNANT" }
 - "tập gym xong cần nạp đạm" -> searchQuery: "ức gà, salad, poke, thịt bò, cá hồi", slots: { persona: "GYM" }
 

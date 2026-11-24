@@ -138,5 +138,34 @@ describe('SlotExtractorService', () => {
       const slots = service.extractSlotsLocally('mình ăn chay trường nhé');
       expect(slots.persona).toBe('VEGAN');
     });
+
+    it('BẮT BUỘC gán PREGNANT cho người dùng và KHÔNG gán GYM khi câu là "tôi vừa bảo là tôi có bầu và chồng tôi tập gym"', () => {
+      const slots = service.extractSlotsLocally(
+        'tôi vừa bảo là tôi có bầu và chồng tôi tập gym',
+      );
+      expect(slots.persona).toBe('PREGNANT');
+    });
+
+    it('nên nhận diện đúng PREGNANT khi câu có cấu trúc "chồng tôi tập gym, còn tôi đang có thai"', () => {
+      const slots = service.extractSlotsLocally(
+        'chồng tôi tập gym, còn tôi đang có thai',
+      );
+      expect(slots.persona).toBe('PREGNANT');
+    });
+
+    it('KHÔNG ĐƯỢC gán GYM cho người dùng khi chỉ có chồng tập gym: "chồng tôi tập gym"', () => {
+      const slots = service.extractSlotsLocally('chồng tôi tập gym');
+      expect(slots.persona).toBeUndefined();
+    });
+
+    it('KHÔNG ĐƯỢC gán PREGNANT cho người dùng khi chỉ nói về vợ: "vợ tôi có bầu"', () => {
+      const slots = service.extractSlotsLocally('vợ tôi có bầu');
+      expect(slots.persona).toBeUndefined();
+    });
+
+    it('nên phân biệt đúng người dùng ăn chay khi bạn đi cùng tập gym: "tôi ăn chay, bạn tôi tập gym"', () => {
+      const slots = service.extractSlotsLocally('tôi ăn chay, bạn tôi tập gym');
+      expect(slots.persona).toBe('VEGAN');
+    });
   });
 });

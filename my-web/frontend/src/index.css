@@ -6,6 +6,41 @@
 
 @import "tailwindcss";
 
+/* Universal Clickable Affordance (Point Click): Bắt buộc toàn bộ nút bấm, liên kết, tab, và các phần tử tương tác hiển thị con trỏ bàn tay */
+button,
+a,
+select,
+summary,
+[role="button"],
+[role="tab"],
+[role="link"],
+[role="menuitem"],
+[role="option"],
+[role="switch"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+label[for],
+label:has(input),
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+input[type="file"]::-webkit-file-upload-button,
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Các phần tử bị vô hiệu hóa (disabled) hiển thị con trỏ cấm */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[disabled],
+[aria-disabled="true"],
+.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
+
 /* Define the custom dark and mixed variants for class-based themes in Tailwind CSS v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant mixed (&:where(.mixed, .mixed *));
@@ -339,6 +374,7 @@ h6 {
 }
 
 @utility dropdown-item {
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -534,6 +570,7 @@ input[type=number] {
 }
 
 @utility icon-btn-blue {
+  cursor: pointer;
   padding: 0.375rem;
   color: var(--color-blue-500);
   border-radius: var(--radius-input);
@@ -551,6 +588,7 @@ input[type=number] {
 }
 
 @utility icon-btn-rose {
+  cursor: pointer;
   padding: 0.375rem;
   color: var(--color-rose-500);
   border-radius: var(--radius-input);

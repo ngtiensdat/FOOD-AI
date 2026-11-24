@@ -63,6 +63,30 @@ export class DialogueStateManagerService {
     });
   }
 
+  private normalizeArray(val: unknown): string[] {
+    if (!val) return [];
+    if (Array.isArray(val)) {
+      if (
+        val.length > 1 &&
+        val.every((item) => typeof item === 'string' && item.length === 1)
+      ) {
+        return [val.join('')];
+      }
+      return val.filter(
+        (x) => typeof x === 'string' && x.trim() && x.toLowerCase() !== 'none',
+      );
+    }
+    if (typeof val === 'string' && val.trim() && val.toLowerCase() !== 'none') {
+      return val.includes(',')
+        ? val
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [val.trim()];
+    }
+    return [];
+  }
+
   async updateState(
     conversationId: number,
     currentState: DialogueState,
@@ -75,14 +99,14 @@ export class DialogueStateManagerService {
     const existingSlots = currentState.slots || {};
     const mergedAllergies = Array.from(
       new Set([
-        ...(existingSlots.allergies || []),
-        ...(newSlots?.allergies || []),
+        ...this.normalizeArray(existingSlots.allergies),
+        ...this.normalizeArray(newSlots?.allergies),
       ]),
     );
     const mergedDislikes = Array.from(
       new Set([
-        ...(existingSlots.dislikes || []),
-        ...(newSlots?.dislikes || []),
+        ...this.normalizeArray(existingSlots.dislikes),
+        ...this.normalizeArray(newSlots?.dislikes),
       ]),
     );
 

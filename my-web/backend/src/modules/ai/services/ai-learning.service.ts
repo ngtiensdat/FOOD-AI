@@ -12,6 +12,10 @@ import { VectorRepository } from '../vector.repository';
 import { AiFeedbackDto } from '../dto/ai-feedback.dto';
 import { FeedbackType } from '@prisma/client';
 import { AI_CONSTANTS } from '../../../common/constants/ai.constant';
+import {
+  toCanonicalVietnameseAllergy,
+  stripVietnameseDiacritics,
+} from '../constants/allergen-ontology.constant';
 
 @Injectable()
 export class AiLearningService {
@@ -332,6 +336,47 @@ export class AiLearningService {
     }
   }
 
+  /**
+   * Chuẩn hóa mảng thuộc tính sở thích (allergies, dislikes) để chống lỗi phân tách chuỗi thành từng ký tự đơn
+   */
+  normalizePreferenceArray(input: unknown): string[] {
+    if (!input) return [];
+    if (Array.isArray(input)) {
+      const cleaned = input
+        .map((item) => (typeof item === 'string' ? item.trim() : ''))
+        .filter((item) => item.length > 0 && item.toLowerCase() !== 'none');
+
+      // Nếu mảng vô tình bị phân tách thành từng ký tự đơn (ví dụ: ['p', 'e', 'a', 'n', 'u', 't', 's'])
+      if (cleaned.length > 1 && cleaned.every((item) => item.length === 1)) {
+        return [cleaned.join('')];
+      }
+      return Array.from(new Set(cleaned));
+    }
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      if (
+        !trimmed ||
+        trimmed.toLowerCase() === 'none' ||
+        trimmed === 'null' ||
+        trimmed === 'undefined'
+      ) {
+        return [];
+      }
+      if (trimmed.includes(',')) {
+        return Array.from(
+          new Set(
+            trimmed
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0 && s.toLowerCase() !== 'none'),
+          ),
+        );
+      }
+      return [trimmed];
+    }
+    return [];
+  }
+
   async updateUserProfileFacts(
     userId: number,
     newSlots: Partial<{
@@ -353,27 +398,35 @@ export class AiLearningService {
       let hasChanges = false;
       const updatedPrefs = { ...currentPrefs };
 
-      // 1. Allergies (Chất dị ứng - Merge Set vĩnh viễn)
-      if (newSlots.allergies && newSlots.allergies.length > 0) {
-        const existingAllergies = Array.isArray(currentPrefs.allergies)
-          ? currentPrefs.allergies
-          : [];
+      // 1. Allergies (Chất dị ứng - Merge Set vĩnh viễn và chuẩn hóa Tiếng Việt kèm dị ứng chéo)
+      const existingAllergies = this.normalizePreferenceArray(
+        currentPrefs.allergies,
+      ).map((a) => toCanonicalVietnameseAllergy(a));
+      const incomingAllergies = this.normalizePreferenceArray(
+        newSlots.allergies,
+      ).map((a) => toCanonicalVietnameseAllergy(a));
+      if (incomingAllergies.length > 0) {
         const mergedAllergies = Array.from(
-          new Set([...existingAllergies, ...newSlots.allergies]),
+          new Set([...existingAllergies, ...incomingAllergies]),
         );
-        if (mergedAllergies.length !== existingAllergies.length) {
+        if (
+          mergedAllergies.length !== existingAllergies.length ||
+          JSON.stringify(mergedAllergies) !==
+            JSON.stringify(currentPrefs.allergies)
+        ) {
           updatedPrefs.allergies = mergedAllergies;
           hasChanges = true;
         }
       }
 
       // 2. Dislikes (Món/vị không thích, kiêng khem - Merge Set)
-      if (newSlots.dislikes && newSlots.dislikes.length > 0) {
-        const existingDislikes = Array.isArray(currentPrefs.dislikes)
-          ? currentPrefs.dislikes
-          : [];
+      const existingDislikes = this.normalizePreferenceArray(
+        currentPrefs.dislikes,
+      );
+      const incomingDislikes = this.normalizePreferenceArray(newSlots.dislikes);
+      if (incomingDislikes.length > 0) {
         const mergedDislikes = Array.from(
-          new Set([...existingDislikes, ...newSlots.dislikes]),
+          new Set([...existingDislikes, ...incomingDislikes]),
         );
         if (mergedDislikes.length !== existingDislikes.length) {
           updatedPrefs.dislikes = mergedDislikes;
@@ -459,8 +512,14 @@ export class AiLearningService {
 
     return {
       preferences: {
-        allergies: Array.isArray(prefs.allergies) ? prefs.allergies : [],
-        dislikes: Array.isArray(prefs.dislikes) ? prefs.dislikes : [],
+        allergies: Array.from(
+          new Set(
+            this.normalizePreferenceArray(prefs.allergies).map((a) =>
+              toCanonicalVietnameseAllergy(a),
+            ),
+          ),
+        ),
+        dislikes: this.normalizePreferenceArray(prefs.dislikes),
         persona: prefs.persona || null,
         specialNotes: prefs.specialNotes || null,
         cuisine: prefs.cuisine || null,
@@ -526,19 +585,27 @@ export class AiLearningService {
     const prefs = { ...((profile.preferences as Record<string, any>) || {}) };
 
     if (type === 'allergy' && value) {
-      const strVal = String(value).trim().toLowerCase();
-      if (Array.isArray(prefs.allergies)) {
-        prefs.allergies = prefs.allergies.filter(
-          (a: string) => a.trim().toLowerCase() !== strVal,
+      const cleanVal = stripVietnameseDiacritics(String(value));
+      const currentAllergies = this.normalizePreferenceArray(prefs.allergies);
+      prefs.allergies = currentAllergies.filter((a: string) => {
+        const cleanA = stripVietnameseDiacritics(a);
+        const canonA = stripVietnameseDiacritics(
+          toCanonicalVietnameseAllergy(a),
         );
-      }
+        return (
+          cleanA !== cleanVal &&
+          canonA !== cleanVal &&
+          !cleanVal.includes(cleanA) &&
+          !cleanA.includes(cleanVal)
+        );
+      });
     } else if (type === 'dislike' && value) {
-      const strVal = String(value).trim().toLowerCase();
-      if (Array.isArray(prefs.dislikes)) {
-        prefs.dislikes = prefs.dislikes.filter(
-          (d: string) => d.trim().toLowerCase() !== strVal,
-        );
-      }
+      const cleanVal = stripVietnameseDiacritics(String(value));
+      const currentDislikes = this.normalizePreferenceArray(prefs.dislikes);
+      prefs.dislikes = currentDislikes.filter((d: string) => {
+        const cleanD = stripVietnameseDiacritics(d);
+        return cleanD !== cleanVal;
+      });
     } else if (type === 'persona') {
       delete prefs.persona;
     } else if (type === 'specialNotes') {

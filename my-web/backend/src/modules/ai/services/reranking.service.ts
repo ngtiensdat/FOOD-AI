@@ -11,6 +11,10 @@ import { AI_PARAMETERS } from '../constants/ai-parameters.constant';
 import { BusinessRuleEngineService } from './business-rule-engine.service';
 import { FoodKnowledgeService } from './food-knowledge.service';
 import { FoodIntent } from '../constants/food-intent.enum';
+import {
+  expandAllergens,
+  stripVietnameseDiacritics,
+} from '../constants/allergen-ontology.constant';
 
 interface RerankingWeights {
   intent: number;
@@ -989,69 +993,46 @@ export class RerankingService {
   private hasAllergens(food: SearchResult, allergies?: string[]): boolean {
     if (!allergies || allergies.length === 0) return false;
 
-    const stripDiacritics = (str: string) => {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .toLowerCase();
-    };
+    // Sử dụng Bản đồ Tri thức Dị ứng Thực phẩm & Dị ứng Chéo (Ontology)
+    // Tự động mở rộng từ đồng nghĩa và nguy cơ dị ứng chéo (ví dụ: dị ứng tôm -> loại trừ cả bề bề, mắm tôm, cua, ghẹ)
+    const { searchKeywords } = expandAllergens(allergies);
+    if (searchKeywords.length === 0) return false;
 
-    const nameLower = stripDiacritics(food.name);
-    const descLower = stripDiacritics(food.description || '');
-    const tagsLower = (food.tags || []).map((t) => stripDiacritics(t));
-    const catLower = stripDiacritics(food.categoryName || '');
-    const restaurantLower = stripDiacritics(food.restaurantName || '');
+    const nameLower = stripVietnameseDiacritics(food.name);
+    const descLower = stripVietnameseDiacritics(food.description || '');
+    const tagsLower = (food.tags || []).map((t) =>
+      stripVietnameseDiacritics(t),
+    );
+    const catLower = stripVietnameseDiacritics(food.categoryName || '');
+    const restaurantLower = stripVietnameseDiacritics(
+      food.restaurantName || '',
+    );
 
-    return allergies.some((allergy) => {
-      const cleanAllergy = stripDiacritics(allergy).trim();
-      if (!cleanAllergy) return false;
+    return searchKeywords.some((keyword) => {
+      if (!keyword || keyword.length < 2) return false;
 
-      // Check name, description, tags, category, restaurant name
-      if (nameLower.includes(cleanAllergy)) return true;
-      if (descLower.includes(cleanAllergy)) return true;
-      if (catLower.includes(cleanAllergy)) return true;
-      if (restaurantLower.includes(cleanAllergy)) return true;
-      if (tagsLower.some((t) => t.includes(cleanAllergy))) return true;
-
-      // Special case: if allergy is "đậu phộng", check synonym "lac"
-      if (cleanAllergy === 'dau phong' || cleanAllergy === 'lac') {
+      // Với các từ khóa ngắn (<= 3 ký tự như "ca", "so", "oc"), dùng regex word boundary để tránh bắt nhầm (như "cà phê", "sốt")
+      if (keyword.length <= 3) {
+        const regex = new RegExp(
+          `(^|\\s|[-_.,/])${keyword}($|\\s|[-_.,/])`,
+          'i',
+        );
         if (
-          nameLower.includes('dau phong') ||
-          nameLower.includes('lac') ||
-          descLower.includes('dau phong') ||
-          descLower.includes('lac') ||
-          tagsLower.some((t) => t.includes('dau phong') || t.includes('lac'))
+          regex.test(nameLower) ||
+          regex.test(descLower) ||
+          regex.test(catLower)
         ) {
           return true;
         }
+        return tagsLower.some((t) => regex.test(t));
       }
 
-      // Special case: if allergy is "hai san", check common seafood terms
-      if (cleanAllergy === 'hai san') {
-        const seafoodTerms = [
-          'tom',
-          'cua',
-          'muc',
-          'oc',
-          'ca',
-          'so',
-          'hen',
-          'ngheu',
-        ];
-        if (
-          seafoodTerms.some(
-            (term) =>
-              nameLower.includes(term) ||
-              descLower.includes(term) ||
-              tagsLower.some((t) => t.includes(term)),
-          )
-        ) {
-          return true;
-        }
-      }
-
-      return false;
+      // Kiểm tra trong tên món, mô tả, danh mục, tên quán và thẻ tags
+      if (nameLower.includes(keyword)) return true;
+      if (descLower.includes(keyword)) return true;
+      if (catLower.includes(keyword)) return true;
+      if (restaurantLower.includes(keyword)) return true;
+      return tagsLower.some((t) => t.includes(keyword));
     });
   }
 }
