@@ -388,28 +388,29 @@ export class SlotExtractorService {
       return 'PREGNANT';
     }
 
-    // 2. WELLNESS (Ốm đau, bồi bổ, phục hồi)
+    // 2. WELLNESS (Ốm đau, bồi bổ, phục hồi - Dùng word boundary tránh bắt nhầm 'hôm nay', 'tôm')
     if (
-      clean.includes('om') ||
-      clean.includes('cam cum') ||
-      clean.includes('dau dau') ||
-      clean.includes('sot') ||
-      clean.includes('dau da day') ||
-      clean.includes('tieu hoa kem') ||
-      clean.includes('boi bo') ||
-      clean.includes('duong sinh') ||
-      clean.includes('nguoi gia')
+      /\b(?:om|bi om|om dau|cam cum|dau dau|sot|dau da day|tieu hoa kem|duong sinh|nguoi gia)\b/.test(
+        clean,
+      ) ||
+      clean.includes('boi bo co the') ||
+      clean.includes('phuc hoi suc khoe')
     ) {
       return 'WELLNESS';
     }
 
-    // 3. VEGAN (Ăn chay)
+    // 3. VEGAN (Ăn chay / Người tu hành)
     if (
       clean.includes('an chay') ||
       clean.includes('chay truong') ||
       clean.includes('thuan chay') ||
       clean.includes('vegan') ||
-      clean.includes('thanh tinh')
+      clean.includes('thanh tinh') ||
+      clean.includes('nha su') ||
+      clean.includes('thay chua') ||
+      clean.includes('tu si') ||
+      clean.includes('xuat gia') ||
+      clean.includes('su thay')
     ) {
       return 'VEGAN';
     }

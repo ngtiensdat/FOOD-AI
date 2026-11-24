@@ -203,4 +203,13 @@ describe('QA Customer & AI Simulation Suite (Kiểm thử Toàn diện Khách h�
       expect(slotExtractor.parseBudget('ngân sách 2tr')).toBe(2000000);
     });
   });
+
+  describe('Kịch bản 6: Tình huống nghịch lý - Nhà sư đòi ăn thịt', () => {
+    it('Phải nhận diện "tôi là nhà sư" thuộc Persona VEGAN', () => {
+      const input = 'tôi là nhà sư nhưng hôm nay thèm ăn thịt';
+      const slots = slotExtractor.extractSlotsLocally(input);
+
+      expect(slots.persona).toBe('VEGAN');
+    });
+  });
 });
