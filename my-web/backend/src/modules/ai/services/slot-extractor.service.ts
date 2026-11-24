@@ -142,39 +142,40 @@ export class SlotExtractorService {
     const triggersPattern = triggersWithoutMon.join('|');
     const cuisineRegex = new RegExp(
       `(?:${triggersPattern})\\s+([^,.\\s]+(?:\\s+[^,.\\s]+){0,2})`,
-      'i',
+      'gi',
     );
-    const cuisineMatch = msgLower.match(cuisineRegex);
-    if (!cuisineMatch) return undefined;
-
-    // Kiểm tra xem vị trí khớp có bị tiền tố phủ định chi phối không (ví dụ: "không thích", "đừng ăn", "ghét")
-    if (this.isNegated(msgLower, cuisineMatch.index ?? 0)) {
-      return undefined;
-    }
-
-    const extracted = cuisineMatch[1].trim();
-    let filtered = extracted;
 
     const noiseWords = this.getParam<string[]>(
       'noiseWords',
       AI_PARAMETERS.NOISE_WORDS,
     );
-
-    // Loại bỏ các từ khóa nhiễu ở cuối
-    for (const word of noiseWords) {
-      const idx = filtered.indexOf(' ' + word);
-      if (idx !== -1) {
-        filtered = filtered.substring(0, idx);
-      }
-    }
-
-    // Loại bỏ từ thừa ở đầu
     const replacePattern = AI_RULES.CUISINE_TRIGGERS.join('|');
     const replaceRegex = new RegExp(`^(?:${replacePattern})\\s+`, 'i');
-    filtered = filtered.replace(replaceRegex, '').trim();
 
-    if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
-      return filtered;
+    let cuisineMatch: RegExpExecArray | null;
+    while ((cuisineMatch = cuisineRegex.exec(msgLower)) !== null) {
+      // Bỏ qua nếu vị trí khớp này bị tiền tố phủ định chi phối (ví dụ: "không thích", "đừng ăn", "ghét")
+      if (this.isNegated(msgLower, cuisineMatch.index ?? 0)) {
+        continue;
+      }
+
+      const extracted = cuisineMatch[1].trim();
+      let filtered = extracted;
+
+      // Loại bỏ các từ khóa nhiễu ở cuối
+      for (const word of noiseWords) {
+        const idx = filtered.indexOf(' ' + word);
+        if (idx !== -1) {
+          filtered = filtered.substring(0, idx);
+        }
+      }
+
+      // Loại bỏ từ thừa ở đầu
+      filtered = filtered.replace(replaceRegex, '').trim();
+
+      if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
+        return filtered;
+      }
     }
 
     return undefined;
@@ -240,13 +241,15 @@ export class SlotExtractorService {
     }
 
     const dislikesSet = new Set<string>();
-    const patterns = [
-      /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/gi,
-    ];
+    const clauseBreak =
+      /(?:[.;!?\n]|\s*,\s*(?=(?:tìm|muốn|thèm|cho tôi|quán|đừng|không|nhưng|hãy|gợi ý|né|tránh)\b))/i;
+    const clauses = text.split(clauseBreak);
+    const pattern =
+      /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/i;
 
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
+    for (const clause of clauses) {
+      const match = clause.match(pattern);
+      if (match) {
         const raw = match[1].trim();
         const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
         for (const item of items) {
@@ -267,11 +270,14 @@ export class SlotExtractorService {
     }
 
     const allergiesSet = new Set<string>();
-    const patterns = [/(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/gi];
+    const clauseBreak =
+      /(?:[.;!?\n]|\s*,\s*(?=(?:tìm|muốn|thèm|cho tôi|quán|đừng|không|nhưng|hãy|gợi ý|né|tránh)\b))/i;
+    const clauses = text.split(clauseBreak);
+    const pattern = /(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/i;
 
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
+    for (const clause of clauses) {
+      const match = clause.match(pattern);
+      if (match) {
         const raw = match[1].trim();
         const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
         for (const item of items) {
@@ -493,12 +499,16 @@ export class SlotExtractorService {
     const msgLower = message.toLowerCase();
     const msgClean = this.stripDiacritics(msgLower);
 
-    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước (hỗ trợ cả gõ không dấu)
+    // 1. Khớp chính xác hoặc tìm cụm từ đồng nghĩa hoàn chỉnh trước (hỗ trợ cả gõ không dấu, có kiểm tra biên từ)
     for (const key of Object.keys(mapping) as T[]) {
       const synonyms = mapping[key];
       for (const syn of synonyms) {
         const synClean = this.stripDiacritics(syn.toLowerCase());
-        if (msgClean.includes(synClean)) {
+        const regex = new RegExp(
+          `(?:^|[\\s,.!?;:])${synClean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s,.!?;:]|$)`,
+          'i',
+        );
+        if (regex.test(msgClean)) {
           return key;
         }
       }
