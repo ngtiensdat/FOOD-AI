@@ -49,23 +49,37 @@ export class IntentDetectorService {
       this.logger.warn(`Failed to retrieve intent from cache: ${err}`);
     }
 
-    // Fast-path tối ưu: Nhận diện siêu tốc (0.1ms) các câu hỏi ẩm thực phổ biến bằng từ khóa và regex
+    // Fast-path tối ưu: Chỉ áp dụng cho các câu hỏi ẩm thực chung chung ĐƠN GIẢN, KHÔNG có phủ định hay dị ứng
+    const hasComplexConstraints =
+      normalized.includes('không') ||
+      normalized.includes('đừng') ||
+      normalized.includes('chẳng') ||
+      normalized.includes('dị ứng') ||
+      normalized.includes('kiêng') ||
+      normalized.includes('ghét') ||
+      normalized.includes('bầu') ||
+      normalized.includes('thai') ||
+      normalized.includes('gym') ||
+      normalized.includes('tập') ||
+      normalized.includes('chay');
+
     const isCommonFoodQuery =
-      normalized.includes('ăn gì') ||
-      normalized.includes('món khác') ||
-      normalized.includes('món gì') ||
-      normalized.includes('gợi ý') ||
-      normalized.includes('tìm quán') ||
-      normalized.includes('tìm món') ||
-      normalized.includes('thanh mát') ||
-      normalized.includes('nóng') ||
-      normalized.includes('cay') ||
-      normalized.includes('thèm') ||
-      normalized.includes('uống gì') ||
-      normalized.includes('quán nào') ||
-      normalized.includes('ở đâu') ||
-      normalized.includes('dưới ') ||
-      normalized.includes('tầm giá');
+      !hasComplexConstraints &&
+      (normalized.includes('ăn gì') ||
+        normalized.includes('món khác') ||
+        normalized.includes('món gì') ||
+        normalized.includes('gợi ý') ||
+        normalized.includes('tìm quán') ||
+        normalized.includes('tìm món') ||
+        normalized.includes('thanh mát') ||
+        normalized.includes('nóng') ||
+        normalized.includes('cay') ||
+        normalized.includes('thèm') ||
+        normalized.includes('uống gì') ||
+        normalized.includes('quán nào') ||
+        normalized.includes('ở đâu') ||
+        normalized.includes('dưới ') ||
+        normalized.includes('tầm giá'));
 
     if (isCommonFoodQuery) {
       const fastResult = {
@@ -121,6 +135,12 @@ export class IntentDetectorService {
                     type: 'array',
                     items: { type: 'string' },
                   },
+                  dislikes: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
+                  persona: { type: 'string' },
+                  specialNotes: { type: 'string' },
                 },
               },
               searchQuery: { type: 'string' },
@@ -165,11 +185,16 @@ export class IntentDetectorService {
 
       // Map slots to required typings
       const slotsResult: SlotExtractionResult = {
-        cuisineType: slots.cuisineType || undefined,
-        budget: slots.budget ? Number(slots.budget) : undefined,
-        emotion: slots.emotion || undefined,
-        companion: slots.companion || undefined,
-        allergies: slots.allergies || undefined,
+        cuisineType: (slots as any).cuisineType || undefined,
+        budget: (slots as any).budget
+          ? Number((slots as any).budget)
+          : undefined,
+        emotion: (slots as any).emotion || undefined,
+        companion: (slots as any).companion || undefined,
+        allergies: (slots as any).allergies || undefined,
+        dislikes: (slots as any).dislikes || undefined,
+        persona: (slots as any).persona || undefined,
+        specialNotes: (slots as any).specialNotes || undefined,
       };
 
       const result = {

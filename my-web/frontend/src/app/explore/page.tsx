@@ -12,14 +12,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Services & Components
 import { RestaurantCard } from '@/components/features/restaurant/RestaurantCard';
-import { FoodCard } from '@/components/features/food/FoodCard';
 import { ExploreFoodCard } from '@/components/features/food/ExploreFoodCard';
 import { FoodDetailModal, type FoodDetailData } from '@/components/features/food/FoodDetailModal';
 import { Pagination } from '@/components/base/Pagination';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { Button } from '@/components/base/Button';
-import { Input } from '@/components/base/Input';
 import { useExploreActions } from '@/hooks/useExploreActions';
 import { LABELS } from '@/constants/labels';
 import { LOCATION_DATA } from '@/constants/location.constant';
@@ -54,7 +52,7 @@ function ExploreContent() {
     totalPages,
     handleToggleFavorite,
     personalizationInfo,
-    userPrefs,
+    userPrefs: _userPrefs,
   } = useExploreActions();
 
   const totalResults = foods.length + restaurants.length;
@@ -79,13 +77,14 @@ function ExploreContent() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                size="sm"
+                variant="none"
+                size="none"
                 onClick={() => router.back()}
-                className="w-9 h-9 rounded-xl shrink-0 border-gray-200 dark:border-slate-700"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:text-primary dark:hover:text-primary hover:border-primary/50 font-bold text-xs shadow-2xs transition-all cursor-pointer group shrink-0"
                 aria-label="Quay lại"
               >
-                <ArrowLeft size={18} />
+                <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
+                <span className="hidden sm:inline">Quay lại</span>
               </Button>
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight">

@@ -5,14 +5,15 @@
 
 import React from 'react';
 import SafeImage from '@/components/base/SafeImage';
-import { ShoppingBag } from 'lucide-react';
+import { Utensils } from 'lucide-react';
+import { Avatar } from '@/components/base/Avatar';
 import { getValidImageUrl } from '@/utils/helpers';
 import { Button } from '@/components/base/Button';
 
 export interface AdminCardAction {
   label: string;
   icon: React.ReactNode;
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (_e: React.MouseEvent) => void;
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost' | 'purple';
   title?: string;
   active?: boolean;
@@ -24,6 +25,8 @@ export interface MiniCardForAdminProps {
   subtitle?: string | React.ReactNode;
   image?: string;
   fallbackIcon?: React.ReactNode;
+  isAvatar?: boolean;
+  fallbackSrc?: string;
   meta?: Array<{
     label: string | React.ReactNode;
     type?: 'primary' | 'secondary' | 'success' | 'danger' | 'neutral' | 'purple';
@@ -37,6 +40,8 @@ export function MiniCardForAdmin({
   subtitle,
   image,
   fallbackIcon,
+  isAvatar = false,
+  fallbackSrc,
   meta,
   actions = [],
   onClick,
@@ -116,18 +121,27 @@ export function MiniCardForAdmin({
     >
       <div className="flex items-center gap-4 min-w-0 flex-1">
         {/* Ảnh nhỏ vuông gọn 3x3 cm */}
-        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-slate-800 border border-gray-50 dark:border-slate-800">
-          {image ? (
+        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-800">
+          {isAvatar ? (
+            <Avatar
+              src={image}
+              name={title}
+              size={64}
+              className="w-16 h-16 rounded-xl"
+              fallbackClassName="rounded-xl font-black text-lg"
+            />
+          ) : image && image !== 'null' && image !== 'undefined' && image.trim() !== '' ? (
             <SafeImage 
               src={getValidImageUrl(image)} 
               alt={title} 
               fill 
               sizes="64px"
+              fallbackSrc={fallbackSrc || '/placeholder-food.png'}
               className="object-cover group-hover:scale-105 transition-transform duration-350" 
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-slate-700 bg-gray-50 dark:bg-slate-900">
-              {fallbackIcon || <ShoppingBag size={20} />}
+            <div className="w-full h-full flex items-center justify-center text-primary/60 dark:text-orange-400/60 bg-gradient-to-br from-orange-50 to-amber-50/50 dark:from-slate-800 dark:to-slate-900">
+              {fallbackIcon || <Utensils size={24} />}
             </div>
           )}
         </div>

@@ -7,26 +7,26 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle, Bug, Briefcase } from 'lucide-react';
+import { ArrowLeft, User, Lock, Mail, Globe, AlertTriangle, Bug, Brain } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettings, SettingsTabId } from '@/hooks/useSettings';
 import { ProfileSettingsTab } from './profile/ProfileSettingsTab';
 import { SecuritySettingsTab } from './profile/SecuritySettingsTab';
 import { VerificationSettingsTab } from './profile/VerificationSettingsTab';
 import { DangerZoneSection } from './profile/DangerZoneSection';
 import { LanguageSettingsTab } from './profile/LanguageSettingsTab';
 import { BugReportTab } from './profile/BugReportTab';
-import { JobInvitationsTab } from './profile/JobInvitationsTab';
+import { AiMemorySettingsTab } from './profile/AiMemorySettingsTab';
  
 interface SettingsSectionProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
-  setActiveTab: (tab: string) => void;
-  handleChangePassword: (e: React.FormEvent, data: Record<string, string>) => Promise<void>;
-  handleVerifyEmail: (e: React.FormEvent, email: string) => Promise<void>;
+  setActiveTab: (_tab: string) => void;
+  handleChangePassword: (_e: React.FormEvent, _data: Record<string, string>) => Promise<void>;
+  handleVerifyEmail: (_e: React.FormEvent, _email: string) => Promise<void>;
   fetchUserProfile: () => Promise<void | Record<string, unknown>>;
   isEmailVerified: boolean | null;
-  handleDeleteAccount: (password: string) => Promise<void>;
+  handleDeleteAccount: (_password: string) => Promise<void>;
 }
  
 export const SettingsSection = ({
@@ -105,6 +105,7 @@ export const SettingsSection = ({
           <nav className="flex flex-col gap-1.5 text-sm font-bold text-gray-500">
             {[
               { id: 'profile', label: LABELS.SETTINGS.TABS.PROFILE, icon: User },
+              { id: 'ai_memory', label: LABELS.SETTINGS.TABS.AI_MEMORY, icon: Brain },
               { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
               { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
               { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
@@ -113,7 +114,7 @@ export const SettingsSection = ({
             ].map((tab) => (
               <Button
                 key={tab.id}
-                onClick={() => handleTabChange(tab.id as 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone')}
+                onClick={() => handleTabChange(tab.id as SettingsTabId)}
                 className={`w-full py-2.5 px-4 rounded-xl transition-all flex items-center gap-3 font-semibold ${
                   settingsTab === tab.id 
                     ? 'text-primary bg-primary/5 border-l-4 border-primary pl-3' 
@@ -140,6 +141,8 @@ export const SettingsSection = ({
                   setProfileData={setProfileData}
                 />
               </div>
+            ) : settingsTab === 'ai_memory' ? (
+              <AiMemorySettingsTab />
             ) : settingsTab === 'security' ? (
               <SecuritySettingsTab
                 onPasswordSubmit={onPasswordSubmit}

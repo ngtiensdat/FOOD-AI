@@ -72,12 +72,30 @@ export class DialogueStateManagerService {
     suggestedFoodIds: number[] = [],
     rejectedFoodIds: number[] = [],
   ): Promise<DialogueState> {
+    const existingSlots = currentState.slots || {};
+    const mergedAllergies = Array.from(
+      new Set([
+        ...(existingSlots.allergies || []),
+        ...(newSlots?.allergies || []),
+      ]),
+    );
+    const mergedDislikes = Array.from(
+      new Set([
+        ...(existingSlots.dislikes || []),
+        ...(newSlots?.dislikes || []),
+      ]),
+    );
+
     const mergedState: DialogueState = {
       title: title || currentState.title,
       current_stage: stage,
       slots: {
-        ...(currentState.slots || {}),
+        ...existingSlots,
         ...newSlots,
+        allergies: mergedAllergies.length > 0 ? mergedAllergies : undefined,
+        dislikes: mergedDislikes.length > 0 ? mergedDislikes : undefined,
+        persona: newSlots?.persona || existingSlots.persona,
+        specialNotes: newSlots?.specialNotes || existingSlots.specialNotes,
       },
       rejected_food_ids: Array.from(
         new Set([

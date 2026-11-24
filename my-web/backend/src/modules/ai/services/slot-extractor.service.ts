@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AI_PARAMETERS } from '../constants/ai-parameters.constant';
-import { SlotExtractionResult } from '../interfaces/dialogue-state.interface';
+import {
+  DialogueState,
+  SlotExtractionResult,
+} from '../interfaces/dialogue-state.interface';
 import { AI_RULES } from '../constants/ai-rules.constant';
 
 @Injectable()
@@ -24,10 +27,40 @@ export class SlotExtractorService {
       localSlots.budget = budget;
     }
 
-    // 2. Trích xuất khẩu vị/món ăn (cuisineType)
+    // 1.1. Trích xuất thông tin phủ định / những thứ KHÔNG THÍCH / KIÊNG (Dislikes)
+    const dislikes = this.extractDislikes(msgLower);
+    if (dislikes.length > 0) {
+      localSlots.dislikes = dislikes;
+    }
+
+    // 1.2. Trích xuất DỊ ỨNG (Allergies)
+    const allergies = this.extractAllergies(msgLower);
+    if (allergies.length > 0) {
+      localSlots.allergies = allergies;
+    }
+
+    // 1.3. Trích xuất PERSONA đặc thù (GYM, PREGNANT, VEGAN, STUDENT, WEIGHT_LOSS, WELLNESS, OFFICE)
+    const persona = this.extractPersona(msgLower);
+    if (persona) {
+      localSlots.persona = persona;
+    }
+
+    // 2. Trích xuất khẩu vị/món ăn (cuisineType) - ĐÃ BẢO VỆ CHỐNG BẪY PHỦ ĐỊNH
     const cuisineType = this.extractCuisineType(msgLower);
     if (cuisineType) {
-      localSlots.cuisineType = cuisineType;
+      const isDisliked = (localSlots.dislikes || []).some(
+        (d) =>
+          cuisineType.toLowerCase().includes(d.toLowerCase()) ||
+          d.toLowerCase().includes(cuisineType.toLowerCase()),
+      );
+      const isAllergen = (localSlots.allergies || []).some(
+        (a) =>
+          cuisineType.toLowerCase().includes(a.toLowerCase()) ||
+          a.toLowerCase().includes(cuisineType.toLowerCase()),
+      );
+      if (!isDisliked && !isAllergen) {
+        localSlots.cuisineType = cuisineType;
+      }
     }
 
     // 3. Trích xuất các thuộc tính khác sử dụng Synonym Dictionary & Fuzzy Matching
@@ -114,6 +147,11 @@ export class SlotExtractorService {
     const cuisineMatch = msgLower.match(cuisineRegex);
     if (!cuisineMatch) return undefined;
 
+    // Kiểm tra xem vị trí khớp có bị tiền tố phủ định chi phối không (ví dụ: "không thích", "đừng ăn", "ghét")
+    if (this.isNegated(msgLower, cuisineMatch.index ?? 0)) {
+      return undefined;
+    }
+
     const extracted = cuisineMatch[1].trim();
     let filtered = extracted;
 
@@ -137,6 +175,168 @@ export class SlotExtractorService {
 
     if (filtered && filtered.length > 2 && !noiseWords.includes(filtered)) {
       return filtered;
+    }
+
+    return undefined;
+  }
+
+  isNegated(fullText: string, matchIndex: number): boolean {
+    const textBefore = fullText
+      .substring(Math.max(0, matchIndex - 30), matchIndex)
+      .trim();
+    const negationKeywords = [
+      'không',
+      'chẳng',
+      'chả',
+      'đừng',
+      'né',
+      'tránh',
+      'ghét',
+      'sợ',
+      'kiêng',
+      'dị ứng',
+      'hổng',
+      'ko',
+      'k',
+    ];
+    return negationKeywords.some((neg) => {
+      const regex = new RegExp(
+        `(?:^|\\s)${neg}(?:\\s+(?:thích|muốn|ăn|uống|dùng|cho))?\\s*$`,
+        'i',
+      );
+      return regex.test(textBefore);
+    });
+  }
+
+  extractDislikes(text: string): string[] {
+    const dislikesSet = new Set<string>();
+    const patterns = [
+      /(?:không thích|chẳng thích|chả thích|không ăn|chẳng ăn|đừng cho|đừng ăn|né|tránh|ghét|kiêng|sợ|ko ăn|k ăn|không dùng)\s+(?:ăn\s+|món\s+)?([^.;!?\n]+)/gi,
+    ];
+
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const raw = match[1].trim();
+        const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
+        for (const item of items) {
+          const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
+          const cleaned = words.replace(/^(gì|món|quán|đồ)\s+/i, '').trim();
+          if (cleaned.length >= 2) {
+            dislikesSet.add(cleaned);
+          }
+        }
+      }
+    }
+    return Array.from(dislikesSet);
+  }
+
+  extractAllergies(text: string): string[] {
+    const allergiesSet = new Set<string>();
+    const patterns = [/(?:dị ứng|dị ứng với|bị dị ứng)\s+([^.;!?\n]+)/gi];
+
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const raw = match[1].trim();
+        const items = raw.split(/\s+(?:và|với|hoặc)\s+|,\s*/i);
+        for (const item of items) {
+          const words = item.trim().split(/\s+/).slice(0, 3).join(' ');
+          const cleaned = words.replace(/^(đồ|món)\s+/i, '').trim();
+          if (cleaned.length >= 2) {
+            allergiesSet.add(cleaned);
+          }
+        }
+      }
+    }
+    return Array.from(allergiesSet);
+  }
+
+  extractPersona(text: string): DialogueState['slots']['persona'] | undefined {
+    const clean = this.stripDiacritics(text.toLowerCase());
+
+    if (
+      clean.includes('tap gym') ||
+      clean.includes('gym') ||
+      clean.includes('tang co') ||
+      clean.includes('the hinh') ||
+      clean.includes('fitness') ||
+      clean.includes('workout') ||
+      clean.includes('bulking') ||
+      clean.includes('cutting') ||
+      clean.includes('do body') ||
+      clean.includes('tap ta')
+    ) {
+      return 'GYM';
+    }
+
+    if (
+      clean.includes('mang thai') ||
+      clean.includes('me bau') ||
+      clean.includes('thai ky') ||
+      clean.includes('co em be') ||
+      clean.includes('sau sinh') ||
+      clean.includes('o cu') ||
+      clean.includes('cho con bu') ||
+      clean.includes('me bim') ||
+      /\bbau\b/.test(clean)
+    ) {
+      return 'PREGNANT';
+    }
+
+    if (
+      clean.includes('an chay') ||
+      clean.includes('chay truong') ||
+      clean.includes('thuan chay') ||
+      clean.includes('vegan') ||
+      clean.includes('thanh tinh')
+    ) {
+      return 'VEGAN';
+    }
+
+    if (
+      clean.includes('sinh vien') ||
+      clean.includes('hoc sinh') ||
+      clean.includes('ngon bo re') ||
+      clean.includes('cuoi thang') ||
+      clean.includes('chay tui') ||
+      clean.includes('hat de')
+    ) {
+      return 'STUDENT';
+    }
+
+    if (
+      clean.includes('giam can') ||
+      clean.includes('eat clean') ||
+      clean.includes('low carb') ||
+      clean.includes('keto') ||
+      clean.includes('giam mo') ||
+      clean.includes('it calo')
+    ) {
+      return 'WEIGHT_LOSS';
+    }
+
+    if (
+      clean.includes('om') ||
+      clean.includes('cam cum') ||
+      clean.includes('dau dau') ||
+      clean.includes('sot') ||
+      clean.includes('dau da day') ||
+      clean.includes('tieu hoa kem') ||
+      clean.includes('boi bo') ||
+      clean.includes('duong sinh') ||
+      clean.includes('nguoi gia')
+    ) {
+      return 'WELLNESS';
+    }
+
+    if (
+      clean.includes('van phong') ||
+      clean.includes('cong so') ||
+      clean.includes('an trua cong ty') ||
+      clean.includes('dong nghiep')
+    ) {
+      return 'OFFICE';
     }
 
     return undefined;

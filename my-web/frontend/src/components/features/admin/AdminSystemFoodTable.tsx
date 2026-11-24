@@ -17,11 +17,11 @@ import { LIMITS } from '@/constants/limits.constant';
 interface AdminSystemFoodTableProps {
   filteredData: AdminFoodItem[];
   actions: {
-    handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
-    handleRecommendFood: (id: number, newValue: boolean) => void;
-    handleDeleteFood: (id: number) => void;
-    openEditModal: (food: AdminFoodItem) => void;
-    handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
+    handleUpdateFood: (_id: number, _data: UpdateFoodPayload) => void;
+    handleRecommendFood: (_id: number, _newValue: boolean) => void;
+    handleDeleteFood: (_id: number) => void;
+    openEditModal: (_food: AdminFoodItem) => void;
+    handleToggleWeeklyFeatured?: (_id: number, _value: boolean) => void;
   };
 }
 
@@ -113,6 +113,7 @@ export const AdminSystemFoodTable = ({
                 title={item.name}
                 subtitle={item.description || LABELS.FOOD.NO_DESCRIPTION}
                 image={item.image}
+                isAvatar={false}
                 meta={[
                   { label: LABELS.FOOD.SYSTEM, type: 'neutral' as const },
                   { label: formatCurrency(item.price), type: 'primary' as const }

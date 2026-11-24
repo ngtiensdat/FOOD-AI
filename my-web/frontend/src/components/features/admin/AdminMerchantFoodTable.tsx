@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Check, X, Star, Sparkles, Settings, Trash2, Clock, XCircle, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Check, X, Star, Sparkles, Settings, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Pagination } from '@/components/base/Pagination';
 import { LABELS } from '@/constants/labels';
@@ -19,19 +19,18 @@ import { MiniCardForAdmin } from './MiniCardForAdmin';
 import { useMerchantFoodTable } from '@/hooks/useMerchantFoodTable';
 import { ConfirmModal } from '@/components/base/ConfirmModal';
 import { LIMITS } from '@/constants/limits.constant';
-import SafeImage from '@/components/base/SafeImage';
-import { getValidImageUrl } from '@/utils/helpers';
+import { Avatar } from '@/components/base/Avatar';
 
 interface AdminMerchantFoodTableProps {
   filteredData: AdminFoodItem[];
   actions: {
-    handleUpdateFood: (id: number, data: UpdateFoodPayload) => void;
-    handleRecommendFood: (id: number, newValue: boolean) => void;
-    handleDeleteFood: (id: number) => void;
-    openEditModal: (food: AdminFoodItem) => void;
-    handleApproveFood?: (id: number, status: string) => void;
-    handleToggleWeeklyFeatured?: (id: number, value: boolean) => void;
-    handleBatchUpdate?: (updates: FoodBatchUpdateInput[]) => Promise<boolean>;
+    handleUpdateFood: (_id: number, _data: UpdateFoodPayload) => void;
+    handleRecommendFood: (_id: number, _newValue: boolean) => void;
+    handleDeleteFood: (_id: number) => void;
+    openEditModal: (_food: AdminFoodItem) => void;
+    handleApproveFood?: (_id: number, _status: string) => void;
+    handleToggleWeeklyFeatured?: (_id: number, _value: boolean) => void;
+    handleBatchUpdate?: (_updates: FoodBatchUpdateInput[]) => Promise<boolean>;
   };
 }
 
@@ -146,19 +145,13 @@ export const AdminMerchantFoodTable = ({
                     }}
                     title={rId > 0 ? `${group.restaurantName} - Nhấn để mở trang nhà hàng` : group.restaurantName}
                   >
-                    {group.restaurantLogo ? (
-                      <SafeImage
-                        src={getValidImageUrl(group.restaurantLogo)}
-                        alt={group.restaurantName}
-                        fill
-                        sizes="44px"
-                        className="object-cover group-hover/avatar:scale-110 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-amber-50 dark:from-slate-800 dark:to-slate-700 text-primary dark:text-orange-400 font-extrabold text-sm">
-                        {group.restaurantName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <Avatar
+                      src={group.restaurantLogo}
+                      name={group.restaurantName}
+                      size={44}
+                      className="w-11 h-11 rounded-xl"
+                      fallbackClassName="rounded-xl font-black text-sm"
+                    />
                   </div>
 
                   <div className="flex items-center gap-2 min-w-0">
@@ -395,6 +388,7 @@ export const AdminMerchantFoodTable = ({
                             title={item.name}
                             subtitle={item.description || LABELS.FOOD.NO_DESCRIPTION}
                             image={item.image}
+                            isAvatar={false}
                             meta={metaBadges}
                             actions={cardActions}
                           />

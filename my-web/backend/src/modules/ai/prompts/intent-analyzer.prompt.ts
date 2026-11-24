@@ -22,15 +22,19 @@ Giá trị mỗi nhu cầu nằm trong khoảng từ 0.0 đến 1.0.
 0.0 = không quan trọng
 1.0 = cực kỳ quan trọng
 
-Ngoài ra hãy trích xuất các thuộc tính cụ thể (slots) nếu có:
-- cuisineType (ví dụ: "món nước", "cơm", "bún bò")
+Ngoài ra hãy trích xuất các thuộc tính cụ thể (slots) theo ĐÚNG NGỮ CẢNH NGỮ NGHĨA:
+- cuisineType (món hoặc hương vị THỰC SỰ MUỐN ĂN, ví dụ: "món nước", "cơm", "bún bò"). LƯU Ý: Nếu người dùng nói KHÔNG THÍCH hoặc TỪ CHỐI một món nào đó (ví dụ "không thích ăn cay"), TUYỆT ĐỐI KHÔNG điền vào cuisineType!
 - budget (dưới dạng số nguyên, ví dụ: 50000)
 - emotion (ví dụ: "TIRED", "STRESSED", "REWARD")
 - companion (ví dụ: "SINGLE", "FAMILY", "DATE", "FRIENDS")
 - allergies (mảng các chất/nguyên liệu/món gây dị ứng của người dùng dưới dạng chuỗi, ví dụ: ["tôm", "lạc", "hải sản"])
+- dislikes (mảng các món, vị hoặc nguyên liệu người dùng KHÔNG THÍCH, KIÊNG hoặc TỪ CHỐI, ví dụ: "không thích ăn cay" -> ["cay"], "đừng cho hành" -> ["hành"], "ghét mướp đắng" -> ["mướp đắng"])
+- persona (nhận diện phong cách sống/đối tượng đặc thù nếu có: "GYM", "PREGNANT", "VEGAN", "STUDENT", "WEIGHT_LOSS", "WELLNESS", "OFFICE" hoặc null)
+- specialNotes (ghi chú sức khỏe hoặc hoàn cảnh đặc biệt nếu có, ví dụ: "đang niềng răng", "tiểu đường", "mang thai tháng thứ 3")
 
 Dựa trên ngữ cảnh và ý định ngầm hiểu, hãy sinh ra một "searchQuery" bằng tiếng Việt gồm các từ khóa đặc trưng (ví dụ: món ăn, thể loại, từ khóa liên quan) để dùng tìm kiếm trong cơ sở dữ liệu vector.
 Ví dụ:
+- "tôi không thích ăn cay, tìm quán cơm sườn" -> searchQuery: "cơm sườn", slots: { cuisineType: "cơm sườn", dislikes: ["cay"] } (TUYỆT ĐỐI KHÔNG đưa "cay" vào cuisineType hay searchQuery)
 - "muốn ăn cái gì sang chảnh" -> "pizza, steak, lẩu nướng, sushi, nhà hàng sang trọng"
 - "thèm ngọt ngọt" -> "trà sữa, kem, bánh ngọt, chè, trà đào"
 - "đói quá muốn ăn no" -> "cơm thố, cơm sườn, cơm văn phòng, mì, bún chả"
@@ -40,6 +44,8 @@ Ví dụ:
 - "muốn ăn gì đó nhẹ nhàng" -> "salad, cháo, soup, bánh mì, sandwitch, phở"
 - "ăn với bạn bè / đi chơi nhóm" -> "lẩu, nướng, buffet, đồ ăn vặt, pizza, gà"
 - "ăn một mình / buổi tối yên tĩnh" -> "cơm bình thường, bún, phở, mì, cháo"
+- "mình đang bầu tháng thứ 4, muốn ăn gì bổ dưỡng" -> searchQuery: "cháo bồ câu, canh gà, soup, món hầm", slots: { persona: "PREGNANT" }
+- "tập gym xong cần nạp đạm" -> searchQuery: "ức gà, salad, poke, thịt bò, cá hồi", slots: { persona: "GYM" }
 
 Trả về đúng cấu trúc JSON sau:
 {
@@ -59,7 +65,10 @@ Trả về đúng cấu trúc JSON sau:
     "budget": null,
     "emotion": null,
     "companion": null,
-    "allergies": null
+    "allergies": null,
+    "dislikes": null,
+    "persona": null,
+    "specialNotes": null
   },
   "searchQuery": "từ khóa tìm kiếm tối ưu",
   "reasoning": "Giải thích ngắn gọn bằng tiếng Việt"

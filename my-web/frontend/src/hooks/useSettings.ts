@@ -11,11 +11,20 @@ import { User } from '@/types/user';
 
 export interface UseSettingsProps {
   user: { id?: string | number; name?: string; email?: string; role?: string; [key: string]: unknown } | null;
-  handleChangePassword: (e: React.FormEvent, data: Record<string, string>) => Promise<void>;
-  handleVerifyEmail: (e: React.FormEvent, email: string) => Promise<void>;
+  handleChangePassword: (_e: React.FormEvent, _data: Record<string, string>) => Promise<void>;
+  handleVerifyEmail: (_e: React.FormEvent, _email: string) => Promise<void>;
   fetchUserProfile: () => Promise<void | Record<string, unknown>>;
-  handleDeleteAccount: (password: string) => Promise<void>;
+  handleDeleteAccount: (_password: string) => Promise<void>;
 }
+
+export type SettingsTabId =
+  | 'profile'
+  | 'security'
+  | 'verification'
+  | 'language'
+  | 'ai_memory'
+  | 'bug_report'
+  | 'danger_zone';
 
 export function useSettings({
   user,
@@ -24,7 +33,7 @@ export function useSettings({
   fetchUserProfile,
   handleDeleteAccount,
 }: UseSettingsProps) {
-  const [settingsTab, setSettingsTab] = useState<'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone'>('profile');
+  const [settingsTab, setSettingsTab] = useState<SettingsTabId>('profile');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -127,7 +136,7 @@ export function useSettings({
     }
   };
 
-  const handleTabChange = async (tabId: 'profile' | 'security' | 'verification' | 'language' | 'bug_report' | 'danger_zone') => {
+  const handleTabChange = async (tabId: SettingsTabId) => {
     setSettingsTab(tabId);
     if (tabId === 'verification') {
       fetchUserProfile();

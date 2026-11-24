@@ -210,5 +210,115 @@ describe('RerankingService', () => {
 
       expect(pho!.similarity).toBeGreaterThan(lau!.similarity);
     });
+
+    it('nên phạt điểm món cay nếu người dùng có dislike cay', () => {
+      const spicyFood: SearchResult = {
+        id: 10,
+        name: 'Mì cay 7 cấp độ',
+        price: 50000,
+        description: 'Mì cay hải sản siêu cay',
+        image: '',
+        tags: ['cay', 'hàn quốc'],
+        restaurantName: 'Quán Mì Cay',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Mì',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      };
+      const normalFood: SearchResult = {
+        id: 11,
+        name: 'Cơm tấm sườn bì chả',
+        price: 50000,
+        description: 'Cơm tấm thanh đạm dễ ăn',
+        image: '',
+        tags: ['cơm'],
+        restaurantName: 'Cơm Tấm SG',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Cơm',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      };
+
+      const state = {
+        slots: { dislikes: ['cay'] },
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      const reRanked = service.contextReranking(
+        [spicyFood, normalFood],
+        state as any,
+        undefined,
+        undefined,
+        undefined,
+        'Gợi ý món ăn',
+      );
+
+      const rankedSpicy = reRanked.find((f) => f.id === 10);
+      const rankedNormal = reRanked.find((f) => f.id === 11);
+      expect(rankedNormal!.similarity).toBeGreaterThan(rankedSpicy!.similarity);
+    });
+
+    it('nên hạ điểm món sống/gỏi và ưu tiên món cháo/hầm bổ dưỡng đối với thai phụ (PREGNANT)', () => {
+      const rawFood: SearchResult = {
+        id: 20,
+        name: 'Sashimi cá hồi sống',
+        price: 150000,
+        description: 'Cá hồi tươi sống chấm mù tạt',
+        image: '',
+        tags: ['sushi', 'sống'],
+        restaurantName: 'Quán Nhật',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Món sống',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      };
+      const healthyFood: SearchResult = {
+        id: 21,
+        name: 'Cháo bồ câu hạt sen hầm',
+        price: 90000,
+        description: 'Cháo bồ câu dinh dưỡng bồi bổ sức khỏe',
+        image: '',
+        tags: ['cháo', 'hầm', 'bồi bổ'],
+        restaurantName: 'Cháo Dinh Dưỡng',
+        address: '',
+        lat: 21.0,
+        lng: 105.0,
+        categoryName: 'Cháo',
+        embeddingSimilarity: 0.8,
+        distance_km: 1.0,
+        similarity: 0.8,
+      };
+
+      const state = {
+        slots: { persona: 'PREGNANT' },
+        current_stage: 'COLLECTING',
+        rejected_food_ids: [],
+        suggested_food_ids: [],
+      };
+
+      const reRanked = service.contextReranking(
+        [rawFood, healthyFood],
+        state as any,
+        undefined,
+        undefined,
+        undefined,
+        'Tìm món cho bà bầu',
+      );
+
+      const rankedRaw = reRanked.find((f) => f.id === 20);
+      const rankedHealthy = reRanked.find((f) => f.id === 21);
+      expect(rankedHealthy!.similarity).toBeGreaterThan(rankedRaw!.similarity);
+    });
   });
 });

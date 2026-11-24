@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Trash2, EyeOff, Check, X, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, Trash2, Check, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { LABELS } from '@/constants/labels';
 import { toast } from '@/store/useToastStore';
@@ -24,11 +24,9 @@ interface Report {
   createdAt: string;
 }
 
-const DEFAULT_REPORTS: Report[] = [];
-
 export const ModerationTab = () => {
   const [reports, setReports] = useState<Report[]>([]);
-  const [pendingOffers, setPendingOffers] = useState<any[]>([]);
+  const [pendingOffers, setPendingOffers] = useState<Record<string, unknown>[]>([]);
   const [activeSubTab, setActiveSubTab] = useState<'REPORTS' | 'PROMOTIONS'>('REPORTS');
 
   useEffect(() => {
@@ -68,7 +66,7 @@ export const ModerationTab = () => {
           LABELS.MODERATION.NOTIFICATIONS.REPORT_RESOLVED_TITLE,
           LABELS.MODERATION.NOTIFICATIONS.REPORT_RESOLVED_BODY(targetType, targetId),
           'MODERATION_RESOLVE',
-          '/admin-avatar.png'
+          '/logo.png'
         );
       }
 
@@ -93,7 +91,7 @@ export const ModerationTab = () => {
           LABELS.MODERATION.NOTIFICATIONS.REPORT_RESOLVED_TITLE,
           LABELS.MODERATION.NOTIFICATIONS.REPORT_DISMISSED_BODY(targetReport.targetType, targetReport.targetId),
           'MODERATION_DISMISS',
-          '/admin-avatar.png'
+          '/logo.png'
         );
       }
 

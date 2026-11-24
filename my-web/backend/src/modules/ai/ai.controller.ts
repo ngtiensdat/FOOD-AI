@@ -21,6 +21,7 @@ import { GetUser } from '../../common/decorators/get-user.decorator';
 import { AiChatDto } from './dto/ai-chat.dto';
 import { Throttle } from '@nestjs/throttler';
 import { AiFeedbackDto } from './dto/ai-feedback.dto';
+import { DeleteAiMemoryItemDto } from './dto/delete-ai-memory.dto';
 import { AiLearningService } from './services/ai-learning.service';
 import { WeatherService } from './services/weather.service';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -47,6 +48,28 @@ export class AiController {
   @Get('feedback')
   async getFeedbacks(@GetUser('id') userId: number) {
     return this.aiLearningService.getUserFeedbacks(userId);
+  }
+
+  @Get('memory')
+  async getAiMemory(@GetUser('id') userId: number) {
+    return this.aiLearningService.getUserAiMemory(userId);
+  }
+
+  @Delete('memory/item')
+  async deleteAiMemoryItem(
+    @GetUser('id') userId: number,
+    @Body() dto: DeleteAiMemoryItemDto,
+  ) {
+    return this.aiLearningService.deleteUserAiMemoryItem(
+      userId,
+      dto.type,
+      dto.value,
+    );
+  }
+
+  @Delete('memory')
+  async clearAiMemory(@GetUser('id') userId: number) {
+    return this.aiLearningService.deleteUserAiMemoryItem(userId, 'all');
   }
 
   @Delete('feedback')

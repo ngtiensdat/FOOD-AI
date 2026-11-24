@@ -69,6 +69,7 @@ export const AdminUserTable = ({
                 title={item.name}
                 subtitle={item.email}
                 image={item.avatar || item.profile?.avatar}
+                isAvatar={true}
                 fallbackIcon={<User size={36} />}
                 onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[

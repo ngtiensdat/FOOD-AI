@@ -8,21 +8,19 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
-import { Info, Plus, Star } from 'lucide-react';
+import { Info, Plus, ArrowLeft } from 'lucide-react';
 
 // Services & Components
 import { useProfileData } from '@/hooks/useProfileData';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocialActions } from '@/hooks/useSocialActions';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { Navbar } from '@/components/features/Navbar';
 import { Footer } from '@/components/features/Footer';
 import { LevelUpModal } from '@/components/features/badges/LevelUpModal';
 import { LogoSpinner } from '@/components/base/LogoSpinner';
 import { LABELS } from '@/constants/labels';
 import { Avatar } from '@/components/base/Avatar';
-import { toast } from '@/store/useToastStore';
-import { addNotification } from '@/utils/notifications';
 import { socialService } from '@/services/social.service';
 import { Button } from '@/components/base/Button';
 
@@ -36,8 +34,6 @@ import { VoucherMallTab } from '@/components/features/profile/VoucherMallTab';
 import { CreatePostModal } from '@/components/features/profile/CreatePostModal';
 import { PostCard, PostData } from '@/components/features/profile/PostCard';
 import { ReportModal } from '@/components/features/profile/ReportModal';
-
-const DEFAULT_POSTS: PostData[] = [];
 
 function ProfileContent() {
   const { login } = useAuth();
@@ -97,9 +93,9 @@ function ProfileContent() {
     isReportModalOpen,
     setIsReportModalOpen,
     reportTargetId,
-    setReportTargetId,
+    setReportTargetId: _setReportTargetId,
     reportTargetType,
-    setReportTargetType,
+    setReportTargetType: _setReportTargetType,
     handleCreatePost,
     handleLike,
     handleComment,
@@ -129,7 +125,7 @@ function ProfileContent() {
   const user = profile;
 
   // Point update callback from Voucher Mall
-  const handleUpdatePointsFromRedeem = async (newPoints: number) => {
+  const handleUpdatePointsFromRedeem = async (_newPoints: number) => {
     if (profile?.id) {
       try {
         const updatedProfile = await actions.fetchProfileData(profile.id, me?.id);
@@ -157,6 +153,20 @@ function ProfileContent() {
       <Navbar activeTab="profile" setActiveTab={() => { }} />
 
       <div className="max-w-5xl mx-auto pt-24 pb-20 px-4 md:px-6">
+        {/* Nút Quay lại điều hướng */}
+        <div className="mb-4">
+          <Button
+            variant="none"
+            size="none"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-200 hover:text-primary dark:hover:text-primary hover:border-primary/50 font-bold text-xs shadow-2xs transition-all cursor-pointer group"
+            aria-label="Quay lại"
+          >
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
+            <span>Quay lại</span>
+          </Button>
+        </div>
+
         <ProfileHeader
           user={user}
           profile={profile}

@@ -891,6 +891,66 @@ export class RerankingService {
         }
       }
 
+      // 8.7. Xử lý Dislikes (những món, vị, nguyên liệu người dùng không thích hoặc kiêng)
+      if (state.slots.dislikes && state.slots.dislikes.length > 0) {
+        const foodFullText = `${foodNameLower} ${(food.description || '').toLowerCase()} ${(food.tags || []).join(' ').toLowerCase()} ${catNameLower}`;
+        const hasDislikedItem = state.slots.dislikes.some((dislike) => {
+          const cleanDislike = dislike.toLowerCase().trim();
+          return (
+            cleanDislike.length >= 2 && foodFullText.includes(cleanDislike)
+          );
+        });
+        if (hasDislikedItem) {
+          diningSanityAdjust -= 0.55; // Phạt nặng món chứa thành phần/hương vị khách không thích
+        }
+      }
+
+      // 8.8. Xử lý Persona thích ứng theo đối tượng người dùng
+      const persona = state.slots.persona;
+      if (
+        persona === 'PREGNANT' ||
+        msgText.includes('bầu') ||
+        msgText.includes('mang thai')
+      ) {
+        const isRawOrCold =
+          foodNameLower.includes('sushi') ||
+          foodNameLower.includes('sashimi') ||
+          foodNameLower.includes('gỏi') ||
+          foodNameLower.includes('tái') ||
+          foodNameLower.includes('tiết canh') ||
+          foodNameLower.includes('đồ sống');
+        const isNutritiousSoup =
+          foodNameLower.includes('cháo') ||
+          foodNameLower.includes('hầm') ||
+          foodNameLower.includes('canh') ||
+          foodNameLower.includes('súp') ||
+          foodNameLower.includes('bồ câu') ||
+          foodNameLower.includes('gà hầm') ||
+          foodNameLower.includes('cá chép');
+        if (isRawOrCold) {
+          diningSanityAdjust -= 0.85; // Cấm tiệt đồ tươi sống cho phụ nữ mang thai
+        } else if (isNutritiousSoup) {
+          diningSanityAdjust += 0.45; // Ưu tiên tối đa món bổ dưỡng ấm nóng
+        }
+      } else if (persona === 'GYM') {
+        if (isGymFood) {
+          diningSanityAdjust += 0.45; // Ưu tiên món giàu đạm sạch cho dân tập gym
+        }
+      } else if (persona === 'STUDENT') {
+        if (food.price <= 45000 && isCompleteMeal) {
+          diningSanityAdjust += 0.35; // Ưu tiên món no bụng giá sinh viên
+        }
+      } else if (persona === 'WELLNESS') {
+        const isWarmSoft =
+          foodNameLower.includes('cháo') ||
+          foodNameLower.includes('súp') ||
+          foodNameLower.includes('canh') ||
+          foodNameLower.includes('dưỡng sinh');
+        if (isWarmSoft) {
+          diningSanityAdjust += 0.4; // Ưu tiên món mềm, nhẹ bụng, ấm nóng
+        }
+      }
+
       // Calculate final composite score
       const finalScore =
         intentScore * weights.intent +

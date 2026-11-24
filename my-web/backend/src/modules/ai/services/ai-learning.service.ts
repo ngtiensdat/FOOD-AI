@@ -282,15 +282,28 @@ export class AiLearningService {
       });
       if (!profile) return;
 
-      const prefs = (profile.preferences as Record<string, string>) || {};
+      const prefs = (profile.preferences as Record<string, any>) || {};
       const goalStr = prefs.goal
         ? AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal
         : AI_CONSTANTS.EMBEDDING_LABELS.NO_GOAL;
 
       const feedbackProfile = await this.getUserPreferenceProfile(userId);
 
-      // Construct a highly enriched embedding text
+      // Construct a highly enriched embedding text bao gồm cả Persona, Dị ứng và Kiêng khem
       let textToEmbed = `Người dùng thích ${prefs.cuisine || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_CUISINE}. Ngân sách ${prefs.budget || AI_CONSTANTS.EMBEDDING_LABELS.DEFAULT_BUDGET}. Mục tiêu sức khỏe: ${goalStr}.`;
+
+      if (prefs.persona) {
+        textToEmbed += ` Nhóm đối tượng đặc thù: ${prefs.persona}.`;
+      }
+      if (Array.isArray(prefs.allergies) && prefs.allergies.length > 0) {
+        textToEmbed += ` Tuyệt đối dị ứng với: ${prefs.allergies.join(', ')}.`;
+      }
+      if (Array.isArray(prefs.dislikes) && prefs.dislikes.length > 0) {
+        textToEmbed += ` Kiêng và không thích ăn: ${prefs.dislikes.join(', ')}.`;
+      }
+      if (prefs.specialNotes) {
+        textToEmbed += ` Tình trạng thể chất: ${prefs.specialNotes}.`;
+      }
 
       if (feedbackProfile.likedFoods.length > 0) {
         textToEmbed += ` Món ăn đã thích qua phản hồi: ${feedbackProfile.likedFoods.join(', ')}.`;
@@ -317,6 +330,235 @@ export class AiLearningService {
         err.stack,
       );
     }
+  }
+
+  async updateUserProfileFacts(
+    userId: number,
+    newSlots: Partial<{
+      allergies?: string[];
+      dislikes?: string[];
+      likes?: string[];
+      persona?: string;
+      specialNotes?: string;
+      cuisineType?: string;
+    }>,
+  ): Promise<void> {
+    try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { userId },
+      });
+      if (!profile) return;
+
+      const currentPrefs = (profile.preferences as Record<string, any>) || {};
+      let hasChanges = false;
+      const updatedPrefs = { ...currentPrefs };
+
+      // 1. Allergies (Chất dị ứng - Merge Set vĩnh viễn)
+      if (newSlots.allergies && newSlots.allergies.length > 0) {
+        const existingAllergies = Array.isArray(currentPrefs.allergies)
+          ? currentPrefs.allergies
+          : [];
+        const mergedAllergies = Array.from(
+          new Set([...existingAllergies, ...newSlots.allergies]),
+        );
+        if (mergedAllergies.length !== existingAllergies.length) {
+          updatedPrefs.allergies = mergedAllergies;
+          hasChanges = true;
+        }
+      }
+
+      // 2. Dislikes (Món/vị không thích, kiêng khem - Merge Set)
+      if (newSlots.dislikes && newSlots.dislikes.length > 0) {
+        const existingDislikes = Array.isArray(currentPrefs.dislikes)
+          ? currentPrefs.dislikes
+          : [];
+        const mergedDislikes = Array.from(
+          new Set([...existingDislikes, ...newSlots.dislikes]),
+        );
+        if (mergedDislikes.length !== existingDislikes.length) {
+          updatedPrefs.dislikes = mergedDislikes;
+          hasChanges = true;
+        }
+      }
+
+      // 3. Persona (Phong cách sống đặc thù: GYM, PREGNANT, VEGAN, STUDENT, WEIGHT_LOSS, WELLNESS, OFFICE)
+      if (newSlots.persona && newSlots.persona !== currentPrefs.persona) {
+        updatedPrefs.persona = newSlots.persona;
+        hasChanges = true;
+      }
+
+      // 4. Special Notes (Sức khỏe / hoàn cảnh đặc thù)
+      if (
+        newSlots.specialNotes &&
+        newSlots.specialNotes !== currentPrefs.specialNotes
+      ) {
+        updatedPrefs.specialNotes = newSlots.specialNotes;
+        hasChanges = true;
+      }
+
+      // 5. Cuisine preference nếu có gu ổn định và không bị dislike
+      if (
+        newSlots.cuisineType &&
+        !newSlots.dislikes?.includes(newSlots.cuisineType)
+      ) {
+        if (!currentPrefs.cuisine) {
+          updatedPrefs.cuisine = newSlots.cuisineType;
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        this.logger.log(
+          `Updating persistent User Facts for User ${userId}: ${JSON.stringify(updatedPrefs)}`,
+        );
+        await this.prisma.userProfile.update({
+          where: { userId },
+          data: { preferences: updatedPrefs },
+        });
+
+        // Kích hoạt cập nhật vector embedding của user trong background
+        this.updateUserEmbeddingWithFeedback(userId).catch((err: unknown) => {
+          this.logger.error(
+            'Failed to sync user embedding with new facts:',
+            err,
+          );
+        });
+      }
+    } catch (error) {
+      this.logger.error(`Error updating user profile facts: ${error}`);
+    }
+  }
+
+  async getUserAiMemory(userId: number) {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: { preferences: true },
+    });
+    const prefs = (profile?.preferences as Record<string, any>) || {};
+
+    const [likedFeedbacks, dislikedFeedbacks] = await Promise.all([
+      this.prisma.aiFeedback.findMany({
+        where: { userId, feedbackType: FeedbackType.LIKE },
+        include: {
+          food: {
+            select: { id: true, name: true, price: true, image: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.aiFeedback.findMany({
+        where: { userId, feedbackType: FeedbackType.DISLIKE },
+        include: {
+          food: {
+            select: { id: true, name: true, price: true, image: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    return {
+      preferences: {
+        allergies: Array.isArray(prefs.allergies) ? prefs.allergies : [],
+        dislikes: Array.isArray(prefs.dislikes) ? prefs.dislikes : [],
+        persona: prefs.persona || null,
+        specialNotes: prefs.specialNotes || null,
+        cuisine: prefs.cuisine || null,
+      },
+      likedFoods: likedFeedbacks
+        .filter((f) => f.food !== null)
+        .map((f) => ({
+          id: f.id,
+          foodId: f.foodId,
+          name: f.food.name,
+          price: f.food.price,
+          image: f.food.image,
+        })),
+      dislikedFoods: dislikedFeedbacks
+        .filter((f) => f.food !== null)
+        .map((f) => ({
+          id: f.id,
+          foodId: f.foodId,
+          name: f.food.name,
+          price: f.food.price,
+          image: f.food.image,
+        })),
+    };
+  }
+
+  async deleteUserAiMemoryItem(
+    userId: number,
+    type:
+      | 'allergy'
+      | 'dislike'
+      | 'persona'
+      | 'specialNotes'
+      | 'cuisine'
+      | 'feedback'
+      | 'all',
+    value?: string | number,
+  ) {
+    if (type === 'all') {
+      await this.prisma.userProfile.updateMany({
+        where: { userId },
+        data: { preferences: {} },
+      });
+      await this.clearUserFeedbacks(userId);
+      this.updateUserEmbeddingWithFeedback(userId).catch(() => {});
+      return { success: true };
+    }
+
+    if (type === 'feedback' && value) {
+      const feedbackId = Number(value);
+      await this.prisma.aiFeedback.deleteMany({
+        where: { id: feedbackId, userId },
+      });
+      this.updateUserEmbeddingWithFeedback(userId).catch(() => {});
+      return { success: true };
+    }
+
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: { preferences: true },
+    });
+    if (!profile) return { success: true };
+
+    const prefs = { ...((profile.preferences as Record<string, any>) || {}) };
+
+    if (type === 'allergy' && value) {
+      const strVal = String(value).trim().toLowerCase();
+      if (Array.isArray(prefs.allergies)) {
+        prefs.allergies = prefs.allergies.filter(
+          (a: string) => a.trim().toLowerCase() !== strVal,
+        );
+      }
+    } else if (type === 'dislike' && value) {
+      const strVal = String(value).trim().toLowerCase();
+      if (Array.isArray(prefs.dislikes)) {
+        prefs.dislikes = prefs.dislikes.filter(
+          (d: string) => d.trim().toLowerCase() !== strVal,
+        );
+      }
+    } else if (type === 'persona') {
+      delete prefs.persona;
+    } else if (type === 'specialNotes') {
+      delete prefs.specialNotes;
+    } else if (type === 'cuisine') {
+      delete prefs.cuisine;
+    }
+
+    await this.prisma.userProfile.update({
+      where: { userId },
+      data: { preferences: prefs },
+    });
+
+    this.updateUserEmbeddingWithFeedback(userId).catch((err) => {
+      this.logger.warn(
+        `Failed to sync user embedding after deleting memory item: ${err.message}`,
+      );
+    });
+
+    return { success: true, preferences: prefs };
   }
 
   async getFeedbackAnalytics() {

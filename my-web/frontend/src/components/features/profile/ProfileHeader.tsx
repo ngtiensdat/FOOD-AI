@@ -7,7 +7,7 @@
 
 import React, { useMemo } from 'react';
 import SafeImage from '@/components/base/SafeImage';
-import { Camera, Shield, Store, Grid, Edit3, Clock, AlertTriangle } from 'lucide-react';
+import { Camera, Shield, Store, Grid, Edit3, Clock, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/base/Button';
 import { Avatar } from '@/components/base/Avatar';
 import { LABELS } from '@/constants/labels';
@@ -81,6 +81,23 @@ export const ProfileHeader = ({
     <div className="card-container !p-0 overflow-hidden">
       {/* Cover Photo */}
       <div className="h-64 md:h-96 relative group cursor-pointer overflow-hidden">
+        {/* Nút Quay lại nhanh trên ảnh bìa */}
+        <div className="absolute top-4 left-4 z-10">
+          <Button
+            variant="none"
+            size="none"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.back();
+            }}
+            className="w-10 h-10 rounded-xl bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer shadow-md group"
+            aria-label="Quay lại"
+            title="Quay lại"
+          >
+            <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-0.5" />
+          </Button>
+        </div>
+
         {profile?.profile?.coverImage ? (
           <SafeImage
             src={getValidImageUrl(profile.profile.coverImage)}

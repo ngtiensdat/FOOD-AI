@@ -148,5 +148,57 @@ export const aiService = {
       console.error('Error clearing all feedbacks:', err);
       return null;
     }
+  },
+
+  async getAiMemory() {
+    try {
+      const response = await apiClient.get('/ai/memory');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error getting AI memory:', err);
+      return {
+        preferences: {
+          allergies: [],
+          dislikes: [],
+          persona: null,
+          specialNotes: null,
+          cuisine: null,
+        },
+        likedFoods: [],
+        dislikedFoods: [],
+      };
+    }
+  },
+
+  async deleteAiMemoryItem(
+    type:
+      | 'allergy'
+      | 'dislike'
+      | 'persona'
+      | 'specialNotes'
+      | 'cuisine'
+      | 'feedback'
+      | 'all',
+    value?: string | number,
+  ) {
+    try {
+      const response = await apiClient.delete('/ai/memory/item', {
+        body: { type, value },
+      });
+      return response.data || response;
+    } catch (err) {
+      console.error('Error deleting AI memory item:', err);
+      return null;
+    }
+  },
+
+  async clearAiMemory() {
+    try {
+      const response = await apiClient.delete('/ai/memory');
+      return response.data || response;
+    } catch (err) {
+      console.error('Error clearing AI memory:', err);
+      return null;
+    }
   }
 };

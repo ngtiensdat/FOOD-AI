@@ -34,7 +34,38 @@ export class PromptBuilderService {
   ): string {
     const prefList: string[] = [];
     if (profile && profile.preferences) {
-      const prefs = profile.preferences as Record<string, string>;
+      const prefs = profile.preferences as Record<string, any>;
+      if (prefs.persona) {
+        const personaLabels: Record<string, string> = {
+          GYM: 'Người tập gym / thể hình / tăng cơ (Cần nhiều đạm nạc, ít dầu mỡ, phong cách hăng say truyền cảm hứng 💪)',
+          PREGNANT:
+            'Phụ nữ mang thai / sau sinh (Cần bồi bổ dinh dưỡng, ăn chín uống sôi, TUYỆT ĐỐI TRÁNH đồ sống/lạnh, phong cách ân cần chu đáo 🥰)',
+          VEGAN:
+            'Người ăn chay / thuần chay (Thanh tịnh, thanh đạm, nấm và rau củ quả, phong cách nhẹ nhàng an yên 🌿)',
+          STUDENT:
+            'Học sinh / sinh viên (Ngon bổ rẻ, bao no căng bụng, giá hạt dẻ, phong cách gần gũi dí dỏm 🎓)',
+          WEIGHT_LOSS:
+            'Người giảm cân / eat clean (Ít calo, nhiều chất xơ, đạm nạc sạch, low carb)',
+          WELLNESS:
+            'Người ốm mệt / dưỡng sinh / hồi phục (Món ấm nóng, dễ tiêu hóa, cháo súp hầm bổ dưỡng, phong cách ân cần chăm sóc 🍵)',
+          OFFICE:
+            'Dân văn phòng / công sở (Ăn trưa nhanh gọn, sạch sẽ, không mùi nồng, duy trì tỉnh táo buổi chiều 🍱)',
+        };
+        prefList.push(
+          `Đặc thù người dùng (Persona): ${personaLabels[prefs.persona] || prefs.persona}`,
+        );
+      }
+      if (Array.isArray(prefs.allergies) && prefs.allergies.length > 0) {
+        prefList.push(
+          `⚠️ TUYỆT ĐỐI DỊ ỨNG VỚI: ${prefs.allergies.join(', ')} (CẤM GỢI Ý MÓN CÓ THÀNH PHẦN NÀY)`,
+        );
+      }
+      if (Array.isArray(prefs.dislikes) && prefs.dislikes.length > 0) {
+        prefList.push(`Không thích / Kiêng khem: ${prefs.dislikes.join(', ')}`);
+      }
+      if (prefs.specialNotes) {
+        prefList.push(`Lưu ý thể trạng / hoàn cảnh: ${prefs.specialNotes}`);
+      }
       if (prefs.goal) {
         prefList.push(
           `Mục tiêu: ${AI_CONSTANTS.GOAL_MAP[prefs.goal] || prefs.goal}`,
