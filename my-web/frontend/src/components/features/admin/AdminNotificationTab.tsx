@@ -52,7 +52,7 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
           return;
         }
         recipients.forEach(u => {
-          addNotification(u.id, title.trim(), content.trim(), notifType, adminAvatar || '/admin-avatar.png');
+          addNotification(u.id, title.trim(), content.trim(), notifType, adminAvatar || '/logo.png');
         });
         toast.success(LABELS.ADMIN.NOTIFICATION_TAB.TOAST.SEND_ALL_SUCCESS(recipients.length));
       } else {
@@ -63,7 +63,7 @@ export const AdminNotificationTab = ({ allUsers = [], adminAvatar }: AdminNotifi
           setLoading(false);
           return;
         }
-        addNotification(targetUser.id, title.trim(), content.trim(), notifType, adminAvatar || '/admin-avatar.png');
+        addNotification(targetUser.id, title.trim(), content.trim(), notifType, adminAvatar || '/logo.png');
         toast.success(LABELS.ADMIN.NOTIFICATION_TAB.TOAST.SEND_SPECIFIC_SUCCESS(targetUser.name));
       }
 

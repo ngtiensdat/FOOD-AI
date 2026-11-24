@@ -94,4 +94,49 @@ describe('SlotExtractorService', () => {
       expect(slots.emotion).toBe('TIRED');
     });
   });
+
+  describe('Negation, Allergy & Persona Extraction (Xử lý phủ định, dị ứng & đối tượng)', () => {
+    it('không được nhầm "không thích ăn cay" thành món ăn yêu thích, mà phải đưa vào dislikes', () => {
+      const slots = service.extractSlotsLocally('tôi không thích ăn cay');
+      expect(slots.cuisineType).toBeUndefined();
+      expect(slots.dislikes).toBeDefined();
+      expect(slots.dislikes).toContain('cay');
+    });
+
+    it('nên trích xuất chính xác dị ứng từ câu người dùng', () => {
+      const slots = service.extractSlotsLocally(
+        'tôi bị dị ứng hải sản và đậu phộng',
+      );
+      expect(slots.allergies).toBeDefined();
+      expect(slots.allergies).toEqual(
+        expect.arrayContaining(['hải sản', 'đậu phộng']),
+      );
+    });
+
+    it('nên trích xuất đúng Persona GYM khi nhắc đến tập luyện tăng cơ', () => {
+      const slots = service.extractSlotsLocally(
+        'mình đang tập gym muốn ăn đồ tăng cơ giàu đạm',
+      );
+      expect(slots.persona).toBe('GYM');
+    });
+
+    it('nên trích xuất đúng Persona PREGNANT khi nhắc đến mang thai/bầu bí', () => {
+      const slots = service.extractSlotsLocally(
+        'em đang mang thai tháng thứ 4 cần bồi bổ',
+      );
+      expect(slots.persona).toBe('PREGNANT');
+    });
+
+    it('nên trích xuất đúng Persona STUDENT khi nhắc đến sinh viên/giá rẻ', () => {
+      const slots = service.extractSlotsLocally(
+        'em là sinh viên cuối tháng hết tiền',
+      );
+      expect(slots.persona).toBe('STUDENT');
+    });
+
+    it('nên trích xuất đúng Persona VEGAN khi ăn chay', () => {
+      const slots = service.extractSlotsLocally('mình ăn chay trường nhé');
+      expect(slots.persona).toBe('VEGAN');
+    });
+  });
 });

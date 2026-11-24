@@ -17,7 +17,7 @@ import { LIMITS } from '@/constants/limits.constant';
 interface AdminMerchantApprovalTableProps {
   filteredData: User[];
   actions: {
-    handleUpdateStatus: (id: number, status: string) => void;
+    handleUpdateStatus: (_id: number, _status: string) => void;
   };
 }
 
@@ -88,6 +88,7 @@ export const AdminMerchantApprovalTable = ({
                 title={item.name}
                 subtitle={subtitleNode}
                 image={item.avatar || item.profile?.avatar}
+                isAvatar={true}
                 fallbackIcon={<UserCheck size={36} />}
                 onClick={() => router.push(`/profile?id=${item.id}`)}
                 meta={[

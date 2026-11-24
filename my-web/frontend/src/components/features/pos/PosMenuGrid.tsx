@@ -29,20 +29,20 @@ interface PosMenuGridProps {
   user: User | Partial<User>;
   tables: DiningTable[];
   selectedTableId: number | null;
-  setSelectedTableId: (id: number | null) => void;
+  setSelectedTableId: (_id: number | null) => void;
   branches: Restaurant[];
   selectedBranchId: number | null;
-  setSelectedBranchId: (id: number) => void;
+  setSelectedBranchId: (_id: number) => void;
   categoryGroups: CategoryGroup[];
   activeGroupId: number | null;
-  setActiveGroupId: (id: number | null) => void;
+  setActiveGroupId: (_id: number | null) => void;
   activeCategoryId: number | null;
-  setActiveCategoryId: (id: number | null) => void;
+  setActiveCategoryId: (_id: number | null) => void;
   loadingMenu: boolean;
   searchQuery: string;
-  setSearchQuery: (q: string) => void;
+  setSearchQuery: (_q: string) => void;
   filteredMenu: FoodItem[];
-  addToCart: (food: FoodItem) => void;
+  addToCart: (_food: FoodItem) => void;
   onOpenTransferModal: () => void;
 }
 
@@ -76,7 +76,7 @@ export const PosMenuGrid = ({
             <button
               type="button"
               onClick={() => setSelectedTableId(null)}
-              className="text-gray-400 hover:text-primary transition-colors"
+              className="p-1 rounded-lg text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               title="Quay lại danh sách bàn"
             >
               <ArrowLeft size={18} />

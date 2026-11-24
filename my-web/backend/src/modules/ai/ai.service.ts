@@ -292,6 +292,44 @@ export class AiService implements OnModuleInit {
         defaultTitle,
       );
 
+      // Pre-load persistent profile preferences into dialogue state if user
+      if (user.role === UserRole.CUSTOMER) {
+        try {
+          const userProfile = await this.prisma.userProfile.findUnique({
+            where: { userId },
+            select: { preferences: true },
+          });
+          const savedPrefs =
+            (userProfile?.preferences as Record<string, any>) || {};
+          const currentSlots = currentState.slots || {};
+
+          const mergedAllergies = Array.from(
+            new Set([
+              ...(savedPrefs.allergies || []),
+              ...(currentSlots.allergies || []),
+            ]),
+          );
+          const mergedDislikes = Array.from(
+            new Set([
+              ...(savedPrefs.dislikes || []),
+              ...(currentSlots.dislikes || []),
+            ]),
+          );
+
+          currentState.slots = {
+            ...currentSlots,
+            allergies: mergedAllergies.length > 0 ? mergedAllergies : undefined,
+            dislikes: mergedDislikes.length > 0 ? mergedDislikes : undefined,
+            persona: currentSlots.persona || savedPrefs.persona,
+            specialNotes: currentSlots.specialNotes || savedPrefs.specialNotes,
+          };
+        } catch (preloadErr) {
+          this.logger.warn(
+            `Failed to preload user profile preferences: ${preloadErr.message}`,
+          );
+        }
+      }
+
       // 5. Intent and Slot Detection Layer
       const {
         intent,
@@ -305,6 +343,23 @@ export class AiService implements OnModuleInit {
         ...llmSlots,
         ...localSlots,
       };
+
+      // Persist newly learned facts into Postgres profile and trigger embedding sync in background
+      if (
+        user.role === UserRole.CUSTOMER &&
+        (currentState.slots.allergies?.length ||
+          currentState.slots.dislikes?.length ||
+          currentState.slots.persona ||
+          currentState.slots.specialNotes)
+      ) {
+        this.aiLearningService
+          .updateUserProfileFacts(userId, currentState.slots)
+          .catch((err) => {
+            this.logger.warn(
+              `Failed to persist user profile facts: ${err.message}`,
+            );
+          });
+      }
 
       // 6. Dialogue State History Loading
       const chatHistory = await this.stateManager.getChatHistory(

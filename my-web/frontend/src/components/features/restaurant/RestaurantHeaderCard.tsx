@@ -108,12 +108,14 @@ export const RestaurantHeaderCard = ({
         {/* Back Button */}
         <div className="absolute top-6 left-6 z-10 max-w-7xl mx-auto w-full px-6">
           <Button
-            variant="outline"
-            size="sm"
+            variant="none"
+            size="none"
             onClick={onBack}
-            className="w-12 h-12 rounded-2xl bg-white/20 hover:bg-white/40 border-white/20 text-white backdrop-blur-md transition-all duration-300"
+            className="w-11 h-11 rounded-2xl bg-black/30 hover:bg-black/50 border border-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all duration-300 cursor-pointer group shadow-md"
+            aria-label="Quay lại"
+            title="Quay lại"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={22} className="transition-transform group-hover:-translate-x-0.5" />
           </Button>
         </div>
       </div>

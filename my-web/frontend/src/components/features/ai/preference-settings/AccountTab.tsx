@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { LABELS } from '@/constants/labels';
 import { User } from '@/types/user';
 
@@ -37,6 +38,16 @@ export function AccountTab({ user }: AccountTabProps) {
                 {LABELS.AI_CHAT.SIDEBAR.FREE_PLAN}
               </span>
             </span>
+          </div>
+
+          <div className="pt-3 border-t border-slate-200/50 dark:border-slate-800">
+            <Link
+              href="/?tab=settings"
+              className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline"
+            >
+              <span>⚙️ Quản lý Ký ức & Sở thích AI trong Cài đặt</span>
+              <span>→</span>
+            </Link>
           </div>
         </div>
 

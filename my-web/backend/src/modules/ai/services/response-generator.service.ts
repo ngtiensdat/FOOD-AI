@@ -74,6 +74,24 @@ export class ResponseGeneratorService {
                 type: 'array',
                 items: { type: 'string' },
               },
+              dislikes: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+              persona: {
+                type: 'string',
+                enum: [
+                  'GYM',
+                  'PREGNANT',
+                  'VEGAN',
+                  'STUDENT',
+                  'WEIGHT_LOSS',
+                  'WELLNESS',
+                  'OFFICE',
+                  'NORMAL',
+                ],
+              },
+              specialNotes: { type: 'string' },
             },
           },
           current_stage: {

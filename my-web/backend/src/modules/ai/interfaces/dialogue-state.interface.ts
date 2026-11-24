@@ -12,7 +12,19 @@ export interface DialogueState {
     companion?: 'SINGLE' | 'FAMILY' | 'DATE' | 'FRIENDS';
     mobility?: 'LAZY' | 'NORMAL' | 'EXPLORE';
     emotion?: 'TIRED' | 'REWARD' | 'STRESSED' | 'NORMAL';
-    allergies?: string[]; // chất dị ứng như: đậu phộng, hải sản...
+    allergies?: string[]; // chất dị ứng vĩnh viễn như: đậu phộng, hải sản...
+    dislikes?: string[]; // món hoặc vị không thích/kiêng khem: không ăn cay, không ăn hành...
+    likes?: string[]; // món hoặc vị yêu thích đặc biệt
+    persona?:
+      | 'GYM'
+      | 'PREGNANT'
+      | 'VEGAN'
+      | 'STUDENT'
+      | 'WEIGHT_LOSS'
+      | 'WELLNESS'
+      | 'OFFICE'
+      | 'NORMAL'; // đối tượng / phong cách sống đặc thù
+    specialNotes?: string; // ghi chú sức khỏe / thể trạng đặc biệt
   };
   current_stage: 'COLLECTING' | 'RECOMMENDED' | 'FEEDBACK';
   rejected_food_ids: number[];
