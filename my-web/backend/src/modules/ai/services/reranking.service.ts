@@ -457,10 +457,13 @@ export class RerankingService {
     const temp = weather?.temperature ?? 28;
     const isRaining = weather?.isRaining ?? false;
 
-    // Filter out candidates containing allergens completely
-    const safeCandidates = candidates.filter(
-      (food) => !this.hasAllergens(food, state.slots.allergies),
-    );
+    // Filter out candidates containing allergens or unsafe for pregnancy completely
+    const isPregnant = state.slots.persona === 'PREGNANT';
+    const safeCandidates = candidates.filter((food) => {
+      if (this.hasAllergens(food, state.slots.allergies)) return false;
+      if (isPregnant && this.isUnsafeForPregnant(food)) return false;
+      return true;
+    });
 
     // Load base weights
     const baseWeights = this.getParam<RerankingWeights>(
@@ -509,7 +512,7 @@ export class RerankingService {
 
     const reRanked = safeCandidates.map((food) => {
       // 1. Exclude foods in rejected list
-      if (state.rejected_food_ids.includes(Number(food.id))) {
+      if (state.rejected_food_ids?.includes(Number(food.id))) {
         return { ...food, similarity: 0.0 };
       }
 
@@ -988,6 +991,25 @@ export class RerankingService {
     }
 
     return reRanked.sort((a, b) => b.similarity - a.similarity);
+  }
+
+  private isUnsafeForPregnant(food: SearchResult): boolean {
+    const text = stripVietnameseDiacritics(
+      `${food.name} ${food.description || ''} ${(food.tags || []).join(' ')} ${food.categoryName || ''} ${food.restaurantName || ''}`,
+    );
+
+    // Danh mục các món CẤM KỴ TUYỆT ĐỐI cho phụ nữ mang thai (Sản khoa & An toàn thực phẩm thai kỳ):
+    // 1. Cháo lòng, lòng lợn, dồi, tiết canh, óc heo, nội tạng động vật, phá lấu (nguy cơ liên cầu khuẩn lợn Streptococcus suis, vi khuẩn Listeria, giun sán gây sảy thai/dị tật)
+    // 2. Món tươi sống, tái sống: gỏi cá, sushi cá sống, sashimi, bò tái, phở tái, nem chua, trứng lòng đào, hàu sống
+    // 3. Đồ uống có cồn: rượu, bia
+    const unsafePatterns = [
+      /\b(?:chao long|tiet canh|long lon|long heo|doi sun|noi tang|oc heo|gan lon|da day lon|pha lau)\b/i,
+      /\b(?:long xao|long luoc|long se dieu|tiet luoc|huyet|pha lau bo|chao tiet)\b/i,
+      /\b(?:goi ca|sashimi|sushi ca song|thit song|bo tai|pho tai|tai chanh|tai de|tai bo|nem chua|trung long dao|hau song)\b/i,
+      /\b(?:ruou|bia|cocktail|ruou vang)\b/i,
+    ];
+
+    return unsafePatterns.some((pattern) => pattern.test(text));
   }
 
   private hasAllergens(food: SearchResult, allergies?: string[]): boolean {

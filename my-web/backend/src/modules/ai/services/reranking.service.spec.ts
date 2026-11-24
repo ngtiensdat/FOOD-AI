@@ -318,7 +318,8 @@ describe('RerankingService', () => {
 
       const rankedRaw = reRanked.find((f) => f.id === 20);
       const rankedHealthy = reRanked.find((f) => f.id === 21);
-      expect(rankedHealthy!.similarity).toBeGreaterThan(rankedRaw!.similarity);
+      expect(rankedHealthy).toBeDefined();
+      expect(rankedRaw).toBeUndefined(); // Món sống phải bị loại bỏ hoàn toàn đối với mẹ bầu
     });
 
     it('nên loại bỏ hoàn toàn các món dị ứng chéo (ví dụ: dị ứng tôm phải lọc cả bún bề bề, tôm tít, ghẹ, mắm tôm)', () => {

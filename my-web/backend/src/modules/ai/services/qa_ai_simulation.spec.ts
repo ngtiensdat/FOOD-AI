@@ -14,6 +14,7 @@ describe('QA Customer & AI Simulation Suite (Kiểm thử Toàn diện Khách h�
   let slotExtractor: SlotExtractorService;
   let promptBuilder: PromptBuilderService;
   let rerankingService: RerankingService;
+  let foodKnowledge: FoodKnowledgeService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,6 +51,7 @@ describe('QA Customer & AI Simulation Suite (Kiểm thử Toàn diện Khách h�
     slotExtractor = module.get<SlotExtractorService>(SlotExtractorService);
     promptBuilder = module.get<PromptBuilderService>(PromptBuilderService);
     rerankingService = module.get<RerankingService>(RerankingService);
+    foodKnowledge = module.get<FoodKnowledgeService>(FoodKnowledgeService);
   });
 
   describe('Kịch bản 1: Mẹ bầu có chồng đi tập gym (Pregnant Mom & Gym Husband)', () => {
@@ -75,6 +77,64 @@ describe('QA Customer & AI Simulation Suite (Kiểm thử Toàn diện Khách h�
       expect(context).toContain('Phụ nữ mang thai / sau sinh');
       expect(context).toContain('TUYỆT ĐỐI TRÁNH đồ sống/lạnh');
       expect(context).toContain('Đậu phộng (Lạc)');
+    });
+
+    it('RerankingService CẤM TUYỆT ĐỐI gợi ý Cháo lòng, Tiết canh, Gỏi sống, Nội tạng cho Mẹ bầu (PREGNANT)', () => {
+      const chaoLongDish: SearchResult = {
+        id: 99,
+        name: 'Cháo lòng Chuẩn Vị',
+        description: 'Cháo lòng tiết canh dồi lợn luộc nóng hổi',
+        price: 45000,
+        similarity: 0.95,
+        categoryName: 'Cháo',
+        address: 'Hà Nội',
+        restaurantName: 'Quán Cháo Lòng Tiết Canh',
+        image: '',
+        tags: ['cháo lòng', 'lòng lợn', 'tiết canh'],
+        lat: 21.0,
+        lng: 105.8,
+        embeddingSimilarity: 0.95,
+        distance_km: 1.0,
+      };
+
+      const chaoBoCauDish: SearchResult = {
+        id: 100,
+        name: 'Cháo Bồ Câu Hạt Sen',
+        description: 'Cháo chim câu bồi bổ dinh dưỡng, nấu chín kỹ thơm ngon',
+        price: 65000,
+        similarity: 0.92,
+        categoryName: 'Cháo',
+        address: 'Hà Nội',
+        restaurantName: 'Bếp Mẹ Bầu',
+        image: '',
+        tags: ['bồ câu', 'cháo dinh dưỡng'],
+        lat: 21.0,
+        lng: 105.8,
+        embeddingSimilarity: 0.92,
+        distance_km: 1.0,
+      };
+
+      // isUnsafeForPregnant phải phát hiện chính xác
+      expect((rerankingService as any).isUnsafeForPregnant(chaoLongDish)).toBe(
+        true,
+      );
+      expect((rerankingService as any).isUnsafeForPregnant(chaoBoCauDish)).toBe(
+        false,
+      );
+
+      // Khi rerank với persona PREGNANT, cháo lòng BẮT BUỘC bị loại bỏ hoàn toàn
+      const mockState: any = {
+        slots: { persona: 'PREGNANT' },
+      };
+      const reranked = rerankingService.contextReranking(
+        [chaoLongDish, chaoBoCauDish],
+        mockState,
+        'tìm cháo bổ dưỡng cho mẹ bầu',
+      );
+
+      const dishIds = reranked.map((d) => d.id);
+      expect(dishIds).not.toContain(99); // Không bao giờ có cháo lòng
+      expect(dishIds).toContain(100); // Có cháo bồ câu hạt sen
     });
   });
 
@@ -210,6 +270,83 @@ describe('QA Customer & AI Simulation Suite (Kiểm thử Toàn diện Khách h�
       const slots = slotExtractor.extractSlotsLocally(input);
 
       expect(slots.persona).toBe('VEGAN');
+    });
+  });
+
+  describe('Kịch bản 7: Hệ thống nhận diện & phát cảnh báo nguy cơ thực phẩm gây hại (Health Hazard Warning Engine)', () => {
+    it('Mẹ bầu hỏi hoặc thèm cháo lòng: PHẢI phát hiện nguy cơ và trả về cảnh báo y khoa về Listeria và liên cầu lợn', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'sao bạn gợi ý cháo lòng cho tôi vậy',
+        {
+          persona: 'PREGNANT',
+        },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain(
+        'Mẹ bầu tuyệt đối không nên dùng cháo lòng',
+      );
+      expect(hazard!.scientificReason).toContain('Streptococcus suis');
+      expect(hazard!.scientificReason).toContain('Listeria');
+      expect(hazard!.safeAlternativeSuggestion).toContain(
+        'Cháo bồ câu hạt sen',
+      );
+    });
+
+    it('Mẹ bầu hỏi rau ngót/ngải cứu: PHẢI cảnh báo nguy cơ co bóp tử cung', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'tôi có bầu ăn nhiều rau ngót được không',
+        {
+          persona: 'PREGNANT',
+        },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain('rau ngót');
+      expect(hazard!.scientificReason).toContain('co thắt cơ trơn tử cung');
+    });
+
+    it('Người dị ứng tôm nhưng hỏi món bề bề: PHẢI cảnh báo nguy cơ sốc phản vệ và dị ứng chéo', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'cho tôi ăn bún bề bề tôm tít nhé',
+        { allergies: ['Tôm (Shrimp)'] },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain('Cảnh báo nguy cơ sốc phản vệ');
+    });
+
+    it('Người đau dạ dày nhưng đòi ăn mì cay xè: PHẢI cảnh báo nguy cơ loét dạ dày', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'tôi thèm mì cay cấp 7 sa tế ớt hiểm',
+        { specialNotes: 'tôi bị đau dạ dày và trào ngược' },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain('Cảnh báo bệnh lý dạ dày');
+      expect(hazard!.scientificReason).toContain('Capsaicin');
+    });
+
+    it('Người tiểu đường hỏi đồ ngọt: PHẢI cảnh báo nguy cơ tăng đường huyết', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'cho tôi ly trà sữa full đường nhiều chè ngọt',
+        { specialNotes: 'tôi bị tiểu đường tuýp 2' },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain('chỉ số đường huyết');
+      expect(hazard!.scientificReason).toContain('glucose');
+    });
+
+    it('Người bị Gout hỏi nội tạng/tiết canh/hải sản: PHẢI cảnh báo cơn đau gút cấp', () => {
+      const hazard = foodKnowledge.detectHealthHazard(
+        'tối nay đi ăn đĩa lòng lợn tiết canh uống bia',
+        { specialNotes: 'tôi bị bệnh gút axit uric cao' },
+      );
+
+      expect(hazard).not.toBeNull();
+      expect(hazard!.warningMessage).toContain('Cảnh báo bệnh Gút');
+      expect(hazard!.scientificReason).toContain('axit uric');
     });
   });
 });
