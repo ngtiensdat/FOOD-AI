@@ -44,6 +44,9 @@ QUY TẮC NHẬN DIỆN CÂU HỎI TRUY VẤN THÔNG TIN BẢN THÂN / BỘ NH�
   + searchQuery: "" (chuỗi rỗng, TUYỆT ĐỐI KHÔNG tìm kiếm các từ hỏi như "gì vậy").
   + slots.allergies: null, slots.dislikes: null (TUYỆT ĐỐI KHÔNG trích xuất "gì vậy", "những gì" vào slots!).
 
+QUY TẮC AN TOÀN SỨC KHỎE THAI KỲ (PREGNANT SAFETY):
+- Khi persona là "PREGNANT": searchQuery TUYỆT ĐỐI KHÔNG chứa "cháo lòng", "tiết canh", "nội tạng", "gỏi sống", "đồ tái", "sashimi". Chỉ tìm các món an thai bổ dưỡng chín kỹ (cháo bồ câu, canh gà, soup, món hầm dinh dưỡng).
+
 Dựa trên ngữ cảnh và ý định ngầm hiểu, hãy sinh ra một "searchQuery" bằng tiếng Việt gồm các từ khóa đặc trưng (ví dụ: món ăn, thể loại, từ khóa liên quan) để dùng tìm kiếm trong cơ sở dữ liệu vector.
 Ví dụ:
 - "tôi dị ứng gì vậy" -> searchQuery: "", slots: { allergies: null, dislikes: null, cuisineType: null } (Câu hỏi truy vấn thông tin cá nhân, không trích xuất "gì vậy")

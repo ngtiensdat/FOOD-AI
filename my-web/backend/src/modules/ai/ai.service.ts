@@ -32,9 +32,11 @@ export interface FoodSuggestion {
   id: number;
   name: string;
   price: number;
+  description?: string;
   image: string | null;
   restaurantName: string;
   address: string;
+  similarity?: number;
 }
 
 const DEFAULT_WEATHER_TEMP = 28;
@@ -292,6 +294,8 @@ export class AiService implements OnModuleInit {
         defaultTitle,
       );
 
+      let savedPrefs: Record<string, any> = {};
+
       // Pre-load persistent profile preferences into dialogue state if user
       if (user.role === UserRole.CUSTOMER) {
         try {
@@ -299,8 +303,7 @@ export class AiService implements OnModuleInit {
             where: { userId },
             select: { preferences: true },
           });
-          const savedPrefs =
-            (userProfile?.preferences as Record<string, any>) || {};
+          savedPrefs = (userProfile?.preferences as Record<string, any>) || {};
           const currentSlots = currentState.slots || {};
 
           const mergedAllergies = Array.from(
@@ -639,6 +642,27 @@ export class AiService implements OnModuleInit {
         ? `\nTƯ VẤN SỨC KHỎE: ${wellness.advice}\n`
         : '';
 
+      // Check health hazards and food safety alerts
+      const healthHazard = this.knowledgeService.detectHealthHazard(
+        cleanMessage,
+        currentState.slots,
+        savedPrefs,
+      );
+      const hazardInstruction = healthHazard
+        ? `\n================================================================================
+🚨 CHỈ THỊ CẢNH BÁO SỨC KHỎE BẮT BUỘC (HEALTH HAZARD WARNING DIRECTIVE):
+- Tình trạng rủi ro phát hiện: ${healthHazard.hazardType}
+- CẢNH BÁO Y TẾ: "${healthHazard.warningMessage}"
+- Cơ chế gây hại y khoa: ${healthHazard.scientificReason}
+- Món ăn an toàn thay thế: ${healthHazard.safeAlternativeSuggestion}
+NGUYÊN TẮC PHẢN HỒI BẮT BUỘC:
+1. Ở NGAY ĐẦU CÂU TRẢ LỜI, BẠN BẮT BUỘC PHẢI PHÁT CẢNH BÁO SỨC KHỎE (kèm biểu tượng ⚠️ Cảnh báo sức khỏe / an toàn thực phẩm).
+2. TUYỆT ĐỐI KHÔNG KHEN NGỢI, KHÔNG HÙA THEO, KHÔNG NÓI RẰNG MÓN ĐÓ "BỔ DƯỠNG" HAY "TUYỆT VỜI"!
+3. Giải thích ngắn gọn lý do y khoa vì sao món đó gây nguy hại cho khách.
+4. Ân cần gợi ý các món ăn thay thế an toàn, bổ dưỡng từ CANDIDATES: ${healthHazard.safeAlternativeSuggestion}.
+================================================================================\n`
+        : '';
+
       // Prepare Prompt Templates
       // Prepare Prompt Templates — include real weather description if available
       const weatherStr = weatherData
@@ -668,7 +692,7 @@ export class AiService implements OnModuleInit {
 
       const systemPrompt = await this.promptBuilderService.buildSystemPrompt(
         currentDayTimeStr,
-        userPrefContext + wellnessInstruction,
+        userPrefContext + wellnessInstruction + hazardInstruction,
         promptInstructions,
         JSON.stringify(currentState.slots),
         candidatesSection,
@@ -779,6 +803,7 @@ export class AiService implements OnModuleInit {
           id: f.id,
           name: f.name,
           price: f.price,
+          description: f.description || '',
           image: f.image,
           restaurantName: f.restaurantName,
           address: f.address,
@@ -788,6 +813,7 @@ export class AiService implements OnModuleInit {
           id: f.id,
           name: f.name,
           price: f.price,
+          description: f.description || '',
           image: f.image,
           restaurantName: f.restaurantName,
           address: f.address,
@@ -857,6 +883,7 @@ export class AiService implements OnModuleInit {
       id: f.id,
       name: f.name,
       price: f.price,
+      description: f.description || '',
       image: f.image,
       restaurantName: f.restaurant?.name || '',
       address: f.address || f.restaurant?.address || '',

@@ -253,4 +253,161 @@ export const AI_RULES = {
     'thử món',
     'món',
   ],
+  HEALTH_HAZARDS: {
+    PREGNANT_ORGAN_AND_RAW: {
+      hazardType:
+        'Mẹ bầu & Thực phẩm nguy hại (Nội tạng / Đồ tái sống / Rượu bia)',
+      triggers: [
+        'cháo lòng',
+        'chao long',
+        'tiết canh',
+        'tiet canh',
+        'lòng lợn',
+        'long lon',
+        'lòng heo',
+        'long heo',
+        'dồi sụn',
+        'doi sun',
+        'dồi',
+        'doi',
+        'nội tạng',
+        'noi tang',
+        'óc heo',
+        'oc heo',
+        'phá lấu',
+        'pha lau',
+        'gan lợn',
+        'gan heo',
+        'dạ dày lợn',
+        'da day lon',
+        'sashimi',
+        'gỏi cá',
+        'goi ca',
+        'gỏi sống',
+        'goi song',
+        'sushi sống',
+        'sushi song',
+        'cá sống',
+        'ca song',
+        'thịt sống',
+        'thit song',
+        'bò tái',
+        'bo tai',
+        'phở tái',
+        'pho tai',
+        'tái chanh',
+        'tai chanh',
+        'tái dê',
+        'tai de',
+        'nem chua',
+        'trứng lòng đào',
+        'trung long dao',
+        'hàu sống',
+        'hau song',
+        'rượu',
+        'ruou',
+        'bia',
+      ],
+      warningMessage:
+        '⚠️ Cảnh báo an toàn thai kỳ quan trọng: Mẹ bầu tuyệt đối không nên dùng cháo lòng, tiết canh, nội tạng động vật hay các món tươi sống/tái!',
+      scientificReason:
+        'Nội tạng và tiết canh mang nguy cơ cực cao nhiễm liên cầu khuẩn lợn (Streptococcus suis), vi khuẩn Listeria monocytogenes và ấu trùng sán; đồ sống/tái chứa nguy cơ nhiễm ký sinh trùng Toxoplasma gondii gây sảy thai, thai chết lưu, sinh non, dị tật thai nhi hoặc nhiễm trùng huyết đe dọa trực tiếp tính mạng người mẹ.',
+      safeAlternativeSuggestion:
+        'Các món cháo hầm chín kỹ giàu sắt và folate lành tính như Cháo bồ câu hạt sen, cháo gà ác thuốc bắc, cháo cá chép, canh sườn hầm củ quả.',
+    },
+    PREGNANT_UTERINE_CONTRACTION: {
+      hazardType: 'Mẹ bầu & Thực phẩm kích thích co bóp tử cung',
+      triggers: [
+        'rau ngót',
+        'rau ngot',
+        'ngải cứu',
+        'ngai cuu',
+        'đu đủ xanh',
+        'du du xanh',
+        'dứa xanh',
+        'dua xanh',
+      ],
+      warningMessage:
+        '⚠️ Lưu ý an toàn thai kỳ: Mẹ bầu (đặc biệt trong 3 tháng đầu) nên hạn chế hoặc tránh dùng rau ngót, ngải cứu ăn nhiều hay đu đủ xanh!',
+      scientificReason:
+        'Các thực phẩm này chứa hoạt chất (như Papaverin trong rau ngót) hoặc enzym kích thích co thắt cơ trơn tử cung mạnh, làm tăng nguy cơ động thai hoặc sảy thai ngoài ý muốn.',
+      safeAlternativeSuggestion:
+        'Canh rau mồng tơi, canh bí đỏ thịt bằm, canh sườn ninh hạt sen bổ dưỡng và an toàn tuyệt đối cho thai kỳ.',
+    },
+    STOMACH_ULCER_SPICY: {
+      hazardType: 'Bệnh lý dạ dày & Đồ cay nóng / Kích ứng tiêu hóa',
+      triggers: [
+        'mì cay',
+        'mi cay',
+        'ớt hiểm',
+        'ot hiem',
+        'cay xè',
+        'cay xe',
+        'cực cay',
+        'cuc cay',
+        'sa tế',
+        'sa te',
+        'chua cay',
+        'rượu mạnh',
+      ],
+      warningMessage:
+        '⚠️ Cảnh báo bệnh lý dạ dày: Người đau dạ dày, viêm loét hoặc trào ngược nên tránh xa đồ ăn cay nóng nồng độ cao!',
+      scientificReason:
+        'Chất Capsaicin nồng độ cao kích thích bào mòn niêm mạc, làm tăng tiết axit dịch vị gây viêm loét cấp tính, đau thắt thượng vị và trào ngược dạ dày thực quản.',
+      safeAlternativeSuggestion:
+        'Cháo sườn ấm nóng, súp gà nấm thanh đạm, phở gà lá chanh dịu nhẹ bảo vệ niêm mạc dạ dày.',
+    },
+    DIABETIC_HIGH_SUGAR: {
+      hazardType: 'Người tiểu đường / Ăn kiêng & Đồ ngọt đậm',
+      triggers: [
+        'trà sữa full đường',
+        'chè ngọt',
+        'che ngot',
+        'nước ngọt có ga',
+        'bánh kem ngọt',
+        'caramen ngọt lịm',
+      ],
+      warningMessage:
+        '⚠️ Cảnh báo chỉ số đường huyết: Người có tiền sử tiểu đường hoặc cần kiểm soát đường huyết nên kiêng đồ uống/món ăn nhiều đường tinh luyện!',
+      scientificReason:
+        'Đường đơn hấp thu nhanh khiến nồng độ glucose trong máu tăng vọt đột ngột, gây quá tải tuyến tụy và tiềm ẩn nguy cơ biến chứng mạch máu nguy hiểm.',
+      safeAlternativeSuggestion:
+        'Trà thảo mộc không đường, trà gạo lứt rang, sữa hạt không đường hoặc nước ép cần tây táo xanh thanh lọc.',
+    },
+    GOUT_HIGH_PURINE: {
+      hazardType: 'Người bệnh Gout & Đồ ăn giàu Purin / Rượu bia',
+      triggers: [
+        'nội tạng',
+        'lòng lợn',
+        'tiết canh',
+        'hải sản tôm cua',
+        'cua ghẹ',
+        'bia hơi',
+        'rượu',
+      ],
+      warningMessage:
+        '⚠️ Cảnh báo bệnh Gút (Axit Uric cao): Người có chỉ số axit uric cao hoặc bệnh gút bắt buộc phải kiêng nội tạng và hạn chế hải sản giàu purin!',
+      scientificReason:
+        'Purin chuyển hóa thành axit uric dư thừa, kết tinh thành các tinh thể muối urat sắc nhọn tại khớp gây bùng phát cơn viêm khớp gút cấp tính dữ dội.',
+      safeAlternativeSuggestion:
+        'Cơm chay thanh đạm, rau củ quả giàu vitamin C, trứng gà ta luộc, đậu hũ non và nước khoáng kiềm.',
+    },
+    FEVER_COLD_IRRITATION: {
+      hazardType: 'Người đang ốm / Cảm sốt & Đồ lạnh buốt / Dầu mỡ',
+      triggers: [
+        'kem lạnh',
+        'kem',
+        'đá bào',
+        'nước đá buốt',
+        'đồ chiên ngập dầu',
+        'gà rán dầu mỡ',
+      ],
+      warningMessage:
+        '⚠️ Lưu ý khi ốm sốt / cảm cúm: Cơ thể đang yếu không nên ăn đồ lạnh buốt hoặc đồ chiên rán nhiều dầu mỡ!',
+      scientificReason:
+        'Nhiệt độ lạnh gây co thắt mao mạch niêm mạc họng, làm suy giảm đề kháng tại chỗ khiến viêm họng và sốt kéo dài; dầu mỡ gây khó tiêu, ứ trệ tiêu hóa.',
+      safeAlternativeSuggestion:
+        'Cháo tía tô giải cảm ấm nóng, súp gà ngô non dễ tiêu, nước chanh mật ong gừng ấm hồi phục sinh lực.',
+    },
+  },
 };
