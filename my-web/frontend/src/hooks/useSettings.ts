@@ -136,7 +136,17 @@ export function useSettings({
     }
   };
 
+  useEffect(() => {
+    if (user?.role && user.role !== 'CUSTOMER' && settingsTab === 'ai_memory') {
+      setSettingsTab('profile');
+    }
+  }, [user?.role, settingsTab]);
+
   const handleTabChange = async (tabId: SettingsTabId) => {
+    if (tabId === 'ai_memory' && user?.role !== 'CUSTOMER') {
+      setSettingsTab('profile');
+      return;
+    }
     setSettingsTab(tabId);
     if (tabId === 'verification') {
       fetchUserProfile();
