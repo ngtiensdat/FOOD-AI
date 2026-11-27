@@ -51,11 +51,15 @@ export class AiController {
   }
 
   @Get('memory')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.CUSTOMER)
   async getAiMemory(@GetUser('id') userId: number) {
     return this.aiLearningService.getUserAiMemory(userId);
   }
 
   @Delete('memory/item')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.CUSTOMER)
   async deleteAiMemoryItem(
     @GetUser('id') userId: number,
     @Body() dto: DeleteAiMemoryItemDto,
@@ -68,6 +72,8 @@ export class AiController {
   }
 
   @Delete('memory')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.CUSTOMER)
   async clearAiMemory(@GetUser('id') userId: number) {
     return this.aiLearningService.deleteUserAiMemoryItem(userId, 'all');
   }

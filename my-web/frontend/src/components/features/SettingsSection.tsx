@@ -105,7 +105,9 @@ export const SettingsSection = ({
           <nav className="flex flex-col gap-1.5 text-sm font-bold text-gray-500">
             {[
               { id: 'profile', label: LABELS.SETTINGS.TABS.PROFILE, icon: User },
-              { id: 'ai_memory', label: LABELS.SETTINGS.TABS.AI_MEMORY, icon: Brain },
+              ...(user?.role === 'CUSTOMER'
+                ? [{ id: 'ai_memory', label: LABELS.SETTINGS.TABS.AI_MEMORY, icon: Brain }]
+                : []),
               { id: 'security', label: LABELS.SETTINGS.TABS.SECURITY, icon: Lock },
               { id: 'verification', label: LABELS.SETTINGS.TABS.VERIFICATION, icon: Mail },
               { id: 'language', label: LABELS.SETTINGS.TABS.LANGUAGE, icon: Globe },
@@ -141,7 +143,7 @@ export const SettingsSection = ({
                   setProfileData={setProfileData}
                 />
               </div>
-            ) : settingsTab === 'ai_memory' ? (
+            ) : settingsTab === 'ai_memory' && user?.role === 'CUSTOMER' ? (
               <AiMemorySettingsTab />
             ) : settingsTab === 'security' ? (
               <SecuritySettingsTab
