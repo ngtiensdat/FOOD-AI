@@ -151,7 +151,7 @@ function SuggestedFoodsSection({
               <div key={food.id} className="flex flex-col gap-1.5 relative">
                 <div className="relative">
                   <span className="absolute -top-1.5 -left-1.5 z-10 w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center shadow-xs">
-                    #{idx + 2}
+                    #{(suggestions?.length || 0) + idx + 1}
                   </span>
                   <MiniFoodCard food={food} onViewDetail={onViewDetail} />
                 </div>
@@ -324,62 +324,13 @@ export function ChatFeed({
                   </div>
                 )}
 
-                {/* Danh sách các thẻ món ăn gợi ý kiểu Mini (nếu có) */}
-                {msg.suggestions && msg.suggestions.length > 0 && (
-                  <div className="pt-2 pl-1 space-y-3">
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
-                      {LABELS.HERO.SUGGESTED_TITLE}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                      {msg.suggestions.map((food: FoodCardData) => (
-                        <div key={food.id} className="flex flex-col gap-2">
-                          <MiniFoodCard
-                            food={food}
-                            onViewDetail={onViewDetail}
-                          />
-                          <div className="flex items-center gap-2 pl-1 select-none">
-                            <Button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (food.id !== undefined) {
-                                  onFeedback?.(Number(food.id), 'LIKE');
-                                }
-                              }}
-                              variant="none"
-                              size="none"
-                              className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
-                                food.feedback === 'LIKE'
-                                  ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800'
-                                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
-                              }`}
-                            >
-                              {LABELS.AI_CHAT.FEED.FEEDBACK_LIKE}
-                            </Button>
-                            <Button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (food.id !== undefined) {
-                                  onFeedback?.(Number(food.id), 'DISLIKE');
-                                }
-                              }}
-                              variant="none"
-                              size="none"
-                              className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
-                                food.feedback === 'DISLIKE'
-                                  ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800'
-                                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
-                              }`}
-                            >
-                              {LABELS.AI_CHAT.FEED.FEEDBACK_DISLIKE}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Danh sách các thẻ món ăn gợi ý kiểu Mini + nút mở rộng Top 5 */}
+                <SuggestedFoodsSection
+                  suggestions={msg.suggestions}
+                  otherSuggestions={msg.otherSuggestions}
+                  onViewDetail={onViewDetail}
+                  onFeedback={onFeedback}
+                />
               </div>
             </div>
           ))}
