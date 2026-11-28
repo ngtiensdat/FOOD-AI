@@ -514,16 +514,18 @@ export function useAiChat({ initialMessage, onResetChat }: UseAiChatParams) {
       if (success) {
         setMessages((prev) =>
           prev.map((msg) => {
-            if (msg.suggestions) {
-              const updatedSuggestions = msg.suggestions.map((s) => {
-                if (s.id === foodId) {
-                  return { ...s, feedback: s.feedback === type ? undefined : type };
-                }
-                return s;
-              });
-              return { ...msg, suggestions: updatedSuggestions };
-            }
-            return msg;
+            if (!msg.suggestions && !msg.otherSuggestions) return msg;
+            const updateList = (list?: FoodCardData[]) =>
+              list?.map((s) =>
+                s.id === foodId
+                  ? { ...s, feedback: s.feedback === type ? undefined : type }
+                  : s,
+              );
+            return {
+              ...msg,
+              suggestions: updateList(msg.suggestions),
+              otherSuggestions: updateList(msg.otherSuggestions),
+            };
           }),
         );
         toast.success(
